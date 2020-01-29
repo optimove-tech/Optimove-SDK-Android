@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/userIdTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:gravity="center"
+        android:text="Welcome to the Optimove Android SDK test"
+        android:textSize="16sp"/>
+
+    <Button
+        android:id="@+id/sendLog"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:onClick="sendLog"
+        android:tag="0"
+        android:text="Send Logs"
+        android:textAllCaps="false"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/userIdInput"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start|center_vertical"
+            android:layout_weight="1"
+            android:hint="Enter userId"
+            android:textSize="18sp"/>
+
+        <EditText
+            android:id="@+id/userEmailInput"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start|center_vertical"
+            android:layout_weight="1"
+            android:hint="Enter Email"
+            android:inputType="textEmailAddress"
+            android:textSize="18sp"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/updateUserIdButton"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:onClick="updateUserId"
+        android:text="Update userId"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/customerReportEventButton"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:onClick="reportEvent"
+        android:text="Report As Customer Event"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/resetTokenButton"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:onClick="resetToken"
+        android:text="Reset Token"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/dispatchNow"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:onClick="dispatchNow"
+        android:text="Dispatch Now"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/toggleTestMode"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:onClick="toggleTestMode"
+        android:text="Toggle Test Mode"
+        android:textAllCaps="false"/>
+
+</LinearLayout>

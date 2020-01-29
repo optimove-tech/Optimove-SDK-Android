@@ -1,0 +1,50 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.optimove.sdk.optimove_sdk">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <application
+        android:fullBackupContent="@xml/optimove_backup_rules"
+        android:label="@string/app_name"
+        android:supportsRtl="true">
+
+        <provider
+            android:name=".main.OptimoveInitProvider"
+            android:authorities="${applicationId}.optimoveinitprovider"
+            android:exported="false"
+            android:initOrder="50"/> <!-- Firebase initOrder is 101 so for clients with default Firebase this ensures that the Optimove SDK would be initialized second -->
+
+        <service
+            android:name=".optipush.messaging.OptipushMessagingService"
+            android:exported="false">
+            <!--Firebase's Messaging Service priority is -500 so set to the -400 to get the messages-->
+            <!--Firebase's Messaging Service priority is -500 so set to the -400 to get the messages-->
+            <intent-filter android:priority="-400">
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <service
+            android:name=".optipush.events_dispatch_service.NotificationOpenedEventDispatchService"
+            android:enabled="true"/>
+
+
+        <service
+            android:name=".main.app_update_listener.AppUpdateService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+        <receiver android:name=".optipush.messaging.NotificationInteractionReceiver"/>
+
+        <receiver
+            android:name=".main.app_update_listener.AppUpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

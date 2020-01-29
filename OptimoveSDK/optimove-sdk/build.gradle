@@ -1,0 +1,114 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+apply from: 'optimove-sdk-plugin.gradle'
+
+group = 'com.optimove.sdk'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode Integer.parseInt("$sdk_version_code")
+        versionName "$sdk_version"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField "String", "OPTIMOVE_SDK_RUNTIME_ENV", '"dev"'
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "OPTIMOVE_SDK_RUNTIME_ENV", '"prod"'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+    publishNonDefault true
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.volley:volley:1.1.1'
+    implementation 'org.matomo.sdk:tracker:4.0.2'
+    implementation 'com.google.firebase:firebase-messaging:18.0.0'
+    implementation 'com.google.firebase:firebase-invites:17.0.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.7.22'
+    testImplementation 'org.mockito:mockito-inline:2.7.22'
+    testImplementation 'androidx.test:core:1.2.0'
+    testImplementation 'org.json:json:20140107'
+    testImplementation "org.robolectric:robolectric:4.3"
+    testImplementation 'info.solidsoft.mockito:mockito-java8:2.5.0'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'org.mockito:mockito-android:2.7.15'
+
+
+
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            group "com.optimove.sdk"
+            artifactId "optimove-sdk"
+            version "$sdk_version"
+            packaging "aar"
+            name "OptimoveMobileSDK"
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.bintrayUser : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.bintrayApiKey : System.getenv('BINTRAY_API_KEY')
+    // jFrog plugin must be declared for this line to work
+    configurations = ['archives']
+    // Package info for BinTray
+    pkg {
+        repo = 'optimove-sdk'
+        name = 'optimove-sdk'
+        version {
+            name = "$sdk_version"
+            released = new Date()
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
