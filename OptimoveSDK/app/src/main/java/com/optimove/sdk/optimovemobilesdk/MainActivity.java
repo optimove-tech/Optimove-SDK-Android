@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements OptimoveSuccessSt
     outputTv.setText("Reporting Custom Event for Visitor without optional value");
     runFromWorker(() -> Optimove.getInstance().reportEvent(new SimpleCustomEvent()));
     runFromWorker(() -> Optimove.getInstance().reportEvent("Event_No ParaMs     "));
-//    runFromWorker(() -> Optimove.getInstance().reportEvent(new RealtimeTestEvent()));
   }
 
   public void sendLog(View view) {
