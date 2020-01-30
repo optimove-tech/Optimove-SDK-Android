@@ -93,7 +93,6 @@ public class EventGenerator {
                         new BuildInfo()).getUserAgent())));
     }
 
-
     private void reportOptInOrOut() {
         int lastReportedOpt = optitrackPreferences.getInt(LAST_OPT_REPORTED_KEY, -1);
         if (lastReportedOpt == -1) {
