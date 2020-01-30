@@ -7,14 +7,10 @@ import org.matomo.sdk.TrackMe;
 import org.matomo.sdk.Tracker;
 import org.matomo.sdk.TrackerBuilder;
 import org.matomo.sdk.extra.TrackHelper;
-import org.matomo.sdk.tools.BuildInfo;
-import org.matomo.sdk.tools.DeviceHelper;
-import org.matomo.sdk.tools.PropertySource;
 
 import java.util.List;
 
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.DEFAULT_DISPATCH_TIMEOUT;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.MATOMO_PLUGIN_FLAGS;
 
 
 public class MatomoAdapter implements OptitrackAdapter {
