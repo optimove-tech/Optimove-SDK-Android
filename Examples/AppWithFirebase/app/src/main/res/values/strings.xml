@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">No Default</string>
+    <string name="null_literal_message">Pass !null to send null literal</string>
+</resources>
