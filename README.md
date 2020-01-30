@@ -27,4 +27,4 @@ Stay tuned for our how-to guides
 
 ## License
 
-OptimoveSDK for iOS is available under the [MIT license](LICENSE).
+OptimoveSDK for Android is available under the [MIT license](LICENSE).
