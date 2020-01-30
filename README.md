@@ -24,3 +24,7 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 
 ### Executing campaigns using your Optimove instance
 Stay tuned for our how-to guides
+
+## License
+
+OptimoveSDK for iOS is available under the [MIT license](LICENSE).
