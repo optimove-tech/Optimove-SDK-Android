@@ -26,24 +26,21 @@ public class OptimoveFirebaseInteractor {
   private FirebaseApp appController;
   private boolean clientHasDefaultFirebaseApp;
 
-  private String mbaasTopicsEndpoint;
+  //private String mbaasTopicsEndpoint;
 
   public OptimoveFirebaseInteractor(OptipushConfigs optipushConfigs) {
     context = Optimove.getInstance().getApplicationContext();
-    this.mbaasTopicsEndpoint = optipushConfigs.getPushTopicsRegistrationEndpoint();
+    //this.mbaasTopicsEndpoint = optipushConfigs.getPushTopicsRegistrationEndpoint();
     this.clientHasDefaultFirebaseApp = false;
   }
 
   public boolean setup(OptipushConfigs optipushConfigs) {
     this.clientHasDefaultFirebaseApp = FirebaseApp.getApps(context).size() > 0;
     OptipushConfigs.FirebaseConfigs appControllerProjectMetadata = optipushConfigs.getAppControllerProjectConfigs();
-    boolean didInitAppProject = initAppControllerProject(appControllerProjectMetadata);
-    if (!didInitAppProject) {
-      return false;
-    }
-    // Don't call the clientServiceProjectMetadata without having the AppController project initialized
-    OptipushConfigs.FirebaseConfigs clientServiceProjectMetadata = optipushConfigs.getClientServiceProjectConfigs();
-    return initClientsServiceControllerProject(clientServiceProjectMetadata);
+    return initAppControllerProject(appControllerProjectMetadata);
+//    // Don't call the clientServiceProjectMetadata without having the AppController project initialized
+//    OptipushConfigs.FirebaseConfigs clientServiceProjectMetadata = optipushConfigs.getClientServiceProjectConfigs();
+//    return initClientsServiceControllerProject(clientServiceProjectMetadata);
   }
 
   private boolean initAppControllerProject(@NonNull OptipushConfigs.FirebaseConfigs appControllerProjectConfigs) {
@@ -72,23 +69,23 @@ public class OptimoveFirebaseInteractor {
     return true;
   }
 
-  private boolean initClientsServiceControllerProject(@NonNull OptipushConfigs.FirebaseConfigs clientsServiceControllerProjectMetadata) {
-    FirebaseKeys firebaseKeys = new FirebaseKeys.Builder()
-        .setApiKey(clientsServiceControllerProjectMetadata.getWebApiKey())
-        .setApplicationId(clientsServiceControllerProjectMetadata.getAppId())
-        .setDatabaseUrl(clientsServiceControllerProjectMetadata.getDbUrl())
-        .setGcmSenderId(clientsServiceControllerProjectMetadata.getSenderId())
-        .setProjectId(clientsServiceControllerProjectMetadata.getProjectId())
-        .setStorageBucket(clientsServiceControllerProjectMetadata.getStorageBucket())
-        .build();
-    try {
-      sdkController = FirebaseApp.initializeApp(context, firebaseKeys.toFirebaseOptions(), SDK_CONTROLLER_PROJECT_NAME);
-    } catch (Exception e) {
-      OptiLogger.optipushFirebaseProjectInitFailed(SDK_CONTROLLER_PROJECT_NAME, e.getMessage());
-      return false;
-    }
-    return true;
-  }
+//  private boolean initClientsServiceControllerProject(@NonNull OptipushConfigs.FirebaseConfigs clientsServiceControllerProjectMetadata) {
+//    FirebaseKeys firebaseKeys = new FirebaseKeys.Builder()
+//        .setApiKey(clientsServiceControllerProjectMetadata.getWebApiKey())
+//        .setApplicationId(clientsServiceControllerProjectMetadata.getAppId())
+//        .setDatabaseUrl(clientsServiceControllerProjectMetadata.getDbUrl())
+//        .setGcmSenderId(clientsServiceControllerProjectMetadata.getSenderId())
+//        .setProjectId(clientsServiceControllerProjectMetadata.getProjectId())
+//        .setStorageBucket(clientsServiceControllerProjectMetadata.getStorageBucket())
+//        .build();
+//    try {
+//      sdkController = FirebaseApp.initializeApp(context, firebaseKeys.toFirebaseOptions(), SDK_CONTROLLER_PROJECT_NAME);
+//    } catch (Exception e) {
+//      OptiLogger.optipushFirebaseProjectInitFailed(SDK_CONTROLLER_PROJECT_NAME, e.getMessage());
+//      return false;
+//    }
+//    return true;
+//  }
 
 }
 

@@ -8,6 +8,7 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
+//import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
 import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushFcmTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
@@ -56,7 +57,7 @@ public class OptipushHandlerProvider {
                         lifecycleObserver);
 
         OptipushManager optipushManager =
-                new OptipushManager(optimoveFirebaseInteractor, optipushUserRegistrar, context);
+                new OptipushManager(optipushUserRegistrar, context);
 
         optipushBuffer.setNext(optipushManager);
     }

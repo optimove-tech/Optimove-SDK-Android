@@ -29,8 +29,6 @@ public class OptipushBufferTests {
     private RegistrationDao.FlagsEditor flagsEditor;
     @Mock
     private OptipushHandler nextOptipushHandler;
-    @Mock
-    private SdkOperationListener sdkOperationListener;
 
     private OptipushBuffer optipushBuffer;
 
@@ -53,18 +51,7 @@ public class OptipushBufferTests {
         inOrder.verify(flagsEditor).markAddUserAliasesAsFailed((assertArg(arg -> Assert.assertTrue(arg.contains(userId)))));
         inOrder.verify(flagsEditor).save();
     }
-    @Test
-    public void startTestModeWillBeCalledWhenNextSet() {
-        optipushBuffer.startTestMode(sdkOperationListener);
-        optipushBuffer.setNext(nextOptipushHandler);
-        verify(nextOptipushHandler).startTestMode(sdkOperationListener);
-    }
-    @Test
-    public void stopTestModeWillBeCalledWhenNextSet() {
-        optipushBuffer.stopTestMode(sdkOperationListener);
-        optipushBuffer.setNext(nextOptipushHandler);
-        verify(nextOptipushHandler).stopTestMode(sdkOperationListener);
-    }
+
     @Test
     public void setUserWillBeMarkedAsFailedIfNoNext() {
         optipushBuffer.tokenWasChanged();

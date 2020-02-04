@@ -25,8 +25,6 @@ public class OptipushManagerTests {
     @Mock
     private OptipushUserRegistrar optipushUserRegistrar;
     @Mock
-    private OptimoveFirebaseInteractor optimoveFirebaseInteractor;
-    @Mock
     private RequirementProvider requirementProvider;
     @Mock
     private Context context;
@@ -38,7 +36,7 @@ public class OptipushManagerTests {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        optipushManager = new OptipushManager(optimoveFirebaseInteractor, optipushUserRegistrar,
+        optipushManager = new OptipushManager(optipushUserRegistrar,
                 context);
         when(registrationDao.editFlags()).thenReturn(flagsEditor);
         when(flagsEditor.unmarkTokenRefreshAsFailed()).thenReturn(flagsEditor);
@@ -54,24 +52,6 @@ public class OptipushManagerTests {
         verify(optipushUserRegistrar).userIdChanged(visitorId, userId);
     }
 
-    @Test
-    public void startTestModeShouldRegisterToTestTopic() {
-        String packageName = "package_name";
-        SdkOperationListener sdkOperationListener = mock(SdkOperationListener.class);
-        when(context.getApplicationContext()).thenReturn(context);
-        when(context.getPackageName()).thenReturn(packageName);
-        optipushManager.startTestMode(sdkOperationListener);
-        verify(optimoveFirebaseInteractor).registerToTopic("test_android_" + packageName,sdkOperationListener);
-    }
-    @Test
-    public void stopTestModeShouldUnregisterFromTestTopic() {
-        String packageName = "package_name";
-        SdkOperationListener sdkOperationListener = mock(SdkOperationListener.class);
-        when(context.getApplicationContext()).thenReturn(context);
-        when(context.getPackageName()).thenReturn(packageName);
-        optipushManager.stopTestMode(sdkOperationListener);
-        verify(optimoveFirebaseInteractor).unregisterFromTopic("test_android_" + packageName,sdkOperationListener);
-    }
     @Test
     public void tokenWasChangedShouldCallOptipushUserRegistrar() {
         optipushManager.tokenWasChanged();

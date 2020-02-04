@@ -7,7 +7,6 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.OptipushMessageCommand;
@@ -15,18 +14,16 @@ import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar
 
 public final class OptipushManager extends OptipushHandler {
 
-    @NonNull
-    private OptimoveFirebaseInteractor firebaseInteractor;
+//    @NonNull
+//    private OptimoveFirebaseInteractor firebaseInteractor;
     @NonNull
     private OptipushUserRegistrar optipushUserRegistrar;
     @NonNull
     private Context context;
 
 
-    public OptipushManager(@NonNull OptimoveFirebaseInteractor optimoveFirebaseInteractor,
-                           @NonNull OptipushUserRegistrar optipushUserRegistrar,
+    public OptipushManager(@NonNull OptipushUserRegistrar optipushUserRegistrar,
                            @NonNull Context context) {
-        this.firebaseInteractor = optimoveFirebaseInteractor;
         this.optipushUserRegistrar = optipushUserRegistrar;
         this.context = context;
     }

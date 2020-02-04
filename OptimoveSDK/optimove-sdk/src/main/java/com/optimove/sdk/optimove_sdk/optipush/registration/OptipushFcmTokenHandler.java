@@ -10,7 +10,7 @@ import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushHandler;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
+//import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,7 +60,8 @@ public class OptipushFcmTokenHandler {
 
               lastToken = registrationDao.getLastToken();
               Context context = Optimove.getInstance().getApplicationContext();
-              boolean clientHasDefaultFirebaseApp = FirebaseApp.getApps(context).size() > OptimoveFirebaseInteractor.NUMBER_OF_OPTIMOVE_FIREBASE_APPS;
+              boolean clientHasDefaultFirebaseApp = FirebaseApp.getApps(context).size() > 1;
+              //OptimoveFirebaseInteractor.NUMBER_OF_OPTIMOVE_FIREBASE_APPS;
               if (clientHasDefaultFirebaseApp) {
                 fetchNewSecondaryToken();
               } else {
