@@ -516,30 +516,17 @@ final public class Optimove {
     }
 
     /**
-     * Subscribes the {@code app} to receive <i><b>Test Template Notifications</b></i> from the {@code Optimove Site}.
-     * <p>
-     * Although not mandatory, it is <b>highly</b> recommended to call the {@link Optimove#stopTestMode(SdkOperationListener)} once the subscription is no longer needed.
-     * </p>
-     *
-     * @param operationListener An <i>optional</i> callback that is called with a flag indicating whether the operation was <b>successful</b>. Called from the function's invoking thread.
+     * @deprecated No need to call start test mode.
      */
+    @Deprecated
     public void startTestMode(@Nullable SdkOperationListener operationListener) {
-        optipushHandlerProvider.getOptipushHandler()
-                .startTestMode(operationListener);
     }
 
     /**
-     * Un-Subscribes the {@code app} from receiving <i><b>Test Template Notifications</b></i> from the {@code Optimove Site}.
-     * <p>
-     * There's no need to verify that the app was {@code subscribed} to testing before calling this method.
-     * </p>
-     *
-     * @param operationListener An <i>optional</i> callback that is called with a flag indicating whether the operation was <b>successful</b>. Called from the function's invoking thread.
-     * @see Optimove#startTestMode(SdkOperationListener)
+     * @deprecated No need to call stopTestMode.
      */
+    @Deprecated
     public void stopTestMode(@Nullable SdkOperationListener operationListener) {
-        optipushHandlerProvider.getOptipushHandler()
-                .stopTestMode(operationListener);
     }
 
     /* *******************

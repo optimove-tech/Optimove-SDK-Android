@@ -1,9 +1,6 @@
 package com.optimove.sdk.optimove_sdk.optipush;
 
-import android.support.annotation.Nullable;
-
 import com.google.firebase.messaging.RemoteMessage;
-import com.optimove.sdk.optimove_sdk.main.SdkOperationListener;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 
 import java.util.HashSet;
@@ -12,12 +9,6 @@ public class OptipushBuffer extends OptipushHandler {
 
 
     private RegistrationDao registrationDao;
-
-    //testmode
-    private boolean startTestModeWasCalled;
-    private SdkOperationListener startTestModeOperationListener;
-    private boolean stopTestModeWasCalled;
-    private SdkOperationListener stopTestModeOperationListener;
 
     //messaging
     private boolean optipushMessageCommandWasCalled;
@@ -37,12 +28,6 @@ public class OptipushBuffer extends OptipushHandler {
     }
 
     private void processBufferedOperations() {
-        if (startTestModeWasCalled) {
-            next.startTestMode(startTestModeOperationListener);
-        }
-        if (stopTestModeWasCalled) {
-            next.stopTestMode(stopTestModeOperationListener);
-        }
         if (optipushMessageCommandWasCalled) {
             next.optipushMessageCommand(optipushRemoteMessage, executionTimeLimitInMs);
         }
@@ -50,10 +35,6 @@ public class OptipushBuffer extends OptipushHandler {
     }
 
     private void clearBuffer() {
-        startTestModeWasCalled = false;
-        stopTestModeWasCalled = false;
-        stopTestModeOperationListener = null;
-        startTestModeOperationListener = null;
         optipushMessageCommandWasCalled = false;
         optipushRemoteMessage = null;
         executionTimeLimitInMs = -1;
@@ -69,26 +50,6 @@ public class OptipushBuffer extends OptipushHandler {
                         add(userId);
                     }})
                     .save();
-        }
-    }
-
-    @Override
-    public void startTestMode(@Nullable SdkOperationListener operationListener) {
-        if (next != null) {
-            next.startTestMode(operationListener);
-        } else {
-            startTestModeWasCalled = true;
-            startTestModeOperationListener = operationListener;
-        }
-    }
-
-    @Override
-    public void stopTestMode(@Nullable SdkOperationListener operationListener) {
-        if (next != null) {
-            next.stopTestMode(operationListener);
-        } else {
-            stopTestModeWasCalled = true;
-            stopTestModeOperationListener = operationListener;
         }
     }
 

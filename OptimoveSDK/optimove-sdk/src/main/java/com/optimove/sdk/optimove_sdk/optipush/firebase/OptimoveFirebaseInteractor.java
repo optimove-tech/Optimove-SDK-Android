@@ -46,48 +46,6 @@ public class OptimoveFirebaseInteractor {
     return initClientsServiceControllerProject(clientServiceProjectMetadata);
   }
 
-  /**
-   * Performs {@code topic registration} at <i>FCM</i> for the provided topic.<br>
-   * The topic is also validated against following pattern (defined by Firebase): ({@code [a-zA-Z0-9-_.~%]{1,900}})<br>
-   * <p>
-   * <b>Discussion</b>: <br>
-   * The Firebase SDK (v16.0) allows topic registration only for the token of the "default" app.<br>
-   * If the client already has a default {@code FirebaseApp} than the MBAAS won't be able to target that topic due to security restrictions of Firebase.<br>
-   * That's why, for those client, the SDK sends the registration request to a dedicated endpoint and not the Firebase SDK.
-   *
-   * @param topic the topic to register to
-   */
-  public void registerToTopic(String topic, @Nullable SdkOperationListener operationListener) {
-    if (appController == null) {
-      OptiLogger.optipushSingleTopicRegistrationFailed_WhenAppControllerIsNull();
-      if (operationListener != null)
-        operationListener.onResult(false);
-      return;
-    }
-    getTopicsRegistrar(operationListener).registerToTopics(topic);
-  }
-
-  /**
-   * Performs {@code topic un-registration} at <i>FCM</i> for the provided topic.<br>
-   * The topic is also validated against following pattern (defined by Firebase): ({@code [a-zA-Z0-9-_.~%]{1,900}})<br>
-   * <p>
-   * <b>Discussion</b>: <br>
-   * The Firebase SDK (v16.0) allows topic registration only for the token of the "default" app.<br>
-   * If the client already has a default {@code FirebaseApp} than the MBAAS won't be able to target that topic due to security restrictions of Firebase.<br>
-   * That's why, for those client, the SDK sends the registration request to a dedicated endpoint and not the Firebase SDK.
-   *
-   * @param topic the topic to un-register from
-   */
-  public void unregisterFromTopic(String topic, @Nullable SdkOperationListener operationListener) {
-    if (appController == null) {
-      OptiLogger.optipushSingleTopicUnregistrationFailed_WhenAppControllerIsNull();
-      if (operationListener != null)
-        operationListener.onResult(false);
-      return;
-    }
-    getTopicsRegistrar(operationListener).unregisterFromTopics(topic);
-  }
-
   private boolean initAppControllerProject(@NonNull OptipushConfigs.FirebaseConfigs appControllerProjectConfigs) {
     FirebaseKeys firebaseKeys = new FirebaseKeys.Builder()
         .setApiKey(appControllerProjectConfigs.getWebApiKey())
@@ -132,12 +90,5 @@ public class OptimoveFirebaseInteractor {
     return true;
   }
 
-  private TopicsRegistrar getTopicsRegistrar(@Nullable SdkOperationListener operationListener) {
-    if (this.clientHasDefaultFirebaseApp) {
-      return new MbaasTopicsRegistrar(context, mbaasTopicsEndpoint, HttpClient.getInstance(context), operationListener);
-    } else {
-      return new FirebaseTopicsRegistrar(context, operationListener);
-    }
-  }
 }
 

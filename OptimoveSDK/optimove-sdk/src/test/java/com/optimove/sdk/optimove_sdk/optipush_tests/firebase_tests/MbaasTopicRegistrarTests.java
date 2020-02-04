@@ -7,7 +7,6 @@ import androidx.test.core.app.ApplicationProvider;
 import com.optimove.sdk.optimove_sdk.main.SdkOperationListener;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.MbaasTopicsRegistrar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
