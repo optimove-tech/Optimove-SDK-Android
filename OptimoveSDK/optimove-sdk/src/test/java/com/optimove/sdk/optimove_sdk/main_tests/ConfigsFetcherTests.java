@@ -223,8 +223,8 @@ public class ConfigsFetcherTests {
         regularConfigFetcher.fetchConfigs(configs -> Assert.assertTrue(configsAreTheSame(configs, this.configs))
                 , Assert::fail);
         InOrder inOrder = Mockito.inOrder(editor);
-        inOrder.verify(editor).putBoolean(configName,true);
-        inOrder.verify(editor).apply();
+        inOrder.verify(editor, timeout(1000)).putBoolean(configName,true);
+        inOrder.verify(editor, timeout(1000)).apply();
 
         verify(writer, timeout(1000)).now();
     }
