@@ -212,7 +212,7 @@ public class ConfigsFetcherTests {
 
 
 
-    @Test
+    @Test(timeout = 1000)
     public void shouldFetchConfigFileCorrectlyAndSaveIt() {
         applyPositiveConfigFetch();
         FileUtils.Writer writer = mock(FileUtils.Writer.class);
