@@ -2,10 +2,8 @@ package com.optimove.sdk.optimove_sdk.optipush_tests;
 
 import android.content.Context;
 
-import com.optimove.sdk.optimove_sdk.main.SdkOperationListener;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 
@@ -14,7 +12,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 

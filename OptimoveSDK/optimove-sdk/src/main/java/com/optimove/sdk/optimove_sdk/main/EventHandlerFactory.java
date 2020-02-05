@@ -1,11 +1,10 @@
 package com.optimove.sdk.optimove_sdk.main;
 
-import android.app.Application;
 import android.content.Context;
 
 import com.optimove.sdk.optimove_sdk.main.event_handlers.ComponentPool;
-import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
+import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
@@ -27,18 +26,16 @@ public class EventHandlerFactory {
     private HttpClient httpClient;
     private OptitrackAdapter optitrackAdapter;
     private UserInfo userInfo;
-    private String fullPackageName;
     private int maximumBufferSize;
     private Context context;
 
     private EventHandlerFactory(HttpClient httpClient,
-                                OptitrackAdapter optitrackAdapter, UserInfo userInfo, String fullPackageName,
+                                OptitrackAdapter optitrackAdapter, UserInfo userInfo,
                                 int maximumBufferSize,
                                 Context context) {
         this.httpClient = httpClient;
         this.optitrackAdapter = optitrackAdapter;
         this.userInfo = userInfo;
-        this.fullPackageName = fullPackageName;
         this.maximumBufferSize = maximumBufferSize;
         this.context = context;
     }
@@ -75,7 +72,7 @@ public class EventHandlerFactory {
 
     public OptitrackManager getOptitrackManager(OptitrackConfigs optitrackConfigs,
                                                 Map<String, EventConfigs> eventConfigs, LifecycleObserver lifecycleObserver) {
-        return new OptitrackManager(optitrackAdapter, optitrackConfigs, userInfo, fullPackageName,
+        return new OptitrackManager(optitrackAdapter, optitrackConfigs, userInfo,
                 eventConfigs, lifecycleObserver, context);
     }
 
@@ -89,11 +86,7 @@ public class EventHandlerFactory {
     }
 
     public interface UserInfoStep {
-        FullPackageNameStep userInfo(UserInfo userInfo);
-    }
-
-    public interface FullPackageNameStep {
-        HttpClientStep fullPackageName(String fullPackageName);
+        HttpClientStep userInfo(UserInfo userInfo);
     }
 
 
@@ -112,8 +105,7 @@ public class EventHandlerFactory {
         EventHandlerFactory build();
     }
 
-    public static class Builder implements ContextStep, MaximumBufferSizeStep, HttpClientStep,
-            FullPackageNameStep, UserInfoStep, OptitrackAdapterStep, Build {
+    public static class Builder implements ContextStep, MaximumBufferSizeStep, HttpClientStep, UserInfoStep, OptitrackAdapterStep, Build {
 
         private HttpClient httpClient;
         private OptitrackAdapter optitrackAdapter;
@@ -129,16 +121,11 @@ public class EventHandlerFactory {
         }
 
         @Override
-        public FullPackageNameStep userInfo(UserInfo userInfo) {
+        public HttpClientStep userInfo(UserInfo userInfo) {
             this.userInfo = userInfo;
             return this;
         }
 
-        @Override
-        public HttpClientStep fullPackageName(String fullPackageName) {
-            this.fullPackageName = fullPackageName;
-            return this;
-        }
         @Override
         public ContextStep maximumBufferSize(int maximumBufferSize) {
             this.maximumBufferSize = maximumBufferSize;
@@ -159,7 +146,7 @@ public class EventHandlerFactory {
 
         @Override
         public EventHandlerFactory build() {
-            return new EventHandlerFactory(httpClient, optitrackAdapter, userInfo, fullPackageName, maximumBufferSize,
+            return new EventHandlerFactory(httpClient, optitrackAdapter, userInfo, maximumBufferSize,
                     context);
         }
     }

@@ -36,8 +36,6 @@ public final class OptitrackManager implements LifecycleObserver.ActivityStopped
     @NonNull
     private UserInfo userInfo;
     @NonNull
-    private String fullPackageName;
-    @NonNull
     private Map<String, EventConfigs> eventConfigsMap;
     @NonNull
     private LifecycleObserver lifecycleObserver;
@@ -49,7 +47,7 @@ public final class OptitrackManager implements LifecycleObserver.ActivityStopped
 
     public OptitrackManager(@NonNull OptitrackAdapter optitrackAdapter,
                             @NonNull OptitrackConfigs optitrackConfigs,
-                            @NonNull UserInfo userInfo, @NonNull String fullPackageName,
+                            @NonNull UserInfo userInfo,
                             @NonNull  Map<String, EventConfigs> eventConfigsMap,
                             @NonNull LifecycleObserver lifecycleObserver,
                             @NonNull Context context) {
@@ -57,7 +55,6 @@ public final class OptitrackManager implements LifecycleObserver.ActivityStopped
         this.optitrackPreferences = context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE);
         this.userInfo = userInfo;
         this.optitrackConfigs = optitrackConfigs;
-        this.fullPackageName = fullPackageName;
         this.eventConfigsMap = eventConfigsMap;
         this.lifecycleObserver = lifecycleObserver;
         this.context = context;
@@ -131,9 +128,7 @@ public final class OptitrackManager implements LifecycleObserver.ActivityStopped
         } else if (event.getName().equals(SetPageVisitEvent.EVENT_NAME)) {
             optitrackAdapter.reportScreenVisit(userInfo.getInitialVisitorId(),
                     String.valueOf(event.getParameters()
-                            .get(SetPageVisitEvent.CUSTOM_URL_PARAM_KEY))
-                            .substring(fullPackageName
-                                    .length()),
+                            .get(SetPageVisitEvent.CUSTOM_URL_PARAM_KEY)),
                     String.valueOf(event.getParameters()
                             .get(SetPageVisitEvent.PAGE_TITLE_PARAM_KEY)));
         }

@@ -17,12 +17,11 @@ public class SetPageVisitEvent implements OptimoveEvent, OptimoveCoreEvent {
   private String pageTitle;
   private String pageCategory;
 
-  public SetPageVisitEvent(String customUrl, String pageTitle, String pageCategory) {
-    this.customUrl = customUrl;
+  public SetPageVisitEvent(String pageTitle, String pageCategory) {
+    this.customUrl = "/";
     this.pageTitle = pageTitle;
     this.pageCategory = pageCategory;
   }
-
   @Override
   public String getName() {
     return EVENT_NAME;

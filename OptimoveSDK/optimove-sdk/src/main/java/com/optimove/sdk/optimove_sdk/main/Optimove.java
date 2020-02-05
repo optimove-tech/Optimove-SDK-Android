@@ -87,7 +87,6 @@ final public class Optimove {
         EventHandlerFactory eventHandlerFactory = EventHandlerFactory.builder()
                 .optitrackAdapter(new MatomoAdapter())
                 .userInfo(userInfo)
-                .fullPackageName(ApplicationHelper.getFullPackageName(context))
                 .httpClient(HttpClient.getInstance(context))
                 .maximumBufferSize(100)
                 .context(context)
@@ -426,97 +425,58 @@ final public class Optimove {
                 .reportEvent(new EventContext(optimoveEvent));
     }
 
-    /**
-     * Convenience method to report a visit to the provided {@code Activity}, using its parents - all the way to the <b>initial Activity</b>, as the screen's hierarchy.<br>
-     * <b>Note</b>: For apps that use {@code Fragments} as means of navigation, this method won't be very useful.
-     * Use the {@link Optimove#setScreenVisit(String, String, String)} instead for finer hierarchy specifications.
-     *
-     * @param activity    The activity to track
-     * @param screenTitle Example: Bags
-     */
-    @SuppressWarnings("SimplifiableIfStatement")
-    public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle) {
-        this.setScreenVisit(activity, screenTitle, null);
+    public void reportScreenVisit(@NonNull String screenName) {
+        this.reportScreenVisit(screenName, null);
     }
 
-    /**
-     * Convenience method to report a visit to the provided {@code Activity}, using its parents - all the way to the <b>initial Activity</b>, as the screen's hierarchy.<br>
-     * <b>Note</b>: For apps that use {@code Fragments} as means of navigation, this method won't be very useful.
-     * Use the {@link Optimove#setScreenVisit(String, String, String)} instead for finer hierarchy specifications.
-     *
-     * @param activity       The activity to track
-     * @param screenTitle    Example: Bags
-     * @param screenCategory The screen's category
-     */
-    @SuppressWarnings("SimplifiableIfStatement")
-    public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle,
-                               @Nullable String screenCategory) {
-        String screenPath = ActivityHelper.getBreadcrumbs(activity);
-        this.setScreenVisit(screenPath, screenTitle, screenCategory);
-    }
-
-    /**
-     * Reports a visit to the provided {@code screen} with provided {@code hierarchy}.
-     *
-     * @param screenPath  Example: "/store/accessories/bags"
-     * @param screenTitle Example: Bags
-     */
-    @SuppressWarnings("SimplifiableIfStatement")
-    public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle) {
-        this.setScreenVisit(screenPath, screenTitle, null);
-    }
-
-    /**
-     * Reports a visit to the provided {@code screen} with provided {@code hierarchy}.
-     *
-     * @param screenPath     Example: "/store/accessories/bags"
-     * @param screenTitle    Example: Bags
-     * @param screenCategory The screen's category
-     */
-    @SuppressWarnings({"SimplifiableIfStatement", "ConstantConditions"})
-    public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle,
-                               @Nullable String screenCategory) {
-        if (OptiUtils.isEmptyOrWhitespace(screenPath)) {
-            OptiLogger.f97(screenPath == null ? "null" : screenPath);
-            return;
-        }
-        if (OptiUtils.isEmptyOrWhitespace(screenTitle)) {
-            OptiLogger.f98(screenTitle == null ? "null" : screenTitle);
-            return;
-        }
-
-        String loweredPath = screenPath.toLowerCase()
-                .trim();
-        String trimmedTitle = screenTitle.trim();
-        // First verify that the path is a valid URL, if not skip this report, if it is parse it
-        String encodedScreenPath = loweredPath;
-        String[] ignoredPrefixes = {"https://www.", "http://www.", "https://",
-                "http://"}; // Prefixes that are removed by Matomo and so shouldn't be hashed. Order matters.
-        for (String prefix : ignoredPrefixes) {
-            if (encodedScreenPath.startsWith(prefix)) {
-                encodedScreenPath = encodedScreenPath.substring(prefix.length());
-                break; // Found the best match, finish iterating
-            }
-        }
-
-        try {
-            // Because the path encoding is not the same as query encoding (in path space is %20 and in param is +) we use URI and not URLEncoder
-            encodedScreenPath =
-                    encodedScreenPath.startsWith("/") ? encodedScreenPath : String.format("/%s", encodedScreenPath);
-            URI uri = new URI("http", ApplicationHelper.getFullPackageName(context), encodedScreenPath, null, null);
-            encodedScreenPath = uri.toASCIIString()
-                    .substring("http://".length());
-        } catch (URISyntaxException e) {
-            OptiLogger.f99(loweredPath);
+    @SuppressWarnings("ConstantConditions")
+    public void reportScreenVisit(@NonNull String screenName, @Nullable String screenCategory) {
+        if (OptiUtils.isEmptyOrWhitespace(screenName)) {
+            OptiLogger.f97(screenName == null ? "null" : screenName);
             return;
         }
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(new SetPageVisitEvent(encodedScreenPath, trimmedTitle, screenCategory)));
+                .reportEvent(new EventContext(new SetPageVisitEvent(screenName.trim(), screenCategory)));
+    }
+
+
+    /**
+     * @deprecated Use the {@link Optimove#reportScreenVisit(String)} instead.
+     */
+    @Deprecated
+    public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle) {
+        this.reportScreenVisit(screenTitle, null);
     }
 
     /**
-     * @deprecated No need to call start test mode.
+     * @deprecated Use the {@link Optimove#reportScreenVisit(String,String)} instead.
+     */
+    @Deprecated
+    public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle,
+                               @Nullable String screenCategory) {
+        this.reportScreenVisit(screenTitle, screenCategory);
+    }
+
+    /**
+     * @deprecated Use the {@link Optimove#reportScreenVisit(String)} instead.
+     */
+    @Deprecated
+    public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle) {
+        this.reportScreenVisit(screenTitle, null);
+    }
+
+    /**
+     * @deprecated Use the {@link Optimove#reportScreenVisit(String,String)} instead.
+     */
+    @Deprecated
+    public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle,
+                               @Nullable String screenCategory) {
+        this.reportScreenVisit(screenTitle, screenCategory);
+    }
+
+    /**
+     * @deprecated No need to call startTestMode.
      */
     @Deprecated
     public void startTestMode(@Nullable SdkOperationListener operationListener) {

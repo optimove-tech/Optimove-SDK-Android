@@ -104,7 +104,7 @@ public class OptitrackTests {
         tenantId = configs.getTenantId();
 
         lifecycleObserver = new LifecycleObserver();
-        optitrackManager = new OptitrackManager(matomoAdapter, this.optitrackConfigs, userInfo, packageName,
+        optitrackManager = new OptitrackManager(matomoAdapter, this.optitrackConfigs, userInfo,
                 eventConfigsMap, lifecycleObserver,
                 context);
     }
@@ -216,11 +216,10 @@ public class OptitrackTests {
 
     @Test
     public void reportScreenVisitFuncAndEventShouldBeCalled() {
-        String screenPath = "some_very_very_long_screen_path";
         String screenTitle = "some_screen_title";
         String screenCategory = "some_screen_category";
 
-        SetPageVisitEvent setPageVisitEvent = new SetPageVisitEvent(screenPath, screenTitle, screenCategory);
+        SetPageVisitEvent setPageVisitEvent = new SetPageVisitEvent(screenTitle, screenCategory);
         ArgumentCaptor<List<CustomDimension>> customDimensionsArguments = ArgumentCaptor.forClass(List.class);
 
         optitrackManager.reportEvent(new OptimoveEventDecorator(setPageVisitEvent), eventConfigsMap.get(SetPageVisitEvent.EVENT_NAME));
