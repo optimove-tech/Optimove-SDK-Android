@@ -9,9 +9,6 @@ import com.google.gson.Gson;
 
 import java.io.UnsupportedEncodingException;
 
-/**
- Create a class which extend the Volley Request<T> class
- **/
 class CustomRequest<T> extends Request<T> {
 
     private Response.Listener<T> listener;
@@ -27,13 +24,6 @@ class CustomRequest<T> extends Request<T> {
         this.listener = listener;
         this.responseClass = responseClass;
     }
-    /**
-     This method needs to be implemented to parse the raw network response
-     and return an appropriate response type.This method will be called
-     from a worker thread. The response
-     will not be delivered if you return null.
-     @param NetworkResponse - Response payload as byte[],headers and status code
-     **/
     @Override
     protected Response<T> parseNetworkResponse(NetworkResponse response) {
         try {
