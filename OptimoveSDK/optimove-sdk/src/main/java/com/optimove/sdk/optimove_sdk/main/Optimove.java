@@ -32,10 +32,6 @@ import com.optimove.sdk.optimove_sdk.optipush.OptipushHandlerProvider;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.MatomoAdapter;
 
-import org.matomo.sdk.tools.ActivityHelper;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
