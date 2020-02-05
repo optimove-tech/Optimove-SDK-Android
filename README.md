@@ -1,6 +1,7 @@
 # Optimove-SDK-Android
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/optimove-tech/Optimove-SDK-Android?style=flat-square)](https://github.com/optimove-tech/Optimove-SDK-Android/releases/latest)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/optimove-tech/Optimove-SDK-Android/Android-CI?style=flat-square)
 ![GitHub](https://img.shields.io/github/license/optimove-tech/Optimove-SDK-Android?style=flat-square)
 
 # Integration Guide
