@@ -8,8 +8,7 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
-//import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
+import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushFcmTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
@@ -42,9 +41,9 @@ public class OptipushHandlerProvider {
         if (!requirementProvider.isGooglePlayServicesAvailable()) {
             return;
         }
-        OptimoveFirebaseInteractor optimoveFirebaseInteractor = new OptimoveFirebaseInteractor(optipushConfigs);
 
-        boolean succeeded = optimoveFirebaseInteractor.setup(optipushConfigs);
+
+        boolean succeeded = new OptimoveFirebaseInitializer(context).setup(optipushConfigs);
         if (!succeeded) {
             return;
         }

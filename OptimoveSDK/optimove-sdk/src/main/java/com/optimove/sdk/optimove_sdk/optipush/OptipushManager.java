@@ -14,8 +14,6 @@ import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar
 
 public final class OptipushManager extends OptipushHandler {
 
-//    @NonNull
-//    private OptimoveFirebaseInteractor firebaseInteractor;
     @NonNull
     private OptipushUserRegistrar optipushUserRegistrar;
     @NonNull
