@@ -2,7 +2,6 @@ package com.optimove.sdk.optimove_sdk.optipush_tests;
 
 import android.content.Context;
 
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
@@ -22,8 +21,6 @@ public class OptipushManagerTests {
     @Mock
     private OptipushUserRegistrar optipushUserRegistrar;
     @Mock
-    private RequirementProvider requirementProvider;
-    @Mock
     private Context context;
     @Mock
     private RegistrationDao.FlagsEditor flagsEditor;
@@ -42,11 +39,9 @@ public class OptipushManagerTests {
 
 
     @Test
-    public void addRegisiteredUserOnDeviceShouldRegisterNewUser() {
-        String visitorId = "some_visitor_id";
-        String userId = "some_user_id";
-        optipushManager.addRegisteredUserOnDevice(visitorId, userId);
-        verify(optipushUserRegistrar).userIdChanged(visitorId, userId);
+    public void userIdChangedShouldBeForwardedToUserRegistrar() {
+        optipushManager.userIdChanged();
+        verify(optipushUserRegistrar).userIdChanged();
     }
 
     @Test

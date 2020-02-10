@@ -1,5 +1,7 @@
 package com.optimove.sdk.optimove_sdk.optipush_tests.registration;
 
+import android.app.Activity;
+
 import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
@@ -9,6 +11,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
+import com.optimove.sdk.optimove_sdk.optipush.registration.requests.Metadata;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,26 +59,26 @@ public class OptipushUserRegistrarTests {
     @Mock
     private UserInfo userInfo;
     @Mock
-    private LifecycleObserver lifecycleObserver;
-    @Mock
     private InstallationIDProvider installationIDProvider;
+    @Mock
+    private Metadata metadata;
+
+    private LifecycleObserver lifecycleObserver;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        lifecycleObserver = new LifecycleObserver();
 
         //registration
         when(registrationDao.editFlags()).thenReturn(flagsEditor);
-        when(flagsEditor.markSetUserAsFailed()).thenReturn(flagsEditor);
-        when(flagsEditor.markAddUserAliasesAsFailed(anySet())).thenReturn(flagsEditor);
-        when(flagsEditor.unmarkSetUserAsFailed()).thenReturn(flagsEditor);
-        when(flagsEditor.unmarkAddUserAliaseAsFailed()).thenReturn(flagsEditor);
-        when(flagsEditor.setDeviceId(anyString())).thenReturn(flagsEditor);
+        when(flagsEditor.markSetInstallationAsFailed()).thenReturn(flagsEditor);
+        when(flagsEditor.unmarkSetInstallationAsFailed()).thenReturn(flagsEditor);
         when(flagsEditor.updateLastOptInStatus(anyBoolean())).thenReturn(flagsEditor);
+        when(flagsEditor.unmarkAddUserAliaseAsFailed()).thenReturn(flagsEditor);
 
         //http
         when(httpClient.postJsonWithoutJsonResponse(any(), any())).thenReturn(requestBuilder);
-        when(httpClient.putJsonWithoutJsonResponse(any(), any())).thenReturn(requestBuilder);
         when(requestBuilder.errorListener(any())).thenReturn(requestBuilder);
         when(requestBuilder.successListener(any())).thenReturn(requestBuilder);
         when(requestBuilder.destination(any(), any())).thenReturn(requestBuilder);
@@ -84,7 +87,7 @@ public class OptipushUserRegistrarTests {
 
         //failed ops
         when(registrationDao.isTokenRefreshMarkedAsFailed()).thenReturn(false);
-        when(registrationDao.isSetUserMarkedAsFailed()).thenReturn(false);
+        when(registrationDao.isSetInstallationMarkedAsFailed()).thenReturn(false);
         when(registrationDao.wasTheUserOptIn()).thenReturn(true);
         when(registrationDao.getFailedUserAliases()).thenReturn(null);
 
@@ -103,7 +106,7 @@ public class OptipushUserRegistrarTests {
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
                 packageName, tenantId, requirementProvider, registrationDao, userInfo,installationIDProvider,
-                lifecycleObserver);
+                lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
                 (assertArg(arg -> Assert.assertTrue(jsonOptinMatchOptin(arg, false)))));
@@ -116,7 +119,7 @@ public class OptipushUserRegistrarTests {
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
                 packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
-                lifecycleObserver);
+                lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
                 (assertArg(arg -> Assert.assertTrue(jsonOptinMatchOptin(arg, true)))));
@@ -130,7 +133,7 @@ public class OptipushUserRegistrarTests {
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
                 packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
-                lifecycleObserver);
+                lifecycleObserver, metadata);
 
         verifyZeroInteractions(httpClient);
     }
@@ -146,11 +149,11 @@ public class OptipushUserRegistrarTests {
 
     @Test
     public void optipushUserRegistrarCreateShouldUpdateTokenIfPreviousFailed() {
-        when(registrationDao.isSetUserMarkedAsFailed()).thenReturn(true);
+        when(registrationDao.isSetInstallationMarkedAsFailed()).thenReturn(true);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
                 packageName, tenantId, requirementProvider, registrationDao, userInfo,
-                installationIDProvider, lifecycleObserver);
+                installationIDProvider, lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
                 (assertArg(arg -> Assert.assertTrue(jsonTokenMatchToken(arg, token)))));
@@ -166,80 +169,63 @@ public class OptipushUserRegistrarTests {
     }
 
     @Test
-    public void optipushUserRegistrarCreateShouldAddPreviousFailedAliases() {
+    public void optipushUserRegistrarCreateShouldSetInstallationIfThereAreOldFailedAliases() {
         String userAlias = "some_user_alias";
         Set<String> userAliases = new HashSet<>();
         userAliases.add(userAlias);
         when(registrationDao.getFailedUserAliases()).thenReturn(userAliases);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
 
-        verify(httpClient).putJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
-                (assertArg(arg -> Assert.assertTrue(jsonAliasesHasAlias(arg, userAlias)))));
+        verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
+                (assertArg(arg -> Assert.assertTrue(jsonTokenMatchToken(arg, token)))));
     }
 
-    private boolean jsonAliasesHasAlias(JSONObject jsonObject, String alias) {
+
+
+    @Test
+    public void userTokenChangedShouldSendTheNewToken() {
+
+        String newToken = "new_token";
+        OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
+        when(registrationDao.getLastToken()).thenReturn(newToken);
+
+        optipushUserRegistrar.userTokenChanged();
+
+        verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
+                (assertArg(arg -> Assert.assertTrue(jsonTokenMatchToken(arg, newToken)))));
+    }
+
+    @Test
+    public void userIdChangedShouldSendTheCurrentUserId() {
+        String userId = "some_user_id";
+        when(userInfo.getUserId()).thenReturn(userId);
+
+        OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
+
+        optipushUserRegistrar.userIdChanged();
+
+        verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
+                (assertArg(arg -> Assert.assertTrue(jsonSetInstallationHasUserId(arg, userId)))));
+    }
+
+    private boolean jsonSetInstallationHasUserId(JSONObject jsonObject, String userId) {
         try {
-            JSONArray newAliasesJson = jsonObject.getJSONArray("new_aliases");
-            for (int i = 0; i < newAliasesJson.length(); i++) {
-                if (newAliasesJson.get(i)
-                        .equals(alias)) {
-                    return true;
-                }
-            }
-            return false;
+            return jsonObject.get("customer_id")
+                    .equals(userId);
         } catch (JSONException e) {
             return false;
         }
     }
 
     @Test
-    public void userTokenChangedShouldSendTheNewToken() {
-
-        OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
-
-        optipushUserRegistrar.userTokenChanged();
-
-        verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
-                (assertArg(arg -> Assert.assertTrue(jsonTokenMatchToken(arg, token)))));
-    }
-
-    @Test
-    public void userIdChangedShouldSendTheCurrentUserIdIfNoFailedAliases() {
-        String visitorId = "some_visitor_id";
-        String userId = "some_user_id";
-
-        OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
-
-        optipushUserRegistrar.userIdChanged(visitorId, userId);
-
-        verify(httpClient).putJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
-                (assertArg(arg -> Assert.assertTrue(jsonAliasesHasAlias(arg, userId)))));
-    }
-
-    @Test
-    public void userIdChangedShouldSendThePreviousFailedAliasIfThereIsOne() {
-        String visitorId = "some_visitor_id";
-        String userId = "some_user_id";
-        String userAlias = "some_user_alias";
-        Set<String> userAliases = new HashSet<>();
-        userAliases.add(userAlias);
-
-        OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
-
-        when(registrationDao.getFailedUserAliases()).thenReturn(userAliases);
-        optipushUserRegistrar.userIdChanged(visitorId, userId);
-
-        verify(httpClient).putJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
-                (assertArg(arg -> Assert.assertTrue(jsonAliasesHasAlias(arg, userAlias)))));
-    }
-
-    @Test
-    public void userTokenChangedShouldSetSetUserFailedIfHttpError() {
+    public void userTokenChangedShouldSetSetInstallationFailedIfHttpError() {
         doAnswer(invocation -> {
             Response.ErrorListener errorListener =
                     (Response.ErrorListener) invocation.getArguments()[0];
@@ -249,20 +235,21 @@ public class OptipushUserRegistrarTests {
                 .errorListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
         InOrder inOrder = Mockito.inOrder(flagsEditor);
 
         inOrder.verify(flagsEditor)
-                .markSetUserAsFailed();
+                .markSetInstallationAsFailed();
         inOrder.verify(flagsEditor)
                 .save();
 
     }
 
     @Test
-    public void userTokenChangedShouldUnmarkTokenUpdateAsFailedIfHttpSuccess() {
+    public void userTokenChangedShouldUnmarkInstallationFailedIfHttpSuccess() {
         doAnswer(invocation -> {
             Response.Listener<JSONObject> successListener =
                     (Response.Listener<JSONObject>) invocation.getArguments()[0];
@@ -272,21 +259,20 @@ public class OptipushUserRegistrarTests {
                 .successListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
         InOrder inOrder = Mockito.inOrder(flagsEditor);
 
         inOrder.verify(flagsEditor)
-                .unmarkSetUserAsFailed();
+                .unmarkSetInstallationAsFailed();
         inOrder.verify(flagsEditor)
                 .save();
 
     }
     @Test
     public void userChangedShouldSetFailedAliasIfHttpError() {
-        String visitorId = "some_visitor_id";
-        String userId = "some_user_id";
         doAnswer(invocation -> {
             Response.ErrorListener errorListener =
                     (Response.ErrorListener) invocation.getArguments()[0];
@@ -296,21 +282,20 @@ public class OptipushUserRegistrarTests {
                 .errorListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
-        optipushUserRegistrar.userIdChanged(visitorId, userId);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
+        optipushUserRegistrar.userTokenChanged();
 
         InOrder inOrder = Mockito.inOrder(flagsEditor);
 
         inOrder.verify(flagsEditor)
-                .markAddUserAliasesAsFailed(assertArg(arg -> Assert.assertTrue(arg.contains(userId))));
+                .markSetInstallationAsFailed();
         inOrder.verify(flagsEditor)
                 .save();
 
     }
     @Test
     public void userChangedShouldRemoveFailedAliasIfHttpSuccess() {
-        String visitorId = "some_visitor_id";
-        String userId = "some_user_id";
         doAnswer(invocation -> {
             Response.Listener<JSONObject> successListener =
                     (Response.Listener<JSONObject>) invocation.getArguments()[0];
@@ -320,17 +305,33 @@ public class OptipushUserRegistrarTests {
                 .successListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, lifecycleObserver);
-        optipushUserRegistrar.userIdChanged(visitorId, userId);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
+        optipushUserRegistrar.userIdChanged();
 
         InOrder inOrder = Mockito.inOrder(flagsEditor);
 
         inOrder.verify(flagsEditor)
-                .unmarkAddUserAliaseAsFailed();
+                .unmarkSetInstallationAsFailed();
         inOrder.verify(flagsEditor)
                 .save();
 
     }
+
+    @Test
+    public void activityStartedOptinChangedAndTokenExistsShouldTriggerInstallationRequest(){
+        OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                lifecycleObserver, metadata);
+
+        when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
+
+        lifecycleObserver.onActivityStarted(Mockito.mock(Activity.class));
+
+        verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
+                (assertArg(arg -> Assert.assertTrue(jsonOptinMatchOptin(arg, false)))));
+    }
+
 }
 
 

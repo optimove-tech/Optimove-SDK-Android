@@ -37,26 +37,22 @@ public class OptipushBufferTests {
         MockitoAnnotations.initMocks(this);
         optipushBuffer = new OptipushBuffer(registrationDao);
         when(registrationDao.editFlags()).thenReturn(flagsEditor);
-        when(flagsEditor.markSetUserAsFailed()).thenReturn(flagsEditor);
-        when(flagsEditor.markAddUserAliasesAsFailed(anySet())).thenReturn(flagsEditor);
+        when(flagsEditor.markSetInstallationAsFailed()).thenReturn(flagsEditor);
     }
 
     @Test
-    public void addRegisteredUserOnDeviceWillBeCalledWhenNextSet() {
-        String visitorId = "some_visitor_id";
-        String userId = "some_user_id";
-        optipushBuffer.addRegisteredUserOnDevice(visitorId,userId);
-        optipushBuffer.setNext(nextOptipushHandler);
+    public void markSetInstallationAsFailedIfUserIdChangedAndNoNext() {
+        optipushBuffer.userIdChanged();
         InOrder inOrder = Mockito.inOrder(flagsEditor);
-        inOrder.verify(flagsEditor).markAddUserAliasesAsFailed((assertArg(arg -> Assert.assertTrue(arg.contains(userId)))));
+        inOrder.verify(flagsEditor).markSetInstallationAsFailed();
         inOrder.verify(flagsEditor).save();
     }
 
     @Test
-    public void setUserWillBeMarkedAsFailedIfNoNext() {
+    public void markSetInstallationAsFailedIfTokenWasChangedAndNoNext() {
         optipushBuffer.tokenWasChanged();
         InOrder inOrder = Mockito.inOrder(flagsEditor);
-        inOrder.verify(flagsEditor).markSetUserAsFailed();
+        inOrder.verify(flagsEditor).markSetInstallationAsFailed();
         inOrder.verify(flagsEditor).save();
     }
     @Test

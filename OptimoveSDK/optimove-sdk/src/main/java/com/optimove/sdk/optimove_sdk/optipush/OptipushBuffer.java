@@ -3,8 +3,6 @@ package com.optimove.sdk.optimove_sdk.optipush;
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 
-import java.util.HashSet;
-
 public class OptipushBuffer extends OptipushHandler {
 
 
@@ -41,14 +39,12 @@ public class OptipushBuffer extends OptipushHandler {
     }
 
     @Override
-    public void addRegisteredUserOnDevice(String visitorId, String userId) {
+    public void userIdChanged() {
         if (next != null) {
-            next.addRegisteredUserOnDevice(visitorId, userId);
+            next.userIdChanged();
         } else {
             registrationDao.editFlags()
-                    .markAddUserAliasesAsFailed(new HashSet<String>() {{
-                        add(userId);
-                    }})
+                    .markSetInstallationAsFailed()
                     .save();
         }
     }
@@ -59,7 +55,7 @@ public class OptipushBuffer extends OptipushHandler {
             next.tokenWasChanged();
         } else {
             registrationDao.editFlags()
-                    .markSetUserAsFailed()
+                    .markSetInstallationAsFailed()
                     .save();
         }
     }

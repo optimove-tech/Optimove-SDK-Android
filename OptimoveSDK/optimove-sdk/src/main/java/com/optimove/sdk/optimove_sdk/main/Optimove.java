@@ -362,7 +362,7 @@ final public class Optimove {
         eventHandlerProvider.getEventHandler()
                 .reportEvent(new EventContext(setUserIdEvent));
         optipushHandlerProvider.getOptipushHandler()
-                .addRegisteredUserOnDevice(userInfo.getInitialVisitorId(), userInfo.getUserId());
+                .userIdChanged();
     }
 
     /**

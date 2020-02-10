@@ -26,13 +26,15 @@ public final class OptipushManager extends OptipushHandler {
         this.context = context;
     }
 
+    @Override
     public void tokenWasChanged(){
         optipushUserRegistrar.userTokenChanged();
     }
 
 
-    public void addRegisteredUserOnDevice(String initialVisitorId, String userId) {
-        optipushUserRegistrar.userIdChanged(initialVisitorId, userId);
+    @Override
+    public void userIdChanged() {
+        optipushUserRegistrar.userIdChanged();
     }
 
 

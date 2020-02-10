@@ -52,7 +52,7 @@ public interface OptipushConstants {
     String LAST_NOTIFICATION_PERMISSION_STATUS = "lastNotificationPermissionStatus";
     String TOKEN_REFRESH_FAILED_KEY = "last_refresh_failed_key";
     //the key value remains the same to maintain users that have this value from previous versions
-    String SET_USER_FAILED_KEY = "tokenUpdateFailedKey";
+    String SET_INSTALLATION_FAILED_KEY = "tokenUpdateFailedKey";
     String FAILED_USER_IDS_KEY ="failedUserIdsKey";
     String DEVICE_ID_KEY = "deviceIdKey";
 

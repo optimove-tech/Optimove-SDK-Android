@@ -9,12 +9,11 @@ import android.support.annotation.Nullable;
 import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.DEVICE_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.FAILED_USER_IDS_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.LAST_NOTIFICATION_PERMISSION_STATUS;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.LAST_TOKEN_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
-import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.SET_USER_FAILED_KEY;
+import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.SET_INSTALLATION_FAILED_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.TOKEN_REFRESH_FAILED_KEY;
 
 /**
@@ -36,6 +35,7 @@ public final class RegistrationDao {
   public String getLastToken() {
     return registrationPreferences.getString(LAST_TOKEN_KEY, null);
   }
+  //So that there wont be any user ids missed when there is a version upgrade
   @Nullable
   public Set<String> getFailedUserAliases() {
     return registrationPreferences.getStringSet(FAILED_USER_IDS_KEY, null);
@@ -44,12 +44,8 @@ public final class RegistrationDao {
   public boolean isTokenRefreshMarkedAsFailed() {
     return registrationPreferences.getBoolean(TOKEN_REFRESH_FAILED_KEY, false);
   }
-  public boolean isSetUserMarkedAsFailed() {
-    return registrationPreferences.getBoolean(SET_USER_FAILED_KEY, false);
-  }
-  @Nullable
-  public String getDeviceId() {
-    return registrationPreferences.getString(DEVICE_ID_KEY, null);
+  public boolean isSetInstallationMarkedAsFailed() {
+    return registrationPreferences.getBoolean(SET_INSTALLATION_FAILED_KEY, false);
   }
 
   public FlagsEditor editFlags() {
@@ -74,11 +70,7 @@ public final class RegistrationDao {
       editor.putBoolean(LAST_NOTIFICATION_PERMISSION_STATUS, optIn);
       return this;
     }
-
-    public FlagsEditor markAddUserAliasesAsFailed(@NonNull  Set<String> failedUserIds) {
-      editor.putStringSet(FAILED_USER_IDS_KEY, failedUserIds);
-      return this;
-    }
+    //So that there wont be any user ids missed when there is a version upgrade
     public FlagsEditor unmarkAddUserAliaseAsFailed() {
       editor.remove(FAILED_USER_IDS_KEY);
       return this;
@@ -92,17 +84,13 @@ public final class RegistrationDao {
       editor.remove(TOKEN_REFRESH_FAILED_KEY);
       return this;
     }
-    public FlagsEditor setDeviceId(String deviceId) {
-      editor.putString(DEVICE_ID_KEY, deviceId);
-      return this;
-    }
-    public FlagsEditor markSetUserAsFailed() {
-      editor.putBoolean(SET_USER_FAILED_KEY, true);
+    public FlagsEditor markSetInstallationAsFailed() {
+      editor.putBoolean(SET_INSTALLATION_FAILED_KEY, true);
       return this;
     }
 
-    public FlagsEditor unmarkSetUserAsFailed() {
-      editor.remove(SET_USER_FAILED_KEY);
+    public FlagsEditor unmarkSetInstallationAsFailed() {
+      editor.remove(SET_INSTALLATION_FAILED_KEY);
       return this;
     }
 

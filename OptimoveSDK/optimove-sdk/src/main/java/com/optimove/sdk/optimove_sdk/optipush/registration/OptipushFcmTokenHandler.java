@@ -61,7 +61,6 @@ public class OptipushFcmTokenHandler {
               lastToken = registrationDao.getLastToken();
               Context context = Optimove.getInstance().getApplicationContext();
               boolean clientHasDefaultFirebaseApp = FirebaseApp.getApps(context).size() > 1;
-              //OptimoveFirebaseInteractor.NUMBER_OF_OPTIMOVE_FIREBASE_APPS;
               if (clientHasDefaultFirebaseApp) {
                 fetchNewSecondaryToken();
               } else {

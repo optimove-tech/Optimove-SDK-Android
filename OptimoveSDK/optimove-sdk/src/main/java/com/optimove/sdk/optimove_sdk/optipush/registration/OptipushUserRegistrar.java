@@ -8,14 +8,11 @@ import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.optipush.registration.requests.AddAliasRequest;
-import com.optimove.sdk.optimove_sdk.optipush.registration.requests.SetUserRequest;
+import com.optimove.sdk.optimove_sdk.optipush.registration.requests.InstallationRequest;
+import com.optimove.sdk.optimove_sdk.optipush.registration.requests.Metadata;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted {
 
@@ -27,11 +24,13 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     private RegistrationDao registrationDao;
     private UserInfo userInfo;
     private InstallationIDProvider installationIDProvider;
+    private Metadata metadata;
 
     private OptipushUserRegistrar(String registrationEndPoint,
                                   HttpClient httpClient, String packageName, int tenantId,
                                   RequirementProvider requirementProvider,
-                                  RegistrationDao registrationDao, UserInfo userInfo, InstallationIDProvider installationIDProvider) {
+                                  RegistrationDao registrationDao, UserInfo userInfo,
+                                  InstallationIDProvider installationIDProvider, Metadata metadata) {
         this.registrationEndPoint = registrationEndPoint;
         this.httpClient = httpClient;
         this.packageName = packageName;
@@ -40,6 +39,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
         this.registrationDao = registrationDao;
         this.userInfo = userInfo;
         this.installationIDProvider = installationIDProvider;
+        this.metadata = metadata;
     }
 
     public static OptipushUserRegistrar create(String registrationEndPoint,
@@ -47,126 +47,91 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                                                RequirementProvider requirementProvider,
                                                RegistrationDao registrationDao, UserInfo userInfo,
                                                InstallationIDProvider installationIDProvider,
-                                               LifecycleObserver lifecycleObserver) {
+                                               LifecycleObserver lifecycleObserver, Metadata metadata) {
         OptipushUserRegistrar optipushUserRegistrar = new OptipushUserRegistrar(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider);
-        optipushUserRegistrar.synchronizeRegistration();
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, metadata);
+        optipushUserRegistrar.registerIfNeeded();
         lifecycleObserver.addActivityStartedListener(optipushUserRegistrar);
 
         return optipushUserRegistrar;
     }
 
-    @Override
-    public void activityStarted(){
-        optInOutUser();
-    }
-    private void synchronizeRegistration() {
-        if (registrationDao.isSetUserMarkedAsFailed()) {
-            dispatchSetUserRequest(registrationDao.getLastToken());
-        } else {
-            optInOutUser();
-        }
-        addAllPreviousFailedUserAliases();
-    }
-
-    private void optInOutUser() {
-        boolean userOptIn = requirementProvider.notificaionsAreEnabled();
-        boolean wasTheUserOptIn = registrationDao.wasTheUserOptIn();
-        String lastToken = registrationDao.getLastToken();
-        if (lastToken != null && wasTheUserOptIn != userOptIn) {
-            dispatchSetUserRequest(lastToken);
-        }
-    }
-
-    private void addAllPreviousFailedUserAliases() {
-        Set<String> failedUserAliases = registrationDao.getFailedUserAliases();
-        if (failedUserAliases != null) {
-            dispatchAddUserAliases(userInfo.getInitialVisitorId(), failedUserAliases);
-        }
-    }
-
-    public void userIdChanged(String initialVisitorId, String userId) {
-        Set<String> failedUserAliases = registrationDao.getFailedUserAliases();
-        if (failedUserAliases != null) {
-            //make a copy so that shared prefs wont be affected directly
-            Set<String> failedUserAliasesCopy = new HashSet<>(failedUserAliases);
-            failedUserAliasesCopy.add(userId);
-            dispatchAddUserAliases(initialVisitorId, failedUserAliasesCopy);
-        } else {
-            dispatchAddUserAliases(initialVisitorId, new HashSet<String>() {{
-                add(userId);
-            }});
-        }
-    }
-
     public void userTokenChanged() {
-        dispatchSetUserRequest(registrationDao.getLastToken());
+        if (registrationDao.getLastToken() != null) {
+            dispatchSetInstallation();
+        } else {
+            OptiLoggerStreamsContainer.error("User token changed but doesn't exist in storage");
+        }
     }
 
-    private void dispatchSetUserRequest(String token) {
-        SetUserRequest setUserRequest =
-                SetUserRequest.builder()
-                        .withOptIn(requirementProvider.notificaionsAreEnabled())
-                        .withDeviceId(installationIDProvider.getInstallationID())
+    public void userIdChanged() {
+        if (registrationDao.getLastToken() != null) {
+            dispatchSetInstallation();
+        }
+    }
+
+    @Override
+    public void activityStarted() {
+        if (checkIfOptInOutWasChanged() && registrationDao.getLastToken() != null) {
+            dispatchSetInstallation();
+        }
+    }
+
+    private void registerIfNeeded() {
+        if ((registrationDao.isSetInstallationMarkedAsFailed() || checkIfOptInOutWasChanged() || (registrationDao.getFailedUserAliases() != null))
+                && registrationDao.getLastToken() != null) {
+            dispatchSetInstallation();
+        }
+    }
+
+    private boolean checkIfOptInOutWasChanged() {
+        boolean currentUserOptIn = requirementProvider.notificaionsAreEnabled();
+        boolean previousUserOptIn = registrationDao.wasTheUserOptIn();
+        return currentUserOptIn != previousUserOptIn;
+    }
+
+    private void dispatchSetInstallation() {
+        InstallationRequest installationRequest =
+                InstallationRequest.builder()
+                        .withInstallationId(installationIDProvider.getInstallationID())
+                        .withVisitorId(userInfo.getInitialVisitorId())
+                        .withCustomerId(userInfo.getUserId())
+                        .withDeviceToken(registrationDao.getLastToken())
+                        .withPushProvider("fcm")
                         .withPackageName(packageName)
                         .withOs("android")
-                        .withDeviceToken(token)
+                        .withOptIn(requirementProvider.notificaionsAreEnabled())
+                        .withIsDev(false)
+                        .withMetadata(metadata)
                         .build();
         try {
-            JSONObject setUserRequestJson = new JSONObject(new Gson().toJson(setUserRequest));
-            OptiLoggerStreamsContainer.debug("Setting user with data: %s", setUserRequestJson.toString());
-            httpClient.postJsonWithoutJsonResponse(registrationEndPoint, setUserRequestJson)
-                    .errorListener(this::setUserError)
-                    .successListener(this::setUserSuccess)
-                    .destination("%s/%s/%s/%s", "tenants",tenantId,"users",
-                            userInfo.getInitialVisitorId())
+            JSONObject installationRequestJson = new JSONObject(new Gson().toJson(installationRequest));
+            OptiLoggerStreamsContainer.debug("Sending installation info with data: %s", installationRequestJson.toString());
+            httpClient.postJsonWithoutJsonResponse(registrationEndPoint, installationRequestJson)
+                    .errorListener(this::setInstallationFailed)
+                    .successListener(this::setInstallationSucceeded)
+                    .destination("%s/%s/%s/%s", "v3", "tenants", tenantId,
+                            "installation")
                     .send();
         } catch (JSONException e) {
-            setUserError(e);
+            setInstallationFailed(e);
         }
 
     }
 
-    private void dispatchAddUserAliases(String initialiVisitorId, Set<String> userAliases) {
-        AddAliasRequest addAliasRequest = new AddAliasRequest(userAliases);
-        try {
-            JSONObject addAliasRequestJson = new JSONObject(new Gson().toJson(addAliasRequest));
-            OptiLoggerStreamsContainer.debug("Adding user alias with data: %s", addAliasRequestJson.toString());
-
-            httpClient.putJsonWithoutJsonResponse(registrationEndPoint, addAliasRequestJson)
-                    .errorListener(error -> addUserAliasError(error, userAliases))
-                    .successListener(this::addUserAliasSuccess)
-                    .destination("%s/%s/%s/%s","tenants",tenantId, "users", initialiVisitorId)
-                    .send();
-        } catch (JSONException e) {
-            addUserAliasError(e, userAliases);
-        }
-    }
-
-    private void setUserSuccess(JSONObject jsonObject) {
+    private void setInstallationSucceeded(JSONObject jsonObject) {
         registrationDao.editFlags()
-                .unmarkSetUserAsFailed()
+                .unmarkSetInstallationAsFailed()
                 .updateLastOptInStatus(requirementProvider.notificaionsAreEnabled())
+                .unmarkAddUserAliaseAsFailed() //for previous versions fails - the rare case when there are fails
+                // before an app upgrade
                 .save();
     }
 
-    private void setUserError(Exception error) {
-        OptiLoggerStreamsContainer.debug("Set user failed - %s", error.getMessage());
+    private void setInstallationFailed(Exception error) {
+        OptiLoggerStreamsContainer.debug("Set installation failed - %s", error.getMessage());
         registrationDao.editFlags()
-                .markSetUserAsFailed()
-                .save();
-    }
-
-    private void addUserAliasSuccess(JSONObject jsonObject) {
-        registrationDao.editFlags()
-                .unmarkAddUserAliaseAsFailed()
-                .save();
-    }
-
-    private void addUserAliasError(Exception error, Set<String> userAliases) {
-        OptiLoggerStreamsContainer.debug("Add user alias failed - %s", error.getMessage());
-        registrationDao.editFlags()
-                .markAddUserAliasesAsFailed(userAliases)
+                .markSetInstallationAsFailed()
                 .save();
     }
 }

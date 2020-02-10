@@ -1,9 +1,11 @@
 package com.optimove.sdk.optimove_sdk.optipush;
 
 import android.content.Context;
+import android.os.Build;
 
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
@@ -12,6 +14,7 @@ import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializ
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushFcmTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
+import com.optimove.sdk.optimove_sdk.optipush.registration.requests.Metadata;
 
 public class OptipushHandlerProvider {
 
@@ -42,23 +45,26 @@ public class OptipushHandlerProvider {
             return;
         }
 
-
         boolean succeeded = new OptimoveFirebaseInitializer(context).setup(optipushConfigs);
         if (!succeeded) {
             return;
         }
-        new OptipushFcmTokenHandler().completeLastTokenRefreshIfFailed();
+
+        Metadata installationMetadata =
+                new Metadata(SdkMetadataEvent.NATIVE_SDK_VERSION,null,  Build.VERSION.RELEASE,
+                        Build.MODEL);
 
         OptipushUserRegistrar optipushUserRegistrar =
                 OptipushUserRegistrar.create(optipushConfigs.getRegistrationServiceEndpoint(), httpClient,
                         context.getPackageName(), tenantId, requirementProvider, registrationDao, userInfo,
                         installationIDProvider,
-                        lifecycleObserver);
+                        lifecycleObserver, installationMetadata);
 
         OptipushManager optipushManager =
                 new OptipushManager(optipushUserRegistrar, context);
 
         optipushBuffer.setNext(optipushManager);
+        new OptipushFcmTokenHandler().completeLastTokenRefreshIfFailed();
     }
 
     public OptipushHandler getOptipushHandler() {
