@@ -52,7 +52,7 @@ public interface OptitrackConstants {
   int LAST_REPORTED_OPT_IN = 1;
   int LAST_REPORTED_OPT_OUT = 2;
 
-  // Stores ONLY notification events - nothing more (!)
-  String NOTIFICATION_EVENTS_SP_NAME = "com.optimove.sdk.notification_events_queue";
+
+  int OPTITRACK_BUFFER_SIZE = 100;
 
 }

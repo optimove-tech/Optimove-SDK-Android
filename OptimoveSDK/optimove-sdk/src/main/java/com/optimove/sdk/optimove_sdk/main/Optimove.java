@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.CONFIG_NAME;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TENANT_ID;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TOKEN;
+import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_BUFFER_SIZE;
+import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_SP_NAME;
 
 /**
  * The main access point for the {@code Optimove SDK}.
@@ -84,7 +86,7 @@ final public class Optimove {
                 .optitrackAdapter(new MatomoAdapter())
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance(context))
-                .maximumBufferSize(100)
+                .maximumBufferSize(OPTITRACK_BUFFER_SIZE)
                 .context(context)
                 .build();
         this.lifecycleObserver = new LifecycleObserver();
@@ -95,7 +97,8 @@ final public class Optimove {
                 requirementProvider, HttpClient.getInstance(context), lifecycleObserver, context,
                 installationIDProvider);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                ApplicationHelper.getFullPackageName(context), installationIDProvider);
+                ApplicationHelper.getFullPackageName(context), installationIDProvider,
+                context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), requirementProvider);
         this.configSet = new AtomicBoolean(false);
     }
 
@@ -207,7 +210,7 @@ final public class Optimove {
                 EventGenerator.builder()
                         .withUserInfo(userInfo)
                         .withPackageName(ApplicationHelper.getFullPackageName(context))
-                        .withEncryptedDeviceId(installationIDProvider.getInstallationID())
+                        .withDeviceId(installationIDProvider.getInstallationID())
                         .withRequirementProvider(requirementProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)

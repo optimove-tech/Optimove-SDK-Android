@@ -30,14 +30,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class EventGenerator {
 
-    private int optInOutExecutionTimeout = (int) TimeUnit.SECONDS.toMillis(5);
-
     private UserInfo userInfo;
     private String packageName;
     private String encryptedDeviceId;
     private RequirementProvider requirementProvider;
     private TenantInfo tenantInfo;
-    private SharedPreferences optitrackPreferences;
     private EventHandlerProvider eventHandlerProvider;
     private Context context;
 
@@ -50,7 +47,6 @@ public class EventGenerator {
         tenantInfo = builder.tenantInfo;
         eventHandlerProvider = builder.eventHandlerProvider;
         context = builder.context;
-        optitrackPreferences = builder.context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE);
     }
 
 
@@ -60,7 +56,6 @@ public class EventGenerator {
             reportAdId(advertisingIdReportEnabled);
             reportMetadataEvent();
             reportUserAgent();
-            reportOptInOrOut();
         }).start();
     }
 
@@ -93,33 +88,6 @@ public class EventGenerator {
                         new BuildInfo()).getUserAgent())));
     }
 
-    private void reportOptInOrOut() {
-        int lastReportedOpt = optitrackPreferences.getInt(LAST_OPT_REPORTED_KEY, -1);
-        if (lastReportedOpt == -1) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(new EventContext(new OptipushOptIn(packageName,
-                            encryptedDeviceId, OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
-            optitrackPreferences.edit()
-                    .putInt(LAST_OPT_REPORTED_KEY, LAST_REPORTED_OPT_IN)
-                    .apply();
-        } else {
-            boolean wasOptIn = lastReportedOpt == LAST_REPORTED_OPT_IN;
-
-            boolean currentlyOptIn = requirementProvider.notificaionsAreEnabled();
-            if (wasOptIn == currentlyOptIn) {
-                return;
-            }
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(currentlyOptIn ?
-                            new EventContext(new OptipushOptIn(packageName, encryptedDeviceId,
-                                    OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout) :
-                            new EventContext(new OptipushOptOut(packageName,
-                                    encryptedDeviceId, OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
-            optitrackPreferences.edit()
-                    .putInt(LAST_OPT_REPORTED_KEY, currentlyOptIn ? LAST_REPORTED_OPT_IN : LAST_REPORTED_OPT_OUT)
-                    .apply();
-        }
-    }
     public static IUserInfo builder() {
         return new Builder();
     }
@@ -145,12 +113,12 @@ public class EventGenerator {
         ITenantInfo withRequirementProvider(RequirementProvider val);
     }
 
-    public interface IEncryptedDeviceId {
-        IRequirementProvider withEncryptedDeviceId(String val);
+    public interface IDeviceId {
+        IRequirementProvider withDeviceId(String val);
     }
 
     public interface IPackageName {
-        IEncryptedDeviceId withPackageName(String val);
+        IDeviceId withPackageName(String val);
     }
 
     public interface IUserInfo {
@@ -158,7 +126,7 @@ public class EventGenerator {
     }
 
     public static final class Builder implements IContext, IEventHandlerProvider,
-            ITenantInfo, IRequirementProvider, IEncryptedDeviceId, IPackageName, IUserInfo, IBuild {
+            ITenantInfo, IRequirementProvider, IDeviceId, IPackageName, IUserInfo, IBuild {
         private Context context;
         private EventHandlerProvider eventHandlerProvider;
         private TenantInfo tenantInfo;
@@ -195,13 +163,13 @@ public class EventGenerator {
         }
 
         @Override
-        public IRequirementProvider withEncryptedDeviceId(String val) {
+        public IRequirementProvider withDeviceId(String val) {
             encryptedDeviceId = val;
             return this;
         }
 
         @Override
-        public IEncryptedDeviceId withPackageName(String val) {
+        public IDeviceId withPackageName(String val) {
             packageName = val;
             return this;
         }

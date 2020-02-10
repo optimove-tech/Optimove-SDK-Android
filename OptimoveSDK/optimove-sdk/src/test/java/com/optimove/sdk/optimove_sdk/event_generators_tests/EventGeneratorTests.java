@@ -8,8 +8,6 @@ import com.optimove.sdk.optimove_sdk.main.TenantInfo;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
@@ -18,21 +16,17 @@ import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_IN;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_OUT;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_SP_NAME;
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -70,8 +64,6 @@ public class EventGeneratorTests {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        //context
-        when(context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE)).thenReturn(optitrackPreferences);
         //shared prefs
         when(optitrackPreferences.edit()).thenReturn(editor);
         when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(-1);
@@ -88,7 +80,7 @@ public class EventGeneratorTests {
                 EventGenerator.builder()
                         .withUserInfo(userInfo)
                         .withPackageName(packageName)
-                        .withEncryptedDeviceId(encryptedDeviceId)
+                        .withDeviceId(encryptedDeviceId)
                         .withRequirementProvider(requirementProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)
@@ -145,39 +137,4 @@ public class EventGeneratorTests {
         eventGenerator.generateStartEvents(false);
         verifyZeroInteractions(editor);
     }
-    @Test
-    public void optInShouldBeSentWhenWasntOptinAndCurrentlyIs() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
-        when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_OUT);
-        eventGenerator.generateStartEvents(false);
-
-        verify(eventHandler, timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
-                .getName(), OptipushOptIn.EVENT_NAME)));
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getExecutionTimeout() > 0)));
-
-        InOrder inOrder = inOrder(editor);
-        inOrder.verify(editor)
-                .putInt(LAST_OPT_REPORTED_KEY, LAST_REPORTED_OPT_IN);
-        inOrder.verify(editor)
-                .apply();
-    }
-
-    @Test
-    public void optOutShouldBeSentWhenWasOptinAndCurrentlyIsnt() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
-        when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_IN);
-
-        eventGenerator.generateStartEvents(false);
-
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
-                .getName(), OptipushOptOut.EVENT_NAME)));
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getExecutionTimeout() > 0)));
-
-        InOrder inOrder = inOrder(editor);
-        inOrder.verify(editor)
-                .putInt(LAST_OPT_REPORTED_KEY, LAST_REPORTED_OPT_OUT);
-        inOrder.verify(editor)
-                .apply();
-    }
-
 }
