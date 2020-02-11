@@ -7,7 +7,9 @@ import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
+import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;
@@ -49,9 +51,13 @@ public class OptipushHandlerProvider {
         if (!succeeded) {
             return;
         }
+        Object appVersionObject = OptiUtils.getBuildConfig(ApplicationHelper.getBasePackageName(context),
+                "VERSION_NAME");
+
+        String appVersion = String.valueOf(appVersionObject);
 
         Metadata installationMetadata =
-                new Metadata(SdkMetadataEvent.NATIVE_SDK_VERSION,null,  Build.VERSION.RELEASE,
+                new Metadata(SdkMetadataEvent.NATIVE_SDK_VERSION, appVersion, Build.VERSION.RELEASE,
                         Build.MODEL);
 
         OptipushUserRegistrar optipushUserRegistrar =
