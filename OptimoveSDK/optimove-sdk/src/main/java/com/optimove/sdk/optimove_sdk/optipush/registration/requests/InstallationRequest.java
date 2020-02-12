@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
 public class InstallationRequest {
     @SerializedName("installation_id")
     private String installationId;
-    @SerializedName("visitorId")
+    @SerializedName("visitor_id")
     private String visitorId;
     @SerializedName("customer_id")
     private String customerId;
