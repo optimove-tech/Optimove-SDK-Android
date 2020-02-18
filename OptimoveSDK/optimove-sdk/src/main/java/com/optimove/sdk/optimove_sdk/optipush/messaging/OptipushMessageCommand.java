@@ -1,25 +1,30 @@
 package com.optimove.sdk.optimove_sdk.optipush.messaging;
 
 import android.content.Context;
-import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
+import com.android.volley.VolleyError;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -42,7 +47,7 @@ public class OptipushMessageCommand {
     }
 
     public void processRemoteMessage(int executionTimeInMilliseconds, RemoteMessage remoteMessage,
-                        NotificationData notificationData) {
+                                     NotificationData notificationData) {
         if (context.getSystemService(NOTIFICATION_SERVICE) == null) {
             OptiLogger.optipushFailedToProcessNotification_WhenNotificationManagerIsNull();
             return;
@@ -50,12 +55,12 @@ public class OptipushMessageCommand {
 
         if (notificationData.getScheduledCampaign() != null) {
             eventHandler.reportEvent(new EventContext(new ScheduledNotificationDeliveredEvent(notificationData.getScheduledCampaign(),
-                            System.currentTimeMillis(), fullPackageName),
-                            executionTimeInMilliseconds));
+                    System.currentTimeMillis(), fullPackageName),
+                    executionTimeInMilliseconds));
         } else if (notificationData.getTriggeredCampaign() != null) {
             eventHandler.reportEvent(new EventContext(new TriggeredNotificationDeliveredEvent(notificationData.getTriggeredCampaign(),
-                            System.currentTimeMillis(), fullPackageName), executionTimeInMilliseconds
-                    ));
+                    System.currentTimeMillis(), fullPackageName), executionTimeInMilliseconds
+            ));
         }
 
 
@@ -66,9 +71,9 @@ public class OptipushMessageCommand {
     /* ******************************
      * Deep Linking
      * ******************************/
+
     /**
      * Check if a dynamic link exists in the push data and extract the full URL.
-     *
      */
     public void loadDynamicLinkAndShowNotification(RemoteMessage remoteMessage, NotificationData notificationData) {
         String dlString = remoteMessage.getData()
@@ -87,30 +92,62 @@ public class OptipushMessageCommand {
             JSONObject dlJson = new JSONObject(dlString);
             String shortDynamicLink = dlJson.getJSONObject(OptipushConstants.PushSchemaKeys.ANDROID_DYNAMIC_LINKS)
                     .getString(fullPackageName);
-            FirebaseDynamicLinks.getInstance()
-                    .getDynamicLink(Uri.parse(shortDynamicLink))
-                    .addOnSuccessListener(dynamicLink -> {
-                        if (dynamicLink != null && dynamicLink.getLink() != null) {
-                            String deepLink = dynamicLink.getLink()
-                                    .toString();
+
+            HttpURLConnection.setFollowRedirects(false);
+            HttpClient.getInstance(context)
+                    .getObject(shortDynamicLink, String.class)
+                    .destination("")
+                    .successListener(s -> {
+                        OptiLoggerStreamsContainer.error("Short dynamic link redirection failed");
+                        HttpURLConnection.setFollowRedirects(true);
+                        showNotificationIfUserIsOptIn(notificationData);
+                    })
+                    .errorListener(error -> {
+                        String dynamicLink = this.extractDeepLinkFromRedirectionError(error);
+                        if (dynamicLink != null) {
                             String deepLinkPersonalizationValues = remoteMessage.getData()
                                     .get(OptipushConstants.PushSchemaKeys.DEEP_LINK_PERSONALIZATION_VALUES);
                             if (deepLinkPersonalizationValues != null) {
-                                deepLink = getPersonalizedDeepLink(deepLink, deepLinkPersonalizationValues);
+                                dynamicLink = getPersonalizedDeepLink(dynamicLink, deepLinkPersonalizationValues);
                             }
-                            notificationData.setDynamicLink(deepLink);
+                            notificationData.setDynamicLink(dynamicLink);
                         }
+                        HttpURLConnection.setFollowRedirects(true);
                         showNotificationIfUserIsOptIn(notificationData);
                     })
-                    .addOnFailureListener(e -> {
-                        OptiLogger.optipushFailedToGetDeepLinkFromDynamicLink(remoteMessage.getData()
-                                .get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS), e.getMessage());
-                        showNotificationIfUserIsOptIn(notificationData);
-                    });
+                    .send();
         } catch (JSONException e) {
             OptiLogger.optipushFailedToGetDeepLinkFromDynamicLink(dlString, "No valid Dynamic Link was found");
             showNotificationIfUserIsOptIn(notificationData);
         }
+    }
+
+    @Nullable
+    private String extractDeepLinkFromRedirectionError(@NonNull VolleyError volleyError){
+        if (volleyError.networkResponse == null || volleyError.networkResponse.headers == null){
+            OptiLoggerStreamsContainer.error("Dynamic link extraction failed due to corrupted networkResponse - %s",
+                    volleyError.getMessage());
+            return null;
+        }
+        String redirectionNewLocation = volleyError.networkResponse.headers.get("Location");
+        if (redirectionNewLocation != null) {
+            try {
+                String deepLinkParamsEncoded =
+                        redirectionNewLocation.substring(redirectionNewLocation.lastIndexOf("url=") + 4);
+                return java.net.URLDecoder.decode(deepLinkParamsEncoded,
+                        StandardCharsets.UTF_8.name());
+            } catch (UnsupportedEncodingException e) {
+                OptiLoggerStreamsContainer.error("Dynamic link params extraction error - %s",
+                        e.getMessage());
+            } catch (NullPointerException e) {
+                OptiLoggerStreamsContainer.error("Dynamic link params extraction error - %s",
+                        e.getMessage());
+            } catch (Exception e) {
+                OptiLoggerStreamsContainer.error("Dynamic link params extraction error - %s",
+                        e.getMessage());
+            }
+        }
+        return null;
     }
 
     @VisibleForTesting
@@ -146,7 +183,6 @@ public class OptipushMessageCommand {
         }
         notificationCreator.showNotification(notificationData);
     }
-
 
 
 }
