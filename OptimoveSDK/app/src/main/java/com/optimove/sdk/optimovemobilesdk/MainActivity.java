@@ -14,9 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.optimove.sdk.optimove_sdk.main.Optimove;
-import com.optimove.sdk.optimove_sdk.main.OptimoveSuccessStateListener;
-import com.optimove.sdk.optimove_sdk.main.SdkOperationListener;
-import com.optimove.sdk.optimove_sdk.main.constants.SdkRequiredPermission;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.optipush.deep_link.DeepLinkHandler;
@@ -28,12 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressLint("SetTextI18n")
-public class MainActivity extends AppCompatActivity implements OptimoveSuccessStateListener {
+public class MainActivity extends AppCompatActivity {
 
   private static final int WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169;
 
   private TextView outputTv;
-  private boolean isInTestMode;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +40,6 @@ public class MainActivity extends AppCompatActivity implements OptimoveSuccessSt
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_PERMISSION_REQUEST_CODE);
     }
-  }
-
-  @Override
-  protected void onStart() {
-    super.onStart();
-    runFromWorker(() -> Optimove.registerSuccessStateListener(this));
-  }
-
-  @Override
-  protected void onStop() {
-    super.onStop();
-    runFromWorker(() -> Optimove.unregisterSuccessStateListener(this));
   }
 
   @Override
@@ -102,47 +86,14 @@ public class MainActivity extends AppCompatActivity implements OptimoveSuccessSt
 
     if (userEmail.isEmpty()) {
       outputTv.setText("Calling setUserId");
-//      runFromWorker(() -> Optimove.getInstance().setUserId("noy-dev"));
       Optimove.getInstance().setUserId(userId);
     } else if (userId.isEmpty()) {
       outputTv.setText("Calling setUserEmail");
-//      runFromWorker(() -> Optimove.getInstance().setUserId("noy-dev"));
       Optimove.getInstance().setUserEmail(userEmail);
     } else {
       outputTv.setText("Calling registerUser");
-//      runFromWorker(() -> Optimove.getInstance().setUserId("noy-dev"));
       Optimove.getInstance().registerUser(userId, userEmail);
     }
-  }
-
-  public void dispatchNow(View view) {
-    // TODO: 2019-09-15 remove it
-//    OptitrackManager optitrackManager = Optimove.getInstance().getOptitrackManager();
-//    if (optitrackManager != null) optitrackManager.sendAllEventsNow();
-  }
-
-  public void toggleTestMode(View view) {
-    SdkOperationListener testModeListener = success -> {
-      if (success) {
-        Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show();
-        isInTestMode = !isInTestMode;
-      } else {
-        Toast.makeText(this, "Failed!", Toast.LENGTH_SHORT).show();
-      }
-    };
-    if (isInTestMode) {
-      runFromWorker(() -> Optimove.getInstance().stopTestMode(testModeListener));
-    } else {
-      runFromWorker(() -> Optimove.getInstance().startTestMode(testModeListener));
-    }
-  }
-
-  @Override
-  public void onConfigurationSucceed(SdkRequiredPermission... sdkRequiredPermissions) {
-//    runFromWorker(() -> Optimove.getInstance().setScreenVisit(this, "https://www.test%2Aeruo.com"));
-//    runFromWorker(() -> Optimove.getInstance().setScreenVisit(this, "https://www.test%2Aeruo.com", "Serious"));
-//    runFromWorker(() -> Optimove.getInstance().setScreenVisit("test/me/Now Please", "Test"));
-//    runFromWorker(() -> Optimove.getInstance().setScreenVisit("test/me/Now Please/With-Category", "Test", "PoopFest"));
   }
 
   public void runFromWorker(Runnable runnable) {
@@ -163,25 +114,8 @@ public class MainActivity extends AppCompatActivity implements OptimoveSuccessSt
     public Map<String, Object> getParameters() {
       HashMap<String, Object> result = new HashMap<>();
       String val = "  oaisjdoiajdsoiajsdoiajsdoiajsdoij  ";
-      result.put("strinG_param", val);// + val + val + val + val + val + val + val + val + val + val + val + val + val);
-//      if (withOptional)
+      result.put("strinG_param", val);
       result.put("number_param", 42);
-//      result.put("not_see", "not_see!");
-      return result;
-    }
-  }
-
-  private class RealtimeTestEvent implements OptimoveEvent {
-
-    @Override
-    public String getName() {
-      return "realtime_test_event";
-    }
-
-    @Override
-    public Map<String, Object> getParameters() {
-      HashMap<String, Object> result = new HashMap<>();
-      result.put("dePosit", "10");
       return result;
     }
   }

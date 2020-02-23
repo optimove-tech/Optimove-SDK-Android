@@ -91,28 +91,5 @@
         android:text="Reset Token"
         android:textAllCaps="false"/>
 
-    <Button
-        android:id="@+id/dispatchNow"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="16dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:onClick="dispatchNow"
-        android:text="Dispatch Now"
-        android:textAllCaps="false"/>
-
-    <Button
-        android:id="@+id/toggleTestMode"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="16dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:onClick="toggleTestMode"
-        android:text="Toggle Test Mode"
-        android:textAllCaps="false"/>
 
 </LinearLayout>

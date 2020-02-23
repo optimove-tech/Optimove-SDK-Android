@@ -10,8 +10,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 
 import com.optimove.sdk.optimove_sdk.main.Optimove;
-import com.optimove.sdk.optimove_sdk.main.OptimoveSuccessStateListener;
-import com.optimove.sdk.optimove_sdk.main.constants.SdkRequiredPermission;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
@@ -36,17 +34,6 @@ public class MyApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    final long start = System.currentTimeMillis();
-    Optimove.registerSuccessStateListener(new OptimoveSuccessStateListener() {
-      @Override
-      public void onConfigurationSucceed(SdkRequiredPermission... deviceRequirements) {
-        long end = System.currentTimeMillis();
-//        OptiLoggerStreamsContainer.debug("DONE_CONFIGURE", "Loading took %d millis", (end - start));
-//        if (deviceRequirements.length > 0)
-//          OptiLoggerStreamsContainer.debug("DONE_CONFIGURE", "SDK has the following missing permissions: %s", Arrays.deepToString(deviceRequirements));
-        Optimove.unregisterSuccessStateListener(this);
-      }
-    });
     if (!BuildConfig.DEBUG) {
       OptiLoggerStreamsContainer.addOutputStream(FileOptiLoggerOutputStream.getInstance(this, new FileUtils()));
     }
