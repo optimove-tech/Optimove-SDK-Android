@@ -99,14 +99,15 @@ public final class OptitrackManager implements LifecycleObserver.ActivityStopped
     private void syncTrackerUserIdWithSdk() {
         String userId = userInfo.getUserId();
         String trackerUserId = optitrackPreferences.getString(OPTITRACK_USER_ID_KEY, null);
-        if (userId == null) { // The user has still not converted. Check the setUserId method in OptiTrack (above) for more info about why not using the mainTracker.getUserId()
-            optitrackAdapter.setUserId(null);
-        } else if (trackerUserId == null || !trackerUserId.equals(userId)) {
+        if (trackerUserId == null || !trackerUserId.equals(userId)) {
             String updatedVisitorId = userInfo.getVisitorId();
             EventConfigs setUserIdEventConfig = eventConfigsMap.get(SetUserIdEvent.EVENT_NAME);
             Objects.requireNonNull(setUserIdEventConfig);
             reportEvent(new OptimoveEventDecorator(new SetUserIdEvent(userInfo.getInitialVisitorId(), userId, updatedVisitorId),
                     setUserIdEventConfig),setUserIdEventConfig);
+        } else {
+            // Ensuring that matomo's userId is synchronized with userInfo's userId
+            optitrackAdapter.setUserId(userId);
         }
     }
 
