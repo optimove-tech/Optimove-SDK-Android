@@ -71,7 +71,7 @@ public class OptimoveLifecycleEventGeneratorTests {
         when(editor.putInt(anyString(), anyInt())).thenReturn(editor);
 
         optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                "some_package_name", mock(InstallationIDProvider.class), optitrackPreferences, requirementProvider);
+                "some_package_name", optitrackPreferences, requirementProvider);
     }
     @Test
     public void appOpenShouldBeReportedWhenActivityFirstStarts() {

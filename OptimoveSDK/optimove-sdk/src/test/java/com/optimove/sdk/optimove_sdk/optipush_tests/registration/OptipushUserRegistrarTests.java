@@ -55,8 +55,6 @@ public class OptipushUserRegistrarTests {
     @Mock
     private UserInfo userInfo;
     @Mock
-    private InstallationIDProvider installationIDProvider;
-    @Mock
     private Metadata metadata;
 
     private LifecycleObserver lifecycleObserver;
@@ -72,6 +70,7 @@ public class OptipushUserRegistrarTests {
         when(flagsEditor.unmarkSetInstallationAsFailed()).thenReturn(flagsEditor);
         when(flagsEditor.updateLastOptInStatus(anyBoolean())).thenReturn(flagsEditor);
         when(flagsEditor.unmarkAddUserAliaseAsFailed()).thenReturn(flagsEditor);
+        when(flagsEditor.markApiV3AsSynced()).thenReturn(flagsEditor);
 
         //http
         when(httpClient.postJsonWithoutJsonResponse(any(), any())).thenReturn(requestBuilder);
@@ -86,12 +85,11 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.isSetInstallationMarkedAsFailed()).thenReturn(false);
         when(registrationDao.wasTheUserOptIn()).thenReturn(true);
         when(registrationDao.getFailedUserAliases()).thenReturn(null);
+        when(registrationDao.isApiV3Synced()).thenReturn(true);
 
         when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
         when(registrationDao.getLastToken()).thenReturn(token);
 
-        //installationIDProvider
-        when(installationIDProvider.getInstallationID()).thenReturn("some_device_id");
 
     }
 
@@ -101,7 +99,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.wasTheUserOptIn()).thenReturn(true);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
@@ -114,7 +112,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.wasTheUserOptIn()).thenReturn(false);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
@@ -128,7 +126,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.getLastToken()).thenReturn(null);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verifyZeroInteractions(httpClient);
@@ -148,8 +146,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.isSetInstallationMarkedAsFailed()).thenReturn(true);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
-                installationIDProvider, lifecycleObserver, metadata);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
                 (assertArg(arg -> Assert.assertTrue(jsonTokenMatchToken(arg, token)))));
@@ -172,7 +169,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.getFailedUserAliases()).thenReturn(userAliases);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
@@ -186,7 +183,7 @@ public class OptipushUserRegistrarTests {
 
         String newToken = "new_token";
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         when(registrationDao.getLastToken()).thenReturn(newToken);
 
@@ -202,7 +199,7 @@ public class OptipushUserRegistrarTests {
         when(userInfo.getUserId()).thenReturn(userId);
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         optipushUserRegistrar.userIdChanged();
@@ -231,7 +228,7 @@ public class OptipushUserRegistrarTests {
                 .errorListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
@@ -255,7 +252,7 @@ public class OptipushUserRegistrarTests {
                 .successListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
@@ -278,7 +275,7 @@ public class OptipushUserRegistrarTests {
                 .errorListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
@@ -301,7 +298,7 @@ public class OptipushUserRegistrarTests {
                 .successListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userIdChanged();
 
@@ -317,7 +314,7 @@ public class OptipushUserRegistrarTests {
     @Test
     public void activityStartedOptinChangedAndTokenExistsShouldTriggerInstallationRequest(){
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider,
+                packageName, tenantId, requirementProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
