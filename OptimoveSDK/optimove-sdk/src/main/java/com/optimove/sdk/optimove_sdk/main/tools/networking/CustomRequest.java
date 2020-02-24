@@ -6,6 +6,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.google.gson.Gson;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.io.UnsupportedEncodingException;
 
@@ -31,6 +32,9 @@ class CustomRequest<T> extends Request<T> {
             return Response.success(gson.fromJson(jsonString, responseClass), HttpHeaderParser.parseCacheHeaders(response));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            return Response.error(new ParseError(e));
+        } catch (Exception e) {
+            OptiLoggerStreamsContainer.error("Failed to parse network response to %s", responseClass.getName());
             return Response.error(new ParseError(e));
         }
     }
