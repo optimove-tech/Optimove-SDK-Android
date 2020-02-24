@@ -8,7 +8,6 @@ import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
-import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
@@ -26,20 +25,16 @@ public class OptipushHandlerProvider {
     private HttpClient httpClient;
     private LifecycleObserver lifecycleObserver;
     private Context context;
-    private InstallationIDProvider installationIDProvider;
-
 
     public OptipushHandlerProvider(RegistrationDao registrationDao, RequirementProvider requirementProvider,
                                    HttpClient httpClient, LifecycleObserver lifecycleObserver,
-                                   Context context, InstallationIDProvider installationIDProvider) {
+                                   Context context) {
         this.optipushBuffer = new OptipushBuffer(registrationDao);
         this.registrationDao = registrationDao;
         this.requirementProvider = requirementProvider;
         this.httpClient = httpClient;
         this.lifecycleObserver = lifecycleObserver;
         this.context = context;
-        this.installationIDProvider = installationIDProvider;
-
     }
 
     public void processConfigs(OptipushConfigs optipushConfigs, int tenantId, UserInfo userInfo) {
@@ -63,7 +58,6 @@ public class OptipushHandlerProvider {
         OptipushUserRegistrar optipushUserRegistrar =
                 OptipushUserRegistrar.create(optipushConfigs.getRegistrationServiceEndpoint(), httpClient,
                         context.getPackageName(), tenantId, requirementProvider, registrationDao, userInfo,
-                        installationIDProvider,
                         lifecycleObserver, installationMetadata);
 
         OptipushManager optipushManager =

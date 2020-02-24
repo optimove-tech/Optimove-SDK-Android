@@ -14,7 +14,10 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.*;
+import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.DEVICE_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
 
 /**
  * Represents the current device user.
@@ -31,6 +34,7 @@ public class UserInfo {
   private String visitorId;
   private String initialVisitorId;
   private String userEmail;
+  private String installationId;
 
   private SharedPreferences userIdsSp;
 
@@ -39,6 +43,7 @@ public class UserInfo {
     this.visitorId = null;
     this.initialVisitorId = null;
     this.userEmail = null;
+    this.installationId = null;
   }
 
   static UserInfo newInstance(Context context) {
@@ -59,7 +64,31 @@ public class UserInfo {
       userInfo.userIdsSp.edit().putString(INITIAL_VISITOR_ID_KEY, userInfo.initialVisitorId).apply();
     }
 
+    String deviceIdAsStoredInUserInfoSp = userInfo.userIdsSp.getString(INSTALLATION_ID_KEY, null);
+    if (deviceIdAsStoredInUserInfoSp != null){
+      userInfo.installationId = deviceIdAsStoredInUserInfoSp;
+    } else {
+      //get installationId as generated in registration sp
+      //todo - remove this in few months after 02.20
+      SharedPreferences registrationPreferences = context.getSharedPreferences(REGISTRATION_PREFERENCES_NAME,
+              MODE_PRIVATE);
+      String installationIdAsAlreadyStoredInRegistration = registrationPreferences.getString(DEVICE_ID_KEY, null);
+      if(installationIdAsAlreadyStoredInRegistration != null) {
+        userInfo.userIdsSp.edit().putString(INSTALLATION_ID_KEY, installationIdAsAlreadyStoredInRegistration).apply();
+        userInfo.installationId = installationIdAsAlreadyStoredInRegistration;
+      } else {
+        String newGeneratedInstallationId = UUID.randomUUID().toString();
+
+        userInfo.userIdsSp.edit().putString(INSTALLATION_ID_KEY, newGeneratedInstallationId).apply();
+        userInfo.installationId = newGeneratedInstallationId;
+      }
+    }
+
     return userInfo;
+  }
+
+  public String getInstallationId(){
+    return installationId;
   }
 
   @Nullable
@@ -162,6 +191,8 @@ public class UserInfo {
     return adInfo.getId();
   }
 
+
+
   interface UserInfoConstants {
 
     String USER_IDS_SP = "com.optimove.sdk.user_ids";
@@ -169,5 +200,6 @@ public class UserInfo {
     String VISITOR_ID_KEY = "visitorId";
     String INITIAL_VISITOR_ID_KEY = "initial_visitor_id";
     String USER_EMAIL_KEY = "userEmail";
+    String INSTALLATION_ID_KEY = "installationIdKey";
   }
 }

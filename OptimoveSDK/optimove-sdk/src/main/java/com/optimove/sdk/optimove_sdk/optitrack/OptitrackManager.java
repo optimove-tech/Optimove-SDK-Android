@@ -99,7 +99,9 @@ public final class OptitrackManager implements LifecycleObserver.ActivityStopped
     private void syncTrackerUserIdWithSdk() {
         String userId = userInfo.getUserId();
         String trackerUserId = optitrackPreferences.getString(OPTITRACK_USER_ID_KEY, null);
-        if (trackerUserId == null || !trackerUserId.equals(userId)) {
+        if (userId == null) {
+            optitrackAdapter.setUserId(null);
+        } else if (trackerUserId == null || !trackerUserId.equals(userId)) {
             String updatedVisitorId = userInfo.getVisitorId();
             EventConfigs setUserIdEventConfig = eventConfigsMap.get(SetUserIdEvent.EVENT_NAME);
             Objects.requireNonNull(setUserIdEventConfig);

@@ -20,7 +20,6 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
@@ -71,7 +70,6 @@ final public class Optimove {
     private RequirementProvider requirementProvider;
     private AtomicBoolean configSet;
     private LifecycleObserver lifecycleObserver;
-    private InstallationIDProvider installationIDProvider;
 
     private Optimove(Context context) {
         this.context = context;
@@ -92,12 +90,10 @@ final public class Optimove {
         this.lifecycleObserver = new LifecycleObserver();
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory, lifecycleObserver);
 
-        this.installationIDProvider = new InstallationIDProvider(context);
         this.optipushHandlerProvider = new OptipushHandlerProvider(new RegistrationDao(context),
-                requirementProvider, HttpClient.getInstance(context), lifecycleObserver, context,
-                installationIDProvider);
+                requirementProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                ApplicationHelper.getFullPackageName(context), installationIDProvider,
+                ApplicationHelper.getFullPackageName(context),
                 context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), requirementProvider);
         this.configSet = new AtomicBoolean(false);
     }
@@ -210,7 +206,7 @@ final public class Optimove {
                 EventGenerator.builder()
                         .withUserInfo(userInfo)
                         .withPackageName(ApplicationHelper.getFullPackageName(context))
-                        .withDeviceId(installationIDProvider.getInstallationID())
+                        .withDeviceId(userInfo.getInstallationId())
                         .withRequirementProvider(requirementProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)

@@ -4,7 +4,6 @@ package com.optimove.sdk.optimove_sdk.optipush.registration;
 import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -23,14 +22,13 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     private RequirementProvider requirementProvider;
     private RegistrationDao registrationDao;
     private UserInfo userInfo;
-    private InstallationIDProvider installationIDProvider;
     private Metadata metadata;
 
     private OptipushUserRegistrar(String registrationEndPoint,
                                   HttpClient httpClient, String packageName, int tenantId,
                                   RequirementProvider requirementProvider,
                                   RegistrationDao registrationDao, UserInfo userInfo,
-                                  InstallationIDProvider installationIDProvider, Metadata metadata) {
+                                  Metadata metadata) {
         this.registrationEndPoint = registrationEndPoint;
         this.httpClient = httpClient;
         this.packageName = packageName;
@@ -38,7 +36,6 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
         this.requirementProvider = requirementProvider;
         this.registrationDao = registrationDao;
         this.userInfo = userInfo;
-        this.installationIDProvider = installationIDProvider;
         this.metadata = metadata;
     }
 
@@ -46,10 +43,9 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                                                HttpClient httpClient, String packageName, int tenantId,
                                                RequirementProvider requirementProvider,
                                                RegistrationDao registrationDao, UserInfo userInfo,
-                                               InstallationIDProvider installationIDProvider,
                                                LifecycleObserver lifecycleObserver, Metadata metadata) {
         OptipushUserRegistrar optipushUserRegistrar = new OptipushUserRegistrar(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, installationIDProvider, metadata);
+                packageName, tenantId, requirementProvider, registrationDao, userInfo, metadata);
         optipushUserRegistrar.registerIfNeeded();
         lifecycleObserver.addActivityStartedListener(optipushUserRegistrar);
 
@@ -78,7 +74,10 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     }
 
     private void registerIfNeeded() {
-        if ((registrationDao.isSetInstallationMarkedAsFailed() || checkIfOptInOutWasChanged() || (registrationDao.getFailedUserAliases() != null))
+        if ((registrationDao.isSetInstallationMarkedAsFailed()
+                || checkIfOptInOutWasChanged()
+                || (registrationDao.getFailedUserAliases() != null)
+                || (!registrationDao.isApiV3Synced()))
                 && registrationDao.getLastToken() != null) {
             dispatchSetInstallation();
         }
@@ -93,7 +92,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     private void dispatchSetInstallation() {
         InstallationRequest installationRequest =
                 InstallationRequest.builder()
-                        .withInstallationId(installationIDProvider.getInstallationID())
+                        .withInstallationId(userInfo.getInstallationId())
                         .withVisitorId(userInfo.getInitialVisitorId())
                         .withCustomerId(userInfo.getUserId())
                         .withDeviceToken(registrationDao.getLastToken())
@@ -107,6 +106,9 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
         try {
             JSONObject installationRequestJson = new JSONObject(new Gson().toJson(installationRequest));
             OptiLoggerStreamsContainer.debug("Sending installation info with data: %s", installationRequestJson.toString());
+            registrationDao.editFlags()
+                    .markApiV3AsSynced()
+                    .save();
             httpClient.postJsonWithoutJsonResponse(registrationEndPoint, installationRequestJson)
                     .errorListener(this::setInstallationFailed)
                     .successListener(this::setInstallationSucceeded)

@@ -53,6 +53,7 @@ public interface OptipushConstants {
     String TOKEN_REFRESH_FAILED_KEY = "last_refresh_failed_key";
     //the key value remains the same to maintain users that have this value from previous versions
     String SET_INSTALLATION_FAILED_KEY = "tokenUpdateFailedKey";
+    String API_V3_SYNCED_KEY = "apiV3SyncedKey";
     String FAILED_USER_IDS_KEY ="failedUserIdsKey";
     String DEVICE_ID_KEY = "deviceIdKey";
 

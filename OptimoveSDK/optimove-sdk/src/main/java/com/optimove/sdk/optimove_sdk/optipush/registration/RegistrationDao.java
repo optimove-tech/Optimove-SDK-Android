@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import java.util.Set;
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.API_V3_SYNCED_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.FAILED_USER_IDS_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.LAST_NOTIFICATION_PERMISSION_STATUS;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.LAST_TOKEN_KEY;
@@ -46,6 +47,9 @@ public final class RegistrationDao {
   }
   public boolean isSetInstallationMarkedAsFailed() {
     return registrationPreferences.getBoolean(SET_INSTALLATION_FAILED_KEY, false);
+  }
+  public boolean isApiV3Synced(){
+    return registrationPreferences.getBoolean(API_V3_SYNCED_KEY, false);
   }
 
   public FlagsEditor editFlags() {
@@ -91,6 +95,11 @@ public final class RegistrationDao {
 
     public FlagsEditor unmarkSetInstallationAsFailed() {
       editor.remove(SET_INSTALLATION_FAILED_KEY);
+      return this;
+    }
+
+    public FlagsEditor markApiV3AsSynced(){
+      editor.putBoolean(API_V3_SYNCED_KEY, true);
       return this;
     }
 

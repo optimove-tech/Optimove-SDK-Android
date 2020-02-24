@@ -9,7 +9,6 @@ import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.AppOpenEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
-import com.optimove.sdk.optimove_sdk.main.tools.InstallationIDProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
@@ -28,23 +27,20 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
     private long foregroundSessionEndTime;
     private UserInfo userInfo;
     private String fullPackageName;
-    private InstallationIDProvider installationIDProvider;
     private SharedPreferences optitrackPreferences;
     private RequirementProvider requirementProvider;
 
 
     public OptimoveLifecycleEventGenerator(EventHandlerProvider eventHandlerProvider, UserInfo userInfo,
-                                           String fullPackageName, InstallationIDProvider installationIDProvider,
+                                           String fullPackageName,
                                            SharedPreferences optitrackPreferences,
                                            RequirementProvider requirementProvider) {
         this.eventHandlerProvider = eventHandlerProvider;
         this.userInfo = userInfo;
         this.fullPackageName = fullPackageName;
-        this.installationIDProvider = installationIDProvider;
         this.optitrackPreferences = optitrackPreferences;
         this.requirementProvider = requirementProvider;
         this.foregroundSessionEndTime = -1;
-
     }
 
     @Override
@@ -71,7 +67,7 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
 
         AppOpenEvent appOpenEvent =
                 new AppOpenEvent(userInfo.getUserId(), userInfo.getVisitorId(), fullPackageName
-                        , installationIDProvider.getInstallationID());
+                        , userInfo.getInstallationId());
         eventHandlerProvider.getEventHandler().reportEvent(new EventContext(appOpenEvent));
         foregroundSessionEndTime = System.currentTimeMillis(); //Reset the timer to prevent duplicate reports
     }
@@ -80,7 +76,7 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
         if (lastReportedOpt == -1) {
             eventHandlerProvider.getEventHandler()
                     .reportEvent(new EventContext(new OptipushOptIn(fullPackageName,
-                            installationIDProvider.getInstallationID(), OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
+                            userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
             optitrackPreferences.edit()
                     .putInt(LAST_OPT_REPORTED_KEY, LAST_REPORTED_OPT_IN)
                     .apply();
@@ -93,10 +89,10 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
             }
             eventHandlerProvider.getEventHandler()
                     .reportEvent(currentlyOptIn ?
-                            new EventContext(new OptipushOptIn(fullPackageName, installationIDProvider.getInstallationID(),
+                            new EventContext(new OptipushOptIn(fullPackageName, userInfo.getInstallationId(),
                                     OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout) :
                             new EventContext(new OptipushOptOut(fullPackageName,
-                                    installationIDProvider.getInstallationID(), OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
+                                    userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
             optitrackPreferences.edit()
                     .putInt(LAST_OPT_REPORTED_KEY, currentlyOptIn ? LAST_REPORTED_OPT_IN : LAST_REPORTED_OPT_OUT)
                     .apply();
