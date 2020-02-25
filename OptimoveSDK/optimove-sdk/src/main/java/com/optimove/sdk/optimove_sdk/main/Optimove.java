@@ -27,7 +27,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.SdkLogsServiceOutputStream;
-import com.optimove.sdk.optimove_sdk.optipush.OptipushHandlerProvider;
+import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.MatomoAdapter;
 
@@ -65,7 +65,7 @@ final public class Optimove {
     private SharedPreferences localConfigKeysPreferences;
 
     private EventHandlerProvider eventHandlerProvider;
-    private OptipushHandlerProvider optipushHandlerProvider;
+    private OptipushManager optipushManager;
     private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
     private RequirementProvider requirementProvider;
     private AtomicBoolean configSet;
@@ -90,7 +90,7 @@ final public class Optimove {
         this.lifecycleObserver = new LifecycleObserver();
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory, lifecycleObserver);
 
-        this.optipushHandlerProvider = new OptipushHandlerProvider(new RegistrationDao(context),
+        this.optipushManager = new OptipushManager(new RegistrationDao(context),
                 requirementProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 ApplicationHelper.getFullPackageName(context),
@@ -199,7 +199,7 @@ final public class Optimove {
         loadTenantId(configs);
         OptiLogger.f117(tenantInfo.getTenantId());
 
-        optipushHandlerProvider.processConfigs(configs.getOptipushConfigs(), tenantInfo.getTenantId(), userInfo);
+        optipushManager.processConfigs(configs.getOptipushConfigs(), tenantInfo.getTenantId(), userInfo);
         eventHandlerProvider.processConfigs(configs);
         //sends initial events
         EventGenerator eventGenerator =
@@ -360,7 +360,7 @@ final public class Optimove {
 
         eventHandlerProvider.getEventHandler()
                 .reportEvent(new EventContext(setUserIdEvent));
-        optipushHandlerProvider.getOptipushHandler()
+        optipushManager
                 .userIdChanged();
     }
 
@@ -501,8 +501,8 @@ final public class Optimove {
     }
 
     @NonNull
-    public OptipushHandlerProvider getOptipushHandlerProvider() {
-        return optipushHandlerProvider;
+    public OptipushManager getOptipushManager() {
+        return optipushManager;
     }
 
 

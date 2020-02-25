@@ -39,8 +39,7 @@ public class OptipushMessagingHandler {
         if (remoteMessage.getData()
                 .containsKey(OptipushConstants.PushSchemaKeys.IS_OPTIPUSH)) {
             Optimove.getInstance()
-                    .getOptipushHandlerProvider()
-                    .getOptipushHandler()
+                    .getOptipushManager()
                     .optipushMessageCommand(remoteMessage
                             , executionTimeInMilliseconds);
             return true;

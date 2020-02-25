@@ -9,8 +9,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
-import com.optimove.sdk.optimove_sdk.optipush.OptipushHandler;
-//import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInteractor;
+import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -106,11 +105,11 @@ public class OptipushFcmTokenHandler {
       return;
     }
 
-    OptipushHandler optipushHandler = Optimove.getInstance().getOptipushHandlerProvider().getOptipushHandler();
+    OptipushManager optipushManager = Optimove.getInstance().getOptipushManager();
 
     // First update token so that any call to "getLastToken" will work
     registrationDao.editFlags().putNewToken(newToken).save();
-    optipushHandler.tokenWasChanged();
+    optipushManager.tokenWasChanged();
     isRunning.set(false);
   }
 

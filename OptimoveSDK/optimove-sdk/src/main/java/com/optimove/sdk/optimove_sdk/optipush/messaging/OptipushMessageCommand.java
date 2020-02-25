@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
 import com.android.volley.VolleyError;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
@@ -75,16 +74,10 @@ public class OptipushMessageCommand {
     /**
      * Check if a dynamic link exists in the push data and extract the full URL.
      */
-    public void loadDynamicLinkAndShowNotification(RemoteMessage remoteMessage, NotificationData notificationData) {
+    private void loadDynamicLinkAndShowNotification(RemoteMessage remoteMessage, NotificationData notificationData) {
         String dlString = remoteMessage.getData()
                 .get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS);
         if (dlString == null) {
-            showNotificationIfUserIsOptIn(notificationData);
-            return;
-        }
-        if (FirebaseApp.getApps(context)
-                .isEmpty()) {
-            OptiLogger.optipushFailedToGetDeepLinkFromDynamicLink(dlString, "No FirebaseApps are available");
             showNotificationIfUserIsOptIn(notificationData);
             return;
         }
