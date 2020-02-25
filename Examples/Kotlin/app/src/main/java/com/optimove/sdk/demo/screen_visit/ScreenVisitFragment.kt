@@ -12,13 +12,11 @@ import androidx.fragment.app.Fragment
 
 class ScreenVisitFragment : Fragment() {
 
-    private var urlInput: TextInputEditText? = null
     private var titleInput: TextInputEditText? = null
     private var categoryInput: TextInputEditText? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_screen_visit, container, false)
-        urlInput = view.findViewById(R.id.customUrlInput)
         titleInput = view.findViewById(R.id.pageTitleInput)
         categoryInput = view.findViewById(R.id.categoryInput)
         view.findViewById<View>(R.id.setScreenVisitButton).setOnClickListener { v -> setScreenVisit() }
@@ -26,10 +24,9 @@ class ScreenVisitFragment : Fragment() {
     }
 
     fun setScreenVisit() {
-        val url = urlInput!!.text!!.toString()
         val title = titleInput!!.text!!.toString()
         val category = categoryInput!!.text!!.toString()
 
-        Optimove.getInstance().setScreenVisit(url, title, category)
+        Optimove.getInstance().reportScreenVisit(title, category)
     }
 }

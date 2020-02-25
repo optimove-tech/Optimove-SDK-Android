@@ -17,8 +17,5 @@ class MainActivity : AppCompatActivity() {
         val viewPager = findViewById<ViewPager>(R.id.mainViewPager)
         val mainPagerAdapter = MainPagerAdapter(supportFragmentManager)
         viewPager.adapter = mainPagerAdapter
-        if (BuildConfig.DEBUG) {
-            Optimove.getInstance().startTestMode { success -> Toast.makeText(this, "Test Mode Started", Toast.LENGTH_SHORT).show() }
-        }
     }
 }
