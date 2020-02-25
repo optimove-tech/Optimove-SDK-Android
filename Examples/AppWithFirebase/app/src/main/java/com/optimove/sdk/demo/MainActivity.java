@@ -18,8 +18,5 @@ public class MainActivity extends AppCompatActivity {
     ViewPager viewPager = findViewById(R.id.mainViewPager);
     MainPagerAdapter mainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
     viewPager.setAdapter(mainPagerAdapter);
-    if (BuildConfig.DEBUG) {
-      Optimove.getInstance().startTestMode(success -> Toast.makeText(this, "Test Mode Started", Toast.LENGTH_SHORT).show());
-    }
   }
 }

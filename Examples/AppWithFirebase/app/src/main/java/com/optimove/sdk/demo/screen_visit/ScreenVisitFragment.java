@@ -15,7 +15,6 @@ import androidx.fragment.app.Fragment;
 
 public class ScreenVisitFragment extends Fragment {
 
-  private TextInputEditText urlInput;
   private TextInputEditText titleInput;
   private TextInputEditText categoryInput;
 
@@ -23,7 +22,6 @@ public class ScreenVisitFragment extends Fragment {
   @Override
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_screen_visit, container, false);
-    urlInput = view.findViewById(R.id.customUrlInput);
     titleInput = view.findViewById(R.id.pageTitleInput);
     categoryInput = view.findViewById(R.id.categoryInput);
     view.findViewById(R.id.setScreenVisitButton).setOnClickListener(v -> setScreenVisit());
@@ -31,10 +29,9 @@ public class ScreenVisitFragment extends Fragment {
   }
 
   public void setScreenVisit() {
-    String url = urlInput.getText().toString();
     String title = titleInput.getText().toString();
     String category = categoryInput.getText().toString();
 
-    Optimove.getInstance().setScreenVisit(url, title, category);
+    Optimove.getInstance().reportScreenVisit(title, category);
   }
 }
