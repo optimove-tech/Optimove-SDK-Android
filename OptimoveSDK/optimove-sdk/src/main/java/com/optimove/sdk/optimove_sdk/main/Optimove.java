@@ -234,26 +234,6 @@ final public class Optimove {
     }
 
     /**
-     * Registers a new {@link OptimoveSuccessStateListener} to receive any updates about the {@code SDK's Success State} in a thread safe manner.
-     *
-     * @deprecated No need to register for lifecycle events. You can use the SDK directly.
-     */
-    @Deprecated
-    public static void registerSuccessStateListener(OptimoveSuccessStateListener stateListener) {
-        stateListener.onConfigurationSucceed();
-    }
-
-    /**
-     * Unregisters an already registered {@link OptimoveSuccessStateListener} from receiving further updates about the {@code SDK's Success State} in a thread safe manner.<br>
-     *
-     * @deprecated No need to unregister from lifecycle events anymore.
-     */
-    @Deprecated
-    public static void unregisterSuccessStateListener(OptimoveSuccessStateListener stateListener) {
-
-    }
-
-    /**
      * Runs the singleton's initialization that's composed of a <b>thread safe</b> init of:
      * <ul>
      * <li>The singleton's instance {@link Optimove}</li>
@@ -435,6 +415,13 @@ final public class Optimove {
                 .reportEvent(new EventContext(new SetPageVisitEvent(screenName.trim(), screenCategory)));
     }
 
+    public void disablePushCampaigns(){
+        optipushManager.disablePushCampaigns();
+    }
+
+    public void enablePushCampaigns(){
+        optipushManager.enablePushCampaigns();
+    }
 
     /**
      * @deprecated Use the {@link Optimove#reportScreenVisit(String)} instead.
@@ -482,6 +469,26 @@ final public class Optimove {
      */
     @Deprecated
     public void stopTestMode(@Nullable SdkOperationListener operationListener) {
+    }
+
+    /**
+     * Registers a new {@link OptimoveSuccessStateListener} to receive any updates about the {@code SDK's Success State} in a thread safe manner.
+     *
+     * @deprecated No need to register for lifecycle events. You can use the SDK directly.
+     */
+    @Deprecated
+    public static void registerSuccessStateListener(OptimoveSuccessStateListener stateListener) {
+        stateListener.onConfigurationSucceed();
+    }
+
+    /**
+     * Unregisters an already registered {@link OptimoveSuccessStateListener} from receiving further updates about the {@code SDK's Success State} in a thread safe manner.<br>
+     *
+     * @deprecated No need to unregister from lifecycle events anymore.
+     */
+    @Deprecated
+    public static void unregisterSuccessStateListener(OptimoveSuccessStateListener stateListener) {
+
     }
 
     /* *******************

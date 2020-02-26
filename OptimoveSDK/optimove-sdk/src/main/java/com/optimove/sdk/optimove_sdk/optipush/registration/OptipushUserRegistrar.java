@@ -73,6 +73,24 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
         }
     }
 
+    public void disablePushCampaigns() {
+        registrationDao.editFlags()
+                .disablePushCampaigns()
+                .save();
+        if (registrationDao.getLastToken() != null) {
+            dispatchSetInstallation();
+        }
+    }
+
+    public void enablePushCampaigns() {
+        registrationDao.editFlags()
+                .enablePushCampaigns()
+                .save();
+        if (registrationDao.getLastToken() != null) {
+            dispatchSetInstallation();
+        }
+    }
+
     private void registerIfNeeded() {
         if ((registrationDao.isSetInstallationMarkedAsFailed()
                 || checkIfOptInOutWasChanged()
@@ -101,6 +119,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                         .withOs("android")
                         .withOptIn(requirementProvider.notificaionsAreEnabled())
                         .withIsDev(false)
+                        .withIsPushCampaignsDisabled(registrationDao.isPushCampaignsDisabled())
                         .withMetadata(metadata)
                         .build();
         try {

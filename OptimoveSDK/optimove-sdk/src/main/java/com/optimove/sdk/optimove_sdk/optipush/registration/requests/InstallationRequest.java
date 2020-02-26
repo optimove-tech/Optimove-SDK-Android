@@ -23,6 +23,8 @@ public class InstallationRequest {
     private boolean optIn;
     @SerializedName("is_dev")
     private boolean isDev;
+    @SerializedName("is_push_campaigns_disabled")
+    private boolean isPushCampaignsDisabled;
     @SerializedName("metadata")
     private Metadata metadata;
 
@@ -36,6 +38,7 @@ public class InstallationRequest {
         os = builder.os;
         optIn = builder.optIn;
         isDev = builder.isDev;
+        isPushCampaignsDisabled = builder.isPushCampaignsDisabled;
         metadata = builder.metadata;
     }
 
@@ -51,8 +54,12 @@ public class InstallationRequest {
         IBuild withMetadata(Metadata val);
     }
 
+    public interface IIsPushCampaignsDisabled {
+        IMetadata withIsPushCampaignsDisabled(boolean val);
+    }
+
     public interface IIsDev {
-        IMetadata withIsDev(boolean val);
+        IIsPushCampaignsDisabled withIsDev(boolean val);
     }
 
     public interface IOptIn {
@@ -87,8 +94,9 @@ public class InstallationRequest {
         IVisitorId withInstallationId(String val);
     }
 
-    public static final class Builder implements IMetadata, IIsDev, IOptIn, IOs, IPackageName, IPushProvider, IDeviceToken, ICustomerId, IVisitorId, IInstallationId, IBuild {
+    public static final class Builder implements IMetadata, IIsPushCampaignsDisabled, IIsDev, IOptIn, IOs, IPackageName, IPushProvider, IDeviceToken, ICustomerId, IVisitorId, IInstallationId, IBuild {
         private Metadata metadata;
+        private boolean isPushCampaignsDisabled;
         private boolean isDev;
         private boolean optIn;
         private String os;
@@ -109,7 +117,13 @@ public class InstallationRequest {
         }
 
         @Override
-        public IMetadata withIsDev(boolean val) {
+        public IMetadata withIsPushCampaignsDisabled(boolean val) {
+            isPushCampaignsDisabled = val;
+            return this;
+        }
+
+        @Override
+        public IIsPushCampaignsDisabled withIsDev(boolean val) {
             isDev = val;
             return this;
         }

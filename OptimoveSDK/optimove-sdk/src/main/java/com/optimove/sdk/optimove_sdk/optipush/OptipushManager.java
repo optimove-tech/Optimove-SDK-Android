@@ -72,6 +72,9 @@ public final class OptipushManager {
     }
 
     public void optipushMessageCommand(RemoteMessage remoteMessage, int executionTimeLimitInMs) {
+        if (registrationDao.isPushCampaignsDisabled()){
+            return;
+        }
         NotificationCreator notificationCreator = new NotificationCreator(context);
         new OptipushMessageCommand(context, Optimove.getInstance()
                 .getEventHandlerProvider()
@@ -79,6 +82,28 @@ public final class OptipushManager {
                 new RequirementProvider(context), notificationCreator)
                 .processRemoteMessage(executionTimeLimitInMs, remoteMessage, JsonUtils.parseJsonMap(remoteMessage.getData(),
                         NotificationData.class));
+    }
+
+    public void disablePushCampaigns(){
+        if (optipushUserRegistrar != null) {
+            optipushUserRegistrar.disablePushCampaigns();
+        } else {
+            registrationDao.editFlags()
+                    .markSetInstallationAsFailed()
+                    .disablePushCampaigns()
+                    .save();
+        }
+    }
+
+    public void enablePushCampaigns(){
+        if (optipushUserRegistrar != null) {
+            optipushUserRegistrar.enablePushCampaigns();
+        } else {
+            registrationDao.editFlags()
+                    .markSetInstallationAsFailed()
+                    .enablePushCampaigns()
+                    .save();
+        }
     }
 
 

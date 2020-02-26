@@ -2,13 +2,8 @@ package com.optimove.sdk.optimove_sdk.optipush;
 
 public interface OptipushConstants {
 
-  String OPTIPUSH_SP_NAME = "com.optimove.sdk.optipush_sp_name";
-
-
   interface PushSchemaKeys {
 
-    String TITLE = "title";
-    String BODY = "content";
     String DEEP_LINK_PERSONALIZATION_VALUES = "deep_link_personalization_values";
     String DYNAMIC_LINKS = "dynamic_links";
     String ANDROID_DYNAMIC_LINKS = "android";
@@ -22,7 +17,6 @@ public interface OptipushConstants {
   interface Notifications {
 
     int PENDING_INTENT_OPEN_RC = 100;
-    int PENDING_INTENT_DELETE_RC = 101;
     int NOTIFICATION_ID = 1001;
     String SDK_NOTIFICATION_CHANNEL_ID = "optimove.sdk.notifications";
     String IS_DELETE_KEY = "is_delete";
@@ -38,9 +32,6 @@ public interface OptipushConstants {
   }
 
   interface Firebase {
-
-    String TOPICS_PREFERENCES_NAME = "com.optimove.sdk.topics_preferences";
-    String SDK_CONTROLLER_PROJECT_NAME = "optimove.sdk.sdk_controller";
     String APP_CONTROLLER_PROJECT_NAME = "optimove.sdk.app_controller";
   }
 
@@ -54,6 +45,7 @@ public interface OptipushConstants {
     //the key value remains the same to maintain users that have this value from previous versions
     String SET_INSTALLATION_FAILED_KEY = "tokenUpdateFailedKey";
     String API_V3_SYNCED_KEY = "apiV3SyncedKey";
+    String PUSH_CAMPAIGNS_DISABLED_KEY = "pushCampaignsDisabledKey";
     String FAILED_USER_IDS_KEY ="failedUserIdsKey";
     String DEVICE_ID_KEY = "deviceIdKey";
 
