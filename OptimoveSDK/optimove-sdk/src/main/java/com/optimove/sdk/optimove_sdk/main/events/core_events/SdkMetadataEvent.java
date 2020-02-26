@@ -17,7 +17,7 @@ public class SdkMetadataEvent implements OptimoveEvent {
   public static final String APP_NS_PARAM_KEY = "app_ns";
   
   public static final String NATIVE_SDK_PLATFORM = "Android";
-  public static final String NATIVE_SDK_VERSION = "2.7.0";
+  public static final String NATIVE_SDK_VERSION = "2.8.0";
 
 
   private String sdkPlatform;
