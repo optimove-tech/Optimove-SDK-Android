@@ -22,6 +22,7 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 ### Optipush
 1. [Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Optipush-setup)
 2. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Optipush-testing)
+3. [Disable push campaigns](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Disable-push-campaigns)
 
 ### Executing campaigns using your Optimove instance
 Stay tuned for our how-to guides
