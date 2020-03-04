@@ -15,7 +15,6 @@ import com.optimove.sdk.optimove_sdk.main.events.SimpleCustomEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetPageVisitEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
-import com.optimove.sdk.optimove_sdk.main.exceptions.MustRunOnMainThreadException;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
@@ -23,6 +22,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -116,7 +116,6 @@ final public class Optimove {
      *
      * @param context    The instance of the current {@code Context} object.
      * @param tenantInfo The {@link TenantInfo} as provided by <i>Optimove</i>
-     * @throws MustRunOnMainThreadException Thrown if not called from the <b>Main</b> thread.
      */
     public static void configure(Context context, TenantInfo tenantInfo) {
         Context applicationContext = context.getApplicationContext();
@@ -144,13 +143,33 @@ final public class Optimove {
             initCommand.run();
         }
     }
+    /**
+     * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
+     * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
+     *
+     * @param context    The instance of the current {@code Context} object.
+     * @param tenantInfo The {@link TenantInfo} as provided by <i>Optimove</i>.
+     * @param isStgEnv An indication whether this is a staging environment.
+     * @param minLogLevel Logcat minimum log level to show.
+     */
+    public static void configure(Context context, TenantInfo tenantInfo, Boolean isStgEnv, LogLevel minLogLevel) {
+        OptiLoggerStreamsContainer.setMinLogLevelToShow(minLogLevel);
+
+        if (isStgEnv) {
+            SharedPreferences coreSharedPreferences =
+                    context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
+            OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context,
+                    coreSharedPreferences.getInt(TENANT_ID, -1)));
+        }
+        configure(context,tenantInfo);
+    }
 
     /**
      * THIS IS AN <b>INTERNAL</b> FUNCTION, <b>NOT</b> TO BE CALLED BY THE CLIENT.
      * <p>
      * Initializes the {@code Optimove SDK} from local the configuration file.<br>
      * <b>Discussion</b>: Background components need lean initialization that supports flows where the Application's {@code onCreate} callback wasn't called yet (e.g. Content providers
-     * and some observed crashes on Services in Android 8.0). This flow requires only {@code Context} and is faster. However, when the Application's callback is called
+     * and some observed crashes on Services in Android 8.0). This flow requires only {@code Context} and is faster.
      */
     public static void configureUrgently(Context context) {
         OptiLogger.f84();

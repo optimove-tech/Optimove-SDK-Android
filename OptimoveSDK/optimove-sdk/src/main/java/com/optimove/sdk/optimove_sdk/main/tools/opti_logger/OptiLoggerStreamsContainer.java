@@ -1,10 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.tools.opti_logger;
 
-import android.util.Log;
 import android.util.Pair;
-
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.SdkEnv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,18 +20,9 @@ public final class OptiLoggerStreamsContainer {
     static {
         loggerOutputStreams = new ArrayList<>();
         //default value, unless overridden
-        minLogLevelToShow = LogLevel.INFO;
-//        switch (OptiUtils.getSdkEnv()) {
-//            case SdkEnv.PROD:
-//                minLogLevelToShow = LogLevel.INFO;
-//                break;
-//            case SdkEnv.QA:
-//            case SdkEnv.DEV:
-//            default:
-//                minLogLevelToShow = LogLevel.DEBUG;
-//                break;
-//        }
+        minLogLevelToShow = LogLevel.WARN;
     }
+
 
     /*****
      * Output Streams

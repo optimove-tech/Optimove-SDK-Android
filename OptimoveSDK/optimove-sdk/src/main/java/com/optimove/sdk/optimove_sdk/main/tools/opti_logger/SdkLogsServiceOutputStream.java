@@ -1,11 +1,11 @@
 package com.optimove.sdk.optimove_sdk.main.tools.opti_logger;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 
 import org.json.JSONObject;
 
@@ -18,15 +18,21 @@ public class SdkLogsServiceOutputStream implements OptiLoggerOutputStream {
   private static final String REPORT_LOG_PATH = "reportLog";
 
   private Context context;
-  private String packageName;
   private int tenantId;
 
-  public SdkLogsServiceOutputStream(Context context, String packageName, int tenantId) {
+  @Nullable
+  private String packageName;
+
+  public SdkLogsServiceOutputStream(Context context, @NonNull String packageName, int tenantId) {
     this.context = context;
     this.packageName = packageName;
     this.tenantId = tenantId;
   }
 
+  public SdkLogsServiceOutputStream(Context context,  int tenantId) {
+    this.context = context;
+    this.tenantId = tenantId;
+  }
   public void setTenantId(int tenantId) {
     this.tenantId = tenantId;
   }
@@ -63,7 +69,7 @@ public class SdkLogsServiceOutputStream implements OptiLoggerOutputStream {
   private JSONObject getRequestBody(String logClass, String logMethod, String logLevel, String message) {
     Map<String, Object> json = new HashMap<>(8);
     json.put(BodyKeys.TENANT_ID, tenantId);
-    json.put(BodyKeys.APP_NS, packageName);
+    json.put(BodyKeys.APP_NS, packageName != null ? packageName : context.getPackageName());
     //BuildConfig here instead of Optiutils.getSdkEnv to prevent infinity loop
     json.put(BodyKeys.SDK_ENV, BuildConfig.OPTIMOVE_SDK_RUNTIME_ENV);
     json.put(BodyKeys.SDK_PLATFORM, "android");

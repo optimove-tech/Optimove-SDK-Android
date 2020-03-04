@@ -2,8 +2,6 @@ package com.optimove.sdk.optimove_sdk.main.tools.opti_logger;
 
 import com.optimove.sdk.optimove_sdk.main.events.EventValidationResult;
 
-import java.util.Arrays;
-
 public final class OptiLogger {
 
 
@@ -41,36 +39,6 @@ public final class OptiLogger {
    * OptiPush Module
    * ************************************************/
 
-  public static void optipushFinishedTopicsRegistrationViaFirebaseSuccessfully(String[] topics) {
-    OptiLoggerStreamsContainer.info("Finished FCM topics registration of topics %s through the Firebase Messaging SDK successfully", Arrays.deepToString(topics));
-  }
-
-  public static void optipushFinishedTopicsUnregistrationViaFirebaseSuccessfully(String[] topics) {
-    OptiLoggerStreamsContainer.info("Finished FCM topics unregistration of topics %s through the Firebase Messaging SDK successfully", Arrays.deepToString(topics));
-  }
-
-  public static void optipushStartedTopicsRegistrationViaMbaas(String[] topics) {
-    OptiLoggerStreamsContainer.debug("Starting MBAAS Topic Refresh of topics: %s", Arrays.deepToString(topics));
-  }
-
-  public static void optipushFinishedTopicsRegistrationViaMbaasSuccessfully(String[] topics) {
-    OptiLoggerStreamsContainer.info("Finished MBAAS Topic Refresh of topics: %s", Arrays.deepToString(topics));
-  }
-
-  public static void optipushTopicsRegistrationViaMbaasFailed(String[] topics, String reason) {
-    OptiLoggerStreamsContainer.warn("Failed MBAAS Topic Refresh of topics: %s due to: %s. Will retry on next session", Arrays.deepToString(topics), reason);
-  }
-
-  public static void optipushFailedToCreateTopicsRegistrationRequest(String reason) {
-    OptiLoggerStreamsContainer.error("Failed to generate request body for topics registration request due to: %s", reason);
-  }
-  public static void optipushSingleTopicRegistrationFailed_WhenAppControllerIsNull() {
-    OptiLoggerStreamsContainer.error("Failed to perform single topic registration since the app controller project is null");
-  }
-
-  public static void optipushSingleTopicUnregistrationFailed_WhenAppControllerIsNull() {
-    OptiLoggerStreamsContainer.error("Failed to perform single topic un-registration since the app controller project is null");
-  }
 
   public static void optipushFirebaseProjectInitFailed(String projectName, String reason) {
     OptiLoggerStreamsContainer.error("Failed to init Firebase project %s due to: %s", projectName, reason);

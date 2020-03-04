@@ -1,6 +1,8 @@
 package com.optimove.sdk.optimove_sdk.optipush;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,9 +13,7 @@ import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;
@@ -126,11 +126,14 @@ public final class OptipushManager {
     }
 
     private Metadata getMetadata() {
-        Object appVersionObject = OptiUtils.getBuildConfig(ApplicationHelper.getBasePackageName(context),
-                "VERSION_NAME");
-
-        String appVersion = String.valueOf(appVersionObject);
-
+        PackageManager packageManager = context.getPackageManager();
+        String appVersion;
+        try {
+            PackageInfo info = packageManager.getPackageInfo(context.getPackageName(), 0);
+            appVersion = info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            appVersion = "VersionNotFound";
+        }
         return new Metadata(SdkMetadataEvent.NATIVE_SDK_VERSION, appVersion, Build.VERSION.RELEASE,
                 Build.MODEL);
     }

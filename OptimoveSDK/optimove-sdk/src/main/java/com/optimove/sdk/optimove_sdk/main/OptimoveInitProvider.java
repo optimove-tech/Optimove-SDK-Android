@@ -14,7 +14,6 @@ import com.google.android.gms.common.internal.Preconditions;
 import com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.SdkEnv;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogcatOptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -47,9 +46,18 @@ public class OptimoveInitProvider extends ContentProvider {
         if (context == null) {
             return false;
         }
-        initializeLogger(context);
+
 
         String packageName = ApplicationHelper.getBasePackageName(context);
+        initializeLogger(context, packageName);
+
+        if (packageName == null){
+            OptiLoggerStreamsContainer.warn("Auto init disabled because BuildConfig values were not found, " +
+                    "please initialize the SDK manually");
+            return false;
+        }
+
+
         boolean disableAutoInit = (boolean) OptiUtils.getBuildConfig(packageName, "OPTIMOVE_DISABLE_AUTO_INIT", false);
         if (disableAutoInit) {
             OptiLoggerStreamsContainer.info("Client flagged to disable the auto init");
@@ -62,26 +70,23 @@ public class OptimoveInitProvider extends ContentProvider {
         }
         return false;
     }
+    public static void initializeLogger(Context context, String packageName) {
+        if (packageName != null){
+            Boolean isClientStgEnv =
+                    (Boolean) OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_CLIENT_STG_ENV_KEY, false);
+            if (isClientStgEnv) {
+                SharedPreferences coreSharedPreferences =
+                        context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
+                OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context, packageName, coreSharedPreferences.getInt(TENANT_ID, -1)));
+            }
 
-    private void initializeLogger(Context context) {
-        String packageName = ApplicationHelper.getBasePackageName(context);
-        Boolean isClientStgEnv =
-                (Boolean) OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_CLIENT_STG_ENV_KEY, false);
-        if (isClientStgEnv) {
-            SharedPreferences coreSharedPreferences =
-                    context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
-            OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context, packageName, coreSharedPreferences.getInt(TENANT_ID, -1)));
-        }
-
-        Object minLogLevelObject =
-                OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_MIN_LOG_LEVEL_KEY, null);
-        LogLevel minLogLevel =
-                minLogLevelObject == null ? null : LogLevel.fromString(String.valueOf(minLogLevelObject));
-        if (minLogLevel != null) {
-            OptiLoggerStreamsContainer.setMinLogLevelToShow(minLogLevel);
-        } else if (!isClientStgEnv && OptiUtils.getSdkEnv(packageName)
-                .equals(SdkEnv.PROD)) {
-            OptiLoggerStreamsContainer.setMinLogLevelToShow(LogLevel.WARN);
+            Object minLogLevelObject =
+                    OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_MIN_LOG_LEVEL_KEY, null);
+            LogLevel minLogLevel =
+                    minLogLevelObject == null ? null : LogLevel.fromString(String.valueOf(minLogLevelObject));
+            if (minLogLevel != null) {
+                OptiLoggerStreamsContainer.setMinLogLevelToShow(minLogLevel);
+            }
         }
 
         // Added only after the minLogLevel was set because the LogCat stream is visible to the client
