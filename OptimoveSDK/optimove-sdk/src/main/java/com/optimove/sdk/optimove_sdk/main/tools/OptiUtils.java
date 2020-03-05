@@ -82,15 +82,15 @@ public class OptiUtils {
     return result;
   }
 
-  //For the consumer of the SDK, will always return PROD
-//  public static String getSdkEnv() {
-//    return BuildConfig.OPTIMOVE_SDK_RUNTIME_ENV;
-//  }
-
   //For a consumer of the SDK, will always return PROD, unless the consumer set the
   // OPTIMOVE_SDK_RUNTIME_ENV flag explicitly
   public static String getSdkEnv(String packageName) {
-    return (String) OptiUtils.getBuildConfig(packageName,"OPTIMOVE_SDK_RUNTIME_ENV","prod");
+    String defaultValue = "prod";
+    if (packageName == null) {
+      return defaultValue;
+    } else {
+      return (String) OptiUtils.getBuildConfig(packageName,"OPTIMOVE_SDK_RUNTIME_ENV",defaultValue);
+    }
   }
 
   public static String SHA1(String text) {
