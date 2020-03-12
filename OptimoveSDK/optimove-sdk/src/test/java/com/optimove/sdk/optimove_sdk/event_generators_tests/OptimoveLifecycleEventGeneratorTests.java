@@ -11,7 +11,7 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.AppOpenEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,7 +50,7 @@ public class OptimoveLifecycleEventGeneratorTests {
     SharedPreferences.Editor editor;
 
     @Mock
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
 
 
     private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
@@ -71,7 +71,7 @@ public class OptimoveLifecycleEventGeneratorTests {
         when(editor.putInt(anyString(), anyInt())).thenReturn(editor);
 
         optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                "some_package_name", optitrackPreferences, requirementProvider);
+                "some_package_name", optitrackPreferences, deviceInfoProvider);
     }
     @Test
     public void appOpenShouldBeReportedWhenActivityFirstStarts() {
@@ -92,7 +92,7 @@ public class OptimoveLifecycleEventGeneratorTests {
 
     @Test
     public void optInShouldBeSentWhenWasntOptinAndCurrentlyIs() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_OUT);
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
@@ -110,7 +110,7 @@ public class OptimoveLifecycleEventGeneratorTests {
 
     @Test
     public void optOutShouldBeSentWhenWasOptinAndCurrentlyIsnt() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(false);
         when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_IN);
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));

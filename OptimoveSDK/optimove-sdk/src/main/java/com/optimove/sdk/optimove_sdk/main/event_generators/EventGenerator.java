@@ -12,7 +12,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
 import org.matomo.sdk.tools.BuildInfo;
 import org.matomo.sdk.tools.DeviceHelper;
@@ -23,7 +23,7 @@ public class EventGenerator {
     private UserInfo userInfo;
     private String packageName;
     private String encryptedDeviceId;
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     private TenantInfo tenantInfo;
     private EventHandlerProvider eventHandlerProvider;
     private Context context;
@@ -33,7 +33,7 @@ public class EventGenerator {
         userInfo = builder.userInfo;
         packageName = builder.packageName;
         encryptedDeviceId = builder.encryptedDeviceId;
-        requirementProvider = builder.requirementProvider;
+        deviceInfoProvider = builder.deviceInfoProvider;
         tenantInfo = builder.tenantInfo;
         eventHandlerProvider = builder.eventHandlerProvider;
         context = builder.context;
@@ -53,7 +53,7 @@ public class EventGenerator {
             return;
         }
 
-        if (requirementProvider.canReportAdId()) {
+        if (deviceInfoProvider.canReportAdId()) {
             String advertisingId = userInfo.getAdvertisingId();
             if (advertisingId == null) {
                 return;
@@ -67,15 +67,15 @@ public class EventGenerator {
 
 
     private void reportMetadataEvent() {
-        String language = requirementProvider.getDeviceLanguage()
+        String language = deviceInfoProvider.getDeviceLanguage()
                 .replace('_', '-').toLowerCase();
-        Location location = requirementProvider.getDeviceLocation(context);
+        Location location = deviceInfoProvider.getDeviceLocation(context);
         String cityName = null;
         String locationLongitude = null;
         String locationLatitude = null;
 
         if (location != null) {
-            cityName = requirementProvider.getCityNameFromLocation(context, location);
+            cityName = deviceInfoProvider.getCityNameFromLocation(context, location);
             locationLongitude = String.valueOf(location.getLongitude());
             locationLatitude = String.valueOf(location.getLatitude());
         }
@@ -89,7 +89,7 @@ public class EventGenerator {
                         .withLocation(cityName)
                         .withLocationLongitude(locationLongitude)
                         .withLocationLatitude(locationLatitude)
-                        .withIp(requirementProvider.getIP(context))
+                        .withIp(deviceInfoProvider.getIP(context))
                         .withLanguage(language)
                         .withConfigFileUrl(String.format("%s%s/%s.json", ConfigsFetcher.TENANT_CONFIG_FILE_BASE_URL, tenantInfo.getTenantToken(), tenantInfo.getConfigName()))
                         .build();
@@ -127,7 +127,7 @@ public class EventGenerator {
     }
 
     public interface IRequirementProvider {
-        ITenantInfo withRequirementProvider(RequirementProvider val);
+        ITenantInfo withRequirementProvider(DeviceInfoProvider val);
     }
 
     public interface IDeviceId {
@@ -147,7 +147,7 @@ public class EventGenerator {
         private Context context;
         private EventHandlerProvider eventHandlerProvider;
         private TenantInfo tenantInfo;
-        private RequirementProvider requirementProvider;
+        private DeviceInfoProvider deviceInfoProvider;
         private String encryptedDeviceId;
         private String packageName;
         private UserInfo userInfo;
@@ -174,8 +174,8 @@ public class EventGenerator {
         }
 
         @Override
-        public ITenantInfo withRequirementProvider(RequirementProvider val) {
-            requirementProvider = val;
+        public ITenantInfo withRequirementProvider(DeviceInfoProvider val) {
+            deviceInfoProvider = val;
             return this;
         }
 

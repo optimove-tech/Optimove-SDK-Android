@@ -10,7 +10,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.AppOpenEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -28,18 +28,18 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
     private UserInfo userInfo;
     private String fullPackageName;
     private SharedPreferences optitrackPreferences;
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
 
 
     public OptimoveLifecycleEventGenerator(EventHandlerProvider eventHandlerProvider, UserInfo userInfo,
                                            String fullPackageName,
                                            SharedPreferences optitrackPreferences,
-                                           RequirementProvider requirementProvider) {
+                                           DeviceInfoProvider deviceInfoProvider) {
         this.eventHandlerProvider = eventHandlerProvider;
         this.userInfo = userInfo;
         this.fullPackageName = fullPackageName;
         this.optitrackPreferences = optitrackPreferences;
-        this.requirementProvider = requirementProvider;
+        this.deviceInfoProvider = deviceInfoProvider;
         this.foregroundSessionEndTime = -1;
     }
 
@@ -83,7 +83,7 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
         } else {
             boolean wasOptIn = lastReportedOpt == LAST_REPORTED_OPT_IN;
 
-            boolean currentlyOptIn = requirementProvider.notificaionsAreEnabled();
+            boolean currentlyOptIn = deviceInfoProvider.notificaionsAreEnabled();
             if (wasOptIn == currentlyOptIn) {
                 return;
             }

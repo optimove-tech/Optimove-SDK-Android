@@ -11,7 +11,7 @@ import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -32,15 +32,15 @@ public class OptipushMessageCommand {
 
     private Context context;
     private EventHandler eventHandler;
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     private NotificationCreator notificationCreator;
     private String fullPackageName;
 
     public OptipushMessageCommand(Context context, EventHandler eventHandler,
-                                  RequirementProvider requirementProvider, NotificationCreator notificationCreator) {
+                                  DeviceInfoProvider deviceInfoProvider, NotificationCreator notificationCreator) {
         this.context = context;
         this.eventHandler = eventHandler;
-        this.requirementProvider = requirementProvider;
+        this.deviceInfoProvider = deviceInfoProvider;
         this.notificationCreator = notificationCreator;
         this.fullPackageName = context.getPackageName();
     }
@@ -169,7 +169,7 @@ public class OptipushMessageCommand {
      * ******************************/
 
     private void showNotificationIfUserIsOptIn(NotificationData notificationData) {
-        boolean optIn = requirementProvider.notificaionsAreEnabled();
+        boolean optIn = deviceInfoProvider.notificaionsAreEnabled();
         if (!optIn) {
             OptiLogger.optipushNotificationNotPresented_WhenUserIdOptOut();
             return;

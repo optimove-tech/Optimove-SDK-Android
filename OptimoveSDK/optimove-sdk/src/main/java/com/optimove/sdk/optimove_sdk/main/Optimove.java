@@ -20,7 +20,7 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
@@ -67,14 +67,14 @@ final public class Optimove {
     private EventHandlerProvider eventHandlerProvider;
     private OptipushManager optipushManager;
     private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     private AtomicBoolean configSet;
     private LifecycleObserver lifecycleObserver;
 
     private Optimove(Context context) {
         this.context = context;
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
-        this.requirementProvider = new RequirementProvider(context);
+        this.deviceInfoProvider = new DeviceInfoProvider(context);
         this.tenantInfo = null;
         this.userInfo = UserInfo.newInstance(context);
 
@@ -91,10 +91,10 @@ final public class Optimove {
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory, lifecycleObserver);
 
         this.optipushManager = new OptipushManager(new RegistrationDao(context),
-                requirementProvider, HttpClient.getInstance(context), lifecycleObserver, context);
+                deviceInfoProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 ApplicationHelper.getFullPackageName(context),
-                context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), requirementProvider);
+                context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), deviceInfoProvider);
         this.configSet = new AtomicBoolean(false);
     }
 
@@ -226,7 +226,7 @@ final public class Optimove {
                         .withUserInfo(userInfo)
                         .withPackageName(ApplicationHelper.getFullPackageName(context))
                         .withDeviceId(userInfo.getInstallationId())
-                        .withRequirementProvider(requirementProvider)
+                        .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)

@@ -6,7 +6,7 @@ import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
@@ -47,7 +47,7 @@ public class OptipushUserRegistrarTests {
     @Mock
     private HttpClient.RequestBuilder<JSONObject> requestBuilder;
     @Mock
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     @Mock
     private RegistrationDao registrationDao;
     @Mock
@@ -87,7 +87,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.getFailedUserAliases()).thenReturn(null);
         when(registrationDao.isApiV3Synced()).thenReturn(true);
 
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         when(registrationDao.getLastToken()).thenReturn(token);
 
 
@@ -95,11 +95,11 @@ public class OptipushUserRegistrarTests {
 
     @Test
     public void optipushUserRegistrarCreateShouldOptOutUserIfCurrentlyOptoutAndWasOptin() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(false);
         when(registrationDao.wasTheUserOptIn()).thenReturn(true);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
@@ -108,11 +108,11 @@ public class OptipushUserRegistrarTests {
 
     @Test
     public void optipushUserRegistrarCreateShouldOptInUserIfCurrentlyOptinAndWasOptout() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         when(registrationDao.wasTheUserOptIn()).thenReturn(false);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
@@ -121,12 +121,12 @@ public class OptipushUserRegistrarTests {
 
     @Test
     public void optipushUserRegistrarCreateShouldntOptOrOutIfThereIsNoToken() {
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         when(registrationDao.wasTheUserOptIn()).thenReturn(false);
         when(registrationDao.getLastToken()).thenReturn(null);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verifyZeroInteractions(httpClient);
@@ -146,7 +146,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.isSetInstallationMarkedAsFailed()).thenReturn(true);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, lifecycleObserver, metadata);
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo, lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
                 (assertArg(arg -> Assert.assertTrue(jsonTokenMatchToken(arg, token)))));
@@ -169,7 +169,7 @@ public class OptipushUserRegistrarTests {
         when(registrationDao.getFailedUserAliases()).thenReturn(userAliases);
 
         OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         verify(httpClient).postJsonWithoutJsonResponse((assertArg(arg -> Assert.assertEquals(arg, registrationEndPoint))),
@@ -183,7 +183,7 @@ public class OptipushUserRegistrarTests {
 
         String newToken = "new_token";
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         when(registrationDao.getLastToken()).thenReturn(newToken);
 
@@ -199,7 +199,7 @@ public class OptipushUserRegistrarTests {
         when(userInfo.getUserId()).thenReturn(userId);
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
         optipushUserRegistrar.userIdChanged();
@@ -228,7 +228,7 @@ public class OptipushUserRegistrarTests {
                 .errorListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
@@ -252,7 +252,7 @@ public class OptipushUserRegistrarTests {
                 .successListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
@@ -275,7 +275,7 @@ public class OptipushUserRegistrarTests {
                 .errorListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userTokenChanged();
 
@@ -298,7 +298,7 @@ public class OptipushUserRegistrarTests {
                 .successListener(any());
 
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
         optipushUserRegistrar.userIdChanged();
 
@@ -314,10 +314,10 @@ public class OptipushUserRegistrarTests {
     @Test
     public void activityStartedOptinChangedAndTokenExistsShouldTriggerInstallationRequest(){
         OptipushUserRegistrar optipushUserRegistrar = OptipushUserRegistrar.create(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo,
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo,
                 lifecycleObserver, metadata);
 
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(false);
 
         lifecycleObserver.onActivityStarted(Mockito.mock(Activity.class));
 

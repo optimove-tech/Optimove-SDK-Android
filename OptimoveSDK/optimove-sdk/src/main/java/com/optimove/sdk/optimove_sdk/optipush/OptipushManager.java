@@ -14,7 +14,7 @@ import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
@@ -30,7 +30,7 @@ public final class OptipushManager {
     @NonNull
     private RegistrationDao registrationDao;
     @NonNull
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     @NonNull
     private HttpClient httpClient;
     @NonNull
@@ -41,11 +41,11 @@ public final class OptipushManager {
     @Nullable
     private OptipushUserRegistrar optipushUserRegistrar;
 
-    public OptipushManager(@NonNull RegistrationDao registrationDao,@NonNull RequirementProvider requirementProvider,
+    public OptipushManager(@NonNull RegistrationDao registrationDao,@NonNull DeviceInfoProvider deviceInfoProvider,
                            @NonNull HttpClient httpClient,@NonNull LifecycleObserver lifecycleObserver,
                            @NonNull Context context) {
         this.registrationDao = registrationDao;
-        this.requirementProvider = requirementProvider;
+        this.deviceInfoProvider = deviceInfoProvider;
         this.httpClient = httpClient;
         this.lifecycleObserver = lifecycleObserver;
         this.context = context;
@@ -79,7 +79,7 @@ public final class OptipushManager {
         new OptipushMessageCommand(context, Optimove.getInstance()
                 .getEventHandlerProvider()
                 .getEventHandler(),
-                new RequirementProvider(context), notificationCreator)
+                new DeviceInfoProvider(context), notificationCreator)
                 .processRemoteMessage(executionTimeLimitInMs, remoteMessage, JsonUtils.parseJsonMap(remoteMessage.getData(),
                         NotificationData.class));
     }
@@ -108,7 +108,7 @@ public final class OptipushManager {
 
 
     public void processConfigs(OptipushConfigs optipushConfigs, int tenantId, UserInfo userInfo) {
-        if (!requirementProvider.isGooglePlayServicesAvailable()) {
+        if (!deviceInfoProvider.isGooglePlayServicesAvailable()) {
             return;
         }
 
@@ -119,7 +119,7 @@ public final class OptipushManager {
 
         this.optipushUserRegistrar =
                 OptipushUserRegistrar.create(optipushConfigs.getRegistrationServiceEndpoint(), httpClient,
-                        context.getPackageName(), tenantId, requirementProvider, registrationDao, userInfo,
+                        context.getPackageName(), tenantId, deviceInfoProvider, registrationDao, userInfo,
                         lifecycleObserver, getMetadata());
 
         new OptipushFcmTokenHandler().completeLastTokenRefreshIfFailed();

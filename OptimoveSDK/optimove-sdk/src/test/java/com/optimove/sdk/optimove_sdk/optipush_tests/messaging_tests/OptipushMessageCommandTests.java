@@ -1,7 +1,6 @@
 package com.optimove.sdk.optimove_sdk.optipush_tests.messaging_tests;
 
 import android.content.Context;
-import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -9,7 +8,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 import com.optimove.sdk.optimove_sdk.optipush.campaigns.ScheduledCampaign;
 import com.optimove.sdk.optimove_sdk.optipush.campaigns.TriggeredCampaign;
@@ -24,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.Map;
 
@@ -47,7 +45,7 @@ public class OptipushMessageCommandTests {
     @Mock
     private EventHandler eventHandler;
     @Mock
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     @Mock
     private NotificationCreator notificationCreator;
 
@@ -65,7 +63,7 @@ public class OptipushMessageCommandTests {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        optipushMessageCommand = new OptipushMessageCommand(ApplicationProvider.getApplicationContext(),eventHandler,requirementProvider,
+        optipushMessageCommand = new OptipushMessageCommand(ApplicationProvider.getApplicationContext(),eventHandler, deviceInfoProvider,
                 notificationCreator);
         when(remoteMessage.getData()).thenReturn(remoteMessageData);
         when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS)).thenReturn("some_dl_string");
@@ -90,7 +88,7 @@ public class OptipushMessageCommandTests {
     @Test
     public void shouldCallShowNotificationIfNotificationsAreEnabled() {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
 
         optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
         verify(notificationCreator).showNotification(notificationData);
@@ -98,7 +96,7 @@ public class OptipushMessageCommandTests {
     @Test
     public void shouldCallShowNotificationIfNotificationsAreEnabledAndDlStringIsNull() {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS)).thenReturn(null);
 
         optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
@@ -107,7 +105,7 @@ public class OptipushMessageCommandTests {
     @Test
     public void shouldntCallShowNotificationIfNotificationsAreNotEnabled() {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(false);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(false);
 
         optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
         verifyZeroInteractions(notificationCreator);
@@ -116,10 +114,10 @@ public class OptipushMessageCommandTests {
     public void shouldDoNothingIfContextDoesntContainSystemService() {
         Context context = mock(Context.class);
         OptipushMessageCommand optipushMessageCommand = new OptipushMessageCommand(context,eventHandler,
-                requirementProvider,
+                deviceInfoProvider,
                 notificationCreator);
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
 
         optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
         verifyZeroInteractions(notificationCreator);

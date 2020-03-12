@@ -4,7 +4,7 @@ package com.optimove.sdk.optimove_sdk.optipush.registration;
 import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.registration.requests.InstallationRequest;
@@ -19,21 +19,21 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     private HttpClient httpClient;
     private String packageName;
     private int tenantId;
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     private RegistrationDao registrationDao;
     private UserInfo userInfo;
     private Metadata metadata;
 
     private OptipushUserRegistrar(String registrationEndPoint,
                                   HttpClient httpClient, String packageName, int tenantId,
-                                  RequirementProvider requirementProvider,
+                                  DeviceInfoProvider deviceInfoProvider,
                                   RegistrationDao registrationDao, UserInfo userInfo,
                                   Metadata metadata) {
         this.registrationEndPoint = registrationEndPoint;
         this.httpClient = httpClient;
         this.packageName = packageName;
         this.tenantId = tenantId;
-        this.requirementProvider = requirementProvider;
+        this.deviceInfoProvider = deviceInfoProvider;
         this.registrationDao = registrationDao;
         this.userInfo = userInfo;
         this.metadata = metadata;
@@ -41,11 +41,11 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
 
     public static OptipushUserRegistrar create(String registrationEndPoint,
                                                HttpClient httpClient, String packageName, int tenantId,
-                                               RequirementProvider requirementProvider,
+                                               DeviceInfoProvider deviceInfoProvider,
                                                RegistrationDao registrationDao, UserInfo userInfo,
                                                LifecycleObserver lifecycleObserver, Metadata metadata) {
         OptipushUserRegistrar optipushUserRegistrar = new OptipushUserRegistrar(registrationEndPoint, httpClient,
-                packageName, tenantId, requirementProvider, registrationDao, userInfo, metadata);
+                packageName, tenantId, deviceInfoProvider, registrationDao, userInfo, metadata);
         optipushUserRegistrar.registerIfNeeded();
         lifecycleObserver.addActivityStartedListener(optipushUserRegistrar);
 
@@ -102,7 +102,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     }
 
     private boolean checkIfOptInOutWasChanged() {
-        boolean currentUserOptIn = requirementProvider.notificaionsAreEnabled();
+        boolean currentUserOptIn = deviceInfoProvider.notificaionsAreEnabled();
         boolean previousUserOptIn = registrationDao.wasTheUserOptIn();
         return currentUserOptIn != previousUserOptIn;
     }
@@ -117,7 +117,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                         .withPushProvider("fcm")
                         .withPackageName(packageName)
                         .withOs("android")
-                        .withOptIn(requirementProvider.notificaionsAreEnabled())
+                        .withOptIn(deviceInfoProvider.notificaionsAreEnabled())
                         .withIsDev(false)
                         .withIsPushCampaignsDisabled(registrationDao.isPushCampaignsDisabled())
                         .withMetadata(metadata)
@@ -143,7 +143,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
     private void setInstallationSucceeded(JSONObject jsonObject) {
         registrationDao.editFlags()
                 .unmarkSetInstallationAsFailed()
-                .updateLastOptInStatus(requirementProvider.notificaionsAreEnabled())
+                .updateLastOptInStatus(deviceInfoProvider.notificaionsAreEnabled())
                 .unmarkAddUserAliaseAsFailed() //for previous versions fails - the rare case when there are fails
                 // before an app upgrade
                 .save();

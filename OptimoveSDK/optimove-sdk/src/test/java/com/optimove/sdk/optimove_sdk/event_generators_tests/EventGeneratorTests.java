@@ -12,7 +12,7 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
-import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,7 +50,7 @@ public class EventGeneratorTests {
     private String encryptedDeviceId = "some_encrypted_device_id";
     private String location = "some_location";
     @Mock
-    private RequirementProvider requirementProvider;
+    private DeviceInfoProvider deviceInfoProvider;
     @Mock
     private TenantInfo tenantInfo;
     @Mock
@@ -79,8 +79,8 @@ public class EventGeneratorTests {
         when(eventHandlerProvider.getEventHandler()).thenReturn(eventHandler);
 
         Location location = mock(Location.class);
-        when(requirementProvider.getDeviceLocation(context)).thenReturn(location);
-        when(requirementProvider.getDeviceLanguage()).thenReturn("some_device_lang");
+        when(deviceInfoProvider.getDeviceLocation(context)).thenReturn(location);
+        when(deviceInfoProvider.getDeviceLanguage()).thenReturn("some_device_lang");
 
 
         eventGenerator =
@@ -88,7 +88,7 @@ public class EventGeneratorTests {
                         .withUserInfo(userInfo)
                         .withPackageName(packageName)
                         .withDeviceId(encryptedDeviceId)
-                        .withRequirementProvider(requirementProvider)
+                        .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)
@@ -110,7 +110,7 @@ public class EventGeneratorTests {
 
     @Test
     public void adIdShouldBeReportedIfAdIdAllowedAndCanReportAdAndAdvertisingIdIsNotNull() {
-        when(requirementProvider.canReportAdId()).thenReturn(true);
+        when(deviceInfoProvider.canReportAdId()).thenReturn(true);
         when(userInfo.getAdvertisingId()).thenReturn("sdfgdsf");
         eventGenerator.generateStartEvents(true);
         verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
@@ -124,14 +124,14 @@ public class EventGeneratorTests {
     }
     @Test
     public void adIdShouldntBeReportedIfCantReportAdId() {
-        when(requirementProvider.canReportAdId()).thenReturn(false);
+        when(deviceInfoProvider.canReportAdId()).thenReturn(false);
         eventGenerator.generateStartEvents(true);
         verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
                 .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
     }
     @Test
     public void adIdShouldntBeReportedIfAdvertisingIdIsNull() {
-        when(requirementProvider.canReportAdId()).thenReturn(true);
+        when(deviceInfoProvider.canReportAdId()).thenReturn(true);
         when(userInfo.getAdvertisingId()).thenReturn(null);
         eventGenerator.generateStartEvents(true);
         verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
@@ -140,7 +140,7 @@ public class EventGeneratorTests {
     @Test
     public void neitherOptInNorOptOutShouldBeSentWhenWasOptinAndCurrentlyOptIn() {
         when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_IN);
-        when(requirementProvider.notificaionsAreEnabled()).thenReturn(true);
+        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         eventGenerator.generateStartEvents(false);
         verifyZeroInteractions(editor);
     }

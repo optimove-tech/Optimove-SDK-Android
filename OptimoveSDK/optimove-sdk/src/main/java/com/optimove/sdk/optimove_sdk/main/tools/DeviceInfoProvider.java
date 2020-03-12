@@ -29,11 +29,11 @@ import java.util.Locale;
 import static android.content.Context.LOCATION_SERVICE;
 import static android.content.Context.WIFI_SERVICE;
 
-public class RequirementProvider {
+public class DeviceInfoProvider {
 
     private Context context;
 
-    public RequirementProvider(Context context) {
+    public DeviceInfoProvider(Context context) {
         this.context = context;
     }
 
