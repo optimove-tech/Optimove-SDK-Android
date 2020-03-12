@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
-apply from: 'optimove-sdk-plugin.gradle'
 
 group = 'com.optimove.sdk'
 

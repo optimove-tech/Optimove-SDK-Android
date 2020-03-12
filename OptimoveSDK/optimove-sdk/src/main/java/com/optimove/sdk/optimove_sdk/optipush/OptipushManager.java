@@ -8,10 +8,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.firebase.messaging.RemoteMessage;
+import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
@@ -134,7 +134,7 @@ public final class OptipushManager {
         } catch (PackageManager.NameNotFoundException e) {
             appVersion = "VersionNotFound";
         }
-        return new Metadata(SdkMetadataEvent.NATIVE_SDK_VERSION, appVersion, Build.VERSION.RELEASE,
+        return new Metadata(BuildConfig.VERSION_NAME, appVersion, Build.VERSION.RELEASE,
                 Build.MODEL);
     }
 }

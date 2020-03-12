@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.event_generators_tests;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.TenantInfo;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,6 +48,7 @@ public class EventGeneratorTests {
 
     private String packageName = "package_name";
     private String encryptedDeviceId = "some_encrypted_device_id";
+    private String location = "some_location";
     @Mock
     private RequirementProvider requirementProvider;
     @Mock
@@ -74,6 +77,10 @@ public class EventGeneratorTests {
         when(userInfo.getAdvertisingId()).thenReturn("asdgsdfg");
 
         when(eventHandlerProvider.getEventHandler()).thenReturn(eventHandler);
+
+        Location location = mock(Location.class);
+        when(requirementProvider.getDeviceLocation(context)).thenReturn(location);
+        when(requirementProvider.getDeviceLanguage()).thenReturn("some_device_lang");
 
 
         eventGenerator =

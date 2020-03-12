@@ -1,32 +1,22 @@
 package com.optimove.sdk.optimove_sdk.main.event_generators;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.location.Location;
 
+import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.TenantInfo;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
-import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
+import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.RequirementProvider;
 
 import org.matomo.sdk.tools.BuildInfo;
 import org.matomo.sdk.tools.DeviceHelper;
 import org.matomo.sdk.tools.PropertySource;
-
-import java.util.concurrent.TimeUnit;
-
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_IN;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_OUT;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_SP_NAME;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class EventGenerator {
 
@@ -48,7 +38,6 @@ public class EventGenerator {
         eventHandlerProvider = builder.eventHandlerProvider;
         context = builder.context;
     }
-
 
 
     public void generateStartEvents(boolean advertisingIdReportEnabled) {
@@ -78,8 +67,35 @@ public class EventGenerator {
 
 
     private void reportMetadataEvent() {
+        String language = requirementProvider.getDeviceLanguage()
+                .replace('_', '-').toLowerCase();
+        Location location = requirementProvider.getDeviceLocation(context);
+        String cityName = null;
+        String locationLongitude = null;
+        String locationLatitude = null;
+
+        if (location != null) {
+            cityName = requirementProvider.getCityNameFromLocation(context, location);
+            locationLongitude = String.valueOf(location.getLongitude());
+            locationLatitude = String.valueOf(location.getLatitude());
+        }
+
+
+        SdkMetadataEvent sdkMetadataEvent =
+                SdkMetadataEvent.builder()
+                        .withSdkPlatform("Android")
+                        .withSdkVersion(BuildConfig.VERSION_NAME)
+                        .withAppNs(packageName)
+                        .withLocation(cityName)
+                        .withLocationLongitude(locationLongitude)
+                        .withLocationLatitude(locationLatitude)
+                        .withIp(requirementProvider.getIP(context))
+                        .withLanguage(language)
+                        .withConfigFileUrl(String.format("%s%s/%s.json", ConfigsFetcher.TENANT_CONFIG_FILE_BASE_URL, tenantInfo.getTenantToken(), tenantInfo.getConfigName()))
+                        .build();
+
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(new SdkMetadataEvent(tenantInfo, packageName)));
+                .reportEvent(new EventContext(sdkMetadataEvent));
     }
 
     private void reportUserAgent() {
@@ -87,6 +103,7 @@ public class EventGenerator {
                 .reportEvent(new EventContext(new UserAgentHeaderEvent(new DeviceHelper(context, new PropertySource(),
                         new BuildInfo()).getUserAgent())));
     }
+
 
     public static IUserInfo builder() {
         return new Builder();
