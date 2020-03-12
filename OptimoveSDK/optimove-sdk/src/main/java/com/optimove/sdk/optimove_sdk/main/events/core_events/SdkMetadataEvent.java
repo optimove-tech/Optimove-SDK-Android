@@ -56,8 +56,8 @@ public class SdkMetadataEvent implements OptimoveEvent {
   @Override
   public Map<String, Object> getParameters() {
     Map<String, Object> params = new HashMap<>(3);
-    params.put(SDK_PLATFORM_PARAM_KEY, this.sdkPlatform);
-    params.put(SDK_VERSION_PARAM_KEY, this.sdkVersion);
+    params.put(SDK_PLATFORM_PARAM_KEY, sdkPlatform);
+    params.put(SDK_VERSION_PARAM_KEY, sdkVersion);
     params.put(CONFIG_FILE_URL_PARAM_KEY, configFileUrl);
     params.put(APP_NS_PARAM_KEY, appNs);
 
