@@ -109,7 +109,7 @@ public class DeviceInfoProvider {
     }
 
     public String getCityNameFromLocation(Context context, @NonNull Location location){
-        Geocoder gcd = new Geocoder(context, Locale.getDefault());
+        Geocoder gcd = new Geocoder(context, Locale.ENGLISH);
 
         try {
             List<Address> addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
