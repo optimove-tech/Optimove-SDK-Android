@@ -14,8 +14,7 @@ import java.util.Map;
 
 public class SdkLogsServiceOutputStream implements OptiLoggerOutputStream {
 
-  private static final String LOG_SERVICE_BASE_URL = "https://us-central1-mobilepush-161510.cloudfunctions.net/";
-  private static final String REPORT_LOG_PATH = "reportLog";
+  private static final String LOG_SERVICE_BASE_URL = "https://mbaas-qa.optimove.net/report/log";
 
   private Context context;
   private int tenantId;
@@ -46,7 +45,6 @@ public class SdkLogsServiceOutputStream implements OptiLoggerOutputStream {
   public void reportLog(LogLevel logLevel, String logClass, String logMethod, String message) {
     HttpClient.getInstance(context)
         .postJson(LOG_SERVICE_BASE_URL, getRequestBody(logClass, logMethod, parseLogLevelJsonValue(logLevel), message))
-        .destination(REPORT_LOG_PATH)
         .send();
   }
 
