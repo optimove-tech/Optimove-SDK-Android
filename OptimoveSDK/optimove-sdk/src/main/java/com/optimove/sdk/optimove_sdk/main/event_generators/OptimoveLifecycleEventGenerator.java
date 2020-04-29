@@ -2,15 +2,14 @@ package com.optimove.sdk.optimove_sdk.main.event_generators;
 
 import android.content.SharedPreferences;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.AppOpenEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -68,15 +67,15 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
         AppOpenEvent appOpenEvent =
                 new AppOpenEvent(userInfo.getUserId(), userInfo.getVisitorId(), fullPackageName
                         , userInfo.getInstallationId());
-        eventHandlerProvider.getEventHandler().reportEvent(new EventContext(appOpenEvent));
+        eventHandlerProvider.getEventHandler().reportEvent(appOpenEvent);
         foregroundSessionEndTime = System.currentTimeMillis(); //Reset the timer to prevent duplicate reports
     }
     private void reportOptInOrOut() {
         int lastReportedOpt = optitrackPreferences.getInt(LAST_OPT_REPORTED_KEY, -1);
         if (lastReportedOpt == -1) {
             eventHandlerProvider.getEventHandler()
-                    .reportEvent(new EventContext(new OptipushOptIn(fullPackageName,
-                            userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
+                    .reportEvent(new OptipushOptIn(fullPackageName,
+                            userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()));
             optitrackPreferences.edit()
                     .putInt(LAST_OPT_REPORTED_KEY, LAST_REPORTED_OPT_IN)
                     .apply();
@@ -89,10 +88,10 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
             }
             eventHandlerProvider.getEventHandler()
                     .reportEvent(currentlyOptIn ?
-                            new EventContext(new OptipushOptIn(fullPackageName, userInfo.getInstallationId(),
-                                    OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout) :
-                            new EventContext(new OptipushOptOut(fullPackageName,
-                                    userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()),optInOutExecutionTimeout));
+                            new OptipushOptIn(fullPackageName, userInfo.getInstallationId(),
+                                    OptiUtils.currentTimeSeconds()) :
+                            new OptipushOptOut(fullPackageName,
+                                    userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()));
             optitrackPreferences.edit()
                     .putInt(LAST_OPT_REPORTED_KEY, currentlyOptIn ? LAST_REPORTED_OPT_IN : LAST_REPORTED_OPT_OUT)
                     .apply();

@@ -7,7 +7,6 @@ import android.support.annotation.VisibleForTesting;
 
 import com.android.volley.VolleyError;
 import com.google.firebase.messaging.RemoteMessage;
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
@@ -53,13 +52,11 @@ public class OptipushMessageCommand {
         }
 
         if (notificationData.getScheduledCampaign() != null) {
-            eventHandler.reportEvent(new EventContext(new ScheduledNotificationDeliveredEvent(notificationData.getScheduledCampaign(),
-                    System.currentTimeMillis(), fullPackageName),
-                    executionTimeInMilliseconds));
+            eventHandler.reportEvent(new ScheduledNotificationDeliveredEvent(notificationData.getScheduledCampaign(),
+                    System.currentTimeMillis(), fullPackageName));
         } else if (notificationData.getTriggeredCampaign() != null) {
-            eventHandler.reportEvent(new EventContext(new TriggeredNotificationDeliveredEvent(notificationData.getTriggeredCampaign(),
-                    System.currentTimeMillis(), fullPackageName), executionTimeInMilliseconds
-            ));
+            eventHandler.reportEvent(new TriggeredNotificationDeliveredEvent(notificationData.getTriggeredCampaign(),
+                    System.currentTimeMillis(), fullPackageName));
         }
 
 

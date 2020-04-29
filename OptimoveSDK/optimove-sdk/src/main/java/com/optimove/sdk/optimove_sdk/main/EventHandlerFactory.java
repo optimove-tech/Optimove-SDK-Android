@@ -2,7 +2,6 @@ package com.optimove.sdk.optimove_sdk.main;
 
 import android.content.Context;
 
-import com.optimove.sdk.optimove_sdk.main.event_handlers.ComponentPool;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
@@ -58,11 +57,6 @@ public class EventHandlerFactory {
 
     public EventDecorator getEventDecorator(Map<String, EventConfigs> eventConfigs) {
         return new EventDecorator(eventConfigs);
-    }
-
-    public ComponentPool getComponentPool(Map<String, EventConfigs> eventConfigs, OptitrackManager optitrackManager,
-                                          RealtimeManager realtimeManager) {
-        return new ComponentPool(eventConfigs, optitrackManager, realtimeManager);
     }
 
     public RealtimeManager getRealtimeManager(RealtimeConfigs realtimeConfigs, Map<String, EventConfigs> eventConfigs) {

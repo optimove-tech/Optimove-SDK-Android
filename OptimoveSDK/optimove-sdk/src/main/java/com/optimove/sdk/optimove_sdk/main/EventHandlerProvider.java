@@ -1,6 +1,5 @@
 package com.optimove.sdk.optimove_sdk.main;
 
-import com.optimove.sdk.optimove_sdk.main.event_handlers.ComponentPool;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
@@ -57,12 +56,10 @@ public class EventHandlerProvider {
             OptitrackManager optitrackManager =
                     eventHandlerFactory.getOptitrackManager(configs.getOptitrackConfigs(), configs.getEventsConfigs()
                             , lifecycleObserver);
-            ComponentPool componentPool = eventHandlerFactory.getComponentPool(configs.getEventsConfigs(),
-                    optitrackManager, realtimeManager);
 
             eventNormalizer.setNext(eventValidator);
             eventValidator.setNext(eventDecorator);
-            eventDecorator.setNext(componentPool);
+            //optistream
 
             eventMemoryBuffer.setNext(eventNormalizer);
         });

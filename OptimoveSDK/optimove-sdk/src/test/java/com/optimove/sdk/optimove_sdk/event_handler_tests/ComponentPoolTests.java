@@ -1,7 +1,5 @@
 package com.optimove.sdk.optimove_sdk.event_handler_tests;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
-import com.optimove.sdk.optimove_sdk.main.event_handlers.ComponentPool;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.SimpleCustomEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
@@ -14,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;

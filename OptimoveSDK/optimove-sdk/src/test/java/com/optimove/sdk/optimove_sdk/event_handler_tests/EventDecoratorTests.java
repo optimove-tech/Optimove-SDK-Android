@@ -1,6 +1,5 @@
 package com.optimove.sdk.optimove_sdk.event_handler_tests;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;

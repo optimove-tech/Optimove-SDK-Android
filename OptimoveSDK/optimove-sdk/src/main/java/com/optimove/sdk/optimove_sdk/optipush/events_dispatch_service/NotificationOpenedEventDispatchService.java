@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
@@ -41,16 +40,14 @@ public class NotificationOpenedEventDispatchService extends Service {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
-                    .reportEvent(new EventContext(new TriggeredNotificationOpenedEvent(triggeredCampaign,
-                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this)),
-                            executionTimeInMilliseconds));
+                    .reportEvent(new TriggeredNotificationOpenedEvent(triggeredCampaign,
+                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this)));
         } else if (scheduledCampaign != null) {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
-                    .reportEvent(new EventContext(new ScheduledNotificationOpenedEvent(scheduledCampaign,
-                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this)),
-                            executionTimeInMilliseconds));
+                    .reportEvent(new ScheduledNotificationOpenedEvent(scheduledCampaign,
+                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this)));
         }
         new Thread(() -> {
             try {

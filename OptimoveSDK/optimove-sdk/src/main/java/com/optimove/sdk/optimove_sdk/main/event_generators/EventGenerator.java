@@ -4,7 +4,6 @@ import android.content.Context;
 import android.location.Location;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.TenantInfo;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
@@ -60,8 +59,8 @@ public class EventGenerator {
             }
 
             eventHandlerProvider.getEventHandler()
-                    .reportEvent(new EventContext(new SetAdvertisingIdEvent(advertisingId,
-                            packageName, encryptedDeviceId)));
+                    .reportEvent(new SetAdvertisingIdEvent(advertisingId,
+                            packageName, encryptedDeviceId));
         }
     }
 
@@ -95,13 +94,13 @@ public class EventGenerator {
                         .build();
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(sdkMetadataEvent));
+                .reportEvent(sdkMetadataEvent);
     }
 
     private void reportUserAgent() {
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(new UserAgentHeaderEvent(new DeviceHelper(context, new PropertySource(),
-                        new BuildInfo()).getUserAgent())));
+                .reportEvent(new UserAgentHeaderEvent(new DeviceHelper(context, new PropertySource(),
+                        new BuildInfo()).getUserAgent()));
     }
 
 

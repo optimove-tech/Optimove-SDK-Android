@@ -358,7 +358,7 @@ final public class Optimove {
         SetUserIdEvent setUserIdEvent = new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(setUserIdEvent));
+                .reportEvent(setUserIdEvent);
         optipushManager
                 .userIdChanged();
     }
@@ -416,7 +416,7 @@ final public class Optimove {
         }
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(optimoveEvent));
+                .reportEvent(optimoveEvent);
     }
 
     public void reportScreenVisit(@NonNull String screenName) {
@@ -431,7 +431,7 @@ final public class Optimove {
         }
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new EventContext(new SetPageVisitEvent(screenName.trim(), screenCategory)));
+                .reportEvent(new SetPageVisitEvent(screenName.trim(), screenCategory));
     }
 
     public void disablePushCampaigns(){
