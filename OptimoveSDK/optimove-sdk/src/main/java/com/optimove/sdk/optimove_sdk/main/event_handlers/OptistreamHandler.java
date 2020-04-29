@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class OptistreamHandler extends EventHandler, implements LifecycleObserver.ActivityStopped {
+public class OptistreamHandler extends EventHandler implements LifecycleObserver.ActivityStopped {
 
     @NonNull
     private HttpClient httpClient;

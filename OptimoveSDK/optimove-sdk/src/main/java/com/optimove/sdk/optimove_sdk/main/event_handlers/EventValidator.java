@@ -1,8 +1,8 @@
 package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
 import com.optimove.sdk.optimove_sdk.main.events.EventValidationResult;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEventValidator;
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 
@@ -18,19 +18,19 @@ public class EventValidator extends EventHandler {
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public void reportEvent(EventContext eventContext) {
-        String eventName = eventContext.getOptimoveEvent().getName();
+    public void reportEvent(OptimoveEvent optimoveEvent) {
+        String eventName = optimoveEvent.getName();
         if (!eventConfigsMap.containsKey(eventName)) {
             OptiLogger.eventDoesntAppearInConfigs(eventName);
             return;
         }
         EventValidationResult validationResult =
-                new OptimoveEventValidator(eventContext.getOptimoveEvent(), eventConfigsMap.get(eventName)).validateEvent();
+                new OptimoveEventValidator(optimoveEvent, eventConfigsMap.get(eventName)).validateEvent();
         if (validationResult != EventValidationResult.VALID) {
             OptiLogger.eventIsInvalid(eventName, validationResult);
             return;
         }
-        reportEventNext(eventContext);
+        reportEventNext(optimoveEvent);
     }
 
 }

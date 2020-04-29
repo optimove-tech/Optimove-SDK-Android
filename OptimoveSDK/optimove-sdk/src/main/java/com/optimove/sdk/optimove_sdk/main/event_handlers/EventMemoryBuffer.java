@@ -1,13 +1,13 @@
 package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 import java.util.LinkedList;
 
 public class EventMemoryBuffer extends EventHandler {
 
 
-    private LinkedList<EventContext> optimoveEventsBuffer;
+    private LinkedList<OptimoveEvent> optimoveEventsBuffer;
     private int maximumSize;
 
 
@@ -24,18 +24,18 @@ public class EventMemoryBuffer extends EventHandler {
     }
 
     @Override
-    public void reportEvent(EventContext eventContext) {
+    public void reportEvent(OptimoveEvent optimoveEvent) {
         if (next == null) {
-            processEventInternally(eventContext);
+            processEventInternally(optimoveEvent);
         } else {
-            reportEventNext(eventContext);
+            reportEventNext(optimoveEvent);
         }
     }
 
 
-    private void processEventInternally(EventContext eventContext) {
+    private void processEventInternally(OptimoveEvent optimoveEvent) {
         if (optimoveEventsBuffer.size() < maximumSize) {
-            optimoveEventsBuffer.push(eventContext);
+            optimoveEventsBuffer.push(optimoveEvent);
         }
     }
 

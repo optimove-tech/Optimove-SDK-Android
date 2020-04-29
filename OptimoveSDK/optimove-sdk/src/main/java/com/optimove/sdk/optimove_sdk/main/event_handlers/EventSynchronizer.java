@@ -1,9 +1,8 @@
 package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class EventSynchronizer extends EventHandler {
 
@@ -14,9 +13,9 @@ public class EventSynchronizer extends EventHandler {
     }
 
     @Override
-    public void reportEvent(EventContext eventContext) {
+    public void reportEvent(OptimoveEvent optimoveEvent) {
         singleThreadExecutor.submit(() ->
-            this.reportEventNext(eventContext));
+            this.reportEventNext(optimoveEvent));
     }
 
 }

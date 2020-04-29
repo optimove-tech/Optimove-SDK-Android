@@ -1,7 +1,7 @@
 package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.decorators.OptimoveEventDecorator;
-import com.optimove.sdk.optimove_sdk.main.EventContext;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 
 import java.util.Map;
@@ -15,10 +15,9 @@ public class EventDecorator extends EventHandler {
     }
 
     @Override
-    public void reportEvent(EventContext eventContext) {
-        eventContext.setOptimoveEvent(new OptimoveEventDecorator(eventContext.getOptimoveEvent(),
-                eventConfigsMap.get(eventContext.getOptimoveEvent().getName())));
-        reportEventNext(eventContext);
+    public void reportEvent(OptimoveEvent optimoveEvent) {
+        reportEventNext(new OptimoveEventDecorator(optimoveEvent,
+                eventConfigsMap.get(optimoveEvent.getName())));
     }
 
 }

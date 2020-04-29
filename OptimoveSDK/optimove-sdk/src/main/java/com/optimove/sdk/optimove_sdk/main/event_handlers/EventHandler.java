@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
-import com.optimove.sdk.optimove_sdk.main.EventContext;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 
 public abstract class EventHandler {
@@ -13,14 +13,14 @@ public abstract class EventHandler {
         this.next = next;
     }
 
-    public abstract void reportEvent(EventContext eventContext);
+    public abstract void reportEvent(OptimoveEvent optimoveEvent);
 
 
-    protected void reportEventNext(EventContext eventContext) {
+    protected void reportEventNext(OptimoveEvent optimoveEvent) {
         if (next == null) {
             return;
         }
-        next.reportEvent(eventContext);
+        next.reportEvent(optimoveEvent);
     }
 
 }
