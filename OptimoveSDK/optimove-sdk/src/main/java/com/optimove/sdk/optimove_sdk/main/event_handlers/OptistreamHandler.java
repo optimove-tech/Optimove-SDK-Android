@@ -38,14 +38,13 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     @NonNull
     private LifecycleObserver lifecycleObserver;
     @NonNull
-    private OptitrackConfigs optitrackConfigs;
-    @NonNull
-    private int tenantId;
-    @NonNull
     private OptistreamQueue optistreamQueue;
+    @NonNull
+    private OptitrackConfigs optitrackConfigs;
 
-    private int secondsToWaitBeforeDispatching = 30;
+    private int dispatchInterval;
     private int eventBatchLimit = 100;
+
     @NonNull
     private Metadata metadata;
     private boolean initialized = false;
@@ -53,10 +52,10 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     private Timer dispatcherTimer;
 
 
-    public final static class Constants {
-        public static final String CATEGORY = "track";
-        public static final String PLATFORM = "Android";
-        public static final String ORIGIN = "sdk";
+    private final static class Constants {
+        private static final String CATEGORY = "track";
+        private static final String PLATFORM = "Android";
+        private static final String ORIGIN = "sdk";
 
     }
 
@@ -65,15 +64,16 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
                              @NonNull Map<String, EventConfigs> eventConfigsMap,
                              @NonNull LifecycleObserver lifecycleObserver,
                              @NonNull OptistreamQueue optistreamQueue,
-                             @NonNull int tenantId) {
+                             @NonNull OptitrackConfigs optitrackConfigs) {
         this.httpClient = httpClient;
         this.userInfo = userInfo;
         this.eventConfigsMap = eventConfigsMap;
         this.lifecycleObserver = lifecycleObserver;
         this.optistreamQueue = optistreamQueue;
-        this.tenantId = tenantId;
+        this.optitrackConfigs = optitrackConfigs;
         this.metadata = new Metadata(BuildConfig.VERSION_NAME, Constants.PLATFORM);
         this.dispatcherTimer = new Timer();
+
     }
 
     private synchronized void init() {
@@ -100,7 +100,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
             public void run() {
                 startDispatching();
             }
-        }, secondsToWaitBeforeDispatching * 1000);
+        }, dispatchInterval * 1000);
     }
 
 
@@ -171,7 +171,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
 
     private OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent) {
         return OptistreamEvent.builder()
-                .withTenantId(tenantId)
+                .withTenantId(optitrackConfigs.getSiteId())
                 .withCategory(Constants.CATEGORY)
                 .withName(optimoveEvent.getName())
                 .withOrigin(Constants.ORIGIN)

@@ -6,6 +6,7 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
+import com.optimove.sdk.optimove_sdk.main.event_handlers.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackManager;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
@@ -56,10 +57,13 @@ public class EventHandlerProvider {
             OptitrackManager optitrackManager =
                     eventHandlerFactory.getOptitrackManager(configs.getOptitrackConfigs(), configs.getEventsConfigs()
                             , lifecycleObserver);
+            OptistreamHandler optistreamHandler = eventHandlerFactory.getOptistreamHandler(configs.getOptitrackConfigs(),
+                    configs.getEventsConfigs(), lifecycleObserver);
 
             eventNormalizer.setNext(eventValidator);
             eventValidator.setNext(eventDecorator);
             //optistream
+            eventDecorator.setNext(optistreamHandler);
 
             eventMemoryBuffer.setNext(eventNormalizer);
         });

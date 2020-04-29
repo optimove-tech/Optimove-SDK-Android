@@ -7,10 +7,12 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
+import com.optimove.sdk.optimove_sdk.main.event_handlers.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
+import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackAdapter;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackManager;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
@@ -26,16 +28,18 @@ public class EventHandlerFactory {
     private OptitrackAdapter optitrackAdapter;
     private UserInfo userInfo;
     private int maximumBufferSize;
+    private OptistreamQueue optistreamQueue;
     private Context context;
 
     private EventHandlerFactory(HttpClient httpClient,
                                 OptitrackAdapter optitrackAdapter, UserInfo userInfo,
-                                int maximumBufferSize,
+                                int maximumBufferSize, OptistreamQueue optistreamQueue,
                                 Context context) {
         this.httpClient = httpClient;
         this.optitrackAdapter = optitrackAdapter;
         this.userInfo = userInfo;
         this.maximumBufferSize = maximumBufferSize;
+        this.optistreamQueue = optistreamQueue;
         this.context = context;
     }
 
@@ -65,9 +69,16 @@ public class EventHandlerFactory {
     }
 
     public OptitrackManager getOptitrackManager(OptitrackConfigs optitrackConfigs,
-                                                Map<String, EventConfigs> eventConfigs, LifecycleObserver lifecycleObserver) {
+                                                Map<String, EventConfigs> eventConfigs,
+                                                LifecycleObserver lifecycleObserver) {
         return new OptitrackManager(optitrackAdapter, optitrackConfigs, userInfo,
                 eventConfigs, lifecycleObserver, context);
+    }
+
+    public OptistreamHandler getOptistreamHandler(OptitrackConfigs optitrackConfigs,
+                                           Map<String, EventConfigs> eventConfigs,
+                                           LifecycleObserver lifecycleObserver) {
+        return new OptistreamHandler(httpClient, userInfo, eventConfigs, lifecycleObserver, optistreamQueue, optitrackConfigs);
     }
 
 
@@ -87,8 +98,13 @@ public class EventHandlerFactory {
     public interface HttpClientStep {
         MaximumBufferSizeStep httpClient(HttpClient httpClient);
     }
+
     public interface MaximumBufferSizeStep {
-        ContextStep maximumBufferSize(int maximumBufferSize);
+        OptistreamQueueStep maximumBufferSize(int maximumBufferSize);
+    }
+
+    public interface OptistreamQueueStep {
+        ContextStep optistreamQueue(OptistreamQueue optistreamQueue);
     }
 
     public interface ContextStep {
@@ -99,13 +115,15 @@ public class EventHandlerFactory {
         EventHandlerFactory build();
     }
 
-    public static class Builder implements ContextStep, MaximumBufferSizeStep, HttpClientStep, UserInfoStep, OptitrackAdapterStep, Build {
+    public static class Builder implements OptistreamQueueStep, ContextStep, MaximumBufferSizeStep, HttpClientStep, UserInfoStep,
+            OptitrackAdapterStep, Build {
 
         private HttpClient httpClient;
         private OptitrackAdapter optitrackAdapter;
         private UserInfo userInfo;
         private String fullPackageName;
         private int maximumBufferSize;
+        private OptistreamQueue optistreamQueue;
         private Context context;
 
         @Override
@@ -121,8 +139,14 @@ public class EventHandlerFactory {
         }
 
         @Override
-        public ContextStep maximumBufferSize(int maximumBufferSize) {
+        public OptistreamQueueStep maximumBufferSize(int maximumBufferSize) {
             this.maximumBufferSize = maximumBufferSize;
+            return this;
+        }
+
+        @Override
+        public ContextStep optistreamQueue(OptistreamQueue optistreamQueue) {
+            this.optistreamQueue = optistreamQueue;
             return this;
         }
 
@@ -140,7 +164,7 @@ public class EventHandlerFactory {
 
         @Override
         public EventHandlerFactory build() {
-            return new EventHandlerFactory(httpClient, optitrackAdapter, userInfo, maximumBufferSize,
+            return new EventHandlerFactory(httpClient, optitrackAdapter, userInfo, maximumBufferSize, optistreamQueue,
                     context);
         }
     }
