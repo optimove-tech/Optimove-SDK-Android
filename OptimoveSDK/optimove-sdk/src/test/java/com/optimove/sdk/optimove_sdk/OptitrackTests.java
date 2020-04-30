@@ -14,7 +14,6 @@ import com.optimove.sdk.optimove_sdk.main.events.decorators.OptimoveEventDecorat
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
-import com.optimove.sdk.optimove_sdk.optitrack.CustomDimension;
 
 import org.junit.Assert;
 import org.junit.Before;

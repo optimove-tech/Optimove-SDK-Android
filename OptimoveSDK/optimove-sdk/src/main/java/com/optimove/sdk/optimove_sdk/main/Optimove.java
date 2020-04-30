@@ -85,7 +85,6 @@ final public class Optimove {
                 .httpClient(HttpClient.getInstance(context))
                 .maximumBufferSize(OPTITRACK_BUFFER_SIZE)
                 .optistreamQueue(new OptistreamQueue(new FileUtils(), context))
-                .context(context)
                 .build();
         this.lifecycleObserver = new LifecycleObserver();
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory, lifecycleObserver);
