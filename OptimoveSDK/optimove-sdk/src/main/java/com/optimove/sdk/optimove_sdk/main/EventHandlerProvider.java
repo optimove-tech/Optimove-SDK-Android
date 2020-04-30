@@ -8,8 +8,6 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
-import com.optimove.sdk.optimove_sdk.optitrack.OptitrackManager;
-import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,11 +50,6 @@ public class EventHandlerProvider {
             EventNormalizer eventNormalizer = eventHandlerFactory.getEventNormalizer();
             EventValidator eventValidator = eventHandlerFactory.getEventValidator(configs.getEventsConfigs());
             EventDecorator eventDecorator = eventHandlerFactory.getEventDecorator(configs.getEventsConfigs());
-            RealtimeManager realtimeManager = eventHandlerFactory.getRealtimeManager(configs.getRealtimeConfigs(),
-                    configs.getEventsConfigs());
-            OptitrackManager optitrackManager =
-                    eventHandlerFactory.getOptitrackManager(configs.getOptitrackConfigs(), configs.getEventsConfigs()
-                            , lifecycleObserver);
             OptistreamHandler optistreamHandler = eventHandlerFactory.getOptistreamHandler(configs.getOptitrackConfigs(),
                     configs.getEventsConfigs(), lifecycleObserver);
 

@@ -42,9 +42,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     @NonNull
     private OptitrackConfigs optitrackConfigs;
 
-    private int dispatchInterval;
-    private int eventBatchLimit = 100;
-
     @NonNull
     private Metadata metadata;
     private boolean initialized = false;
@@ -56,6 +53,8 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
         private static final String CATEGORY = "track";
         private static final String PLATFORM = "Android";
         private static final String ORIGIN = "sdk";
+        private static final int EVENT_BATCH_LIMIT = 100;
+        private static final int DISPATCH_INTERVAL_IN_SECONDS = 30;
 
     }
 
@@ -100,7 +99,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
             public void run() {
                 startDispatching();
             }
-        }, dispatchInterval * 1000);
+        }, Constants.DISPATCH_INTERVAL_IN_SECONDS * 1000);
     }
 
 
@@ -128,7 +127,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
             scheduleNextDispatch();
             return;
         }
-        List<OptistreamEvent> eventsToDispatch = optistreamQueue.first(eventBatchLimit);
+        List<OptistreamEvent> eventsToDispatch = optistreamQueue.first(Constants.EVENT_BATCH_LIMIT);
 
         try {
             JSONObject optistreamEventsJson = new JSONObject(new Gson().toJson(eventsToDispatch));

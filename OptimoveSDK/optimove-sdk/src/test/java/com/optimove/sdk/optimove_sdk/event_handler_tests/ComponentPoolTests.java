@@ -5,7 +5,6 @@ import com.optimove.sdk.optimove_sdk.main.events.SimpleCustomEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
-import com.optimove.sdk.optimove_sdk.optitrack.OptitrackManager;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
 import org.junit.Before;
@@ -17,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;

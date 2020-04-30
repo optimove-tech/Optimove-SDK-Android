@@ -29,7 +29,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsCon
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.SdkLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
-import com.optimove.sdk.optimove_sdk.optitrack.MatomoAdapter;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 
 import java.util.Map;
@@ -82,7 +81,6 @@ final public class Optimove {
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
         EventHandlerFactory eventHandlerFactory = EventHandlerFactory.builder()
-                .optitrackAdapter(new MatomoAdapter())
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance(context))
                 .maximumBufferSize(OPTITRACK_BUFFER_SIZE)

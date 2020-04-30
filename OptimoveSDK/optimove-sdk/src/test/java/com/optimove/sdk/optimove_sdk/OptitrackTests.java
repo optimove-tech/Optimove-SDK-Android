@@ -1,15 +1,12 @@
 package com.optimove.sdk.optimove_sdk;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
 
 import com.optimove.sdk.optimove_sdk.fixtures.ConfigProvider;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetPageVisitEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
@@ -17,10 +14,7 @@ import com.optimove.sdk.optimove_sdk.main.events.decorators.OptimoveEventDecorat
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.optitrack.CustomDimension;
-import com.optimove.sdk.optimove_sdk.optitrack.MatomoAdapter;
-import com.optimove.sdk.optimove_sdk.optitrack.OptitrackManager;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +22,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
