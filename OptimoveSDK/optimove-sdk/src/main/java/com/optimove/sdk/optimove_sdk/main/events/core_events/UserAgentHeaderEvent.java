@@ -1,14 +1,7 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events;
 
-import android.content.Context;
-
-import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
-
-import org.matomo.sdk.tools.BuildInfo;
-import org.matomo.sdk.tools.DeviceHelper;
-import org.matomo.sdk.tools.PropertySource;
 
 import java.util.HashMap;
 import java.util.Map;

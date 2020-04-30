@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.main.event_generators;
 
 import android.content.Context;
 import android.location.Location;
+import android.webkit.WebSettings;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
@@ -12,10 +13,6 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEve
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
-
-import org.matomo.sdk.tools.BuildInfo;
-import org.matomo.sdk.tools.DeviceHelper;
-import org.matomo.sdk.tools.PropertySource;
 
 public class EventGenerator {
 
@@ -99,8 +96,7 @@ public class EventGenerator {
 
     private void reportUserAgent() {
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new UserAgentHeaderEvent(new DeviceHelper(context, new PropertySource(),
-                        new BuildInfo()).getUserAgent()));
+                .reportEvent(new UserAgentHeaderEvent(WebSettings.getDefaultUserAgent(context)));
     }
 
 
