@@ -22,8 +22,13 @@ import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -171,6 +176,10 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     }
 
     private OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+
         return OptistreamEvent.builder()
                 .withTenantId(optitrackConfigs.getSiteId())
                 .withCategory(Constants.CATEGORY)
@@ -178,7 +187,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
                 .withOrigin(Constants.ORIGIN)
                 .withUserId(userInfo.getUserId())
                 .withVisitorId(userInfo.getVisitorId())
-                .withTimestamp(333)
+                .withTimestamp(sdf.format(new Date()))
                 .withContext(optimoveEvent.getParameters())
                 .withMetadata(metadata)
                 .build();

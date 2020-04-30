@@ -18,7 +18,7 @@ public class OptistreamEvent {
     @SerializedName("visitor")
     private String visitorId;
     @SerializedName("timestamp")
-    private int timestamp;
+    private String timestamp;
     @SerializedName("context")
     private Map<String, Object> context;
     @SerializedName("metadata")
@@ -54,7 +54,7 @@ public class OptistreamEvent {
     }
 
     public interface ITimestamp {
-        IContext withTimestamp(int val);
+        IContext withTimestamp(String val);
     }
 
     public interface IVisitorId {
@@ -84,7 +84,7 @@ public class OptistreamEvent {
     public static final class Builder implements IMetadata, IContext, ITimestamp, IVisitorId, IUserId, IOrigin, IName, ICategory, ITenantId, IBuild {
         private Metadata metadata;
         private Map<String, Object> context;
-        private int timestamp;
+        private String timestamp;
         private String visitorId;
         private String userId;
         private String origin;
@@ -108,7 +108,7 @@ public class OptistreamEvent {
         }
 
         @Override
-        public IContext withTimestamp(int val) {
+        public IContext withTimestamp(String val) {
             timestamp = val;
             return this;
         }
