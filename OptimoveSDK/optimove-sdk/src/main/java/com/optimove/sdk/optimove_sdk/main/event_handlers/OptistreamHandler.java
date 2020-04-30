@@ -139,7 +139,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
             httpClient.postJson(optitrackConfigs.getOptitrackEndpoint(), optistreamEventsJson)
                     .errorListener(this::dispatchingFailed)
                     .successListener(response -> dispatchingSucceeded(eventsToDispatch))
-                    .destination("asdknmlksaflkasdfslkvmaslkmalskvmlsakv")
                     .send();
         } catch (JSONException e) {
             OptiLoggerStreamsContainer.debug("Events dispatching failed",

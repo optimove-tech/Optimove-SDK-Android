@@ -5,18 +5,15 @@ import android.support.annotation.Nullable;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
-import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 public class HttpClient {
@@ -96,10 +93,6 @@ public class HttpClient {
             return this;
         }
 
-        protected boolean stateIsInvalid() {
-            return url == null;
-        }
-
         public abstract void send();
     }
 
@@ -114,8 +107,8 @@ public class HttpClient {
 
         @Override
         public void send() {
-            if (stateIsInvalid()) {
-                throw new IllegalStateException("A destination must be set");
+            if (url == null) {
+                url = baseUrl;
             }
             JsonObjectRequest request = new JsonObjectRequest(method, url, data, successListener, errorListener);
             request.setRetryPolicy(new DefaultRetryPolicy(60000, 2, 2));
@@ -132,8 +125,8 @@ public class HttpClient {
         }
         @Override
         public void send() {
-            if (stateIsInvalid()) {
-                throw new IllegalStateException("A destination must be set");
+            if (url == null) {
+                url = baseUrl;
             }
             JsonObjectRequest request = new JsonObjectRequest(method, url, data, successListener, errorListener) {
                 @Override
@@ -164,8 +157,8 @@ public class HttpClient {
 
         @Override
         public void send() {
-            if (stateIsInvalid()) {
-                throw new IllegalStateException("A destination must be set");
+            if (url == null) {
+                url = baseUrl;
             }
 
             CustomRequest<T> customRequest = new CustomRequest<>(method, url, typeToParse, successListener,
