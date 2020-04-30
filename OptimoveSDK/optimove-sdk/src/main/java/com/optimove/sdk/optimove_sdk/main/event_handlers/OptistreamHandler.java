@@ -75,7 +75,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
 
     }
 
-    private synchronized void init() {
+    private synchronized void ensureInit() {
         if (!initialized) {
             //this will not cause a leak because this component is tied to the app context
             this.lifecycleObserver.addActivityStoppedListener(this);
@@ -86,11 +86,17 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
 
     @Override
     public void reportEvent(OptimoveEvent optimoveEvent) {
+        this.ensureInit();
         optistreamQueue.enqueue(convertOptimoveToOptistreamEvent(optimoveEvent));
         if (eventConfigsMap.get(optimoveEvent.getName())
                 .isSupportedOnRealtime() || isNotificationEvent(optimoveEvent)) {
             startDispatching();
         }
+    }
+    @Override
+    public void activityStopped() {
+        this.ensureInit();
+        this.startDispatching();
     }
 
     private void scheduleNextDispatch() {
@@ -103,10 +109,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     }
 
 
-    @Override
-    public void activityStopped() {
-        this.startDispatching();
-    }
+
 
     private synchronized void startDispatching() {
         if (currentlyDispatching) {
