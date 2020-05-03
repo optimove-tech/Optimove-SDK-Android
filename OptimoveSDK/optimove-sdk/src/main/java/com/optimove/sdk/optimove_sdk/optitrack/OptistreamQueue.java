@@ -4,8 +4,10 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class OptistreamQueue {
     private List<OptistreamEvent> optistreamEventList;
     private FileUtils fileUtils;
     private Context context;
+    private Gson gson;
 
     public final static class Constants {
         public static final String EVENTS_FILE_NAME = "optistream_queue";
@@ -29,6 +32,7 @@ public class OptistreamQueue {
     public OptistreamQueue(FileUtils fileUtils, Context context) {
         this.fileUtils = fileUtils;
         this.context = context;
+        this.gson = new Gson();
     }
 
     private synchronized void ensureInit() {
@@ -67,19 +71,24 @@ public class OptistreamQueue {
     private void loadEventsIntoMemory() {
         Type listType = new TypeToken<List<OptistreamEvent>>() {
         }.getType();
-        this.optistreamEventList = new Gson().fromJson(fileUtils.readFile(context)
-                .from(FileUtils.SourceDir.INTERNAL)
-                .named(Constants.EVENTS_FILE_NAME)
-                .asString(), listType);
+        try {
+            this.optistreamEventList = new Gson().fromJson(fileUtils.readFile(context)
+                    .from(FileUtils.SourceDir.INTERNAL)
+                    .named(Constants.EVENTS_FILE_NAME)
+                    .asString(), listType);
+        } catch (JsonSyntaxException e) {
+            OptiLoggerStreamsContainer.error("Local event file is corrupted");
+        }
+
         if(optistreamEventList == null) {
             optistreamEventList = new ArrayList<>();
         }
     }
 
     private void persistEvents(List<OptistreamEvent> optistreamEvents) {
-        fileUtils.write(context, optistreamEvents)
-                .in(FileUtils.SourceDir.INTERNAL)
+        fileUtils.write(context, gson.toJson(optistreamEvents))
                 .to(Constants.EVENTS_FILE_NAME)
+                .in(FileUtils.SourceDir.INTERNAL)
                 .now();
     }
 }

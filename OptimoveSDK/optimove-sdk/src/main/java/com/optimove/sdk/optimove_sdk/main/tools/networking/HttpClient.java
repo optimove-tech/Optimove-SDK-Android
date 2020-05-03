@@ -9,9 +9,11 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -43,14 +45,13 @@ public class HttpClient {
     public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
         return new JsonRequestBuilder(baseUrl, data, Request.Method.POST);
     }
+    public RequestBuilder<JSONArray> postJsonArray(String baseUrl, JSONArray data) {
+        return new JsonArrayRequestBuilder(baseUrl, data, Request.Method.POST);
+    }
 
     public RequestBuilder<JSONObject> postJsonWithoutJsonResponse(String baseUrl, JSONObject data) {
         return new JsonRequestBuilderWOJsonResponse(baseUrl, data, Request.Method.POST);
     }
-    public RequestBuilder<JSONObject> putJsonWithoutJsonResponse(String baseUrl, JSONObject data) {
-        return new JsonRequestBuilderWOJsonResponse(baseUrl, data, Request.Method.PUT);
-    }
-
 
     public <T> RequestBuilder<T> getObject(String baseUrl, Class<T> objectType) {
         return new CustomRequestBuilder<>(baseUrl, objectType, Request.Method.GET);
@@ -111,6 +112,25 @@ public class HttpClient {
                 url = baseUrl;
             }
             JsonObjectRequest request = new JsonObjectRequest(method, url, data, successListener, errorListener);
+            request.setRetryPolicy(new DefaultRetryPolicy(60000, 2, 2));
+            mainRequestQueue.add(request);
+        }
+    }
+    public class JsonArrayRequestBuilder extends RequestBuilder<JSONArray> {
+
+        protected JSONArray data;
+
+        protected JsonArrayRequestBuilder(String baseUrl, JSONArray data, int method) {
+            super(baseUrl, method);
+            this.data = data;
+        }
+
+        @Override
+        public void send() {
+            if (url == null) {
+                url = baseUrl;
+            }
+            JsonArrayRequest request = new JsonArrayRequest(method, url, data, successListener, errorListener);
             request.setRetryPolicy(new DefaultRetryPolicy(60000, 2, 2));
             mainRequestQueue.add(request);
         }

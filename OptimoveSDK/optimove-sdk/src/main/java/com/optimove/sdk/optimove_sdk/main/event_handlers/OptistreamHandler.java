@@ -19,16 +19,14 @@ import com.optimove.sdk.optimove_sdk.optitrack.Metadata;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 
+import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -77,7 +75,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
         this.optitrackConfigs = optitrackConfigs;
         this.metadata = new Metadata(BuildConfig.VERSION_NAME, Constants.PLATFORM);
         this.dispatcherTimer = new Timer();
-
     }
 
     private synchronized void ensureInit() {
@@ -123,7 +120,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
             return;
         }
 
-        dispatcherTimer.cancel();
         currentlyDispatching = true;
         dispatchNextBulk();
     }
@@ -138,21 +134,21 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
         List<OptistreamEvent> eventsToDispatch = optistreamQueue.first(Constants.EVENT_BATCH_LIMIT);
 
         try {
-            JSONObject optistreamEventsJson = new JSONObject(new Gson().toJson(eventsToDispatch));
+            JSONArray optistreamEventsJson = new JSONArray(new Gson().toJson(eventsToDispatch));
             OptiLoggerStreamsContainer.debug("Dispatching optistream events");
 
-            httpClient.postJson(optitrackConfigs.getOptitrackEndpoint(), optistreamEventsJson)
+            httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), optistreamEventsJson)
                     .errorListener(this::dispatchingFailed)
                     .successListener(response -> dispatchingSucceeded(eventsToDispatch))
                     .send();
         } catch (JSONException e) {
-            OptiLoggerStreamsContainer.debug("Events dispatching failed",
+            OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                     e.getMessage());
         }
     }
 
     private void dispatchingFailed(Exception e) {
-        OptiLoggerStreamsContainer.debug("Events dispatching failed",
+        OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                 e.getMessage());
         scheduleNextDispatch();
         this.currentlyDispatching = false;
@@ -177,7 +173,7 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
 
     private OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        //sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 
         return OptistreamEvent.builder()
