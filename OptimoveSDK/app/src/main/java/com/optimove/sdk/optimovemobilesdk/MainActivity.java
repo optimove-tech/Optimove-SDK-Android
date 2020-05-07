@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     new Thread(runnable).start();
   }
 
-  private class SimpleCustomEvent implements OptimoveEvent {
+  private class SimpleCustomEvent extends OptimoveEvent {
 
     SimpleCustomEvent() {
     }
