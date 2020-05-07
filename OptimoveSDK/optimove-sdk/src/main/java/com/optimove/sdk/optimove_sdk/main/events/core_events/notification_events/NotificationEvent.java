@@ -5,7 +5,7 @@ import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NotificationEvent implements OptimoveEvent {
+public abstract class NotificationEvent extends OptimoveEvent {
 
     static final String TIMESTAMP_KEY = "timestamp";
     static final String APP_NS_KEY = "app_ns";

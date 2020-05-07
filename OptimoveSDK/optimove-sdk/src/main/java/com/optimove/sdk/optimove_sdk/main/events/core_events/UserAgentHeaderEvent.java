@@ -6,7 +6,7 @@ import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class UserAgentHeaderEvent implements OptimoveEvent, OptimoveCoreEvent {
+public final class UserAgentHeaderEvent extends OptimoveEvent implements OptimoveCoreEvent {
 
 
   public static final String EVENT_NAME = "user_agent_header_event";

@@ -2,7 +2,7 @@ package com.optimove.sdk.optimove_sdk.main.events;
 
 import java.util.Map;
 
-public class SimpleCustomEvent implements OptimoveEvent {
+public class SimpleCustomEvent extends OptimoveEvent {
 
   private String name;
   private Map<String, Object> parameters;

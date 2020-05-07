@@ -5,7 +5,16 @@ import java.util.Map;
 /**
  * Defines a <i><b>Custom Event</b></i> that can be validated by the {@code SDK} and reported to <b>OptiTrack</b>.
  */
-public interface OptimoveEvent {
+public abstract class OptimoveEvent {
+
+  private long timestamp;
+
+  public OptimoveEvent() {
+    this.timestamp = System.currentTimeMillis();
+  }
+  public OptimoveEvent(long timestamp) {
+    this.timestamp = timestamp;
+  }
 
   /**
    * <b>Mandatory</b>: Override this method to declare the Event's {@code name}.<br>
@@ -13,14 +22,20 @@ public interface OptimoveEvent {
    *
    * @return the Event's {@code name}
    */
-  String getName();
+  public abstract String getName();
 
   /**
    * <b>Mandatory</b>: Override this method to declare the Event's {@code parameters}
    *
    * @return the Event's {@code parameters}
    */
-  Map<String, Object> getParameters();
+  public abstract Map<String, Object> getParameters();
 
+  public long getTimestamp() {
+    return timestamp;
+  }
 
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+  }
 }

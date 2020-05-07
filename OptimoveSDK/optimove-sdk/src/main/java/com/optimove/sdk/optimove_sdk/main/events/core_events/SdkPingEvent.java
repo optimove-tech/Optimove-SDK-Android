@@ -10,7 +10,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SdkPingEvent implements OptimoveEvent, OptimoveCoreEvent {
+public class SdkPingEvent extends OptimoveEvent implements OptimoveCoreEvent {
 
   public static final String EVENT_NAME = "notification_ping";
 

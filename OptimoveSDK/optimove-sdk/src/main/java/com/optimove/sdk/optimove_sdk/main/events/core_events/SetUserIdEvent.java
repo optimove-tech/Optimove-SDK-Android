@@ -5,7 +5,7 @@ import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class SetUserIdEvent implements OptimoveEvent, OptimoveCoreEvent {
+public final class SetUserIdEvent extends OptimoveEvent implements OptimoveCoreEvent {
 
   public static final String EVENT_NAME = "set_user_id_event";
 

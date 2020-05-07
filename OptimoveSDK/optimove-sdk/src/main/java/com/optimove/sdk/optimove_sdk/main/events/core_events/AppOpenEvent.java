@@ -1,16 +1,13 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events;
 
-import android.content.Context;
 import android.support.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class AppOpenEvent implements OptimoveEvent, OptimoveCoreEvent {
+public class AppOpenEvent extends OptimoveEvent implements OptimoveCoreEvent {
 
 
   public static final String EVENT_NAME = "app_open";

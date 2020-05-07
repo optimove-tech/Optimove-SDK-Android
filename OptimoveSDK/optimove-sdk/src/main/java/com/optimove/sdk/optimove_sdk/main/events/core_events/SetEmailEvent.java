@@ -5,7 +5,7 @@ import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SetEmailEvent implements OptimoveEvent, OptimoveCoreEvent {
+public class SetEmailEvent extends OptimoveEvent implements OptimoveCoreEvent {
 
   public static final String EVENT_NAME = "set_email_event";
 

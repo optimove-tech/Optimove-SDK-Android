@@ -5,7 +5,7 @@ import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SdkMetadataEvent implements OptimoveEvent {
+public class SdkMetadataEvent extends OptimoveEvent {
 
   public static final String EVENT_NAME = "optimove_sdk_metadata";
 

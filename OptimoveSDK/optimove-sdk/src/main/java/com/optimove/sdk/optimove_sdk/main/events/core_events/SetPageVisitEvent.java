@@ -5,7 +5,7 @@ import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SetPageVisitEvent implements OptimoveEvent, OptimoveCoreEvent {
+public class SetPageVisitEvent extends OptimoveEvent implements OptimoveCoreEvent {
 
   public static final String EVENT_NAME = "set_page_visit";
 

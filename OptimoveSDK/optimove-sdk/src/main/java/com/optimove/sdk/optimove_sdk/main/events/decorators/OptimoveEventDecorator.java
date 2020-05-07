@@ -21,16 +21,18 @@ import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_P
  * <li>Add additional attributes in accordance to the event's configs</li>
  * </ul>
  */
-public class OptimoveEventDecorator implements OptimoveEvent {
+public class OptimoveEventDecorator extends OptimoveEvent {
 
   protected OptimoveEvent optimoveEvent;
   protected Map<String, Object> modifiedEventParams;
 
   public OptimoveEventDecorator(OptimoveEvent optimoveEvent) {
+    super(optimoveEvent.getTimestamp());
     this.optimoveEvent = optimoveEvent;
     this.setupParameters();
   }
   public OptimoveEventDecorator(OptimoveEvent optimoveEvent, EventConfigs eventConfigs) {
+    super(optimoveEvent.getTimestamp());
     this.optimoveEvent = optimoveEvent;
     this.setupParameters();
     this.processEventConfigurations(eventConfigs);
