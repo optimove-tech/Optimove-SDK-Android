@@ -3,7 +3,6 @@ package com.optimove.sdk.optimove_sdk.main;
 import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
-import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 
@@ -51,7 +50,7 @@ public class OptistreamEventBuilder {
         @SerializedName("realtime")
         private boolean realtime;
 
-        public Metadata(boolean realtime) {
+        Metadata(boolean realtime) {
             this.realtime = realtime;
         }
     }
