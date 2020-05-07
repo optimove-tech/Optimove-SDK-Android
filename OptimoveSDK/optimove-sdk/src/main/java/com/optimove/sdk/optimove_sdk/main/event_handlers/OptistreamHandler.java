@@ -15,17 +15,13 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.optitrack.Metadata;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -169,24 +165,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
                         .equals(ScheduledNotificationDeliveredEvent.NAME) ||
                 optimoveEvent.getName()
                         .equals(ScheduledNotificationOpenedEvent.NAME);
-    }
-
-    private OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US);
-        //sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-
-        return OptistreamEvent.builder()
-                .withTenantId(optitrackConfigs.getSiteId())
-                .withCategory(Constants.CATEGORY)
-                .withName(optimoveEvent.getName())
-                .withOrigin(Constants.ORIGIN)
-                .withUserId(userInfo.getUserId())
-                .withVisitorId(userInfo.getVisitorId())
-                .withTimestamp(sdf.format(new Date()))
-                .withContext(optimoveEvent.getParameters())
-                .withMetadata(metadata)
-                .build();
     }
 
 

@@ -1,6 +1,7 @@
 package com.optimove.sdk.optimove_sdk.optitrack;
 
 import com.google.gson.annotations.SerializedName;
+import com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder;
 
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class OptistreamEvent {
     @SerializedName("context")
     private Map<String, Object> context;
     @SerializedName("metadata")
-    private Metadata metadata;
+    private OptistreamEventBuilder.Metadata metadata;
 
     private OptistreamEvent(Builder builder) {
         tenantId = builder.tenantId;
@@ -46,7 +47,7 @@ public class OptistreamEvent {
     }
 
     public interface IMetadata {
-        IBuild withMetadata(Metadata metadata);
+        IBuild withMetadata(OptistreamEventBuilder.Metadata metadata);
     }
 
     public interface IContext {
@@ -82,7 +83,7 @@ public class OptistreamEvent {
     }
 
     public static final class Builder implements IMetadata, IContext, ITimestamp, IVisitorId, IUserId, IOrigin, IName, ICategory, ITenantId, IBuild {
-        private Metadata metadata;
+        private OptistreamEventBuilder.Metadata metadata;
         private Map<String, Object> context;
         private String timestamp;
         private String visitorId;
@@ -96,7 +97,7 @@ public class OptistreamEvent {
         }
 
         @Override
-        public IBuild withMetadata(Metadata metadata) {
+        public IBuild withMetadata(OptistreamEventBuilder.Metadata metadata) {
             metadata = metadata;
             return this;
         }
