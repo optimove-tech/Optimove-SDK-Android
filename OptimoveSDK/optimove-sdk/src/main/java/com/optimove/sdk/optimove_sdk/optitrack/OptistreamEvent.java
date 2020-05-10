@@ -37,6 +37,22 @@ public class OptistreamEvent {
         metadata = builder.metadata;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public OptistreamEventBuilder.Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(OptistreamEventBuilder.Metadata metadata) {
+        this.metadata = metadata;
+    }
+
     public static ITenantId builder() {
         return new Builder();
     }

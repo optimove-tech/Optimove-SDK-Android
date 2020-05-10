@@ -8,6 +8,10 @@ import java.util.Map;
 
 public class FetchedTenantConfigs {
 
+    @SerializedName("enableRealtime")
+    public boolean enableRealtime;
+    @SerializedName("enableRealtimeThroughOptistream")
+    public boolean enableRealtimeThroughOptistream;
     @SerializedName("realtimeMetaData")
     public RealtimeMetaData realtimeMetaData;
     @SerializedName("optitrackMetaData")

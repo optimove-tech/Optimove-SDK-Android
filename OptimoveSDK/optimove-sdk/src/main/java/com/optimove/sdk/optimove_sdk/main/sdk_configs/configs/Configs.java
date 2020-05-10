@@ -11,18 +11,23 @@ public class Configs {
 
 
     private int tenantId;
+    private boolean enableRealtime;
+    private boolean enableRealtimeThroughOptistream;
     private LogsConfigs logsConfigs;
     private RealtimeConfigs realtimeConfigs;
     private OptitrackConfigs optitrackConfigs;
     private OptipushConfigs optipushConfigs;
-    private Map<String , EventConfigs> eventsConfigs;
+    private Map<String, EventConfigs> eventsConfigs;
 
-    public Configs(int tenantId, @NonNull LogsConfigs logsConfigs,
+    public Configs(int tenantId, boolean enableRealtime, boolean enableRealtimeThroughOptistream,
+                   @NonNull LogsConfigs logsConfigs,
                    @NonNull RealtimeConfigs realtimeConfigs,
                    @NonNull OptitrackConfigs optitrackConfigs,
                    @NonNull OptipushConfigs optipushConfigs,
                    @NonNull Map<String, EventConfigs> eventsConfigs) {
         this.tenantId = tenantId;
+        this.enableRealtime = enableRealtime;
+        this.enableRealtimeThroughOptistream = enableRealtimeThroughOptistream;
         this.logsConfigs = logsConfigs;
         this.realtimeConfigs = realtimeConfigs;
         this.optitrackConfigs = optitrackConfigs;
@@ -70,6 +75,7 @@ public class Configs {
             @NonNull Map<String, EventConfigs> eventsConfigs) {
         this.eventsConfigs = eventsConfigs;
     }
+
     public int getTenantId() {
         return tenantId;
     }
@@ -78,5 +84,19 @@ public class Configs {
         this.tenantId = tenantId;
     }
 
+    public boolean isEnableRealtime() {
+        return enableRealtime;
+    }
 
+    public void setEnableRealtime(boolean enableRealtime) {
+        this.enableRealtime = enableRealtime;
+    }
+
+    public boolean isEnableRealtimeThroughOptistream() {
+        return enableRealtimeThroughOptistream;
+    }
+
+    public void setEnableRealtimeThroughOptistream(boolean enableRealtimeThroughOptistream) {
+        this.enableRealtimeThroughOptistream = enableRealtimeThroughOptistream;
+    }
 }

@@ -3,16 +3,12 @@ package com.optimove.sdk.optimove_sdk.main.event_handlers;
 import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
-import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
-import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
@@ -22,18 +18,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class OptistreamHandler extends EventHandler implements LifecycleObserver.ActivityStopped {
+public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     @NonNull
     private HttpClient httpClient;
-    @NonNull
-    private UserInfo userInfo;
-    @NonNull
-    private Map<String, EventConfigs> eventConfigsMap;
     @NonNull
     private LifecycleObserver lifecycleObserver;
     @NonNull
@@ -41,53 +30,38 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     @NonNull
     private OptitrackConfigs optitrackConfigs;
 
-    @NonNull
-    private Metadata metadata;
     private boolean initialized = false;
     private boolean currentlyDispatching = false;
-    private Timer dispatcherTimer;
 
 
     private final static class Constants {
-        private static final String CATEGORY = "track";
-        private static final String PLATFORM = "Android";
-        private static final String ORIGIN = "sdk";
         private static final int EVENT_BATCH_LIMIT = 100;
         private static final int DISPATCH_INTERVAL_IN_SECONDS = 30;
 
     }
 
     public OptistreamHandler(@NonNull HttpClient httpClient,
-                             @NonNull UserInfo userInfo,
-                             @NonNull Map<String, EventConfigs> eventConfigsMap,
                              @NonNull LifecycleObserver lifecycleObserver,
                              @NonNull OptistreamQueue optistreamQueue,
                              @NonNull OptitrackConfigs optitrackConfigs) {
         this.httpClient = httpClient;
-        this.userInfo = userInfo;
-        this.eventConfigsMap = eventConfigsMap;
         this.lifecycleObserver = lifecycleObserver;
         this.optistreamQueue = optistreamQueue;
         this.optitrackConfigs = optitrackConfigs;
-        this.metadata = new Metadata(BuildConfig.VERSION_NAME, Constants.PLATFORM);
-        this.dispatcherTimer = new Timer();
     }
 
     private synchronized void ensureInit() {
         if (!initialized) {
             //this will not cause a leak because this component is tied to the app context
             this.lifecycleObserver.addActivityStoppedListener(this);
-            this.scheduleNextDispatch();
             this.initialized = true;
         }
     }
 
-    @Override
-    public void reportEvent(OptimoveEvent optimoveEvent) {
+    public void reportEvent(OptistreamEvent optistreamEvent) {
         this.ensureInit();
-        optistreamQueue.enqueue(convertOptimoveToOptistreamEvent(optimoveEvent));
-        if (eventConfigsMap.get(optimoveEvent.getName())
-                .isSupportedOnRealtime() || isNotificationEvent(optimoveEvent)) {
+        optistreamQueue.enqueue(optistreamEvent);
+        if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
             startDispatching();
         }
     }
@@ -96,17 +70,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
         this.ensureInit();
         this.startDispatching();
     }
-
-    private void scheduleNextDispatch() {
-        dispatcherTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                startDispatching();
-            }
-        }, Constants.DISPATCH_INTERVAL_IN_SECONDS * 1000);
-    }
-
-
 
 
     private synchronized void startDispatching() {
@@ -124,7 +87,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
         if (optistreamQueue.size() == 0) {
             OptiLoggerStreamsContainer.debug("No events to dispatch");
             currentlyDispatching = false;
-            scheduleNextDispatch();
             return;
         }
         List<OptistreamEvent> eventsToDispatch = optistreamQueue.first(Constants.EVENT_BATCH_LIMIT);
@@ -146,7 +108,6 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
     private void dispatchingFailed(Exception e) {
         OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                 e.getMessage());
-        scheduleNextDispatch();
         this.currentlyDispatching = false;
     }
 
@@ -156,14 +117,14 @@ public class OptistreamHandler extends EventHandler implements LifecycleObserver
         dispatchNextBulk();
     }
 
-    private boolean isNotificationEvent(OptimoveEvent optimoveEvent) {
-        return optimoveEvent.getName()
+    private boolean isNotificationEvent(OptistreamEvent optistreamEvent) {
+        return optistreamEvent.getName()
                 .equals(TriggeredNotificationDeliveredEvent.NAME) ||
-                optimoveEvent.getName()
+                optistreamEvent.getName()
                         .equals(TriggeredNotificationOpenedEvent.NAME) ||
-                optimoveEvent.getName()
+                optistreamEvent.getName()
                         .equals(ScheduledNotificationDeliveredEvent.NAME) ||
-                optimoveEvent.getName()
+                optistreamEvent.getName()
                         .equals(ScheduledNotificationOpenedEvent.NAME);
     }
 

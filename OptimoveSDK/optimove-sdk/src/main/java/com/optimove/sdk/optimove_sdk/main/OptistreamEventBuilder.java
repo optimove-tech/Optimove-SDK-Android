@@ -25,7 +25,6 @@ public class OptistreamEventBuilder {
     public OptistreamEventBuilder(int tenantId,@NonNull UserInfo userInfo) {
         this.tenantId = tenantId;
         this.userInfo = userInfo;
-
     }
 
     public OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent, boolean isRealtime) {
@@ -42,15 +41,26 @@ public class OptistreamEventBuilder {
                 .withVisitorId(userInfo.getVisitorId())
                 .withTimestamp(simpleDateFormat.format(new Date()))
                 .withContext(optimoveEvent.getParameters())
-                .withMetadata(new Metadata(isRealtime))
+                .withMetadata(new Metadata(isRealtime, userInfo.getFirstVisitorDate()))
                 .build();
     }
 
     public class Metadata {
         @SerializedName("realtime")
         private boolean realtime;
+        @SerializedName("firstVisitorDate")
+        private long firstVisitorDate;
 
-        Metadata(boolean realtime) {
+        Metadata(boolean realtime, long firstVisitorDate) {
+            this.realtime = realtime;
+            this.firstVisitorDate = firstVisitorDate;
+        }
+
+        public boolean isRealtime() {
+            return realtime;
+        }
+
+        public void setRealtime(boolean realtime) {
             this.realtime = realtime;
         }
     }

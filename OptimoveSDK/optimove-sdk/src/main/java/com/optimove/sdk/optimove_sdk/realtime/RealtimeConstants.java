@@ -10,6 +10,10 @@ public interface RealtimeConstants {
   String DID_FAIL_SET_USER_ID_KEY = "did_fail_set_user_id";
   String DID_FAIL_SET_EMAIL_KEY = "did_fail_set_email";
 
+  //
+  String FAILED_SET_USER_EVENT_KEY = "failed_set_user_event_key";
+  String FAILED_SET_EMAIL_EVENT_KEY = "failed_set_email_event_key";
+
   String REPORT_EVENT_REQUEST_ROUTE = "reportEvent";
 
   String EVENT_REQUEST_TID_KEY = "tid";

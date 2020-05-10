@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 
 import java.io.IOException;
@@ -18,6 +19,8 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.*;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.DEVICE_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
+import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.FIRST_VISIT_TIMESTAMP_KEY;
+import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.REALTIME_SP_NAME;
 
 /**
  * Represents the current device user.
@@ -35,7 +38,7 @@ public class UserInfo {
   private String initialVisitorId;
   private String userEmail;
   private String installationId;
-
+  private long firstVisitorDate;
   private SharedPreferences userIdsSp;
 
   private UserInfo() {
@@ -84,11 +87,27 @@ public class UserInfo {
       }
     }
 
+    //first visit for realtime
+    SharedPreferences backwardCompatibleSharedPrefs  = context.getSharedPreferences(REALTIME_SP_NAME,
+            Context.MODE_PRIVATE);
+    if (backwardCompatibleSharedPrefs.contains(FIRST_VISIT_TIMESTAMP_KEY)) {
+      userInfo.firstVisitorDate = backwardCompatibleSharedPrefs.getLong(FIRST_VISIT_TIMESTAMP_KEY,
+              OptiUtils.currentTimeSeconds());
+    } else {
+      userInfo.firstVisitorDate = OptiUtils.currentTimeSeconds();
+      backwardCompatibleSharedPrefs.edit()
+              .putLong(FIRST_VISIT_TIMESTAMP_KEY, userInfo.firstVisitorDate)
+              .apply();
+    }
+
     return userInfo;
   }
 
   public String getInstallationId(){
     return installationId;
+  }
+  public long getFirstVisitorDate(){
+    return firstVisitorDate;
   }
 
   @Nullable

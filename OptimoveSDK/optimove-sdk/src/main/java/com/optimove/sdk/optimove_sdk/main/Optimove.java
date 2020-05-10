@@ -80,14 +80,16 @@ final public class Optimove {
 
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
+        this.lifecycleObserver = new LifecycleObserver();
         EventHandlerFactory eventHandlerFactory = EventHandlerFactory.builder()
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance(context))
                 .maximumBufferSize(OPTITRACK_BUFFER_SIZE)
                 .optistreamQueue(new OptistreamQueue(new FileUtils(), context))
+                .lifecycleObserver(lifecycleObserver)
+                .context(context)
                 .build();
-        this.lifecycleObserver = new LifecycleObserver();
-        this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory, lifecycleObserver);
+        this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
 
         this.optipushManager = new OptipushManager(new RegistrationDao(context),
                 deviceInfoProvider, HttpClient.getInstance(context), lifecycleObserver, context);

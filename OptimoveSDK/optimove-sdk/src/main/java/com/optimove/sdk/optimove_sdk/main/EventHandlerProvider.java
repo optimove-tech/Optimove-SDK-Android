@@ -1,5 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main;
 
+import com.optimove.sdk.optimove_sdk.main.event_handlers.DestinationDecider;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
@@ -8,6 +9,7 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
+import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,19 +24,18 @@ public class EventHandlerProvider {
     private EventSynchronizer eventSynchronizer;
     private EventMemoryBuffer eventMemoryBuffer;
 
-    private LifecycleObserver lifecycleObserver;
 
-    public EventHandlerProvider(EventHandlerFactory eventHandlerFactory, LifecycleObserver lifecycleObserver) {
+    public EventHandlerProvider(EventHandlerFactory eventHandlerFactory) {
         this.eventHandlerFactory = eventHandlerFactory;
         this.singleThreadExecutor = Executors.newSingleThreadExecutor();
-        this.lifecycleObserver = lifecycleObserver;
     }
 
     public EventHandler getEventHandler() {
         ensureHandlersInitialization();
         return eventSynchronizer;
     }
-    private void ensureHandlersInitialization(){
+
+    private void ensureHandlersInitialization() {
         synchronized (lockObj) {
             if (eventSynchronizer == null) {
                 this.eventMemoryBuffer = eventHandlerFactory.getEventBuffer();
@@ -50,13 +51,19 @@ public class EventHandlerProvider {
             EventNormalizer eventNormalizer = eventHandlerFactory.getEventNormalizer();
             EventValidator eventValidator = eventHandlerFactory.getEventValidator(configs.getEventsConfigs());
             EventDecorator eventDecorator = eventHandlerFactory.getEventDecorator(configs.getEventsConfigs());
-            OptistreamHandler optistreamHandler = eventHandlerFactory.getOptistreamHandler(configs.getOptitrackConfigs(),
-                    configs.getEventsConfigs(), lifecycleObserver);
+            RealtimeManager realtimeManager = eventHandlerFactory.getRealtimeMananger(configs.getRealtimeConfigs());
+            OptistreamHandler optistreamHandler =
+                    eventHandlerFactory.getOptistreamHandler(configs.getOptitrackConfigs());
+            OptistreamEventBuilder optistreamEventBuilder =
+                    eventHandlerFactory.getOptistreamEventBuilder(configs.getTenantId());
+            DestinationDecider destinationDecider =
+                    eventHandlerFactory.getDestinationDecider(configs.getEventsConfigs(), optistreamHandler,
+                            realtimeManager, optistreamEventBuilder, configs.isEnableRealtime(), configs.isEnableRealtimeThroughOptistream());
 
             eventNormalizer.setNext(eventValidator);
             eventValidator.setNext(eventDecorator);
             //optistream
-            eventDecorator.setNext(optistreamHandler);
+            eventDecorator.setNext(destinationDecider);
 
             eventMemoryBuffer.setNext(eventNormalizer);
         });

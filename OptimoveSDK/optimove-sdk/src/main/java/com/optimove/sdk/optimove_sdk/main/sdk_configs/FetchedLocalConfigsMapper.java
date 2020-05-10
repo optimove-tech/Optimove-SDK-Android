@@ -18,7 +18,7 @@ public class FetchedLocalConfigsMapper {
 
     public static Configs mapFetchedConfigsToLocal(@NonNull String packageName,
                                                    @NonNull FetchedGlobalConfig fetchedGlobalConfig,
-                                                   @NonNull FetchedTenantConfigs fetchedTenantConfigs){
+                                                   @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
         int tenantId = fetchedTenantConfigs.optitrackMetaData.siteId;
 
         LogsConfigs logsConfigs = getLogsConfigs(fetchedGlobalConfig, fetchedTenantConfigs);
@@ -29,12 +29,16 @@ public class FetchedLocalConfigsMapper {
         eventConfigsMap.putAll(fetchedTenantConfigs.eventsConfigs);
         eventConfigsMap.putAll(fetchedGlobalConfig.coreEventsConfigs); // second! to override tenant configs
 
-        return new Configs(tenantId, logsConfigs, realtimeConfigs, optitrackConfigs, optipushConfigs,
+        return new Configs(tenantId, fetchedTenantConfigs.enableRealtime,
+                fetchedTenantConfigs.enableRealtimeThroughOptistream, logsConfigs,
+                realtimeConfigs,
+                optitrackConfigs,
+                optipushConfigs,
                 eventConfigsMap);
     }
 
     private static LogsConfigs getLogsConfigs(@NonNull FetchedGlobalConfig fetchedGlobalConfig,
-                                       @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
+                                              @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
         LogsConfigs logsConfigs = new LogsConfigs();
         logsConfigs.setTenantId(fetchedTenantConfigs.optitrackMetaData.siteId);
         logsConfigs.setLogsServiceEndpoint(fetchedGlobalConfig.fetchedGeneralConfigs.logsServiceEndpoint);
@@ -49,7 +53,7 @@ public class FetchedLocalConfigsMapper {
     }
 
     private static OptitrackConfigs getOptitrackConfigs(int tenantId, @NonNull FetchedGlobalConfig fetchedGlobalConfig,
-                                                 @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
+                                                        @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
         OptitrackConfigs optitrackConfigs = new OptitrackConfigs();
         optitrackConfigs.setSiteId(tenantId);
         optitrackConfigs.setEnableAdvertisingIdReport(fetchedTenantConfigs.mobile.optipushMetaData.enableAdvertisingIdReport);
@@ -61,7 +65,7 @@ public class FetchedLocalConfigsMapper {
     }
 
     private static OptipushConfigs getOptipushConfigs(@NonNull FetchedGlobalConfig fetchedGlobalConfig,
-                                               @NonNull FetchedTenantConfigs fetchedTenantConfigs,
+                                                      @NonNull FetchedTenantConfigs fetchedTenantConfigs,
                                                       @NonNull String packageName) {
         OptipushConfigs optipushConfigs = new OptipushConfigs();
         optipushConfigs.setPushTopicsRegistrationEndpoint(fetchedTenantConfigs.mobile.optipushMetaData.pushTopicsRegistrationEndpoint);
