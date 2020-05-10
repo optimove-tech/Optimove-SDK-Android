@@ -48,6 +48,7 @@ public class DestinationDecider extends EventHandler {
             // Both to optistream and to realtime, with realtime disabled for Optistream
             optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
                     false);
+            realtimeManager.reportEvent(optistreamEvent);
             optistreamHandler.reportEvent(optistreamEvent);
         }
     }
