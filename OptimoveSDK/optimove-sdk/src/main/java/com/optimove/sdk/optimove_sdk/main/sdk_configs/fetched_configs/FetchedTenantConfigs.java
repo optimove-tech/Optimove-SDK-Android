@@ -12,6 +12,8 @@ public class FetchedTenantConfigs {
     public boolean enableRealtime;
     @SerializedName("enableRealtimeThroughOptistream")
     public boolean enableRealtimeThroughOptistream;
+    @SerializedName("airship")
+    public boolean airship;
     @SerializedName("realtimeMetaData")
     public RealtimeMetaData realtimeMetaData;
     @SerializedName("optitrackMetaData")

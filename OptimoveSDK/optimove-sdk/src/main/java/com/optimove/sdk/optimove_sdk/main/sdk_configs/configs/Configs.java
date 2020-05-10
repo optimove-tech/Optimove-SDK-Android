@@ -13,13 +13,16 @@ public class Configs {
     private int tenantId;
     private boolean enableRealtime;
     private boolean enableRealtimeThroughOptistream;
+    private boolean airship;
     private LogsConfigs logsConfigs;
     private RealtimeConfigs realtimeConfigs;
     private OptitrackConfigs optitrackConfigs;
     private OptipushConfigs optipushConfigs;
     private Map<String, EventConfigs> eventsConfigs;
 
-    public Configs(int tenantId, boolean enableRealtime, boolean enableRealtimeThroughOptistream,
+    public Configs(int tenantId, boolean enableRealtime,
+                   boolean enableRealtimeThroughOptistream,
+                   boolean airship,
                    @NonNull LogsConfigs logsConfigs,
                    @NonNull RealtimeConfigs realtimeConfigs,
                    @NonNull OptitrackConfigs optitrackConfigs,
@@ -98,5 +101,13 @@ public class Configs {
 
     public void setEnableRealtimeThroughOptistream(boolean enableRealtimeThroughOptistream) {
         this.enableRealtimeThroughOptistream = enableRealtimeThroughOptistream;
+    }
+
+    public boolean isAirship() {
+        return airship;
+    }
+
+    public void setAirship(boolean airship) {
+        this.airship = airship;
     }
 }

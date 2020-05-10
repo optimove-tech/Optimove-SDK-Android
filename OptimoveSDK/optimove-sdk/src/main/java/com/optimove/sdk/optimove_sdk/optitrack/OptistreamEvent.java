@@ -1,5 +1,8 @@
 package com.optimove.sdk.optimove_sdk.optitrack;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.google.gson.annotations.SerializedName;
 import com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder;
 
@@ -23,7 +26,7 @@ public class OptistreamEvent {
     @SerializedName("context")
     private Map<String, Object> context;
     @SerializedName("metadata")
-    private OptistreamEventBuilder.Metadata metadata;
+    private Metadata metadata;
 
     private OptistreamEvent(Builder builder) {
         tenantId = builder.tenantId;
@@ -45,11 +48,11 @@ public class OptistreamEvent {
         this.name = name;
     }
 
-    public OptistreamEventBuilder.Metadata getMetadata() {
+    public Metadata getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(OptistreamEventBuilder.Metadata metadata) {
+    public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
 
@@ -63,7 +66,7 @@ public class OptistreamEvent {
     }
 
     public interface IMetadata {
-        IBuild withMetadata(OptistreamEventBuilder.Metadata metadata);
+        IBuild withMetadata(Metadata metadata);
     }
 
     public interface IContext {
@@ -99,7 +102,7 @@ public class OptistreamEvent {
     }
 
     public static final class Builder implements IMetadata, IContext, ITimestamp, IVisitorId, IUserId, IOrigin, IName, ICategory, ITenantId, IBuild {
-        private OptistreamEventBuilder.Metadata metadata;
+        private Metadata metadata;
         private Map<String, Object> context;
         private String timestamp;
         private String visitorId;
@@ -113,8 +116,8 @@ public class OptistreamEvent {
         }
 
         @Override
-        public IBuild withMetadata(OptistreamEventBuilder.Metadata metadata) {
-            metadata = metadata;
+        public IBuild withMetadata(Metadata metadata) {
+            this.metadata = metadata;
             return this;
         }
 
@@ -168,6 +171,64 @@ public class OptistreamEvent {
 
         public OptistreamEvent build() {
             return new OptistreamEvent(this);
+        }
+    }
+
+    public static final class Metadata {
+        @SerializedName("realtime")
+        @NonNull
+        private boolean realtime;
+        @SerializedName("firstVisitorDate")
+        @NonNull
+        private long firstVisitorDate;
+        @SerializedName("airship")
+        @Nullable
+        private AirshipMetadata airship;
+
+        public Metadata(boolean realtime, long firstVisitorDate) {
+            this.realtime = realtime;
+            this.firstVisitorDate = firstVisitorDate;
+        }
+        public Metadata(boolean realtime, long firstVisitorDate, AirshipMetadata airship) {
+            this.realtime = realtime;
+            this.firstVisitorDate = firstVisitorDate;
+            this.airship = airship;
+        }
+
+        public boolean isRealtime() {
+            return realtime;
+        }
+
+        public void setRealtime(boolean realtime) {
+            this.realtime = realtime;
+        }
+    }
+
+    public static final class AirshipMetadata {
+        @SerializedName("channelId")
+        private String channelId;
+        @SerializedName("appKey")
+        private String appKey;
+
+        public AirshipMetadata(String channelId, String appKey) {
+            this.channelId = channelId;
+            this.appKey = appKey;
+        }
+
+        public String getChannelId() {
+            return channelId;
+        }
+
+        public void setChannelId(String channelId) {
+            this.channelId = channelId;
+        }
+
+        public String getAppKey() {
+            return appKey;
+        }
+
+        public void setAppKey(String appKey) {
+            this.appKey = appKey;
         }
     }
 }
