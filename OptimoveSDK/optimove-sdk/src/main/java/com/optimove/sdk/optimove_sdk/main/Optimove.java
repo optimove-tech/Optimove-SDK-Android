@@ -31,6 +31,9 @@ import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -145,13 +148,14 @@ final public class Optimove {
             initCommand.run();
         }
     }
+
     /**
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
-     * @param context    The instance of the current {@code Context} object.
-     * @param tenantInfo The {@link TenantInfo} as provided by <i>Optimove</i>.
-     * @param isStgEnv An indication whether this is a staging environment.
+     * @param context     The instance of the current {@code Context} object.
+     * @param tenantInfo  The {@link TenantInfo} as provided by <i>Optimove</i>.
+     * @param isStgEnv    An indication whether this is a staging environment.
      * @param minLogLevel Logcat minimum log level to show.
      */
     public static void configure(Context context, TenantInfo tenantInfo, Boolean isStgEnv, LogLevel minLogLevel) {
@@ -163,7 +167,7 @@ final public class Optimove {
             OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context,
                     coreSharedPreferences.getInt(TENANT_ID, -1)));
         }
-        configure(context,tenantInfo);
+        configure(context, tenantInfo);
     }
 
     /**
@@ -305,49 +309,91 @@ final public class Optimove {
      ******************* */
 
     /**
+     * Method that performs both the {@code setUserId} and the {@code setUserEmail} flows from a single call.
+     *
+     * @param sdkId The new User's SDK ID to set
+     * @param email the <i>email address</i> to attach
+     * @see Optimove#setUserId(String)
+     * @see Optimove#setUserEmail(String)
+     */
+    public void registerUser(String sdkId, String email) {
+        SetUserIdEvent setUserIdEvent = processUserId(sdkId);
+        SetEmailEvent setEmailEvent = processUserEmail(email);
+        if (setUserIdEvent != null && setEmailEvent != null) {
+            eventHandlerProvider.getEventHandler()
+                    .reportEvent(Arrays.asList(setUserIdEvent, setEmailEvent));
+            optipushManager.userIdChanged();
+        } else if (setUserIdEvent != null) {
+            eventHandlerProvider.getEventHandler()
+                    .reportEvent(Collections.singletonList(setUserIdEvent));
+            optipushManager.userIdChanged();
+        } else if (setEmailEvent != null) {
+            eventHandlerProvider.getEventHandler()
+                    .reportEvent(Collections.singletonList(setEmailEvent));
+        }
+    }
+
+    /**
      * Attaches an <i>email address</i> to the current user.
+     * If you report both the user ID and the email, use {@link Optimove#registerUser(String, String)}
      *
      * @param email the <i>email address</i> to attach
      */
     public void setUserEmail(String email) {
-        if (OptiUtils.isNullNoneOrUndefined(email)) {
-            OptiLogger.providedEmailIsNull();
-            return;
+        SetEmailEvent setEmailEvent = processUserEmail(email);
+        if (setEmailEvent != null) {
+            eventHandlerProvider.getEventHandler()
+                    .reportEvent(Collections.singletonList(setEmailEvent));
         }
-        String trimmedEmail = email.trim();
-        if (!OptiUtils.isValidEmailAddress(trimmedEmail)) {
-            OptiLogger.f89(email);
-            return;
-        }
-
-        if (this.userInfo.getEmail() != null && this.userInfo.getEmail()
-                .equals(trimmedEmail)) {
-            OptiLogger.providedEmailWasAlreadySet(email);
-            return;
-        }
-        this.userInfo.setEmail(trimmedEmail);
-
-        SetEmailEvent event = new SetEmailEvent(trimmedEmail);
-        reportEvent(event);
     }
 
     /**
      * Sets the User ID of the current user and starts the {@code Visitor} to {@code Customer} conversion flow.<br>
      * <b>Note</b>: The user ID must be the same user ID that is passed to Optimove at the daily ETL
+     * If you report both the user ID and the email, use {@link Optimove#registerUser(String, String)}
      *
      * @param sdkId The new User' SDK ID to set
      */
     public void setUserId(String sdkId) {
-        if (OptiUtils.isNullNoneOrUndefined(sdkId)) {
-            OptiLogger.f90(sdkId);
-            return;
+        SetUserIdEvent setUserIdEvent = processUserId(sdkId);
+        if (setUserIdEvent != null) {
+            eventHandlerProvider.getEventHandler()
+                    .reportEvent(Collections.singletonList(setUserIdEvent));
+            optipushManager.userIdChanged();
         }
-        String newUserId = sdkId.trim(); // Safe to trim now as it could never be null
+    }
+
+    private @Nullable SetEmailEvent processUserEmail(String email){
+        if (OptiUtils.isNullNoneOrUndefined(email)) {
+            OptiLogger.providedEmailIsNull();
+            return null;
+        }
+        String trimmedEmail = email.trim();
+        if (!OptiUtils.isValidEmailAddress(trimmedEmail)) {
+            OptiLogger.f89(email);
+            return null;
+        }
+
+        if (this.userInfo.getEmail() != null && this.userInfo.getEmail()
+                .equals(trimmedEmail)) {
+            OptiLogger.providedEmailWasAlreadySet(email);
+            return null;
+        }
+        this.userInfo.setEmail(trimmedEmail);
+        return new SetEmailEvent(trimmedEmail);
+    }
+
+    private @Nullable SetUserIdEvent processUserId(String userId) {
+        if (OptiUtils.isNullNoneOrUndefined(userId)) {
+            OptiLogger.f90(userId);
+            return null;
+        }
+        String newUserId = userId.trim(); // Safe to trim now as it could never be null
 
         if (this.userInfo.getUserId() != null && this.userInfo.getUserId()
                 .equals(newUserId)) {
-            OptiLogger.f91(sdkId);
-            return;
+            OptiLogger.f91(userId);
+            return null;
         }
 
         String originalVisitorId = this.userInfo.getVisitorId();
@@ -357,25 +403,7 @@ final public class Optimove {
         this.userInfo.setUserId(newUserId);
         this.userInfo.setVisitorId(updatedVisitorId);
 
-        SetUserIdEvent setUserIdEvent = new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
-
-        eventHandlerProvider.getEventHandler()
-                .reportEvent(Collections.singletonList(setUserIdEvent));
-        optipushManager
-                .userIdChanged();
-    }
-
-    /**
-     * Convenience method that performs both the {@code setUserId} and the {@code setUserEmail} flows from a single call.
-     *
-     * @param sdkId The new User's SDK ID to set
-     * @param email the <i>email address</i> to attach
-     * @see Optimove#setUserId(String)
-     * @see Optimove#setUserEmail(String)
-     */
-    public void registerUser(String sdkId, String email) {
-        setUserId(sdkId);
-        setUserEmail(email);
+        return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
 
     /**
@@ -436,11 +464,11 @@ final public class Optimove {
                 .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName.trim(), screenCategory)));
     }
 
-    public void disablePushCampaigns(){
+    public void disablePushCampaigns() {
         optipushManager.disablePushCampaigns();
     }
 
-    public void enablePushCampaigns(){
+    public void enablePushCampaigns() {
         optipushManager.enablePushCampaigns();
     }
 
@@ -453,7 +481,7 @@ final public class Optimove {
     }
 
     /**
-     * @deprecated Use the {@link Optimove#reportScreenVisit(String,String)} instead.
+     * @deprecated Use the {@link Optimove#reportScreenVisit(String, String)} instead.
      */
     @Deprecated
     public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle,
@@ -470,7 +498,7 @@ final public class Optimove {
     }
 
     /**
-     * @deprecated Use the {@link Optimove#reportScreenVisit(String,String)} instead.
+     * @deprecated Use the {@link Optimove#reportScreenVisit(String, String)} instead.
      */
     @Deprecated
     public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle,
