@@ -30,7 +30,7 @@ public class FetchedLocalConfigsMapper {
         eventConfigsMap.putAll(fetchedGlobalConfig.coreEventsConfigs); // second! to override tenant configs
 
         return new Configs(tenantId, fetchedTenantConfigs.enableRealtime,
-                fetchedTenantConfigs.enableRealtimeThroughOptistream, fetchedTenantConfigs.airship,
+                fetchedTenantConfigs.enableRealtimeThroughOptistream, fetchedTenantConfigs.supportAirship,
                 logsConfigs,
                 realtimeConfigs,
                 optitrackConfigs,

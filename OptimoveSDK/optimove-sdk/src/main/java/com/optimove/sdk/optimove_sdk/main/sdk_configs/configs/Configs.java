@@ -22,7 +22,7 @@ public class Configs {
 
     public Configs(int tenantId, boolean enableRealtime,
                    boolean enableRealtimeThroughOptistream,
-                   boolean airship,
+                   boolean airshipSupported,
                    @NonNull LogsConfigs logsConfigs,
                    @NonNull RealtimeConfigs realtimeConfigs,
                    @NonNull OptitrackConfigs optitrackConfigs,
@@ -31,6 +31,7 @@ public class Configs {
         this.tenantId = tenantId;
         this.enableRealtime = enableRealtime;
         this.enableRealtimeThroughOptistream = enableRealtimeThroughOptistream;
+        this.airship = airshipSupported;
         this.logsConfigs = logsConfigs;
         this.realtimeConfigs = realtimeConfigs;
         this.optitrackConfigs = optitrackConfigs;
