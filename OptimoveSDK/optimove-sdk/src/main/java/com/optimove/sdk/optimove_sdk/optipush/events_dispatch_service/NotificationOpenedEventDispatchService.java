@@ -15,6 +15,8 @@ import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 import com.optimove.sdk.optimove_sdk.optipush.campaigns.ScheduledCampaign;
 import com.optimove.sdk.optimove_sdk.optipush.campaigns.TriggeredCampaign;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationOpenedEventDispatchService extends Service {
@@ -40,14 +42,14 @@ public class NotificationOpenedEventDispatchService extends Service {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
-                    .reportEvent(new TriggeredNotificationOpenedEvent(triggeredCampaign,
-                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this)));
+                    .reportEvent(Collections.singletonList(new TriggeredNotificationOpenedEvent(triggeredCampaign,
+                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this))));
         } else if (scheduledCampaign != null) {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
-                    .reportEvent(new ScheduledNotificationOpenedEvent(scheduledCampaign,
-                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this)));
+                    .reportEvent(Collections.singletonList(new ScheduledNotificationOpenedEvent(scheduledCampaign,
+                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this))));
         }
         new Thread(() -> {
             try {

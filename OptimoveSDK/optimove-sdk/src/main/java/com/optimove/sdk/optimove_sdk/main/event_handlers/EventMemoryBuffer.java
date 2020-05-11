@@ -2,7 +2,10 @@ package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 public class EventMemoryBuffer extends EventHandler {
 
@@ -24,26 +27,28 @@ public class EventMemoryBuffer extends EventHandler {
     }
 
     @Override
-    public void reportEvent(OptimoveEvent optimoveEvent) {
+    public void reportEvent(List<OptimoveEvent> optimoveEvents) {
         if (next == null) {
-            processEventInternally(optimoveEvent);
+            processEventInternally(optimoveEvents);
         } else {
-            reportEventNext(optimoveEvent);
+            reportEventNext(optimoveEvents);
         }
     }
 
 
-    private void processEventInternally(OptimoveEvent optimoveEvent) {
+    private void processEventInternally(List<OptimoveEvent> optimoveEvents) {
         if (optimoveEventsBuffer.size() < maximumSize) {
-            optimoveEventsBuffer.push(optimoveEvent);
+
+            optimoveEventsBuffer.addAll(optimoveEvents);
         }
     }
 
 
     public void processQueue() {
-        while (!optimoveEventsBuffer.isEmpty()) {
-            reportEventNext(optimoveEventsBuffer.remove());
-        }
+        reportEventNext(optimoveEventsBuffer);
+//        while (!optimoveEventsBuffer.isEmpty()) {
+//            reportEventNext(new ArrayList<OptimoveEvent>(optimoveEventsBuffer.re()));
+//        }
     }
 
 

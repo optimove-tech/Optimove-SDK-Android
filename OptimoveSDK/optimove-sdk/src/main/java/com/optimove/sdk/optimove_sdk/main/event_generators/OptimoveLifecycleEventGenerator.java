@@ -12,6 +12,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
@@ -67,15 +68,15 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
         AppOpenEvent appOpenEvent =
                 new AppOpenEvent(userInfo.getUserId(), userInfo.getVisitorId(), fullPackageName
                         , userInfo.getInstallationId());
-        eventHandlerProvider.getEventHandler().reportEvent(appOpenEvent);
+        eventHandlerProvider.getEventHandler().reportEvent(Collections.singletonList(appOpenEvent));
         foregroundSessionEndTime = System.currentTimeMillis(); //Reset the timer to prevent duplicate reports
     }
     private void reportOptInOrOut() {
         int lastReportedOpt = optitrackPreferences.getInt(LAST_OPT_REPORTED_KEY, -1);
         if (lastReportedOpt == -1) {
             eventHandlerProvider.getEventHandler()
-                    .reportEvent(new OptipushOptIn(fullPackageName,
-                            userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()));
+                    .reportEvent(Collections.singletonList(new OptipushOptIn(fullPackageName,
+                            userInfo.getInstallationId(), OptiUtils.currentTimeSeconds())));
             optitrackPreferences.edit()
                     .putInt(LAST_OPT_REPORTED_KEY, LAST_REPORTED_OPT_IN)
                     .apply();
@@ -88,10 +89,10 @@ public class OptimoveLifecycleEventGenerator implements LifecycleObserver.Activi
             }
             eventHandlerProvider.getEventHandler()
                     .reportEvent(currentlyOptIn ?
-                            new OptipushOptIn(fullPackageName, userInfo.getInstallationId(),
-                                    OptiUtils.currentTimeSeconds()) :
-                            new OptipushOptOut(fullPackageName,
-                                    userInfo.getInstallationId(), OptiUtils.currentTimeSeconds()));
+                            Collections.singletonList(new OptipushOptIn(fullPackageName, userInfo.getInstallationId(),
+                                    OptiUtils.currentTimeSeconds())) :
+                            Collections.singletonList(new OptipushOptOut(fullPackageName,
+                                    userInfo.getInstallationId(), OptiUtils.currentTimeSeconds())));
             optitrackPreferences.edit()
                     .putInt(LAST_OPT_REPORTED_KEY, currentlyOptIn ? LAST_REPORTED_OPT_IN : LAST_REPORTED_OPT_OUT)
                     .apply();

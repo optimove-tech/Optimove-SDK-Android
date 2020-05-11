@@ -8,6 +8,7 @@ import android.support.annotation.VisibleForTesting;
 import com.android.volley.VolleyError;
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
@@ -23,6 +24,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -52,11 +56,11 @@ public class OptipushMessageCommand {
         }
 
         if (notificationData.getScheduledCampaign() != null) {
-            eventHandler.reportEvent(new ScheduledNotificationDeliveredEvent(notificationData.getScheduledCampaign(),
-                    System.currentTimeMillis(), fullPackageName));
+            eventHandler.reportEvent(Collections.singletonList(new ScheduledNotificationDeliveredEvent(notificationData.getScheduledCampaign(),
+                    System.currentTimeMillis(), fullPackageName)));
         } else if (notificationData.getTriggeredCampaign() != null) {
-            eventHandler.reportEvent(new TriggeredNotificationDeliveredEvent(notificationData.getTriggeredCampaign(),
-                    System.currentTimeMillis(), fullPackageName));
+            eventHandler.reportEvent(Collections.singletonList(new TriggeredNotificationDeliveredEvent(notificationData.getTriggeredCampaign(),
+                    System.currentTimeMillis(), fullPackageName)));
         }
 
 

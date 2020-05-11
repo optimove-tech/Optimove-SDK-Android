@@ -31,6 +31,7 @@ import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -359,7 +360,7 @@ final public class Optimove {
         SetUserIdEvent setUserIdEvent = new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(setUserIdEvent);
+                .reportEvent(Collections.singletonList(setUserIdEvent));
         optipushManager
                 .userIdChanged();
     }
@@ -417,7 +418,7 @@ final public class Optimove {
         }
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(optimoveEvent);
+                .reportEvent(Collections.singletonList(optimoveEvent));
     }
 
     public void reportScreenVisit(@NonNull String screenName) {
@@ -432,7 +433,7 @@ final public class Optimove {
         }
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new SetPageVisitEvent(screenName.trim(), screenCategory));
+                .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName.trim(), screenCategory)));
     }
 
     public void disablePushCampaigns(){

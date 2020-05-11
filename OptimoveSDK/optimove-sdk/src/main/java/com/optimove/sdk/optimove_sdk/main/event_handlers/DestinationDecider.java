@@ -1,11 +1,14 @@
 package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
+import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class DestinationDecider extends EventHandler {
@@ -30,27 +33,34 @@ public class DestinationDecider extends EventHandler {
     }
 
     @Override
-    public void reportEvent(OptimoveEvent optimoveEvent) {
-        EventConfigs eventConfigs = eventConfigsMap.get(optimoveEvent.getName());
+    public void reportEvent(List<OptimoveEvent> optimoveEvents) {
+        List<OptistreamEvent> optistreamRealtimeEvents = new ArrayList<>();
+        List<OptistreamEvent> optistreamEvents = new ArrayList<>();
 
-        OptistreamEvent optistreamEvent;
-        if (!realtimeEnabled || !eventConfigs.isSupportedOnRealtime()){
-            // Only optistream
-            optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                    false);
-            optistreamHandler.reportEvent(optistreamEvent);
-        } else if (realtimeEnabledThroughOptistream) {
-            // Only to optistream, with realtime enabled for Optistream
-            optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                    true);
-            optistreamHandler.reportEvent(optistreamEvent);
-        } else {
-            // Both to optistream and to realtime, with realtime disabled for Optistream
-            optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                    false);
-            realtimeManager.reportEvent(optistreamEvent);
-            optistreamHandler.reportEvent(optistreamEvent);
+        for (OptimoveEvent optimoveEvent: optimoveEvents) {
+            EventConfigs eventConfigs = eventConfigsMap.get(optimoveEvent.getName());
+
+            OptistreamEvent optistreamEvent;
+            if (!realtimeEnabled || !eventConfigs.isSupportedOnRealtime()){
+                // Only optistream
+                optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
+                        false);
+                optistreamEvents.add(optistreamEvent);
+            } else if (realtimeEnabledThroughOptistream) {
+                // Only to optistream, with realtime enabled for Optistream
+                optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
+                        true);
+                optistreamEvents.add(optistreamEvent);
+            } else {
+                // Both to optistream and to realtime, with realtime disabled for Optistream
+                optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
+                        false);
+                optistreamEvents.add(optistreamEvent);
+                optistreamRealtimeEvents.add(optistreamEvent);
+            }
         }
+        realtimeManager.reportEvents(optistreamRealtimeEvents);
+        //optistreamHandler.reportEvent(optistreamEvent);
     }
 
 }

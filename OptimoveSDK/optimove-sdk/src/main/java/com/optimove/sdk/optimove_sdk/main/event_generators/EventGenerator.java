@@ -14,6 +14,8 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEven
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
+import java.util.Collections;
+
 public class EventGenerator {
 
     private UserInfo userInfo;
@@ -56,8 +58,8 @@ public class EventGenerator {
             }
 
             eventHandlerProvider.getEventHandler()
-                    .reportEvent(new SetAdvertisingIdEvent(advertisingId,
-                            packageName, encryptedDeviceId));
+                    .reportEvent(Collections.singletonList(new SetAdvertisingIdEvent(advertisingId,
+                            packageName, encryptedDeviceId)));
         }
     }
 
@@ -91,12 +93,12 @@ public class EventGenerator {
                         .build();
 
         eventHandlerProvider.getEventHandler()
-                .reportEvent(sdkMetadataEvent);
+                .reportEvent(Collections.singletonList(sdkMetadataEvent));
     }
 
     private void reportUserAgent() {
         eventHandlerProvider.getEventHandler()
-                .reportEvent(new UserAgentHeaderEvent(WebSettings.getDefaultUserAgent(context)));
+                .reportEvent(Collections.singletonList(new UserAgentHeaderEvent(WebSettings.getDefaultUserAgent(context))));
     }
 
 

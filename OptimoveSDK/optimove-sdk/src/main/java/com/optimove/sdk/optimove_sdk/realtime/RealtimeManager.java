@@ -41,31 +41,63 @@ public final class RealtimeManager {
         this.realtimeGson = new Gson();
     }
 
-
-    public void reportEvent(OptistreamEvent optistreamEvent) {
+    public void reportEvents(List<OptistreamEvent> optistreamEvents) {
         // if there was some failed important event, add them before this one
         List<OptistreamEvent> optistreamEventsToDispatch = new ArrayList<>();
-        if (!optistreamEvent.getName()
-                .equals(SetUserIdEvent.EVENT_NAME)) {
+        boolean setUserEventFound = false;
+        boolean setEmailEventFound = false;
+        for (OptistreamEvent optistreamEvent: optistreamEvents) {
+            if (optistreamEvent.getName()
+                    .equals(SetUserIdEvent.EVENT_NAME)) {
+                setUserEventFound = true;
+            } else if (optistreamEvent.getName()
+                    .equals(SetEmailEvent.EVENT_NAME)){
+                setEmailEventFound = true;
+            }
+        }
+
+        if (!setUserEventFound) {
             String serializedSetUserIdEvent = realtimePreferences.getString(FAILED_SET_USER_EVENT_KEY, null);
             if (serializedSetUserIdEvent != null) {
                 // add set user id event
-                realtimeGson.fromJson(serializedSetUserIdEvent, OptistreamEvent.class);
-                optistreamEventsToDispatch.add(optistreamEvent);
+                optistreamEventsToDispatch.add(realtimeGson.fromJson(serializedSetUserIdEvent, OptistreamEvent.class));
             }
         }
-        if (!optistreamEvent.getName()
-                .equals(SetEmailEvent.EVENT_NAME)) {
+        if (setEmailEventFound) {
             String serializedSetEmailEvent = realtimePreferences.getString(FAILED_SET_EMAIL_EVENT_KEY, null);
             if (serializedSetEmailEvent != null) {
                 // add set email id event
-                realtimeGson.fromJson(serializedSetEmailEvent, OptistreamEvent.class);
-                optistreamEventsToDispatch.add(optistreamEvent);
+                optistreamEventsToDispatch.add(realtimeGson.fromJson(serializedSetEmailEvent, OptistreamEvent.class));
             }
         }
-        optistreamEventsToDispatch.add(optistreamEvent);
+        optistreamEventsToDispatch.addAll(optistreamEvents);
         dispatchEvents(optistreamEventsToDispatch);
     }
+
+//    public void reportEvent(OptistreamEvent optistreamEvent) {
+//        // if there was some failed important event, add them before this one
+//        List<OptistreamEvent> optistreamEventsToDispatch = new ArrayList<>();
+//        if (!optistreamEvent.getName()
+//                .equals(SetUserIdEvent.EVENT_NAME)) {
+//            String serializedSetUserIdEvent = realtimePreferences.getString(FAILED_SET_USER_EVENT_KEY, null);
+//            if (serializedSetUserIdEvent != null) {
+//                // add set user id event
+//                realtimeGson.fromJson(serializedSetUserIdEvent, OptistreamEvent.class);
+//                optistreamEventsToDispatch.add(optistreamEvent);
+//            }
+//        }
+//        if (!optistreamEvent.getName()
+//                .equals(SetEmailEvent.EVENT_NAME)) {
+//            String serializedSetEmailEvent = realtimePreferences.getString(FAILED_SET_EMAIL_EVENT_KEY, null);
+//            if (serializedSetEmailEvent != null) {
+//                // add set email id event
+//                realtimeGson.fromJson(serializedSetEmailEvent, OptistreamEvent.class);
+//                optistreamEventsToDispatch.add(optistreamEvent);
+//            }
+//        }
+//        optistreamEventsToDispatch.add(optistreamEvent);
+//        dispatchEvents(optistreamEventsToDispatch);
+//    }
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
         try {

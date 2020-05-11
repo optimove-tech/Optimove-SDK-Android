@@ -2,10 +2,10 @@ package com.optimove.sdk.optimove_sdk.main.event_handlers;
 
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
+import java.util.List;
+
 
 public abstract class EventHandler {
-
-
 
     protected EventHandler next;
 
@@ -13,14 +13,14 @@ public abstract class EventHandler {
         this.next = next;
     }
 
-    public abstract void reportEvent(OptimoveEvent optimoveEvent);
+    public abstract void reportEvent(List<OptimoveEvent> optimoveEvents);
 
 
-    protected void reportEventNext(OptimoveEvent optimoveEvent) {
+    protected void reportEventNext(List<OptimoveEvent> optimoveEvents) {
         if (next == null) {
             return;
         }
-        next.reportEvent(optimoveEvent);
+        next.reportEvent(optimoveEvents);
     }
 
 }
