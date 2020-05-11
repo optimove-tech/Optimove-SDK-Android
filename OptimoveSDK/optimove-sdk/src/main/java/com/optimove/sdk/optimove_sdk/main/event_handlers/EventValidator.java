@@ -38,7 +38,9 @@ public class EventValidator extends EventHandler {
             optimoveEventsValidated.add(optimoveEvent);
         }
 
-        reportEventNext(optimoveEventsValidated);
+        if(!optimoveEventsValidated.isEmpty()) {
+            reportEventNext(optimoveEventsValidated);
+        }
     }
 
 }

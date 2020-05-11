@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,11 +42,10 @@ public class EventNormalizerTests {
         Map<String, Object> customEventsParameters = new HashMap<>();
         customEventsParameters.put(unformattedParameter, "some");
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(unformattedName, customEventsParameters);
-        EventContext eventContext = new EventContext(optimoveEvent);
-        eventNormalizer.reportEvent(eventContext);
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        eventNormalizer.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), formattedName)));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getOptimoveEvent()
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(formattedParameter))));
     }
 }

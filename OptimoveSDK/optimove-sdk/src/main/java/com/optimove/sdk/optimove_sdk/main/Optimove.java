@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.webkit.WebSettings;
 
 import com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys;
 import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
@@ -232,6 +233,7 @@ final public class Optimove {
                         .withDeviceId(userInfo.getInstallationId())
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
+                        .withUserAgent(WebSettings.getDefaultUserAgent(context))
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)
                         .build();

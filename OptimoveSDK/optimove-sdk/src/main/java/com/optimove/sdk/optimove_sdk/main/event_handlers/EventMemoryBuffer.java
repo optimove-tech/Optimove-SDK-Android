@@ -38,14 +38,14 @@ public class EventMemoryBuffer extends EventHandler {
 
     private void processEventInternally(List<OptimoveEvent> optimoveEvents) {
         if (optimoveEventsBuffer.size() < maximumSize) {
-
             optimoveEventsBuffer.addAll(optimoveEvents);
         }
     }
 
 
     public void processQueue() {
-        reportEventNext(optimoveEventsBuffer);
+        reportEventNext(new ArrayList<>(optimoveEventsBuffer));
+        optimoveEventsBuffer.clear();
 //        while (!optimoveEventsBuffer.isEmpty()) {
 //            reportEventNext(new ArrayList<OptimoveEvent>(optimoveEventsBuffer.re()));
 //        }

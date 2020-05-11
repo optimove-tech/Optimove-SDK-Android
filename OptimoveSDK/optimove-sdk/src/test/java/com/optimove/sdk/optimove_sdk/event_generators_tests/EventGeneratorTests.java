@@ -5,10 +5,12 @@ import android.content.SharedPreferences;
 import android.location.Location;
 
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.TenantInfo;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
@@ -20,11 +22,14 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
+
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_IN;
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,6 +54,7 @@ public class EventGeneratorTests {
     private String packageName = "package_name";
     private String encryptedDeviceId = "some_encrypted_device_id";
     private String location = "some_location";
+    private String userAgent = "some_user_agent";
     @Mock
     private DeviceInfoProvider deviceInfoProvider;
     @Mock
@@ -90,6 +96,7 @@ public class EventGeneratorTests {
                         .withDeviceId(encryptedDeviceId)
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
+                        .withUserAgent(userAgent)
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)
                         .build();
@@ -98,13 +105,23 @@ public class EventGeneratorTests {
     @Test
     public void userAgentEventShouldBeSentWhenInitialized() {
         eventGenerator.generateStartEvents(false);
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
-                .getName(), UserAgentHeaderEvent.EVENT_NAME)));
+        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arrayContains(arg,
+                UserAgentHeaderEvent.EVENT_NAME))));
     }
+    private boolean arrayContains(List<OptimoveEvent> optimoveEvents, String eventName) {
+        System.out.println(optimoveEvents.size());
+        for (OptimoveEvent optimoveEvent: optimoveEvents) {
+            if (optimoveEvent.getName().equals(eventName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Test
     public void sdkMetadataEventShouldBeSentWhenInitialized() {
         eventGenerator.generateStartEvents(false);
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SdkMetadataEvent.EVENT_NAME)));
     }
 
@@ -113,20 +130,20 @@ public class EventGeneratorTests {
         when(deviceInfoProvider.canReportAdId()).thenReturn(true);
         when(userInfo.getAdvertisingId()).thenReturn("sdfgdsf");
         eventGenerator.generateStartEvents(true);
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
     }
     @Test
     public void adIdShouldntBeReportedIfAdvertisingIdIsntAllowed() {
         eventGenerator.generateStartEvents(false);
-        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
     }
     @Test
     public void adIdShouldntBeReportedIfCantReportAdId() {
         when(deviceInfoProvider.canReportAdId()).thenReturn(false);
         eventGenerator.generateStartEvents(true);
-        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
     }
     @Test
@@ -134,7 +151,7 @@ public class EventGeneratorTests {
         when(deviceInfoProvider.canReportAdId()).thenReturn(true);
         when(userInfo.getAdvertisingId()).thenReturn(null);
         eventGenerator.generateStartEvents(true);
-        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
     }
     @Test

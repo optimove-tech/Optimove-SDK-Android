@@ -2,12 +2,16 @@ package com.optimove.sdk.optimove_sdk.event_handler_tests;
 
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
+import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import static org.mockito.Mockito.mock;
@@ -28,9 +32,9 @@ public class EventSynchronizerTests {
     }
 
     @Test
-    public void eventShouldBeSubmitedToExecutor() {
-        EventContext eventContext = mock(EventContext.class);
-        eventSynchronizer.reportEvent(eventContext);
-        verify(nextEventHandler,timeout(1000)).reportEvent(eventContext);
+    public void eventShouldBeReportedToNextHandler() {
+        List<OptimoveEvent> optimoveEvents = mock(ArrayList.class);
+        eventSynchronizer.reportEvent(optimoveEvents);
+        verify(nextEventHandler,timeout(1000)).reportEvent(optimoveEvents);
     }
 }

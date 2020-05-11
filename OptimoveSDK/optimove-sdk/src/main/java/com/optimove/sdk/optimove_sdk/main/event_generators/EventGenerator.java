@@ -24,6 +24,7 @@ public class EventGenerator {
     private DeviceInfoProvider deviceInfoProvider;
     private TenantInfo tenantInfo;
     private EventHandlerProvider eventHandlerProvider;
+    private String userAgent;
     private Context context;
 
 
@@ -34,6 +35,7 @@ public class EventGenerator {
         deviceInfoProvider = builder.deviceInfoProvider;
         tenantInfo = builder.tenantInfo;
         eventHandlerProvider = builder.eventHandlerProvider;
+        userAgent = builder.userAgent;
         context = builder.context;
     }
 
@@ -98,7 +100,7 @@ public class EventGenerator {
 
     private void reportUserAgent() {
         eventHandlerProvider.getEventHandler()
-                .reportEvent(Collections.singletonList(new UserAgentHeaderEvent(WebSettings.getDefaultUserAgent(context))));
+                .reportEvent(Collections.singletonList(new UserAgentHeaderEvent(userAgent)));
     }
 
 
@@ -114,13 +116,16 @@ public class EventGenerator {
     public interface IContext {
         IBuild withContext(Context val);
     }
-
     public interface IEventHandlerProvider {
         IContext withEventHandlerProvider(EventHandlerProvider val);
     }
 
+    public interface IUserAgent {
+        IEventHandlerProvider withUserAgent(String userAgent);
+    }
+
     public interface ITenantInfo {
-        IEventHandlerProvider withTenantInfo(TenantInfo val);
+        IUserAgent withTenantInfo(TenantInfo val);
     }
 
     public interface IRequirementProvider {
@@ -139,9 +144,10 @@ public class EventGenerator {
         IPackageName withUserInfo(UserInfo val);
     }
 
-    public static final class Builder implements IContext, IEventHandlerProvider,
+    public static final class Builder implements IContext,IUserAgent, IEventHandlerProvider,
             ITenantInfo, IRequirementProvider, IDeviceId, IPackageName, IUserInfo, IBuild {
         private Context context;
+        private String userAgent;
         private EventHandlerProvider eventHandlerProvider;
         private TenantInfo tenantInfo;
         private DeviceInfoProvider deviceInfoProvider;
@@ -163,9 +169,14 @@ public class EventGenerator {
             eventHandlerProvider = val;
             return this;
         }
+        @Override
+        public IEventHandlerProvider withUserAgent(String userAgent) {
+            this.userAgent = userAgent;
+            return this;
+        }
 
         @Override
-        public IEventHandlerProvider withTenantInfo(TenantInfo val) {
+        public IUserAgent withTenantInfo(TenantInfo val) {
             tenantInfo = val;
             return this;
         }

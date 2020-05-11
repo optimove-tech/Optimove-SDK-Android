@@ -11,7 +11,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;
@@ -37,11 +40,10 @@ public class EventValidatorTests {
     public void eventShouldNotBeReportedIfDoesntExistInConfigs() {
         String eventName = "some_name";
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
-        EventContext eventContext = new EventContext(optimoveEvent);
 
         when(eventConfigsMap.containsKey(eventName)).thenReturn(false);
 
-        eventValidator.reportEvent(eventContext);
+        eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
         verifyZeroInteractions(nextEventHandler);
     }
 
@@ -56,12 +58,11 @@ public class EventValidatorTests {
         when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
 
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
-        EventContext eventContext = new EventContext(optimoveEvent);
 
         when(eventConfigsMap.containsKey(eventName)).thenReturn(true);
         when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
 
-        eventValidator.reportEvent(eventContext);
+        eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
         verifyZeroInteractions(nextEventHandler);
     }
 
@@ -74,12 +75,11 @@ public class EventValidatorTests {
         when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
 
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
-        EventContext eventContext = new EventContext(optimoveEvent);
 
         when(eventConfigsMap.containsKey(eventName)).thenReturn(true);
         when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
 
-        eventValidator.reportEvent(eventContext);
-        verify(nextEventHandler).reportEvent(eventContext);
+        eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(Collections.singletonList(optimoveEvent));
     }
 }

@@ -74,7 +74,7 @@ public class OptipushMessageCommandTests {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
 
         optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
-        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent().getName(),
+        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0).getName(),
                 ScheduledNotificationDeliveredEvent.NAME)));
     }
     @Test
@@ -82,7 +82,7 @@ public class OptipushMessageCommandTests {
         when(notificationData.getTriggeredCampaign()).thenReturn(triggeredCampaign);
 
         optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
-        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent().getName(),
+        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0).getName(),
                 TriggeredNotificationDeliveredEvent.NAME)));
     }
     @Test

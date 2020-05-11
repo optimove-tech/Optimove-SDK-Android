@@ -4,29 +4,23 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData;
-import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationMedia;
 
-import org.checkerframework.checker.units.qual.Time;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotificationManager;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
-import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
@@ -74,16 +68,4 @@ public class NotificationCreatorTests {
         Assert.assertEquals(notification.icon, context.getApplicationInfo().icon);
     }
 
-    //removed for now because of GSON reflection, will be added later
-//    @Test
-//    public void notificationSouldBePresentedIfContainsMedia() throws InterruptedException{
-//        NotificationMedia notificationMedia = Mockito.mock(NotificationMedia.class);
-//        when(notificationData.getNotificationMedia()).thenReturn(notificationMedia);
-//        when(notificationMedia.getMediaType()).thenReturn(OptipushConstants.PushSchemaKeys.MEDIA_TYPE_IMAGE);
-//        notificationCreator.showNotification(notificationData);
-//        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-//        ShadowNotificationManager shadowNotificationManager = shadowOf(notificationManager);
-//        Thread.sleep(1000);
-//        Assert.assertEquals(shadowNotificationManager.getAllNotifications().size(), 1);
-//    }
 }

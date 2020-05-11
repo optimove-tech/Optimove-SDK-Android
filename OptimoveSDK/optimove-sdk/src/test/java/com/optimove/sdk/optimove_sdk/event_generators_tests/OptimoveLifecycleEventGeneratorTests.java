@@ -77,7 +77,7 @@ public class OptimoveLifecycleEventGeneratorTests {
     public void appOpenShouldBeReportedWhenActivityFirstStarts() {
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
-        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), AppOpenEvent.EVENT_NAME)));
     }
 
@@ -86,7 +86,7 @@ public class OptimoveLifecycleEventGeneratorTests {
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
         lifecycleObserver.onActivityStarted(mock(Activity.class));
-        verify(eventHandler,times(1)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler,times(1)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), AppOpenEvent.EVENT_NAME)));
     }
 
@@ -97,9 +97,8 @@ public class OptimoveLifecycleEventGeneratorTests {
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
 
-        verify(eventHandler, timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler, timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), OptipushOptIn.EVENT_NAME)));
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getExecutionTimeout() > 0)));
 
         InOrder inOrder = inOrder(editor);
         inOrder.verify(editor)
@@ -115,9 +114,8 @@ public class OptimoveLifecycleEventGeneratorTests {
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
 
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.getOptimoveEvent()
+        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), OptipushOptOut.EVENT_NAME)));
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getExecutionTimeout() > 0)));
 
         InOrder inOrder = inOrder(editor);
         inOrder.verify(editor)

@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class EventDecoratorTests {
     }
 
     @Test
-    public void reportedEventShouldBeDecorated() {
+    public void reportedEventsShouldBeDecorated() {
         String eventName = "some_event_name";
         EventConfigs eventConfigs = mock(EventConfigs.class);
         Map<String, EventConfigs.ParameterConfig> parameterConfigMap = mock(Map.class);
@@ -53,15 +54,14 @@ public class EventDecoratorTests {
         when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
         when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
-        EventContext eventContext = new EventContext(optimoveEvent);
-        eventDecorator.reportEvent(eventContext);
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getOptimoveEvent()
+        eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getOptimoveEvent()
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getOptimoveEvent()
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.getOptimoveEvent()
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
     }
 }
