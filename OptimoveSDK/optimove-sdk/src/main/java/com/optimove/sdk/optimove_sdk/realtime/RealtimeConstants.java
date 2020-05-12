@@ -16,13 +16,4 @@ public interface RealtimeConstants {
 
   String REPORT_EVENT_REQUEST_ROUTE = "reportEvent";
 
-  String EVENT_REQUEST_TID_KEY = "tid";
-  String EVENT_REQUEST_CID_KEY = "cid";
-  String EVENT_REQUEST_VID_KEY = "visitorId";
-  String EVENT_REQUEST_EID_KEY = "eid";
-  String EVENT_REQUEST_FIRST_VISITOR_DATE_KEY = "firstVisitorDate";
-  String EVENT_REQUEST_CONTEXT_KEY = "context";
-
-  String EVENT_RESPONSE_SUCCESS_KEY = "IsSuccess";
-  String EVENT_RESPONSE_DATA_KEY = "Data";
 }

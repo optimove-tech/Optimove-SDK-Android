@@ -28,8 +28,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.Collections;
 import java.util.Map;
 
-import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.EVENT_RESPONSE_DATA_KEY;
-import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.EVENT_RESPONSE_SUCCESS_KEY;
 import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.FAILED_SET_EMAIL_EVENT_KEY;
 import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.FAILED_SET_USER_EVENT_KEY;
 import static org.mockito.ArgumentMatchers.any;
@@ -269,16 +267,11 @@ public class RealtimeTest {
     private void applyHttpSuccessInvocation() {
         doAnswer(invocation -> {
             new Thread(() -> {
-                try {
-                    Response.Listener<JSONObject> successListener =
-                            (Response.Listener<JSONObject>) invocation.getArguments()[0];
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put(EVENT_RESPONSE_DATA_KEY, true);
-                    jsonObject.put(EVENT_RESPONSE_SUCCESS_KEY, true);
-                    successListener.onResponse(jsonObject);
-                } catch (JSONException j) {
+                Response.Listener<JSONObject> successListener =
+                        (Response.Listener<JSONObject>) invocation.getArguments()[0];
+                JSONObject jsonObject = new JSONObject();
 
-                }
+                successListener.onResponse(jsonObject);
             }).start();
 
             return builder;
