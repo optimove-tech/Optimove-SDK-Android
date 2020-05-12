@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.main.event_handlers;
+package com.optimove.sdk.optimove_sdk.optitrack;
 
 import android.support.annotation.NonNull;
 
