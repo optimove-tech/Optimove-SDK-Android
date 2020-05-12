@@ -58,7 +58,7 @@ public class UserInfo {
 
     userInfo.visitorId = userInfo.userIdsSp.getString(VISITOR_ID_KEY, null);
     if (userInfo.visitorId == null) { // The very first session
-      userInfo.setVisitorId(UUID.randomUUID().toString().replaceAll("-", "").substring(0, 16));
+      userInfo.setVisitorId(UUID.randomUUID().toString().replaceAll("-", ""));
     }
 
     userInfo.initialVisitorId = userInfo.userIdsSp.getString(INITIAL_VISITOR_ID_KEY, null);
