@@ -52,7 +52,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
 
-    public boolean insertEvents(JSONArray jsonArray) {
+    boolean insertEvents(JSONArray jsonArray) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
 
@@ -69,7 +69,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         }
         return true;
     }
-    public boolean insertEvent(String eventJson) {
+    boolean insertEvent(String eventJson) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
 
@@ -85,7 +85,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public void removeEvents(String lastId) {
+    void removeEvents(String lastId) {
         final SQLiteDatabase db = this.getWritableDatabase();
 
         try {
@@ -103,7 +103,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public EventsBulk getFirstEvents(int numberOfEvents) {
+    EventsBulk getFirstEvents(int numberOfEvents) {
 
         String lastId = null;
         List<String> eventJsons = new ArrayList<>();
@@ -125,29 +125,29 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         return new EventsBulk(lastId, eventJsons);
     }
 
-    public class EventsBulk {
+    class EventsBulk {
 
         private String lastId;
         private List<String> eventJsons;
 
-        public EventsBulk(String lastId, List<String> eventJsons) {
+        EventsBulk(String lastId, List<String> eventJsons) {
             this.lastId = lastId;
             this.eventJsons = eventJsons;
         }
 
-        public String getLastId() {
+        String getLastId() {
             return lastId;
         }
 
-        public void setLastId(String lastId) {
+        void setLastId(String lastId) {
             this.lastId = lastId;
         }
 
-        public List<String> getEventJsons() {
+        List<String> getEventJsons() {
             return eventJsons;
         }
 
-        public void setEventJsons(List<String> eventJsons) {
+        void setEventJsons(List<String> eventJsons) {
             this.eventJsons = eventJsons;
         }
     }
