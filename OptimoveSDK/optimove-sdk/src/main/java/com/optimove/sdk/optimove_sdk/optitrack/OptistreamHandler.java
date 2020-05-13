@@ -1,6 +1,7 @@
 package com.optimove.sdk.optimove_sdk.optitrack;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
@@ -18,6 +19,8 @@ import org.json.JSONException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
@@ -35,6 +38,8 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     private Gson optistreamGson;
 
 
+    @Nullable
+    private ScheduledFuture timerDispatchFuture;
     private boolean initialized = false;
 
     private final static class Constants {
@@ -58,8 +63,15 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     private synchronized void ensureInit() {
         if (!initialized) {
             //this will not cause a leak because this component is tied to the app context
-            this.lifecycleObserver.addActivityStoppedListener(this);
             this.initialized = true;
+            this.lifecycleObserver.addActivityStoppedListener(this);
+            try {
+                this.timerDispatchFuture = this.singleThreadScheduledExecutor.schedule(this::dispatchBulkIfExists,
+                        Constants.DISPATCH_INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                OptiLoggerStreamsContainer.error("Failed to schedule another dispatch - %s",
+                        e.getMessage());
+            }
         }
     }
 
@@ -74,6 +86,9 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 }
             }
             if (immediateEventFound) {
+                if (timerDispatchFuture != null) {
+                    timerDispatchFuture.cancel(false);
+                }
                 singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
             }
         });
@@ -103,12 +118,25 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                         e.getMessage());
             }
+        } else {
+            // Schedule another dispatch all if we are done dispatching
+            try {
+                this.timerDispatchFuture = this.singleThreadScheduledExecutor.schedule(this::dispatchBulkIfExists,
+                        Constants.DISPATCH_INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                OptiLoggerStreamsContainer.error("Failed to schedule another dispatch - %s",
+                        e.getMessage());
+            }
+
         }
 
     }
     @Override
     public void activityStopped() {
-        this.ensureInit();
+        // Stop the scheduled dispatch if exists
+        if (timerDispatchFuture != null) {
+            timerDispatchFuture.cancel(false);
+        }
         singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
     }
 
