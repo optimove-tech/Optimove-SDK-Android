@@ -30,7 +30,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsCon
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.SdkLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
+import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,7 +88,7 @@ final public class Optimove {
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance(context))
                 .maximumBufferSize(OPTITRACK_BUFFER_SIZE)
-                .optistreamQueue(new OptistreamQueue(new FileUtils(), context))
+                .optistreamDbHelper(new OptistreamDbHelper(context))
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
                 .build();

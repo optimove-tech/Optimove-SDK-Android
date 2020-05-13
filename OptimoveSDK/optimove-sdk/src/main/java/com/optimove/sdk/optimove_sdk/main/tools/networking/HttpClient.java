@@ -56,6 +56,9 @@ public class HttpClient {
     public RequestBuilder<JSONObject> postJsonWithoutJsonResponse(String baseUrl, JSONObject data) {
         return new JsonRequestBuilderWOJsonResponse(baseUrl, data, Request.Method.POST);
     }
+    public <T> RequestBuilder<T> postObject(String baseUrl, Class<T> objectType) {
+        return new CustomRequestBuilder<>(baseUrl, objectType, Request.Method.POST);
+    }
 
     public <T> RequestBuilder<T> getObject(String baseUrl, Class<T> objectType) {
         return new CustomRequestBuilder<>(baseUrl, objectType, Request.Method.GET);

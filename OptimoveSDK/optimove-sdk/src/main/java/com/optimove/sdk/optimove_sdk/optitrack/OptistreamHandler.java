@@ -11,13 +11,13 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamQueue;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
@@ -26,9 +26,14 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     @NonNull
     private LifecycleObserver lifecycleObserver;
     @NonNull
-    private OptistreamQueue optistreamQueue;
+    private OptistreamDbHelper optistreamDbHelper;
     @NonNull
     private OptitrackConfigs optitrackConfigs;
+    @NonNull
+    private ExecutorService singleThreadExecutor;
+    @NonNull
+    private Gson optistreamGson;
+
 
     private boolean initialized = false;
     private boolean currentlyDispatching = false;
@@ -42,12 +47,14 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     public OptistreamHandler(@NonNull HttpClient httpClient,
                              @NonNull LifecycleObserver lifecycleObserver,
-                             @NonNull OptistreamQueue optistreamQueue,
+                             @NonNull OptistreamDbHelper optistreamDbHelper,
                              @NonNull OptitrackConfigs optitrackConfigs) {
         this.httpClient = httpClient;
         this.lifecycleObserver = lifecycleObserver;
-        this.optistreamQueue = optistreamQueue;
+        this.optistreamDbHelper = optistreamDbHelper;
         this.optitrackConfigs = optitrackConfigs;
+        this.singleThreadExecutor = Executors.newSingleThreadExecutor();
+        this.optistreamGson = new Gson();
     }
 
     private synchronized void ensureInit() {
@@ -58,64 +65,56 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         }
     }
 
-    public void reportEvent(OptistreamEvent optistreamEvent) {
+    public void reportEvents(List<OptistreamEvent> optistreamEvents) {
         this.ensureInit();
-        optistreamQueue.enqueue(optistreamEvent);
-        if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
-            startDispatching();
+        singleThreadExecutor.submit(() -> {
+            boolean immediateEventFound = false;
+            for (OptistreamEvent optistreamEvent: optistreamEvents) {
+                if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
+                    optistreamDbHelper.insertEvent(optistreamGson.toJson(optistreamEvent));
+                    immediateEventFound = true;
+                }
+            }
+            if (immediateEventFound) {
+                singleThreadExecutor.submit(this::dispatchBulkIfExists);
+            }
+        });
+    }
+
+    private void dispatchBulkIfExists(){
+        OptistreamDbHelper.EventsBulk eventsBulk = optistreamDbHelper.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
+        List<String> eventJsons = eventsBulk.getEventJsons();
+        if (!eventJsons.isEmpty()) {
+            try {
+                JSONArray optistreamEventsJson = new JSONArray(optistreamGson.toJson(eventJsons));
+                OptiLoggerStreamsContainer.debug("Dispatching optistream events");
+
+                httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), optistreamEventsJson)
+                        .errorListener(error ->
+                            OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
+                                    error.getMessage()))
+                        .successListener(response -> {
+                            OptiLoggerStreamsContainer.debug("Events were dispatched");
+                            singleThreadExecutor.submit(()-> {
+                                optistreamDbHelper.removeEvents(eventsBulk.getLastId());
+                                dispatchBulkIfExists();
+                            });
+                        })
+                        .send();
+            } catch (JSONException e) {
+                OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
+                        e.getMessage());
+            }
         }
+
     }
     @Override
     public void activityStopped() {
         this.ensureInit();
-        this.startDispatching();
+        singleThreadExecutor.submit(this::dispatchBulkIfExists);
     }
 
 
-    private synchronized void startDispatching() {
-        if (currentlyDispatching) {
-            OptiLoggerStreamsContainer.debug("Already dispatching");
-            //flag to dispatch again when finished
-            return;
-        }
-
-        currentlyDispatching = true;
-        dispatchNextBulk();
-    }
-
-    private void dispatchNextBulk() {
-        if (optistreamQueue.size() == 0) {
-            OptiLoggerStreamsContainer.debug("No events to dispatch");
-            currentlyDispatching = false;
-            return;
-        }
-        List<OptistreamEvent> eventsToDispatch = optistreamQueue.first(Constants.EVENT_BATCH_LIMIT);
-
-        try {
-            JSONArray optistreamEventsJson = new JSONArray(new Gson().toJson(eventsToDispatch));
-            OptiLoggerStreamsContainer.debug("Dispatching optistream events");
-
-            httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), optistreamEventsJson)
-                    .errorListener(this::dispatchingFailed)
-                    .successListener(response -> dispatchingSucceeded(eventsToDispatch))
-                    .send();
-        } catch (JSONException e) {
-            OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
-                    e.getMessage());
-        }
-    }
-
-    private void dispatchingFailed(Exception e) {
-        OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
-                e.getMessage());
-        this.currentlyDispatching = false;
-    }
-
-    private void dispatchingSucceeded(List<OptistreamEvent> optistreamEvents) {
-        OptiLoggerStreamsContainer.debug("Events were dispatched");
-        optistreamQueue.remove(optistreamEvents);
-        dispatchNextBulk();
-    }
 
     private boolean isNotificationEvent(OptistreamEvent optistreamEvent) {
         return optistreamEvent.getName()
