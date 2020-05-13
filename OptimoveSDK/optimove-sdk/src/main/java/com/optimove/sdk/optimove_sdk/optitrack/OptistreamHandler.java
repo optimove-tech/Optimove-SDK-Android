@@ -16,8 +16,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
@@ -30,7 +30,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     @NonNull
     private OptitrackConfigs optitrackConfigs;
     @NonNull
-    private ExecutorService singleThreadExecutor;
+    private ScheduledExecutorService singleThreadScheduledExecutor;
     @NonNull
     private Gson optistreamGson;
 
@@ -51,7 +51,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         this.lifecycleObserver = lifecycleObserver;
         this.optistreamDbHelper = optistreamDbHelper;
         this.optitrackConfigs = optitrackConfigs;
-        this.singleThreadExecutor = Executors.newSingleThreadExecutor();
+        this.singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         this.optistreamGson = new Gson();
     }
 
@@ -65,7 +65,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     public void reportEvents(List<OptistreamEvent> optistreamEvents) {
         this.ensureInit();
-        singleThreadExecutor.submit(() -> {
+        singleThreadScheduledExecutor.submit(() -> {
             boolean immediateEventFound = false;
             for (OptistreamEvent optistreamEvent: optistreamEvents) {
                 if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
@@ -74,7 +74,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 }
             }
             if (immediateEventFound) {
-                singleThreadExecutor.submit(this::dispatchBulkIfExists);
+                singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
             }
         });
     }
@@ -93,7 +93,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                                     error.getMessage()))
                         .successListener(response -> {
                             OptiLoggerStreamsContainer.debug("Events were dispatched");
-                            singleThreadExecutor.submit(()-> {
+                            singleThreadScheduledExecutor.submit(()-> {
                                 optistreamDbHelper.removeEvents(eventsBulk.getLastId());
                                 dispatchBulkIfExists();
                             });
@@ -109,7 +109,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     @Override
     public void activityStopped() {
         this.ensureInit();
-        singleThreadExecutor.submit(this::dispatchBulkIfExists);
+        singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
     }
 
 

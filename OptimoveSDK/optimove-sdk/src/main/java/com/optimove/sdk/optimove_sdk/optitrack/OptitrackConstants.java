@@ -27,7 +27,7 @@ public interface OptitrackConstants {
   String PARAMETER_STRING_TYPE = "String";
   String PARAMETER_NUMBER_TYPE = "Number";
   String PARAMETER_BOOLEAN_TYPE = "Boolean";
-  int PARAMETER_VALUE_MAX_LENGTH = 255;
+  int PARAMETER_VALUE_MAX_LENGTH = 4000;
 
   String EVENT_PLATFORM_PARAM_KEY = "event_platform";
   String EVENT_DEVICE_TYPE_PARAM_KEY = "event_device_type";
@@ -38,9 +38,6 @@ public interface OptitrackConstants {
   String EVENT_DEVICE_TYPE_DEFAULT_VALUE = "Mobile";
   String EVENT_OS_DEFAULT_VALUE = String.format("Android %s", Build.VERSION.RELEASE);
   boolean EVENT_NATIVE_MOBILE_DEFAULT_VALUE = true;
-
-  // Used in finer tuning the Matomo Visitor Fingerprint
-  String[] MATOMO_PLUGIN_FLAGS = {"fla", "java", "dir", "qt", "realp", "pdf", "wma", "gears"};
 
   /* *********************************
    * Shared Preferences
