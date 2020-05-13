@@ -62,7 +62,9 @@ public class DestinationDecider extends EventHandler {
         if (!optistreamRealtimeEvents.isEmpty()) {
             realtimeManager.reportEvents(optistreamRealtimeEvents);
         }
-        //optistreamHandler.reportEvent(optistreamEvent);
+        if (!optistreamEvents.isEmpty()) {
+            optistreamHandler.reportEvents(optistreamEvents);
+        }
     }
 
 }

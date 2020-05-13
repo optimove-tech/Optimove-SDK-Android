@@ -36,8 +36,6 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
 
     private boolean initialized = false;
-    private boolean currentlyDispatching = false;
-
 
     private final static class Constants {
         private static final int EVENT_BATCH_LIMIT = 100;
