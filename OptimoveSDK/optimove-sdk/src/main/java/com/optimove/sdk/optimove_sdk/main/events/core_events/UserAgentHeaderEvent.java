@@ -14,7 +14,7 @@ public final class UserAgentHeaderEvent extends OptimoveEvent implements Optimov
   public static final String USER_AGENT_HEADER1_PARAM_KEY = "user_agent_header1";
   public static final String USER_AGENT_HEADER2_PARAM_KEY = "user_agent_header2";
 
-  private static final int  USER_AGENT_VALUE_MAX_LENGTH = 4000;
+  public static final int  USER_AGENT_VALUE_MAX_LENGTH = 255;
 
 
 

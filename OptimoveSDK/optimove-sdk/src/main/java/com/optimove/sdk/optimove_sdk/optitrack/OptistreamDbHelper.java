@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 
+import com.google.android.gms.common.util.VisibleForTesting;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import org.json.JSONArray;
@@ -52,24 +53,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
 
-    boolean insertEvents(JSONArray jsonArray) {
-        try {
-            SQLiteDatabase db = this.getWritableDatabase();
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject event = jsonArray.getJSONObject(i);
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(OptistreamEntry.COLUMN_DATA, event.toString());
-                contentValues.put(OptistreamEntry.COLUMN_CREATED_AT, System.currentTimeMillis());
-                db.insert(OptistreamEntry.TABLE_NAME, null, contentValues);
-            }
-        } catch (Exception e){
-            OptiLoggerStreamsContainer.error("An error occurred while inserting events - %s",e.getMessage());
-            return false;
-        }
-        return true;
-    }
-    boolean insertEvent(String eventJson) {
+    public boolean insertEvent(String eventJson) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
 
@@ -103,7 +87,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    EventsBulk getFirstEvents(int numberOfEvents) {
+    public EventsBulk getFirstEvents(int numberOfEvents) {
 
         String lastId = null;
         List<String> eventJsons = new ArrayList<>();
@@ -128,12 +112,12 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         return new EventsBulk(lastId, eventJsons);
     }
 
-    class EventsBulk {
+    public static class EventsBulk {
 
         private String lastId;
         private List<String> eventJsons;
 
-        EventsBulk(String lastId, List<String> eventJsons) {
+        public EventsBulk(String lastId, List<String> eventJsons) {
             this.lastId = lastId;
             this.eventJsons = eventJsons;
         }

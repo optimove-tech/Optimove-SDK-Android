@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent.USER_AGENT_VALUE_MAX_LENGTH;
+
 public class UserAgentHeaderEventTests {
 
     @Test
@@ -40,8 +42,8 @@ public class UserAgentHeaderEventTests {
         UserAgentHeaderEvent userAgentHeaderEvent = new UserAgentHeaderEvent(userAgent);
         Map<String, Object> parameters = userAgentHeaderEvent.getParameters();
 
-        Assert.assertEquals(parameters.get(UserAgentHeaderEvent.USER_AGENT_HEADER1_PARAM_KEY),userAgent.substring(0, OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH));
-        Assert.assertEquals(parameters.get(UserAgentHeaderEvent.USER_AGENT_HEADER2_PARAM_KEY),userAgent.substring(OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH));
+        Assert.assertEquals(parameters.get(UserAgentHeaderEvent.USER_AGENT_HEADER1_PARAM_KEY),userAgent.substring(0, USER_AGENT_VALUE_MAX_LENGTH));
+        Assert.assertEquals(parameters.get(UserAgentHeaderEvent.USER_AGENT_HEADER2_PARAM_KEY),userAgent.substring(USER_AGENT_VALUE_MAX_LENGTH));
 
     }
 }
