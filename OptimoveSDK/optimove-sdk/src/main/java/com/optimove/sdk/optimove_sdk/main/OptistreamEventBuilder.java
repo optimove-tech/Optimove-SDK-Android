@@ -9,6 +9,7 @@ import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class OptistreamEventBuilder {
 
@@ -39,7 +40,7 @@ public class OptistreamEventBuilder {
 
     public OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent, boolean isRealtime) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US);
-        //sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         OptistreamEvent.IMetadata iMetadata = OptistreamEvent.builder()
                 .withTenantId(tenantId)
