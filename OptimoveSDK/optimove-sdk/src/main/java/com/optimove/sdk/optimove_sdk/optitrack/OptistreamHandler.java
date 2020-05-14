@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
@@ -15,6 +16,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsCon
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -65,13 +67,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
             //this will not cause a leak because this component is tied to the app context
             this.initialized = true;
             this.lifecycleObserver.addActivityStoppedListener(this);
-            try {
-                this.timerDispatchFuture = this.singleThreadScheduledExecutor.schedule(this::dispatchBulkIfExists,
-                        Constants.DISPATCH_INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                OptiLoggerStreamsContainer.error("Failed to schedule another dispatch - %s",
-                        e.getMessage());
-            }
+            this.scheduleTheNextDispatch();
         }
     }
 
@@ -80,8 +76,8 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         singleThreadScheduledExecutor.submit(() -> {
             boolean immediateEventFound = false;
             for (OptistreamEvent optistreamEvent: optistreamEvents) {
+                optistreamDbHelper.insertEvent(optistreamGson.toJson(optistreamEvent));
                 if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
-                    optistreamDbHelper.insertEvent(optistreamGson.toJson(optistreamEvent));
                     immediateEventFound = true;
                 }
             }
@@ -98,14 +94,21 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         OptistreamDbHelper.EventsBulk eventsBulk = optistreamDbHelper.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
         List<String> eventJsons = eventsBulk.getEventJsons();
         if (!eventJsons.isEmpty()) {
+
             try {
-                JSONArray optistreamEventsJson = new JSONArray(optistreamGson.toJson(eventJsons));
+                JSONArray jsonArrayToDispatch = new JSONArray();
+                for (String eventJson: eventJsons) {
+                    jsonArrayToDispatch.put(new JSONObject(eventJson));
+                }
                 OptiLoggerStreamsContainer.debug("Dispatching optistream events");
 
-                httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), optistreamEventsJson)
-                        .errorListener(error ->
+                httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), jsonArrayToDispatch)
+                        .errorListener(error -> {
                             OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
-                                    error.getMessage()))
+                                    error.getMessage());
+                            // some error occurred, try again in the next dispatch
+                            scheduleTheNextDispatch();
+                        })
                         .successListener(response -> {
                             OptiLoggerStreamsContainer.debug("Events were dispatched");
                             singleThreadScheduledExecutor.submit(()-> {
@@ -114,22 +117,24 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                             });
                         })
                         .send();
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                         e.getMessage());
             }
         } else {
             // Schedule another dispatch all if we are done dispatching
-            try {
-                this.timerDispatchFuture = this.singleThreadScheduledExecutor.schedule(this::dispatchBulkIfExists,
-                        Constants.DISPATCH_INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                OptiLoggerStreamsContainer.error("Failed to schedule another dispatch - %s",
-                        e.getMessage());
-            }
-
+            scheduleTheNextDispatch();
         }
+    }
 
+    private void scheduleTheNextDispatch(){
+        try {
+            this.timerDispatchFuture = this.singleThreadScheduledExecutor.schedule(this::dispatchBulkIfExists,
+                    Constants.DISPATCH_INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            OptiLoggerStreamsContainer.error("Failed to schedule another dispatch - %s",
+                    e.getMessage());
+        }
     }
     @Override
     public void activityStopped() {

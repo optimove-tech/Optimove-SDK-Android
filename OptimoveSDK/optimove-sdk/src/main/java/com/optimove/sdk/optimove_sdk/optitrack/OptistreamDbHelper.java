@@ -89,7 +89,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         final SQLiteDatabase db = this.getWritableDatabase();
 
         try {
-                String deleteQuery = OptistreamEntry._ID + " <= " + lastId;
+            String deleteQuery = OptistreamEntry._ID + " <= " + lastId;
 
             db.delete(OptistreamEntry.TABLE_NAME, deleteQuery, null);
         } catch (final SQLiteException e) {
@@ -108,20 +108,23 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         String lastId = null;
         List<String> eventJsons = new ArrayList<>();
 
-        //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
         String eventsQuery = "SELECT * FROM " + OptistreamEntry.TABLE_NAME +
                         " ORDER BY " + OptistreamEntry.COLUMN_CREATED_AT + " ASC LIMIT " + numberOfEvents;
 
         Cursor res = db.rawQuery(eventsQuery, null);
-        res.moveToFirst();
 
-        while (res.moveToNext()) {
+        boolean exists = res.moveToFirst();
+
+        while (exists) {
+            eventJsons.add(res.getString(res.getColumnIndex(OptistreamEntry.COLUMN_DATA)));
             if (res.isLast()) {
                 lastId = res.getString(res.getColumnIndex(OptistreamEntry._ID));
             }
-            eventJsons.add(res.getString(res.getColumnIndex(OptistreamEntry.COLUMN_DATA)));
+            exists = res.moveToNext();
         }
+
+        res.close();
         return new EventsBulk(lastId, eventJsons);
     }
 
