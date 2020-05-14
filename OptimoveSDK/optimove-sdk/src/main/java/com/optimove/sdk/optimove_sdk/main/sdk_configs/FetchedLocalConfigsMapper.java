@@ -23,7 +23,7 @@ public class FetchedLocalConfigsMapper {
 
         LogsConfigs logsConfigs = getLogsConfigs(fetchedGlobalConfig, fetchedTenantConfigs);
         RealtimeConfigs realtimeConfigs = getRealtimeConfigs(fetchedTenantConfigs);
-        OptitrackConfigs optitrackConfigs = getOptitrackConfigs(tenantId, fetchedGlobalConfig, fetchedTenantConfigs);
+        OptitrackConfigs optitrackConfigs = getOptitrackConfigs(tenantId, fetchedTenantConfigs);
         OptipushConfigs optipushConfigs = getOptipushConfigs(fetchedGlobalConfig, fetchedTenantConfigs, packageName);
         Map<String, EventConfigs> eventConfigsMap = new HashMap<>();
         eventConfigsMap.putAll(fetchedTenantConfigs.eventsConfigs);
@@ -53,14 +53,12 @@ public class FetchedLocalConfigsMapper {
         return realtimeConfigs;
     }
 
-    private static OptitrackConfigs getOptitrackConfigs(int tenantId, @NonNull FetchedGlobalConfig fetchedGlobalConfig,
+    private static OptitrackConfigs getOptitrackConfigs(int tenantId,
                                                         @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
         OptitrackConfigs optitrackConfigs = new OptitrackConfigs();
         optitrackConfigs.setSiteId(tenantId);
         optitrackConfigs.setEnableAdvertisingIdReport(fetchedTenantConfigs.mobile.optipushMetaData.enableAdvertisingIdReport);
-        optitrackConfigs.setEventCategoryName(fetchedGlobalConfig.fetchedOptitrackConfigs.eventCategoryName);
         optitrackConfigs.setOptitrackEndpoint(fetchedTenantConfigs.optitrackMetaData.optitrackEndpoint);
-        optitrackConfigs.setCustomDimensionIds(fetchedGlobalConfig.fetchedOptitrackConfigs.customDimensionIds);
 
         return optitrackConfigs;
     }
@@ -69,7 +67,6 @@ public class FetchedLocalConfigsMapper {
                                                       @NonNull FetchedTenantConfigs fetchedTenantConfigs,
                                                       @NonNull String packageName) {
         OptipushConfigs optipushConfigs = new OptipushConfigs();
-        optipushConfigs.setPushTopicsRegistrationEndpoint(fetchedTenantConfigs.mobile.optipushMetaData.pushTopicsRegistrationEndpoint);
         optipushConfigs.setRegistrationServiceEndpoint(fetchedGlobalConfig.fetchedOptipushConfigs.mbaasEndpoint);
         OptipushConfigs.FirebaseConfigs appControllerFirebaseConfigs = optipushConfigs.new FirebaseConfigs();
         appControllerFirebaseConfigs.setAppId(fetchedTenantConfigs.mobile.firebaseProjectKeys.appIds.androidAppIds.get(packageName));
@@ -80,14 +77,6 @@ public class FetchedLocalConfigsMapper {
         appControllerFirebaseConfigs.setWebApiKey(fetchedTenantConfigs.mobile.firebaseProjectKeys.webApiKey);
         optipushConfigs.setAppControllerProjectConfigs(appControllerFirebaseConfigs);
 
-        OptipushConfigs.FirebaseConfigs clientServiceProjectConfigs = optipushConfigs.new FirebaseConfigs();
-        clientServiceProjectConfigs.setAppId(fetchedTenantConfigs.mobile.clientsServiceProjectKeys.appIds.androidAppIds.get("android.master.app"));
-        clientServiceProjectConfigs.setDbUrl(fetchedTenantConfigs.mobile.clientsServiceProjectKeys.dbUrl);
-        clientServiceProjectConfigs.setProjectId(fetchedTenantConfigs.mobile.clientsServiceProjectKeys.projectId);
-        clientServiceProjectConfigs.setSenderId(fetchedTenantConfigs.mobile.clientsServiceProjectKeys.senderId);
-        clientServiceProjectConfigs.setStorageBucket(fetchedTenantConfigs.mobile.clientsServiceProjectKeys.storageBucket);
-        clientServiceProjectConfigs.setWebApiKey(fetchedTenantConfigs.mobile.clientsServiceProjectKeys.webApiKey);
-        optipushConfigs.setClientServiceProjectConfigs(clientServiceProjectConfigs);
         return optipushConfigs;
     }
 }

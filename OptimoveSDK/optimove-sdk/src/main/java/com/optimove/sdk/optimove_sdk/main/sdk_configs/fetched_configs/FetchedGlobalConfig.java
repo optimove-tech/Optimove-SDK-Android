@@ -1,7 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.sdk_configs.fetched_configs;
 
 import com.google.gson.annotations.SerializedName;
-import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.CustomDimensionIds;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 
 import java.util.Map;
@@ -33,8 +32,6 @@ public class FetchedGlobalConfig {
 
         @SerializedName("event_category_name")
         public String eventCategoryName;
-        @SerializedName("custom_dimension_ids")
-        public CustomDimensionIds customDimensionIds;
 
     }
 

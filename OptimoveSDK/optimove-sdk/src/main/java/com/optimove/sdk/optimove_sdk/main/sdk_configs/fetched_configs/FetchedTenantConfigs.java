@@ -29,9 +29,6 @@ public class FetchedTenantConfigs {
         public OptipushMetaData optipushMetaData;
         @SerializedName("firebaseProjectKeys")
         public FirebaseProjectKeys firebaseProjectKeys;
-        @SerializedName("clientsServiceProjectKeys")
-        public FirebaseProjectKeys clientsServiceProjectKeys;
-
     }
 
     public class OptipushMetaData {
@@ -39,9 +36,6 @@ public class FetchedTenantConfigs {
         @SerializedName("enableAdvertisingIdReport")
         @Expose
         public Boolean enableAdvertisingIdReport;
-        @SerializedName("pushTopicsRegistrationEndpoint")
-        @Expose
-        public String pushTopicsRegistrationEndpoint;
 
     }
     public class OptitrackMetaData {
@@ -63,22 +57,6 @@ public class FetchedTenantConfigs {
         @SerializedName("realtimeGateway")
         @Expose
         public String realtimeGateway;
-        @SerializedName("options")
-        @Expose
-        public Options options;
-
-    }
-    public class Options {
-
-        @SerializedName("showDimmer")
-        @Expose
-        public Boolean showDimmer;
-        @SerializedName("showWatermark")
-        @Expose
-        public Boolean showWatermark;
-        @SerializedName("popupCallback")
-        @Expose
-        public Object popupCallback;
 
     }
     public class FirebaseProjectKeys {

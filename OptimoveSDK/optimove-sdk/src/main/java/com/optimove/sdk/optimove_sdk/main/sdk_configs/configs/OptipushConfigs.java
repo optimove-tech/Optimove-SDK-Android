@@ -4,10 +4,8 @@ public class OptipushConfigs {
 
 
     private String registrationServiceEndpoint;
-    private String pushTopicsRegistrationEndpoint;
 
     private FirebaseConfigs appControllerProjectConfigs;
-    private FirebaseConfigs clientServiceProjectConfigs;
 
 
     public String getRegistrationServiceEndpoint() {
@@ -18,14 +16,6 @@ public class OptipushConfigs {
         this.registrationServiceEndpoint = registrationServiceEndpoint;
     }
 
-    public String getPushTopicsRegistrationEndpoint() {
-        return pushTopicsRegistrationEndpoint;
-    }
-
-    public void setPushTopicsRegistrationEndpoint(String pushTopicsRegistrationEndpoint) {
-        this.pushTopicsRegistrationEndpoint = pushTopicsRegistrationEndpoint;
-    }
-
     public FirebaseConfigs getAppControllerProjectConfigs() {
         return appControllerProjectConfigs;
     }
@@ -33,15 +23,6 @@ public class OptipushConfigs {
     public void setAppControllerProjectConfigs(
             FirebaseConfigs appControllerProjectConfigs) {
         this.appControllerProjectConfigs = appControllerProjectConfigs;
-    }
-
-    public FirebaseConfigs getClientServiceProjectConfigs() {
-        return clientServiceProjectConfigs;
-    }
-
-    public void setClientServiceProjectConfigs(
-            FirebaseConfigs clientServiceProjectConfigs) {
-        this.clientServiceProjectConfigs = clientServiceProjectConfigs;
     }
 
     public class FirebaseConfigs {
