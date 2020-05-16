@@ -1,5 +1,6 @@
 package com.optimove.sdk.optimove_sdk;
 
+import com.android.volley.Response;
 import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
@@ -19,12 +20,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -51,12 +53,37 @@ public class OptitrackTests {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        when(httpClient.postJsonArray(anyString(), any())).thenReturn(builder);
+        when(httpClient.postJsonArray(any(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
     }
 
+    @Test
+    public void eventShouldBePersisted() {
+        OptistreamEvent regularEvent = getRegularEvent(true);
+        String regularEventJson = new Gson().toJson(regularEvent);
+        OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
+                , optitrackConfigs);
+        optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
+        verify(optistreamDbHelper).insertEvent(regularEventJson);
+    }
+    @Test
+    public void eventsShouldBeRemovedWhenDispatchSucceed() {
+        Gson gson = new Gson();
+        String lastId = "some_id";
+        OptistreamDbHelper.EventsBulk eventBulk = new OptistreamDbHelper.EventsBulk(lastId,
+               Collections.singletonList(gson.toJson(getRegularEvent(false))));
+        applyHttpSuccessInvocation();
+        when(optistreamDbHelper.getFirstEvents(OptistreamHandler.Constants.EVENT_BATCH_LIMIT)).thenReturn(eventBulk,
+                new OptistreamDbHelper.EventsBulk(null, new ArrayList<>()));
+
+        OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
+                , optitrackConfigs);
+        optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(true)));
+
+        verify(optistreamDbHelper, timeout(1000)).removeEvents(lastId);
+    }
     @Test
     public void realtimeEventShouldBeDispatchedImmediately() throws Exception {
         OptistreamEvent regularEvent = getRegularEvent(true);
@@ -145,4 +172,18 @@ public class OptitrackTests {
                 .build();
     }
 
+    private void applyHttpSuccessInvocation() {
+        doAnswer(invocation -> {
+            new Thread(() -> {
+                Response.Listener<JSONObject> successListener =
+                        (Response.Listener<JSONObject>) invocation.getArguments()[0];
+                JSONObject jsonObject = new JSONObject();
+
+                successListener.onResponse(jsonObject);
+            }).start();
+
+            return builder;
+        }).when(builder)
+                .successListener(any());
+    }
 }

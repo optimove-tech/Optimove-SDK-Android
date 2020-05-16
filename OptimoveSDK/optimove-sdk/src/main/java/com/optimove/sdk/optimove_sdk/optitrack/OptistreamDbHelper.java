@@ -69,7 +69,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    void removeEvents(String lastId) {
+    public void removeEvents(String lastId) {
         final SQLiteDatabase db = this.getWritableDatabase();
 
         try {

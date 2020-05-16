@@ -44,9 +44,9 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     private ScheduledFuture timerDispatchFuture;
     private boolean initialized = false;
 
-    private final static class Constants {
-        private static final int EVENT_BATCH_LIMIT = 100;
-        private static final int DISPATCH_INTERVAL_IN_SECONDS = 30;
+    public final static class Constants {
+        public static final int EVENT_BATCH_LIMIT = 100;
+        public static final int DISPATCH_INTERVAL_IN_SECONDS = 30;
 
     }
 
@@ -93,7 +93,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     private void dispatchBulkIfExists(){
         OptistreamDbHelper.EventsBulk eventsBulk = optistreamDbHelper.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
         List<String> eventJsons = eventsBulk.getEventJsons();
-        if (!eventJsons.isEmpty()) {
+        if (eventJsons != null && !eventJsons.isEmpty()) {
 
             try {
                 JSONArray jsonArrayToDispatch = new JSONArray();
