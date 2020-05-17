@@ -4,37 +4,6 @@ import com.optimove.sdk.optimove_sdk.main.events.EventValidationResult;
 
 public final class OptiLogger {
 
-
-  /* ************************************************
-   * Real-Time Module
-   * ************************************************/
-
-  public static void realtimeFailedReportingEvent_WhenSerializingEvent(int eventId, String reason) {
-    OptiLoggerStreamsContainer.error("Can't serialize event %d due to: %s", eventId, reason);
-  }
-
-  public static void realtimeIsAboutToReportEvent(int eventId, String eventPayload) {
-    OptiLoggerStreamsContainer.debug("Realtime is about to report event %d with payload: %s", eventId, eventPayload);
-  }
-
-  public static void realtimeFinishedReportingEventSuccessfully(int eventId) {
-    OptiLoggerStreamsContainer.debug("Realtime finished reporting event %d successfully", eventId);
-  }
-
-  public static void realtimeFailed_WhenDeserializingReportEventResponse(int eventId, String reason) {
-    OptiLoggerStreamsContainer.error("Realtime failed to deserialize event %d due to %s", eventId, reason);
-  }
-
-  public static void receivedNotificationCouldntStartTheDispatchService(String reason) {
-    OptiLoggerStreamsContainer.error("Couldn't start notification opened service due to %s", reason);
-  }
-  public static void realtimeSetUserIdIsMarkedForRetry(){
-    OptiLoggerStreamsContainer.debug("SetUserId marked for retry");
-  }
-  public static void realtimeSetEmailIsMarkedForRetry(){
-    OptiLoggerStreamsContainer.debug("SetEmail marked for retry");
-  }
-
   /* ************************************************
    * OptiPush Module
    * ************************************************/
@@ -129,14 +98,6 @@ public final class OptiLogger {
 
   public static void f97(String screenPath) {
     OptiLoggerStreamsContainer.error("Tried to pass illegal screenPath %s to report Screen Visit", screenPath);
-  }
-
-  public static void f98(String screenTitle) {
-    OptiLoggerStreamsContainer.error("Tried to pass illegal screenTitle %s to report Screen Visit", screenTitle);
-  }
-
-  public static void f99(String loweredPath) {
-    OptiLoggerStreamsContainer.error("Failed to URL encode screenpath %s, skipping screen report", loweredPath);
   }
 
   public static void f110() {
