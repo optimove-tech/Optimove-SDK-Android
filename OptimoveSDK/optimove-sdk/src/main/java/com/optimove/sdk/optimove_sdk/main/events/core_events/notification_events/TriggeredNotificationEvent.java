@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.main.events.core_events.notification_event
 
 import android.support.annotation.NonNull;
 
+import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.optipush.campaigns.TriggeredCampaign;
 
 import java.util.HashMap;
@@ -13,7 +14,7 @@ public abstract class TriggeredNotificationEvent extends NotificationEvent {
     TriggeredCampaign triggeredCampaign;
 
     public TriggeredNotificationEvent(TriggeredCampaign triggeredCampaign, long timestamp, String packageName) {
-        super(timestamp, packageName);
+        super(timestamp, packageName, new Gson().toJson(triggeredCampaign));
         this.triggeredCampaign = triggeredCampaign;
     }
 

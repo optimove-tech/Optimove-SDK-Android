@@ -66,7 +66,7 @@ public class OptitrackTests {
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
                 , optitrackConfigs);
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
-        verify(optistreamDbHelper).insertEvent(regularEventJson);
+        verify(optistreamDbHelper, timeout(1000)).insertEvent(regularEventJson);
     }
     @Test
     public void eventsShouldBeRemovedWhenDispatchSucceed() {
