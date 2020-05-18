@@ -1,16 +1,14 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events;
 
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptimoveCoreEvent;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.ScheduledCampaign;
 
-public final class ScheduledNotificationOpenedEvent extends ScheduledNotificationEvent implements OptimoveCoreEvent {
+public final class ScheduledNotificationOpenedEvent extends NotificationEvent implements OptimoveCoreEvent {
 
   public static final String NAME = "notification_opened";
 
 
-  public ScheduledNotificationOpenedEvent(ScheduledCampaign scheduledCampaign, long timestamp,
-                                          String packageName) {
-    super(scheduledCampaign, timestamp, packageName);
+  public ScheduledNotificationOpenedEvent(long timestamp,String packageName, String identityToken)  {
+    super(timestamp, packageName, identityToken);
   }
 
   @Override

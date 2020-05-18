@@ -1,11 +1,8 @@
 package com.optimove.sdk.optimove_sdk.optipush.messaging;
 
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.ScheduledCampaign;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.TriggeredCampaign;
 
 public class NotificationData {
 
@@ -17,10 +14,10 @@ public class NotificationData {
     private String dynamicLink;
     @SerializedName("triggered_campaign")
     @Nullable
-    private TriggeredCampaign triggeredCampaign;
+    private String triggeredCampaign;
     @SerializedName("scheduled_campaign")
     @Nullable
-    private ScheduledCampaign scheduledCampaign;
+    private String scheduledCampaign;
     @SerializedName("collapse_Key")
     @Nullable
     private String collapseKey;
@@ -29,22 +26,6 @@ public class NotificationData {
     @Nullable
     private NotificationMedia notificationMedia;
 
-    @NonNull
-    @Override
-    public String toString() {
-        String campaign = "";
-        if (scheduledCampaign != null){
-            campaign = scheduledCampaign.toString();
-        } else if (triggeredCampaign != null){
-            campaign = triggeredCampaign.toString();
-        }
-        return "NotificationData{ " + "title='" + title + '\'' +
-                ", body='" + body + '\'' +
-                ", dynamicLink='" + dynamicLink + '\'' +
-                ", campaign=" + campaign +
-                ", collapseKey='" + collapseKey + '\'' +
-                '}';
-    }
 
     public String getTitle() {
         return title;
@@ -72,11 +53,11 @@ public class NotificationData {
     }
 
     @Nullable
-    public TriggeredCampaign getTriggeredCampaign() {
+    public String getTriggeredCampaign() {
         return triggeredCampaign;
     }
 
-    public void setTriggeredCampaign(@Nullable TriggeredCampaign triggeredCampaign) {
+    public void setTriggeredCampaign(@Nullable String triggeredCampaign) {
         this.triggeredCampaign = triggeredCampaign;
     }
 
@@ -99,11 +80,11 @@ public class NotificationData {
     }
 
     @Nullable
-    public ScheduledCampaign getScheduledCampaign() {
+    public String getScheduledCampaign() {
         return scheduledCampaign;
     }
 
-    public void setScheduledCampaign(@Nullable ScheduledCampaign scheduledCampaign) {
+    public void setScheduledCampaign(@Nullable String scheduledCampaign) {
         this.scheduledCampaign = scheduledCampaign;
     }
 }

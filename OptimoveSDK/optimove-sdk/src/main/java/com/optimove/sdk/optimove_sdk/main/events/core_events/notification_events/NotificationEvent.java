@@ -10,8 +10,6 @@ public abstract class NotificationEvent extends OptimoveEvent {
     static final String TIMESTAMP_KEY = "timestamp";
     static final String APP_NS_KEY = "app_ns";
     static final String IDENTITY_TOKEN = "identity_token";
-    static final String ACTION_SERIAL_KEY = "action_serial";
-    static final String TEMPLATE_ID_KEY = "template_id";
 
     protected long timestamp;
     protected String packageName;

@@ -10,46 +10,44 @@ import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.ScheduledCampaign;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.TriggeredCampaign;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 public class NotificationOpenedEventDispatchService extends Service {
 
     @Nullable
-    private ScheduledCampaign scheduledCampaign;
+    private String triggeredIdentityToken;
     @Nullable
-    private TriggeredCampaign triggeredCampaign;
+    private String scheduledIdentityToken;
 
     private static int executionTimeInMilliseconds = (int) TimeUnit.SECONDS.toMillis(5);
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.hasExtra(OptipushConstants.Notifications.SCHEDULED_CAMPAIGN_CARD)) {
-            scheduledCampaign = intent.getParcelableExtra(OptipushConstants.Notifications.SCHEDULED_CAMPAIGN_CARD);
-        } else if (intent.hasExtra(OptipushConstants.Notifications.TRIGGERED_CAMPAIGN_CARD)) {
-            triggeredCampaign = intent.getParcelableExtra(OptipushConstants.Notifications.TRIGGERED_CAMPAIGN_CARD);
+        if (intent.hasExtra(OptipushConstants.Notifications.SCHEDULED_IDENTITY_TOKEN)) {
+            scheduledIdentityToken = intent.getStringExtra(OptipushConstants.Notifications.SCHEDULED_IDENTITY_TOKEN);
+        } else if (intent.hasExtra(OptipushConstants.Notifications.TRIGGERED_IDENTITY_TOKEN)) {
+            triggeredIdentityToken = intent.getParcelableExtra(OptipushConstants.Notifications.TRIGGERED_IDENTITY_TOKEN);
         }
 
         Optimove.configureUrgently(this);
 
-        if (triggeredCampaign != null) {
+        if (triggeredIdentityToken != null) {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
-                    .reportEvent(Collections.singletonList(new TriggeredNotificationOpenedEvent(triggeredCampaign,
-                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this))));
-        } else if (scheduledCampaign != null) {
+                    .reportEvent(Collections.singletonList(new TriggeredNotificationOpenedEvent(OptiUtils.currentTimeSeconds(),
+                            ApplicationHelper.getFullPackageName(this), triggeredIdentityToken)));
+        } else if (scheduledIdentityToken != null) {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
-                    .reportEvent(Collections.singletonList(new ScheduledNotificationOpenedEvent(scheduledCampaign,
-                            System.currentTimeMillis(), ApplicationHelper.getFullPackageName(this))));
+                    .reportEvent(Collections.singletonList(new ScheduledNotificationOpenedEvent(OptiUtils.currentTimeSeconds(),
+                            ApplicationHelper.getFullPackageName(this), scheduledIdentityToken)));
         }
         new Thread(() -> {
             try {

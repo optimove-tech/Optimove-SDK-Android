@@ -22,8 +22,8 @@ public interface OptipushConstants {
     String IS_DELETE_KEY = "is_delete";
     String DYNAMIC_LINK = "dynamic_link";
     //String CAMPAIGN_ID_CARD = "campaign_id_card";
-    String SCHEDULED_CAMPAIGN_CARD = "scheduled_campaign_card";
-    String TRIGGERED_CAMPAIGN_CARD = "triggered_campaign_card";
+    String SCHEDULED_IDENTITY_TOKEN = "scheduled_identity_token";
+    String TRIGGERED_IDENTITY_TOKEN = "triggered_identity_token";
 
 
     String CUSTOM_ICON_META_DATA_KEY = "com.optimove.sdk.custom-notification-icon";

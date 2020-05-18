@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 public class OptipushMessagingHandler {
 
     private Context context;
-    private static int executionTimeInMilliseconds = (int) TimeUnit.SECONDS.toMillis(5);
 
     public OptipushMessagingHandler(Context context) {
         this.context = context;
@@ -40,8 +39,7 @@ public class OptipushMessagingHandler {
                 .containsKey(OptipushConstants.PushSchemaKeys.IS_OPTIPUSH)) {
             Optimove.getInstance()
                     .getOptipushManager()
-                    .optipushMessageCommand(remoteMessage
-                            , executionTimeInMilliseconds);
+                    .optipushMessageCommand(remoteMessage);
             return true;
         }
 

@@ -71,7 +71,7 @@ public final class OptipushManager {
         }
     }
 
-    public void optipushMessageCommand(RemoteMessage remoteMessage, int executionTimeLimitInMs) {
+    public void optipushMessageCommand(RemoteMessage remoteMessage) {
         if (registrationDao.isPushCampaignsDisabled()){
             return;
         }
@@ -80,7 +80,7 @@ public final class OptipushManager {
                 .getEventHandlerProvider()
                 .getEventHandler(),
                 new DeviceInfoProvider(context), notificationCreator)
-                .processRemoteMessage(executionTimeLimitInMs, remoteMessage, JsonUtils.parseJsonMap(remoteMessage.getData(),
+                .processRemoteMessage(remoteMessage, JsonUtils.parseJsonMap(remoteMessage.getData(),
                         NotificationData.class));
     }
 

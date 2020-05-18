@@ -105,9 +105,9 @@ public class NotificationCreator {
         Intent intent = new Intent(context, NotificationInteractionReceiver.class);
         intent.putExtra(OptipushConstants.Notifications.IS_DELETE_KEY, false);
         if (notificationData.getScheduledCampaign() != null) {
-            intent.putExtra(OptipushConstants.Notifications.SCHEDULED_CAMPAIGN_CARD, notificationData.getScheduledCampaign());
+            intent.putExtra(OptipushConstants.Notifications.SCHEDULED_IDENTITY_TOKEN, notificationData.getScheduledCampaign());
         } else if (notificationData.getTriggeredCampaign() != null) {
-            intent.putExtra(OptipushConstants.Notifications.TRIGGERED_CAMPAIGN_CARD, notificationData.getTriggeredCampaign());
+            intent.putExtra(OptipushConstants.Notifications.TRIGGERED_IDENTITY_TOKEN, notificationData.getTriggeredCampaign());
         }
         if (notificationData.getDynamicLink() != null) {
             intent.putExtra(OptipushConstants.Notifications.DYNAMIC_LINK, notificationData.getDynamicLink());

@@ -109,7 +109,6 @@ public class EventGeneratorTests {
                 UserAgentHeaderEvent.EVENT_NAME))));
     }
     private boolean arrayContains(List<OptimoveEvent> optimoveEvents, String eventName) {
-        System.out.println(optimoveEvents.size());
         for (OptimoveEvent optimoveEvent: optimoveEvents) {
             if (optimoveEvent.getName().equals(eventName)){
                 return true;

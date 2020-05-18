@@ -10,8 +10,6 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.ScheduledCampaign;
-import com.optimove.sdk.optimove_sdk.optipush.campaigns.TriggeredCampaign;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.OptipushMessageCommand;
@@ -49,13 +47,9 @@ public class OptipushMessageCommandTests {
     @Mock
     private NotificationCreator notificationCreator;
 
-    @Mock
-    private ScheduledCampaign scheduledCampaign;
-    @Mock
-    private TriggeredCampaign triggeredCampaign;
+    private String scheduledCampaign = "scheduled_campaign";
+    private String triggeredCampaign = "triggered_campaign";
 
-
-    private int executionTimeInMilliseconds = 54665;
 
     private OptipushMessageCommand optipushMessageCommand;
 
@@ -73,7 +67,7 @@ public class OptipushMessageCommandTests {
     public void eventContextShouldContainScheduledCampaignWhenNotificationDataContainsIt() {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
 
-        optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
+        optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0).getName(),
                 ScheduledNotificationDeliveredEvent.NAME)));
     }
@@ -81,7 +75,7 @@ public class OptipushMessageCommandTests {
     public void eventContextShouldContainTriggeredCampaignWhenNotificationDataContainsIt() {
         when(notificationData.getTriggeredCampaign()).thenReturn(triggeredCampaign);
 
-        optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
+        optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0).getName(),
                 TriggeredNotificationDeliveredEvent.NAME)));
     }
@@ -90,7 +84,7 @@ public class OptipushMessageCommandTests {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
         when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
 
-        optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
+        optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verify(notificationCreator).showNotification(notificationData);
     }
     @Test
@@ -99,7 +93,7 @@ public class OptipushMessageCommandTests {
         when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
         when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS)).thenReturn(null);
 
-        optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
+        optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verify(notificationCreator).showNotification(notificationData);
     }
     @Test
@@ -107,7 +101,7 @@ public class OptipushMessageCommandTests {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
         when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(false);
 
-        optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
+        optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verifyZeroInteractions(notificationCreator);
     }
     @Test
@@ -119,15 +113,10 @@ public class OptipushMessageCommandTests {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
         when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
 
-        optipushMessageCommand.processRemoteMessage(executionTimeInMilliseconds,remoteMessage,notificationData);
+        optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verifyZeroInteractions(notificationCreator);
         verifyZeroInteractions(eventHandler);
 
     }
-//    @Test
-//    public void dfgdg() {
-//        optipushMessageCommand.getPersonalizedDeepLink()
-//
-//    }
 
 }

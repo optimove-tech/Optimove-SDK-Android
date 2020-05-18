@@ -12,6 +12,7 @@ import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -48,7 +49,7 @@ public class OptipushMessageCommand {
         this.fullPackageName = context.getPackageName();
     }
 
-    public void processRemoteMessage(int executionTimeInMilliseconds, RemoteMessage remoteMessage,
+    public void processRemoteMessage(RemoteMessage remoteMessage,
                                      NotificationData notificationData) {
         if (context.getSystemService(NOTIFICATION_SERVICE) == null) {
             OptiLogger.optipushFailedToProcessNotification_WhenNotificationManagerIsNull();
@@ -56,11 +57,11 @@ public class OptipushMessageCommand {
         }
 
         if (notificationData.getScheduledCampaign() != null) {
-            eventHandler.reportEvent(Collections.singletonList(new ScheduledNotificationDeliveredEvent(notificationData.getScheduledCampaign(),
-                    System.currentTimeMillis(), fullPackageName)));
+            eventHandler.reportEvent(Collections.singletonList(new ScheduledNotificationDeliveredEvent(OptiUtils.currentTimeSeconds(), fullPackageName,
+                    notificationData.getScheduledCampaign())));
         } else if (notificationData.getTriggeredCampaign() != null) {
-            eventHandler.reportEvent(Collections.singletonList(new TriggeredNotificationDeliveredEvent(notificationData.getTriggeredCampaign(),
-                    System.currentTimeMillis(), fullPackageName)));
+            eventHandler.reportEvent(Collections.singletonList(new TriggeredNotificationDeliveredEvent(OptiUtils.currentTimeSeconds(), fullPackageName,
+                    notificationData.getTriggeredCampaign())));
         }
 
 
@@ -117,8 +118,8 @@ public class OptipushMessageCommand {
     }
 
     @Nullable
-    private String extractDeepLinkFromRedirectionError(@NonNull VolleyError volleyError){
-        if (volleyError.networkResponse == null || volleyError.networkResponse.headers == null){
+    private String extractDeepLinkFromRedirectionError(@NonNull VolleyError volleyError) {
+        if (volleyError.networkResponse == null || volleyError.networkResponse.headers == null) {
             OptiLoggerStreamsContainer.error("Dynamic link extraction failed due to corrupted networkResponse - %s",
                     volleyError.getMessage());
             return null;
