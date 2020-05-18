@@ -106,7 +106,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 for (String eventJson: eventJsons) {
                     jsonArrayToDispatch.put(new JSONObject(eventJson));
                 }
-                OptiLoggerStreamsContainer.debug("Dispatching optistream events");
+                OptiLoggerStreamsContainer.debug("Dispatching " + eventJsons.size() + " optistream events");
 
                 dispatchRequestWaitsForResponse = true;
                 httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), jsonArrayToDispatch)
@@ -118,8 +118,9 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                             scheduleTheNextDispatch();
                         })
                         .successListener(response -> {
-                            OptiLoggerStreamsContainer.debug("Events were dispatched");
+                            OptiLoggerStreamsContainer.debug(eventJsons.size() + " Events were dispatched");
                             singleThreadScheduledExecutor.submit(()-> {
+                                OptiLoggerStreamsContainer.debug(eventJsons.size() + " Events about to be removed");
                                 optistreamDbHelper.removeEvents(eventsBulk.getLastId());
                                 dispatchRequestWaitsForResponse = false;
                                 dispatchBulkIfExists();

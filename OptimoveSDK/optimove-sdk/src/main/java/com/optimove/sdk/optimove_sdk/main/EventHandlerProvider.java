@@ -112,7 +112,7 @@ public class EventHandlerProvider {
             }
 
         } catch (Exception e) {
-            OptiLoggerStreamsContainer.error("Airship not available because of %s", e.getMessage());
+            OptiLoggerStreamsContainer.error("Airship not available - %s", e.getMessage());
             return null;
         }
 

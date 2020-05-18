@@ -2,7 +2,14 @@ package com.optimove.sdk.optimove_sdk.optipush.messaging;
 
 import android.support.annotation.Nullable;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+
+import java.lang.reflect.Type;
 
 public class NotificationData {
 
@@ -13,9 +20,11 @@ public class NotificationData {
     @Nullable
     private String dynamicLink;
     @SerializedName("triggered_campaign")
+    @JsonAdapter(IdentityTokenDeserializer.class)
     @Nullable
     private String triggeredCampaign;
     @SerializedName("scheduled_campaign")
+    @JsonAdapter(IdentityTokenDeserializer.class)
     @Nullable
     private String scheduledCampaign;
     @SerializedName("collapse_Key")
@@ -86,5 +95,14 @@ public class NotificationData {
 
     public void setScheduledCampaign(@Nullable String scheduledCampaign) {
         this.scheduledCampaign = scheduledCampaign;
+    }
+
+    public static class IdentityTokenDeserializer implements JsonDeserializer<String> {
+
+        @Override
+        public String deserialize(JsonElement json, Type typeOfT,
+                                  JsonDeserializationContext context) throws JsonParseException {
+            return json.toString();
+        }
     }
 }

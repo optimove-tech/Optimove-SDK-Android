@@ -21,7 +21,7 @@ import java.util.Set;
 public class ConfigsFetcher {
 
 
-    private static final String GLOBAL_CONFIG_VERSION = "v3";
+    private static final String GLOBAL_CONFIG_VERSION = "v4";
     public static final String TENANT_CONFIG_FILE_BASE_URL = "https://sdk-cdn.optimove.net/mobilesdkconfig/";
     public static final String GLOBAL_CONFIG_FILE_BASE_URL = "https://sdk-cdn.optimove.net/configs/mobile/global/";
 

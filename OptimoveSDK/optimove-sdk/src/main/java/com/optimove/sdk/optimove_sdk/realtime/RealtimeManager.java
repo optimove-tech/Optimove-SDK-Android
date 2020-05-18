@@ -76,6 +76,8 @@ public final class RealtimeManager {
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
         try {
+            OptiLoggerStreamsContainer.debug(optistreamEvents.size() + " Events are about to be dispatched to " +
+                    "Realtime");
             httpClient.postJsonArray(realtimeConfigs.getRealtimeGateway(), new JSONArray(new Gson().toJson(optistreamEvents)))
                     .successListener(jsonResponse ->
                         realtimePreferences.edit()
