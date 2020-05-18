@@ -41,7 +41,8 @@ public class NotificationInteractionReceiver extends BroadcastReceiver {
     try {
       context.startService(serviceIntent);
     } catch (IllegalStateException e) {
-      OptiLogger.receivedNotificationCouldntStartTheDispatchService(e.getMessage());
+      OptiLoggerStreamsContainer.error("Couldn't start notification opened service due to %s", e.getMessage());
+
     }
   }
   private void openApplication(Context context, Intent intent) {

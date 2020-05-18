@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
@@ -15,7 +14,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -92,6 +90,10 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     private void dispatchBulkIfExists(){
         OptistreamDbHelper.EventsBulk eventsBulk = optistreamDbHelper.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
+        if (eventsBulk == null) {
+            scheduleTheNextDispatch();
+            return;
+        }
         List<String> eventJsons = eventsBulk.getEventJsons();
         if (eventJsons != null && !eventJsons.isEmpty()) {
 

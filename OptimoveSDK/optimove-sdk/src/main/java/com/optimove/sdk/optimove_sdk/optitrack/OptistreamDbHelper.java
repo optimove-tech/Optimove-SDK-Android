@@ -7,9 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.support.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +34,12 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         private static final String COLUMN_CREATED_AT = "created_at";
     }
 
+
+    private File dbFile;
+
     public OptistreamDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        dbFile = context.getDatabasePath(DATABASE_NAME);
     }
 
     public void onCreate(SQLiteDatabase db) {
@@ -66,46 +72,54 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
     }
 
     public void removeEvents(String lastId) {
-        final SQLiteDatabase db = this.getWritableDatabase();
-
         try {
+            final SQLiteDatabase db = this.getWritableDatabase();
+
             String deleteQuery = OptistreamEntry._ID + " <= " + lastId;
 
             db.delete(OptistreamEntry.TABLE_NAME, deleteQuery, null);
-        } catch (final SQLiteException e) {
+        } catch (SQLiteException e) {
             OptiLoggerStreamsContainer.error("An SQL error occurred while removing events - %s, deleting the whole DB",
                     e.getMessage());
-
-            db.execSQL(SQL_DELETE_ENTRIES);
-        } catch (final Exception e) {
+            close();
+            dbFile.delete();
+        } catch (Exception e) {
             OptiLoggerStreamsContainer.error("An error occurred while removing events - %s, deleting the whole DB", e.getMessage());
-            db.execSQL(SQL_DELETE_ENTRIES);
+            close();
+            dbFile.delete();
         }
     }
 
-    public EventsBulk getFirstEvents(int numberOfEvents) {
+    public @Nullable EventsBulk getFirstEvents(int numberOfEvents) {
 
-        String lastId = null;
-        List<String> eventJsons = new ArrayList<>();
+        try {
+            String lastId = null;
+            List<String> eventJsons = new ArrayList<>();
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        String eventsQuery = "SELECT * FROM " + OptistreamEntry.TABLE_NAME +
-                        " ORDER BY " + OptistreamEntry.COLUMN_CREATED_AT + " ASC LIMIT " + numberOfEvents;
+            SQLiteDatabase db = this.getReadableDatabase();
+            String eventsQuery = "SELECT * FROM " + OptistreamEntry.TABLE_NAME +
+                    " ORDER BY " + OptistreamEntry.COLUMN_CREATED_AT + " ASC LIMIT " + numberOfEvents;
 
-        Cursor res = db.rawQuery(eventsQuery, null);
+            Cursor res = db.rawQuery(eventsQuery, null);
 
-        boolean exists = res.moveToFirst();
+            boolean exists = res.moveToFirst();
 
-        while (exists) {
-            eventJsons.add(res.getString(res.getColumnIndex(OptistreamEntry.COLUMN_DATA)));
-            if (res.isLast()) {
-                lastId = res.getString(res.getColumnIndex(OptistreamEntry._ID));
+            while (exists) {
+                eventJsons.add(res.getString(res.getColumnIndex(OptistreamEntry.COLUMN_DATA)));
+                if (res.isLast()) {
+                    lastId = res.getString(res.getColumnIndex(OptistreamEntry._ID));
+                }
+                exists = res.moveToNext();
             }
-            exists = res.moveToNext();
+
+            res.close();
+            return new EventsBulk(lastId, eventJsons);
+        } catch (Exception e) {
+            OptiLoggerStreamsContainer.error("An error occurred while querying events - %s",
+                    e.getMessage());
+            return null;
         }
 
-        res.close();
-        return new EventsBulk(lastId, eventJsons);
     }
 
     public static class EventsBulk {
