@@ -139,6 +139,7 @@ public class OptitrackTests {
         Thread.sleep(100);
         verifyZeroInteractions(httpClient);
     }
+
     private OptistreamEvent getRegularEvent(boolean isRealtime) {
         OptistreamEvent.Metadata optistreamMetadata = mock(OptistreamEvent.Metadata.class);
 
