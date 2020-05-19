@@ -39,7 +39,7 @@ public class OptistreamEventBuilder {
     }
 
     public OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent, boolean isRealtime) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         OptistreamEvent.IMetadata iMetadata = OptistreamEvent.builder()
