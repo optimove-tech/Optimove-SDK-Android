@@ -4,13 +4,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,6 +122,23 @@ public class OptiUtils {
     return convertToHex(md5Hash);
   }
 
+  public static String getEventsNames(List<OptistreamEvent> optistreamEvents){
+    StringBuilder eventsNames = new StringBuilder();
+    for (OptistreamEvent optistreamEvent: optistreamEvents) {
+      eventsNames.append(", ");
+      eventsNames.append(optistreamEvent.getName());
+    }
+    return eventsNames.toString();
+  }
+  public static String getEventsNamesFromStrings(List<String> optistreamEvents){
+    Gson gson = new Gson();
+    StringBuilder eventsNames = new StringBuilder();
+    for (String optistreamEvent: optistreamEvents) {
+      eventsNames.append(", ");
+      eventsNames.append(gson.fromJson(optistreamEvent, OptistreamEvent.class).getName());
+    }
+    return eventsNames.toString();
+  }
 
   private static String convertToHex(byte[] data) {
     StringBuilder buf = new StringBuilder();

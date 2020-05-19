@@ -10,6 +10,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
@@ -85,7 +86,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 if (timerDispatchFuture != null) {
                     timerDispatchFuture.cancel(false);
                 }
-                singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
+                dispatchBulkIfExists();
             }
         });
     }
@@ -106,7 +107,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 for (String eventJson: eventJsons) {
                     jsonArrayToDispatch.put(new JSONObject(eventJson));
                 }
-                OptiLoggerStreamsContainer.debug("Dispatching " + eventJsons.size() + " optistream events");
+                OptiLoggerStreamsContainer.debug("Dispatching " + eventJsons.size() + " optistream events - " + OptiUtils.getEventsNamesFromStrings(eventJsons));
 
                 dispatchRequestWaitsForResponse = true;
                 httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), jsonArrayToDispatch)
