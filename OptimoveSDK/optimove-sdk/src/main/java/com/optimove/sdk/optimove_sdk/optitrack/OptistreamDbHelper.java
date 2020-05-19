@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OptistreamDbHelper extends SQLiteOpenHelper {
+public class OptistreamDbHelper extends SQLiteOpenHelper implements OptistreamPersistanceAdapter {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "Optistream.db";
 
@@ -55,6 +55,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         onUpgrade(db, oldVersion, newVersion);
     }
 
+    @Override
     public boolean insertEvent(String eventJson) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
@@ -71,6 +72,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         return true;
     }
 
+    @Override
     public void removeEvents(String lastId) {
         try {
             final SQLiteDatabase db = this.getWritableDatabase();
@@ -90,6 +92,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
         }
     }
 
+    @Override
     public @Nullable EventsBulk getFirstEvents(int numberOfEvents) {
 
         try {
@@ -120,32 +123,5 @@ public class OptistreamDbHelper extends SQLiteOpenHelper {
             return null;
         }
 
-    }
-
-    public static class EventsBulk {
-
-        private String lastId;
-        private List<String> eventJsons;
-
-        public EventsBulk(String lastId, List<String> eventJsons) {
-            this.lastId = lastId;
-            this.eventJsons = eventJsons;
-        }
-
-        String getLastId() {
-            return lastId;
-        }
-
-        void setLastId(String lastId) {
-            this.lastId = lastId;
-        }
-
-        List<String> getEventJsons() {
-            return eventJsons;
-        }
-
-        void setEventJsons(List<String> eventJsons) {
-            this.eventJsons = eventJsons;
-        }
     }
 }

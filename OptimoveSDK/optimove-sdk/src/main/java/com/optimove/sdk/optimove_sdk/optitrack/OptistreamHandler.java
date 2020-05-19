@@ -30,7 +30,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     @NonNull
     private LifecycleObserver lifecycleObserver;
     @NonNull
-    private OptistreamDbHelper optistreamDbHelper;
+    private OptistreamPersistanceAdapter optistreamPersistanceAdapter;
     @NonNull
     private OptitrackConfigs optitrackConfigs;
     @NonNull
@@ -53,11 +53,11 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     public OptistreamHandler(@NonNull HttpClient httpClient,
                              @NonNull LifecycleObserver lifecycleObserver,
-                             @NonNull OptistreamDbHelper optistreamDbHelper,
+                             @NonNull OptistreamPersistanceAdapter optistreamPersistanceAdapter,
                              @NonNull OptitrackConfigs optitrackConfigs) {
         this.httpClient = httpClient;
         this.lifecycleObserver = lifecycleObserver;
-        this.optistreamDbHelper = optistreamDbHelper;
+        this.optistreamPersistanceAdapter = optistreamPersistanceAdapter;
         this.optitrackConfigs = optitrackConfigs;
         this.singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         this.optistreamGson = new Gson();
@@ -77,7 +77,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         singleThreadScheduledExecutor.submit(() -> {
             boolean immediateEventFound = false;
             for (OptistreamEvent optistreamEvent: optistreamEvents) {
-                optistreamDbHelper.insertEvent(optistreamGson.toJson(optistreamEvent));
+                optistreamPersistanceAdapter.insertEvent(optistreamGson.toJson(optistreamEvent));
                 if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
                     immediateEventFound = true;
                 }
@@ -95,7 +95,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         if (dispatchRequestWaitsForResponse) {
             return; //protects from sending same events twice
         }
-        OptistreamDbHelper.EventsBulk eventsBulk = optistreamDbHelper.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
+        OptistreamDbHelper.EventsBulk eventsBulk = optistreamPersistanceAdapter.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
         if (eventsBulk == null) {
             scheduleTheNextDispatch();
             return;
@@ -122,7 +122,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                             OptiLoggerStreamsContainer.debug(eventJsons.size() + " Events were dispatched");
                             singleThreadScheduledExecutor.submit(()-> {
                                 OptiLoggerStreamsContainer.debug(eventJsons.size() + " Events about to be removed");
-                                optistreamDbHelper.removeEvents(eventsBulk.getLastId());
+                                optistreamPersistanceAdapter.removeEvents(eventsBulk.getLastId());
                                 dispatchRequestWaitsForResponse = false;
                                 dispatchBulkIfExists();
                             });
@@ -157,8 +157,6 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         }
         singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
     }
-
-
 
     private boolean isNotificationEvent(OptistreamEvent optistreamEvent) {
         return optistreamEvent.getName()
