@@ -116,7 +116,7 @@ public class OptitrackTests {
         }).run();
 
         //The dispatch should be serial, it cant take than the maximum response time numOfEvents times
-        Thread.sleep(maxResponseTime * numOfEvents);
+        Thread.sleep(maxResponseTime * numOfEvents + 500);
 
         //verifying that all of the events exist and all of them are ordered
         verify(httpClient, new VerificationMode() {
