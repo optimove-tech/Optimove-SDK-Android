@@ -92,7 +92,7 @@ public class OptitrackTests {
     public void eventsShouldBeDispatchedOnceAndInOrderInSpiteOfAThreadChaos() throws Exception {
 
         long maxResponseTime = 80;
-        int numOfEvents = 100;
+        int numOfEvents = 40;
         OptistreamPersistanceAdapter optistreamPersistanceAdapter = new MockedOptistreamPersistency();
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
@@ -115,8 +115,9 @@ public class OptitrackTests {
             }
         }).run();
 
-        //The dispatch should be serial, it cant take than the maximum response time numOfEvents times
-        Thread.sleep(maxResponseTime * numOfEvents + 500);
+        //The dispatch should be serial, it cant take than the maximum response time numOfEvents times, because those
+        // are background threads, lets give it twice
+        Thread.sleep(maxResponseTime * numOfEvents * 2);
 
         //verifying that all of the events exist and all of them are ordered
         verify(httpClient, new VerificationMode() {
@@ -129,7 +130,7 @@ public class OptitrackTests {
                             Assert.assertEquals(((JSONArray) invocation.getRawArguments()[1]).getJSONObject(jsonObjectIndex)
                                     .getString("event"), "some_name_" + i);
                         } catch (Exception e) {
-                            fail();
+                            fail(e.getMessage());
                         }
                         i++;
                     }
