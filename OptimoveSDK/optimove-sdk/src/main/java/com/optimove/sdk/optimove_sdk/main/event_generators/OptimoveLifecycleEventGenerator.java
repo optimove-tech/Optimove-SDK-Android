@@ -21,8 +21,6 @@ import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_RE
 
 public class OptimoveLifecycleEventGenerator implements LifecycleObserver.ActivityStopped, LifecycleObserver.ActivityStarted {
 
-    private int optInOutExecutionTimeout = (int) TimeUnit.SECONDS.toMillis(5);
-
     private EventHandlerProvider eventHandlerProvider;
     private long foregroundSessionEndTime;
     private UserInfo userInfo;

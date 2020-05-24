@@ -1,6 +1,5 @@
 package com.optimove.sdk.optimove_sdk.main;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -470,74 +469,6 @@ final public class Optimove {
 
     public void enablePushCampaigns() {
         optipushManager.enablePushCampaigns();
-    }
-
-    /**
-     * @deprecated Use the {@link Optimove#reportScreenVisit(String)} instead.
-     */
-    @Deprecated
-    public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle) {
-        this.reportScreenVisit(screenTitle, null);
-    }
-
-    /**
-     * @deprecated Use the {@link Optimove#reportScreenVisit(String, String)} instead.
-     */
-    @Deprecated
-    public void setScreenVisit(@NonNull Activity activity, @NonNull String screenTitle,
-                               @Nullable String screenCategory) {
-        this.reportScreenVisit(screenTitle, screenCategory);
-    }
-
-    /**
-     * @deprecated Use the {@link Optimove#reportScreenVisit(String)} instead.
-     */
-    @Deprecated
-    public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle) {
-        this.reportScreenVisit(screenTitle, null);
-    }
-
-    /**
-     * @deprecated Use the {@link Optimove#reportScreenVisit(String, String)} instead.
-     */
-    @Deprecated
-    public void setScreenVisit(@NonNull String screenPath, @NonNull String screenTitle,
-                               @Nullable String screenCategory) {
-        this.reportScreenVisit(screenTitle, screenCategory);
-    }
-
-    /**
-     * @deprecated No need to call startTestMode.
-     */
-    @Deprecated
-    public void startTestMode(@Nullable SdkOperationListener operationListener) {
-    }
-
-    /**
-     * @deprecated No need to call stopTestMode.
-     */
-    @Deprecated
-    public void stopTestMode(@Nullable SdkOperationListener operationListener) {
-    }
-
-    /**
-     * Registers a new {@link OptimoveSuccessStateListener} to receive any updates about the {@code SDK's Success State} in a thread safe manner.
-     *
-     * @deprecated No need to register for lifecycle events. You can use the SDK directly.
-     */
-    @Deprecated
-    public static void registerSuccessStateListener(OptimoveSuccessStateListener stateListener) {
-        stateListener.onConfigurationSucceed();
-    }
-
-    /**
-     * Unregisters an already registered {@link OptimoveSuccessStateListener} from receiving further updates about the {@code SDK's Success State} in a thread safe manner.<br>
-     *
-     * @deprecated No need to unregister from lifecycle events anymore.
-     */
-    @Deprecated
-    public static void unregisterSuccessStateListener(OptimoveSuccessStateListener stateListener) {
-
     }
 
     /* *******************

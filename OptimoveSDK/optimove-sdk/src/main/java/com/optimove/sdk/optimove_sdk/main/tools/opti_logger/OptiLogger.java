@@ -75,10 +75,6 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.debug("Optimove.configureUrgently() is starting");
   }
 
-  public static void f85() {
-    OptiLoggerStreamsContainer.debug("Optimove.configureUrgently() was called from a worker thread, moving call to main thread");
-  }
-
   public static void f89(String email) {
     OptiLoggerStreamsContainer.error("Invalid email was received: %s", email);
   }

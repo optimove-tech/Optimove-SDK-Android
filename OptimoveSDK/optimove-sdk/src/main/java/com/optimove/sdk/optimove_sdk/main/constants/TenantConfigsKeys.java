@@ -7,10 +7,8 @@ public interface TenantConfigsKeys {
 
   interface TenantInfoKeys {
     String TENANT_ID = "tenantId";
-    String INIT_END_POINT_URL = "initEndPointUrl";
     String TOKEN = "token";
     String CONFIG_NAME = "configName";
-    String HAS_DEFAULT_FIREBASE_APP = "hasDefaultFirebaseApp";
   }
 
 }
