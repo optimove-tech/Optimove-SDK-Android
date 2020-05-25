@@ -395,7 +395,7 @@ final public class Optimove {
             return null;
         }
 
-        String originalVisitorId = this.userInfo.getVisitorId();
+        String originalVisitorId = this.userInfo.getInitialVisitorId();
         String updatedVisitorId = OptiUtils.SHA1(newUserId)
                 .substring(0, 16);
 
