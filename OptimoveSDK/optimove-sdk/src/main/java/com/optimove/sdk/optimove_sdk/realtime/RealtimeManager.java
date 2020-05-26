@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;
-import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
@@ -77,8 +76,6 @@ public final class RealtimeManager {
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
         try {
-            OptiLoggerStreamsContainer.debug(optistreamEvents.size() + " Events are about to be dispatched to " +
-                    "Realtime - " + OptiUtils.getEventsNames(optistreamEvents));
             httpClient.postJsonArray(realtimeConfigs.getRealtimeGateway(), new JSONArray(new Gson().toJson(optistreamEvents)))
                     .successListener(jsonResponse ->
                         realtimePreferences.edit()

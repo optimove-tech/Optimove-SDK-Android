@@ -122,24 +122,6 @@ public class OptiUtils {
     return convertToHex(md5Hash);
   }
 
-  public static String getEventsNames(List<OptistreamEvent> optistreamEvents){
-    StringBuilder eventsNames = new StringBuilder();
-    for (OptistreamEvent optistreamEvent: optistreamEvents) {
-      eventsNames.append(", ");
-      eventsNames.append(optistreamEvent.getName());
-    }
-    return eventsNames.toString();
-  }
-  public static String getEventsNamesFromStrings(List<String> optistreamEvents){
-    Gson gson = new Gson();
-    StringBuilder eventsNames = new StringBuilder();
-    for (String optistreamEvent: optistreamEvents) {
-      eventsNames.append(", ");
-      eventsNames.append(gson.fromJson(optistreamEvent, OptistreamEvent.class).getName());
-    }
-    return eventsNames.toString();
-  }
-
   private static String convertToHex(byte[] data) {
     StringBuilder buf = new StringBuilder();
     for (byte b : data) {
