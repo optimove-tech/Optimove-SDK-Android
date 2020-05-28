@@ -4,6 +4,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 
@@ -24,8 +28,9 @@ public class OptistreamEventBuilder {
     @Nullable
     private OptistreamEvent.AirshipMetadata airshipMetadata;
 
-    private final static class Constants {
-        private static final String CATEGORY = "track";
+    public final static class Constants {
+        private static final String CATEGORY_TRACK = "track";
+        public static final String CATEGORY_OPTIPUSH = "optipush";
         private static final String PLATFORM = "Android";
         private static final String ORIGIN = "sdk";
     }
@@ -47,7 +52,8 @@ public class OptistreamEventBuilder {
 
         OptistreamEvent.IMetadata iMetadata = OptistreamEvent.builder()
                 .withTenantId(tenantId)
-                .withCategory(OptistreamEventBuilder.Constants.CATEGORY)
+                .withCategory(isNotificationEvent(optimoveEvent) ? Constants.CATEGORY_OPTIPUSH :
+                        OptistreamEventBuilder.Constants.CATEGORY_TRACK)
                 .withName(optimoveEvent.getName())
                 .withOrigin(OptistreamEventBuilder.Constants.ORIGIN)
                 .withUserId(userInfo.getUserId())
@@ -64,7 +70,19 @@ public class OptistreamEventBuilder {
         }
     }
 
-    private @Nullable OptistreamEvent.AirshipMetadata getAirshipMetadata(){
+    private boolean isNotificationEvent(OptimoveEvent optimoveEvent) {
+        return optimoveEvent.getName()
+                .equals(TriggeredNotificationDeliveredEvent.NAME) ||
+                optimoveEvent.getName()
+                        .equals(TriggeredNotificationOpenedEvent.NAME) ||
+                optimoveEvent.getName()
+                        .equals(ScheduledNotificationDeliveredEvent.NAME) ||
+                optimoveEvent.getName()
+                        .equals(ScheduledNotificationOpenedEvent.NAME);
+    }
+
+    private @Nullable
+    OptistreamEvent.AirshipMetadata getAirshipMetadata() {
         try {
             Class<?> airshipClass = Class.forName("com.urbanairship.UAirship");
 
@@ -91,7 +109,7 @@ public class OptistreamEventBuilder {
             String appKeyString = String.valueOf(appKey);
             String channelIdString = String.valueOf(channelId);
 
-            if (appKeyString.equals("null") || (channelIdString.equals("null")) ){
+            if (appKeyString.equals("null") || (channelIdString.equals("null"))) {
                 OptiLoggerStreamsContainer.error("Airship not available - either appKey or channelId were not found");
                 return null;
             } else {

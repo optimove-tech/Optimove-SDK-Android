@@ -22,6 +22,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
+
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     @NonNull
@@ -77,7 +79,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
             boolean immediateEventFound = false;
             for (OptistreamEvent optistreamEvent: optistreamEvents) {
                 optistreamPersistanceAdapter.insertEvent(optistreamGson.toJson(optistreamEvent));
-                if (optistreamEvent.getMetadata().isRealtime() || isNotificationEvent(optistreamEvent)) {
+                if (optistreamEvent.getMetadata().isRealtime() || optistreamEvent.getCategory().equals(CATEGORY_OPTIPUSH)) {
                     immediateEventFound = true;
                 }
             }
@@ -152,17 +154,4 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         }
         singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
     }
-
-    private boolean isNotificationEvent(OptistreamEvent optistreamEvent) {
-        return optistreamEvent.getName()
-                .equals(TriggeredNotificationDeliveredEvent.NAME) ||
-                optistreamEvent.getName()
-                        .equals(TriggeredNotificationOpenedEvent.NAME) ||
-                optistreamEvent.getName()
-                        .equals(ScheduledNotificationDeliveredEvent.NAME) ||
-                optistreamEvent.getName()
-                        .equals(ScheduledNotificationOpenedEvent.NAME);
-    }
-
-
 }
