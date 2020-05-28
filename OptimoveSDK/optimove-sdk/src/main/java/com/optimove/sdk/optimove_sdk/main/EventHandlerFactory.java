@@ -81,9 +81,8 @@ public class EventHandlerFactory {
                 realtimeEnabled, realtimeEnabledThroughOptistream);
     }
 
-    public OptistreamEventBuilder getOptistreamEventBuilder(int tenantId, @Nullable OptistreamEvent.AirshipMetadata airshipMetadata) {
-        return airshipMetadata != null ? new OptistreamEventBuilder(tenantId, userInfo, airshipMetadata) :
-                new OptistreamEventBuilder(tenantId, userInfo);
+    public OptistreamEventBuilder getOptistreamEventBuilder(int tenantId, boolean airshipEnabled) {
+        return new OptistreamEventBuilder(tenantId, userInfo, airshipEnabled);
     }
 
     public static UserInfoStep builder() {
