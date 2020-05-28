@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -193,8 +194,8 @@ public class OptitrackTests {
     }
 
     @Test
-    public void notificationEventShouldBeDispatchedImmediately() throws Exception {
-        OptistreamEvent notificationEvent = getNotificationEvent();
+    public void optipushCategoryEventShouldBeDispatchedImmediately() throws Exception {
+        OptistreamEvent notificationEvent = getOptipushCategoryEvent();
         String notificationEventJson = new Gson().toJson(notificationEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
                 , optitrackConfigs);
@@ -246,13 +247,13 @@ public class OptitrackTests {
                 .build();
     }
 
-    private OptistreamEvent getNotificationEvent() {
+    private OptistreamEvent getOptipushCategoryEvent() {
         OptistreamEvent.Metadata optistreamMetadata = mock(OptistreamEvent.Metadata.class);
 
         when(optistreamMetadata.isRealtime()).thenReturn(false);
         return OptistreamEvent.builder()
                 .withTenantId(33333)
-                .withCategory("some_category")
+                .withCategory(CATEGORY_OPTIPUSH)
                 .withName(ScheduledNotificationDeliveredEvent.NAME)
                 .withOrigin("some_origin")
                 .withUserId(userInfo.getUserId())
