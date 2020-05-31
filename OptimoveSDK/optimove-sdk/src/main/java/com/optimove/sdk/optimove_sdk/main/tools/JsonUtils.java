@@ -27,6 +27,10 @@ public class JsonUtils {
                 }
             }
         }
-        return gson.fromJson(jsonObject, classOfT);
+        try {
+            return gson.fromJson(jsonObject, classOfT);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

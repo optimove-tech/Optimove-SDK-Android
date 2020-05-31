@@ -16,6 +16,7 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData;
@@ -76,12 +77,16 @@ public final class OptipushManager {
             return;
         }
         NotificationCreator notificationCreator = new NotificationCreator(context);
+        NotificationData notificationData = JsonUtils.parseJsonMap(remoteMessage.getData(),  NotificationData.class);
+        if (notificationData == null) {
+            OptiLoggerStreamsContainer.error("Seems like you forgot to add the proguard rules of Optimove");
+            return;
+        }
         new OptipushMessageCommand(context, Optimove.getInstance()
                 .getEventHandlerProvider()
                 .getEventHandler(),
                 new DeviceInfoProvider(context), notificationCreator)
-                .processRemoteMessage(remoteMessage, JsonUtils.parseJsonMap(remoteMessage.getData(),
-                        NotificationData.class));
+                .processRemoteMessage(remoteMessage, notificationData);
     }
 
     public void disablePushCampaigns(){
