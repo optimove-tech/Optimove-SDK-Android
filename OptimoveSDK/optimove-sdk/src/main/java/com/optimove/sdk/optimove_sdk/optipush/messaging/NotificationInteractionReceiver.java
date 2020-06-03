@@ -13,6 +13,8 @@ import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
 public class NotificationInteractionReceiver extends BroadcastReceiver {
 
+  static final String ACTION_DEEPLINK = "com.optimove.sdk.optimove_sdk.DEEPLINK";
+
   @Override
   public void onReceive(Context context, Intent intent) {
     if (intent == null)
@@ -53,7 +55,11 @@ public class NotificationInteractionReceiver extends BroadcastReceiver {
   }
 
   private void openActivityWithDynamicLink(Context context, String dynamicLink) {
-    Intent linkIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(dynamicLink));
+    Intent linkIntent = new Intent(ACTION_DEEPLINK, Uri.parse(dynamicLink));
+
+    if (linkIntent.resolveActivity(context.getPackageManager()) == null) {
+      linkIntent.setAction(Intent.ACTION_VIEW);
+    }
     linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     linkIntent.setPackage(ApplicationHelper.getFullPackageName(context));
     try {
