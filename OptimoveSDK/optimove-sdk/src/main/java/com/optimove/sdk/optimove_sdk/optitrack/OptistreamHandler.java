@@ -11,6 +11,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import org.json.JSONArray;
@@ -75,21 +76,25 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     public void reportEvents(List<OptistreamEvent> optistreamEvents) {
         this.ensureInit();
-        singleThreadScheduledExecutor.submit(() -> {
-            boolean immediateEventFound = false;
-            for (OptistreamEvent optistreamEvent: optistreamEvents) {
-                optistreamPersistanceAdapter.insertEvent(optistreamGson.toJson(optistreamEvent));
-                if (optistreamEvent.getMetadata().isRealtime() || optistreamEvent.getCategory().equals(CATEGORY_OPTIPUSH)) {
-                    immediateEventFound = true;
+        try {
+            singleThreadScheduledExecutor.submit(() -> {
+                boolean immediateEventFound = false;
+                for (OptistreamEvent optistreamEvent: optistreamEvents) {
+                    optistreamPersistanceAdapter.insertEvent(optistreamGson.toJson(optistreamEvent));
+                    if (optistreamEvent.getMetadata().isRealtime() || optistreamEvent.getCategory().equals(CATEGORY_OPTIPUSH)) {
+                        immediateEventFound = true;
+                    }
                 }
-            }
-            if (immediateEventFound) {
-                if (timerDispatchFuture != null) {
-                    timerDispatchFuture.cancel(false);
+                if (immediateEventFound) {
+                    if (timerDispatchFuture != null) {
+                        timerDispatchFuture.cancel(false);
+                    }
+                    dispatchBulkIfExists();
                 }
-                dispatchBulkIfExists();
-            }
-        });
+            });
+        } catch (Throwable throwable) {
+            OptiLoggerStreamsContainer.error("Error while submitting a command - %s", throwable.getMessage());
+        }
     }
 
     private void dispatchBulkIfExists(){
@@ -118,14 +123,18 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                             scheduleTheNextDispatch();
                         })
                         .successListener(response -> {
-                            singleThreadScheduledExecutor.submit(()-> {
-                                optistreamPersistanceAdapter.removeEvents(eventsBulk.getLastId());
-                                dispatchRequestWaitsForResponse = false;
-                                dispatchBulkIfExists();
-                            });
+                            try {
+                                singleThreadScheduledExecutor.submit(() -> {
+                                    optistreamPersistanceAdapter.removeEvents(eventsBulk.getLastId());
+                                    dispatchRequestWaitsForResponse = false;
+                                    dispatchBulkIfExists();
+                                });
+                            } catch (Throwable throwable) {
+                                OptiLoggerStreamsContainer.error("Error while submitting a command - %s", throwable.getMessage());
+                            }
                         })
                         .send();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 dispatchRequestWaitsForResponse = false;
                 OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                         e.getMessage());
@@ -141,7 +150,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         try {
             this.timerDispatchFuture = this.singleThreadScheduledExecutor.schedule(this::dispatchBulkIfExists,
                     Constants.DISPATCH_INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             OptiLoggerStreamsContainer.error("Failed to schedule another dispatch - %s",
                     e.getMessage());
         }
@@ -152,6 +161,11 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         if (timerDispatchFuture != null) {
             timerDispatchFuture.cancel(false);
         }
-        singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
+        try {
+            singleThreadScheduledExecutor.submit(this::dispatchBulkIfExists);
+        } catch (Throwable throwable) {
+            OptiLoggerStreamsContainer.error("Error while submitting a dispatch command - %s", throwable.getMessage());
+        }
     }
+
 }

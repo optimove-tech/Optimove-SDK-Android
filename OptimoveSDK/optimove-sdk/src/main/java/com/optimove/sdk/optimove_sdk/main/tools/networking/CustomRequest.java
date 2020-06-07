@@ -33,7 +33,7 @@ class CustomRequest<T> extends Request<T> {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return Response.error(new ParseError(e));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             OptiLoggerStreamsContainer.error("Failed to parse network response to %s", responseClass.getName());
             return Response.error(new ParseError(e));
         }

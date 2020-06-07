@@ -65,7 +65,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper implements OptistreamPe
             contentValues.put(OptistreamEntry.COLUMN_CREATED_AT, System.currentTimeMillis());
             db.insert(OptistreamEntry.TABLE_NAME, null, contentValues);
 
-        } catch (Exception e){
+        } catch (Throwable e){
             OptiLoggerStreamsContainer.error("An error occurred while inserting events - %s",e.getMessage());
             return false;
         }
@@ -85,7 +85,7 @@ public class OptistreamDbHelper extends SQLiteOpenHelper implements OptistreamPe
                     e.getMessage());
             close();
             dbFile.delete();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             OptiLoggerStreamsContainer.error("An error occurred while removing events - %s, deleting the whole DB", e.getMessage());
             close();
             dbFile.delete();
