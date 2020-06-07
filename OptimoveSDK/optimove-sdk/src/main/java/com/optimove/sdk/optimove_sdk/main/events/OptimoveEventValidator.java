@@ -32,8 +32,7 @@ public class OptimoveEventValidator {
     for (String key : parameters.keySet()) {
       EventConfigs.ParameterConfig parameterConfig = eventConfig.getParameterConfigs().get(key);
       if (isInvalidParameterName(parameterConfig)) {
-        OptiLogger.f128(event.getName(), key);
-        return EventValidationResult.UNKNOWN_PARAMETER_NAME_ERROR;
+        continue;
       }
       Object value = parameters.get(key);
       if (value == null) {

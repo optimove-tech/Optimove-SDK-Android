@@ -133,11 +133,6 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.info("Starting on-update background SDK initialization");
   }
 
-
-  public static void f128(String eventName, String paramKey) {
-    OptiLoggerStreamsContainer.error("Incoming event %s has an unknown parameter %s. Please verify it exists in the event's configurations", eventName, paramKey);
-  }
-
   public static void f129(String paramKey, String eventName) {
     OptiLoggerStreamsContainer.error("Mandatory parameter %s in event %s is missing", paramKey, eventName);
   }

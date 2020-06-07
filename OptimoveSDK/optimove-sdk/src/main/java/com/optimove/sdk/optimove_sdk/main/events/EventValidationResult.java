@@ -7,10 +7,6 @@ public enum EventValidationResult {
    */
   UNKNOWN_EVENT_NAME_ERROR,
   /**
-   * A parameter's {@code name} was not found in the <i>custom events contract</i>
-   */
-  UNKNOWN_PARAMETER_NAME_ERROR,
-  /**
    * A parameter's {@code values} size was <b>too large</b> (max is <b>255</b> chars)
    */
   VALUE_TOO_LARGE_ERROR,
