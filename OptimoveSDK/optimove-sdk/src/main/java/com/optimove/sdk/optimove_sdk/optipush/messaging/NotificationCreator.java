@@ -37,7 +37,7 @@ public class NotificationCreator {
 
     public void showNotification(NotificationData notificationData) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createSdkNotificationChannelIfNeeded();
+            createSdkNotificationChannelIfNeeded(notificationData);
         }
         final NotificationCompat.Builder basicNotificationBuilder =
                 createBasicNotificationBuilder(notificationData);
@@ -47,9 +47,9 @@ public class NotificationCreator {
                         UiUtils.getBitmapFromURL(notificationData.getNotificationMedia().url);
                 if (notificationDecodedBitmap == null) {
                     OptiLogger.optipushNotificationBitmapFailedToLoad(notificationData.getNotificationMedia().url);
-                    presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(),notificationData);
+                    presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
                 } else {
-                    presentNotification(applyBigImageStyle(basicNotificationBuilder, notificationDecodedBitmap).build(),notificationData);
+                    presentNotification(applyBigImageStyle(basicNotificationBuilder, notificationDecodedBitmap).build(), notificationData);
                 }
             }).start();
         } else {
@@ -124,9 +124,11 @@ public class NotificationCreator {
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private void createSdkNotificationChannelIfNeeded() {
+    private void createSdkNotificationChannelIfNeeded(NotificationData notificationData) {
         NotificationChannel channel =
-                new NotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID, getApplicationName(), NotificationManager.IMPORTANCE_HIGH);
+                new NotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID,
+                        notificationData.getChannel() == null ?
+                                getApplicationName() : notificationData.getChannel(), NotificationManager.IMPORTANCE_HIGH);
         notificationManager.createNotificationChannel(channel);
     }
 

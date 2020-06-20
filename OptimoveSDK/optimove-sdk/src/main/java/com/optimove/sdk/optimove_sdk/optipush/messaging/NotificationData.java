@@ -31,6 +31,10 @@ public class NotificationData {
     @Nullable
     private String collapseKey;
 
+    @SerializedName("channel")
+    @Nullable
+    private String channel;
+
     @SerializedName("media")
     @Nullable
     private NotificationMedia notificationMedia;
@@ -86,6 +90,15 @@ public class NotificationData {
 
     public void setNotificationMedia(@Nullable NotificationMedia notificationMedia) {
         this.notificationMedia = notificationMedia;
+    }
+
+    @Nullable
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(@Nullable String channel) {
+        this.channel = channel;
     }
 
     @Nullable
