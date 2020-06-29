@@ -36,9 +36,8 @@ public class NotificationCreator {
     }
 
     public void showNotification(NotificationData notificationData) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createSdkNotificationChannelIfNeeded(notificationData);
-        }
+        handleNotificationChannel(notificationData);
+
         final NotificationCompat.Builder basicNotificationBuilder =
                 createBasicNotificationBuilder(notificationData);
         if (notificationData.getNotificationMedia() != null && notificationData.getNotificationMedia().mediaType.equals(OptipushConstants.PushSchemaKeys.MEDIA_TYPE_IMAGE)) {
@@ -59,6 +58,15 @@ public class NotificationCreator {
             presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
         }
     }
+    private void handleNotificationChannel(NotificationData notificationData){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if  (notificationData.getChannelId() == null) {
+                createSdkNotificationChannel();
+            } else {
+                notificationManager.deleteNotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID);
+            }
+        }
+    }
 
     private void presentNotification(Notification notification, NotificationData notificationData) {
         if (notificationData.getCollapseKey() == null) {
@@ -72,7 +80,9 @@ public class NotificationCreator {
     private NotificationCompat.Builder createBasicNotificationBuilder(NotificationData notificationData) {
         NotificationCompat.Builder builder;
 
-        builder = new NotificationCompat.Builder(context, OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID);
+        builder = new NotificationCompat.Builder(context,
+                notificationData.getChannelId() == null ? OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID
+                : notificationData.getChannelId());
 
         builder
                 .setContentTitle(notificationData.getTitle())
@@ -124,11 +134,10 @@ public class NotificationCreator {
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private void createSdkNotificationChannelIfNeeded(NotificationData notificationData) {
+    private void createSdkNotificationChannel() {
         NotificationChannel channel =
                 new NotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID,
-                        notificationData.getChannel() == null ?
-                                getApplicationName() : notificationData.getChannel(), NotificationManager.IMPORTANCE_HIGH);
+                                getApplicationName(), NotificationManager.IMPORTANCE_HIGH);
         notificationManager.createNotificationChannel(channel);
     }
 

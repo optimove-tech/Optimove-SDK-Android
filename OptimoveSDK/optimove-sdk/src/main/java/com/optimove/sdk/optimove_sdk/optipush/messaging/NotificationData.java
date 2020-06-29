@@ -30,10 +30,9 @@ public class NotificationData {
     @SerializedName("collapse_Key")
     @Nullable
     private String collapseKey;
-
-    @SerializedName("channel")
+    @SerializedName("channelId")
     @Nullable
-    private String channel;
+    private String channelId;
 
     @SerializedName("media")
     @Nullable
@@ -93,12 +92,12 @@ public class NotificationData {
     }
 
     @Nullable
-    public String getChannel() {
-        return channel;
+    public String getChannelId() {
+        return channelId;
     }
 
-    public void setChannel(@Nullable String channel) {
-        this.channel = channel;
+    public void setChannelId(@Nullable String channelId) {
+        this.channelId = channelId;
     }
 
     @Nullable
