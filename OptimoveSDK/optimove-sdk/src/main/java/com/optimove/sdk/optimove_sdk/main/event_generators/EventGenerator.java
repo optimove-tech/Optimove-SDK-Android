@@ -2,7 +2,6 @@ package com.optimove.sdk.optimove_sdk.main.event_generators;
 
 import android.content.Context;
 import android.location.Location;
-import android.webkit.WebSettings;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
@@ -13,6 +12,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEve
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.util.Collections;
 
@@ -24,7 +24,6 @@ public class EventGenerator {
     private DeviceInfoProvider deviceInfoProvider;
     private TenantInfo tenantInfo;
     private EventHandlerProvider eventHandlerProvider;
-    private String userAgent;
     private Context context;
 
 
@@ -35,7 +34,6 @@ public class EventGenerator {
         deviceInfoProvider = builder.deviceInfoProvider;
         tenantInfo = builder.tenantInfo;
         eventHandlerProvider = builder.eventHandlerProvider;
-        userAgent = builder.userAgent;
         context = builder.context;
     }
 
@@ -99,8 +97,12 @@ public class EventGenerator {
     }
 
     private void reportUserAgent() {
+        String userAgentToReport = deviceInfoProvider.getUserAgent();
+        if (userAgentToReport == null) {
+            userAgentToReport = "";
+        }
         eventHandlerProvider.getEventHandler()
-                .reportEvent(Collections.singletonList(new UserAgentHeaderEvent(userAgent)));
+                .reportEvent(Collections.singletonList(new UserAgentHeaderEvent(userAgentToReport)));
     }
 
 
@@ -120,12 +122,8 @@ public class EventGenerator {
         IContext withEventHandlerProvider(EventHandlerProvider val);
     }
 
-    public interface IUserAgent {
-        IEventHandlerProvider withUserAgent(String userAgent);
-    }
-
     public interface ITenantInfo {
-        IUserAgent withTenantInfo(TenantInfo val);
+        IEventHandlerProvider withTenantInfo(TenantInfo val);
     }
 
     public interface IRequirementProvider {
@@ -144,10 +142,9 @@ public class EventGenerator {
         IPackageName withUserInfo(UserInfo val);
     }
 
-    public static final class Builder implements IContext,IUserAgent, IEventHandlerProvider,
+    public static final class Builder implements IContext, IEventHandlerProvider,
             ITenantInfo, IRequirementProvider, IDeviceId, IPackageName, IUserInfo, IBuild {
         private Context context;
-        private String userAgent;
         private EventHandlerProvider eventHandlerProvider;
         private TenantInfo tenantInfo;
         private DeviceInfoProvider deviceInfoProvider;
@@ -169,14 +166,9 @@ public class EventGenerator {
             eventHandlerProvider = val;
             return this;
         }
-        @Override
-        public IEventHandlerProvider withUserAgent(String userAgent) {
-            this.userAgent = userAgent;
-            return this;
-        }
 
         @Override
-        public IUserAgent withTenantInfo(TenantInfo val) {
+        public IEventHandlerProvider withTenantInfo(TenantInfo val) {
             tenantInfo = val;
             return this;
         }

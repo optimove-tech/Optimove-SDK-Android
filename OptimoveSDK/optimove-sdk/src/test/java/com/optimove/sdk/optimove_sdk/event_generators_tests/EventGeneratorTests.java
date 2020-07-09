@@ -96,7 +96,6 @@ public class EventGeneratorTests {
                         .withDeviceId(encryptedDeviceId)
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
-                        .withUserAgent(userAgent)
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)
                         .build();

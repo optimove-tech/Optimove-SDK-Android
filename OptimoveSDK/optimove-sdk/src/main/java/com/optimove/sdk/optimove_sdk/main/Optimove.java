@@ -232,7 +232,6 @@ final public class Optimove {
                         .withDeviceId(userInfo.getInstallationId())
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
-                        .withUserAgent(WebSettings.getDefaultUserAgent(context))
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)
                         .build();

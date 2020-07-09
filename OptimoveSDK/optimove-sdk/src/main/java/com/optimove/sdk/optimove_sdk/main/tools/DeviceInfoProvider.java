@@ -17,6 +17,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -118,7 +119,17 @@ public class DeviceInfoProvider {
             } else {
                 return null;
             }
-        }catch (IOException e) {
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    public String getUserAgent(){
+        try {
+            return System.getProperty("http.agent");
+        } catch (Throwable throwable) {
+            OptiLoggerStreamsContainer.error("Cannot get user agent - %s", throwable.getMessage());
             return null;
         }
     }
