@@ -14,7 +14,9 @@ import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -66,8 +68,13 @@ public class OptistreamEventBuilder {
         if (airshipMetadata != null) {
             metadata.setAirship(airshipMetadata);
         }
-        if (optimoveEvent.getValidations() != null) {
-            metadata.setValidations(optimoveEvent.getValidations());
+        if (optimoveEvent.getValidationIssues() != null) {
+            List<OptistreamEvent.ValidationIssue> optistreamFormatValidationIssues = new ArrayList<>();
+            for (OptimoveEvent.ValidationIssue optimoveFormatValidationIssue : optimoveEvent.getValidationIssues()) {
+                optistreamFormatValidationIssues.add(new OptistreamEvent.ValidationIssue(optimoveFormatValidationIssue.getStatus(),
+                        optimoveFormatValidationIssue.getMessage()));
+            }
+            metadata.setValidationIssues(optistreamFormatValidationIssues);
         }
         return iMetadata.withMetadata(metadata)
                 .build();
