@@ -61,13 +61,16 @@ public class OptistreamEventBuilder {
                 .withTimestamp(simpleDateFormat.format(new Date()))
                 .withContext(optimoveEvent.getParameters());
 
+        OptistreamEvent.Metadata metadata = new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate());
+
         if (airshipMetadata != null) {
-            return iMetadata.withMetadata(new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate(), airshipMetadata))
-                    .build();
-        } else {
-            return iMetadata.withMetadata(new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate()))
-                    .build();
+            metadata.setAirship(airshipMetadata);
         }
+        if (optimoveEvent.getValidations() != null) {
+            metadata.setValidations(optimoveEvent.getValidations());
+        }
+        return iMetadata.withMetadata(metadata)
+                .build();
     }
 
     private boolean isNotificationEvent(OptimoveEvent optimoveEvent) {

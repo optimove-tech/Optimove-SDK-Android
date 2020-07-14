@@ -1,5 +1,8 @@
 package com.optimove.sdk.optimove_sdk.main.events;
 
+import android.support.annotation.Nullable;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -8,6 +11,9 @@ import java.util.Map;
 public abstract class OptimoveEvent {
 
   private long timestamp;
+
+  @Nullable
+  private List<ValidationIssue> validationIssues;
 
   public OptimoveEvent() {
     this.timestamp = System.currentTimeMillis();
@@ -37,5 +43,41 @@ public abstract class OptimoveEvent {
 
   public void setTimestamp(long timestamp) {
     this.timestamp = timestamp;
+  }
+
+  @Nullable
+  public List<ValidationIssue> getValidationIssues() {
+    return validationIssues;
+  }
+
+  public void setValidationIssues(
+          @Nullable List<ValidationIssue> validationIssues) {
+    this.validationIssues = validationIssues;
+  }
+
+  public static final class ValidationIssue {
+    private int status;
+    private String message;
+
+    public ValidationIssue(int status, String message) {
+      this.status = status;
+      this.message = message;
+    }
+
+    public int getStatus() {
+      return status;
+    }
+
+    public void setStatus(int status) {
+      this.status = status;
+    }
+
+    public String getMessage() {
+      return message;
+    }
+
+    public void setMessage(String message) {
+      this.message = message;
+    }
   }
 }

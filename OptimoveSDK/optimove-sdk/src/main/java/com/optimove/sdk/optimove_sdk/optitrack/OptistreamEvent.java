@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
 import java.util.Map;
 
 public class OptistreamEvent {
@@ -240,15 +241,20 @@ public class OptistreamEvent {
         @SerializedName("airship")
         @Nullable
         private AirshipMetadata airship;
+        @SerializedName("validations")
+        @Nullable
+        private List<ValidationIssue> validationIssues;
 
         public Metadata(boolean realtime, long firstVisitorDate) {
             this.realtime = realtime;
             this.firstVisitorDate = firstVisitorDate;
         }
-        public Metadata(boolean realtime, long firstVisitorDate, AirshipMetadata airship) {
-            this.realtime = realtime;
-            this.firstVisitorDate = firstVisitorDate;
+
+        public void setAirship(@NonNull AirshipMetadata airship){
             this.airship = airship;
+        }
+        public void setValidationIssues(@NonNull List<ValidationIssue> validationIssues){
+            this.validationIssues = validationIssues;
         }
 
         public boolean isRealtime() {
@@ -257,6 +263,28 @@ public class OptistreamEvent {
 
         public void setRealtime(boolean realtime) {
             this.realtime = realtime;
+        }
+    }
+    public static final class ValidationIssue {
+        @SerializedName("status")
+        private int status;
+        @SerializedName("message")
+        private String message;
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
         }
     }
 

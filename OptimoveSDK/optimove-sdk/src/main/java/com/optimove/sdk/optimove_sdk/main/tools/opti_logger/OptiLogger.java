@@ -265,9 +265,6 @@ public final class OptiLogger {
   public static void optimoveInitializationFailedDueToCorruptedTenantInfo(){
     OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
   }
-  public static void eventDoesntAppearInConfigs(String eventName){
-    OptiLoggerStreamsContainer.error("Event %s doesn't appear in configuration file", eventName);
-  }
   public static void eventIsInvalid(String eventName, EventValidationResult validationResult){
     OptiLoggerStreamsContainer.error("Event %s is invalid, %s",eventName, validationResult);
   }
