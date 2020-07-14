@@ -1,7 +1,5 @@
 package com.optimove.sdk.optimove_sdk.main.tools.opti_logger;
 
-import com.optimove.sdk.optimove_sdk.main.events.EventValidationResult;
-
 public final class OptiLogger {
 
   /* ************************************************
@@ -265,9 +263,7 @@ public final class OptiLogger {
   public static void optimoveInitializationFailedDueToCorruptedTenantInfo(){
     OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
   }
-  public static void eventIsInvalid(String eventName, EventValidationResult validationResult){
-    OptiLoggerStreamsContainer.error("Event %s is invalid, %s",eventName, validationResult);
-  }
+
   public static void adIdFetcherFailedFetching(String reason) {
     OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", reason);
   }
