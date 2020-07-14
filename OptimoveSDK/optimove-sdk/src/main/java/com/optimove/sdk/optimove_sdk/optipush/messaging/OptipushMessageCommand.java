@@ -78,43 +78,17 @@ public class OptipushMessageCommand {
      */
     private void loadDynamicLinkAndShowNotification(RemoteMessage remoteMessage, NotificationData notificationData) {
         String dlString = remoteMessage.getData()
-                .get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS);
+                .get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS_NEW);
         if (dlString == null) {
             showNotificationIfUserIsOptIn(notificationData);
             return;
         }
-        try {
-            JSONObject dlJson = new JSONObject(dlString);
-            String shortDynamicLink = dlJson.getJSONObject(OptipushConstants.PushSchemaKeys.ANDROID_DYNAMIC_LINKS)
-                    .getString(fullPackageName);
-
-            HttpURLConnection.setFollowRedirects(false);
-            HttpClient.getInstance(context)
-                    .getObject(shortDynamicLink, String.class)
-                    .destination("")
-                    .successListener(s -> {
-                        OptiLoggerStreamsContainer.error("Short dynamic link redirection failed");
-                        HttpURLConnection.setFollowRedirects(true);
-                        showNotificationIfUserIsOptIn(notificationData);
-                    })
-                    .errorListener(error -> {
-                        String dynamicLink = this.extractDeepLinkFromRedirectionError(error);
-                        if (dynamicLink != null) {
-                            String deepLinkPersonalizationValues = remoteMessage.getData()
-                                    .get(OptipushConstants.PushSchemaKeys.DEEP_LINK_PERSONALIZATION_VALUES);
-                            if (deepLinkPersonalizationValues != null) {
-                                dynamicLink = getPersonalizedDeepLink(dynamicLink, deepLinkPersonalizationValues);
-                            }
-                            notificationData.setDynamicLink(dynamicLink);
-                        }
-                        HttpURLConnection.setFollowRedirects(true);
-                        showNotificationIfUserIsOptIn(notificationData);
-                    })
-                    .send();
-        } catch (JSONException e) {
-            OptiLogger.optipushFailedToGetDeepLinkFromDynamicLink(dlString, "No valid Dynamic Link was found");
-            showNotificationIfUserIsOptIn(notificationData);
+        String deepLinkPersonalizationValues = remoteMessage.getData()
+                .get(OptipushConstants.PushSchemaKeys.DEEP_LINK_PERSONALIZATION_VALUES_NEW);
+        if (deepLinkPersonalizationValues != null) {
+            dlString = getPersonalizedDeepLink(dlString, deepLinkPersonalizationValues);
         }
+        notificationData.setDynamicLink(dlString);
     }
 
     @Nullable
