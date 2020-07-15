@@ -15,8 +15,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
@@ -109,32 +111,37 @@ public class DestinationDeciderTests {
         verify(realtimeManager).reportEvents(assertArg(arg -> Assert.assertTrue(arg.get(0).getName().equals(
                 eventName))));
     }
-//    @Test
-//    public void eventShouldBeReportedToOptitrackIfSupportedOnOptitrack() {
-//        String eventName = "some_event_name";
-//        EventConfigs eventConfigs = mock(EventConfigs.class);
-//        when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
-//        when(eventConfigs.isSupportedOnOptitrack()).thenReturn(true);
-//
-//        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
-//        EventContext eventContext = new EventContext(optimoveEvent);
-//        componentPool.reportEvent(eventContext);
-//        verify(optitrackManager).reportEvent(optimoveEvent,eventConfigs);
-//    }
-//    @Test
-//    public void eventShouldBeReportedToOptitrackAndDispatchedIfProcessingTimeout() {
-//        String eventName = "some_event_name";
-//        int timeout = 5;
-//        EventConfigs eventConfigs = mock(EventConfigs.class);
-//        when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
-//        when(eventConfigs.isSupportedOnOptitrack()).thenReturn(true);
-//
-//        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
-//        EventContext eventContext = new EventContext(optimoveEvent, timeout);
-//        componentPool.reportEvent(eventContext);
-//        InOrder inOrder = inOrder(optitrackManager);
-//        inOrder.verify(optitrackManager).reportEvent(optimoveEvent,eventConfigs);
-//        inOrder.verify(optitrackManager).setTimeout(timeout);
-//        inOrder.verify(optitrackManager).sendAllEventsNow();
-//    }
+
+    @Test
+    public void eventShouldntBeReportedToRealtimeIfThereAreValidationIssuesEvenIfRtEnabledThroughOptistream() {
+        String eventName = "some_event_name";
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+        when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
+        when(eventConfigs.isSupportedOnRealtime()).thenReturn(true);
+
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
+        List<OptimoveEvent.ValidationIssue> validationIssues = new ArrayList<>();
+        validationIssues.add(new OptimoveEvent.ValidationIssue(555, "some_message"));
+        optimoveEvent.setValidationIssues(validationIssues);
+        DestinationDecider destinationDecider = new DestinationDecider(eventConfigsMap, optistreamHandler, realtimeManager,
+                optistreamEventBuilder, true, true);
+        destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
+        verifyZeroInteractions(realtimeManager);
+    }
+    @Test
+    public void eventShouldntBeReportedToRealtimeIfThereAreValidationIssues() {
+        String eventName = "some_event_name";
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+        when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
+        when(eventConfigs.isSupportedOnRealtime()).thenReturn(true);
+
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
+        List<OptimoveEvent.ValidationIssue> validationIssues = new ArrayList<>();
+        validationIssues.add(new OptimoveEvent.ValidationIssue(555, "some_message"));
+        optimoveEvent.setValidationIssues(validationIssues);
+        DestinationDecider destinationDecider = new DestinationDecider(eventConfigsMap, optistreamHandler, realtimeManager,
+                optistreamEventBuilder, true, false);
+        destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
+        verifyZeroInteractions(realtimeManager);
+    }
 }

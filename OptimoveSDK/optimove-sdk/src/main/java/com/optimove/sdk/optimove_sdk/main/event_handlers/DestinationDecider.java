@@ -47,16 +47,18 @@ public class DestinationDecider extends EventHandler {
                         false);
                 optistreamEvents.add(optistreamEvent);
             } else if (realtimeEnabledThroughOptistream) {
-                // Only to optistream, with realtime enabled for Optistream
+                // Only to optistream, with realtime enabled for Optistream (only if no validation errors)
                 optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                        true);
+                        optimoveEvent.getValidationIssues() == null);
                 optistreamEvents.add(optistreamEvent);
             } else {
                 // Both to optistream and to realtime, with realtime disabled for Optistream
                 optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
                         false);
                 optistreamEvents.add(optistreamEvent);
-                optistreamRealtimeEvents.add(optistreamEvent);
+                if (optimoveEvent.getValidationIssues() == null) { //only if no validation issues
+                    optistreamRealtimeEvents.add(optistreamEvent);
+                }
             }
         }
         if (!optistreamRealtimeEvents.isEmpty()) {
