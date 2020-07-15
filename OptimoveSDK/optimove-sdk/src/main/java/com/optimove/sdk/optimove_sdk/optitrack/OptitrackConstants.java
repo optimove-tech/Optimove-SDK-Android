@@ -7,13 +7,6 @@ import java.util.concurrent.TimeUnit;
 public interface OptitrackConstants {
 
   /* *********************************
-   * Optitrack Dispatcher
-   * *********************************/
-
-  int DEFAULT_DISPATCH_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(12);
-
-
-  /* *********************************
    * Configurations
    * *********************************/
 
@@ -28,6 +21,7 @@ public interface OptitrackConstants {
   String PARAMETER_NUMBER_TYPE = "Number";
   String PARAMETER_BOOLEAN_TYPE = "Boolean";
   int PARAMETER_VALUE_MAX_LENGTH = 4000;
+  int USER_ID_MAX_LENGTH = 200;
 
   String EVENT_PLATFORM_PARAM_KEY = "event_platform";
   String EVENT_DEVICE_TYPE_PARAM_KEY = "event_device_type";
