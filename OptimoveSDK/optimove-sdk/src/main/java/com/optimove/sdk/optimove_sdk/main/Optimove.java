@@ -360,21 +360,21 @@ final public class Optimove {
 
     private @Nullable SetEmailEvent processUserEmail(String email){
         if (OptiUtils.isNullNoneOrUndefined(email)) {
-            OptiLogger.providedEmailIsNull();
-            return null;
+            return new SetEmailEvent(email);
         }
         String trimmedEmail = email.trim();
-        if (!OptiUtils.isValidEmailAddress(trimmedEmail)) {
-            OptiLogger.f89(email);
-            return null;
-        }
-
         if (this.userInfo.getEmail() != null && this.userInfo.getEmail()
                 .equals(trimmedEmail)) {
             OptiLogger.providedEmailWasAlreadySet(email);
             return null;
         }
-        this.userInfo.setEmail(trimmedEmail);
+
+        if (!OptiUtils.isValidEmailAddress(trimmedEmail)) {
+            OptiLogger.f89(trimmedEmail);
+        } else {
+            this.userInfo.setEmail(trimmedEmail);
+        }
+
         return new SetEmailEvent(trimmedEmail);
     }
 
