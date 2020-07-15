@@ -320,11 +320,9 @@ final public class Optimove {
         if (setUserIdEvent != null && setEmailEvent != null) {
             eventHandlerProvider.getEventHandler()
                     .reportEvent(Arrays.asList(setUserIdEvent, setEmailEvent));
-            optipushManager.userIdChanged();
         } else if (setUserIdEvent != null) {
             eventHandlerProvider.getEventHandler()
                     .reportEvent(Collections.singletonList(setUserIdEvent));
-            optipushManager.userIdChanged();
         } else if (setEmailEvent != null) {
             eventHandlerProvider.getEventHandler()
                     .reportEvent(Collections.singletonList(setEmailEvent));
@@ -357,7 +355,6 @@ final public class Optimove {
         if (setUserIdEvent != null) {
             eventHandlerProvider.getEventHandler()
                     .reportEvent(Collections.singletonList(setUserIdEvent));
-            optipushManager.userIdChanged();
         }
     }
 
@@ -383,8 +380,7 @@ final public class Optimove {
 
     private @Nullable SetUserIdEvent processUserId(String userId) {
         if (OptiUtils.isNullNoneOrUndefined(userId)) {
-            OptiLogger.f90(userId);
-            return null;
+            return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), null, this.userInfo.getVisitorId());
         }
         String newUserId = userId.trim(); // Safe to trim now as it could never be null
 
@@ -400,6 +396,8 @@ final public class Optimove {
 
         this.userInfo.setUserId(newUserId);
         this.userInfo.setVisitorId(updatedVisitorId);
+
+        optipushManager.userIdChanged();
 
         return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
@@ -453,13 +451,8 @@ final public class Optimove {
 
     @SuppressWarnings("ConstantConditions")
     public void reportScreenVisit(@NonNull String screenName, @Nullable String screenCategory) {
-        if (OptiUtils.isEmptyOrWhitespace(screenName)) {
-            OptiLogger.f97(screenName == null ? "null" : screenName);
-            return;
-        }
-
         eventHandlerProvider.getEventHandler()
-                .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName.trim(), screenCategory)));
+                .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName, screenCategory)));
     }
 
     public void disablePushCampaigns() {
