@@ -63,6 +63,10 @@ public class EventValidator extends EventHandler {
         }
     }
 
+    public int getMaxNumberOfParams() {
+        return maxNumberOfParams;
+    }
+
     @Nullable
     private List<OptimoveEvent.ValidationIssue> getValidationIssuesIfAny(OptimoveEvent optimoveEvent) {
         List<OptimoveEvent.ValidationIssue> validationIssues = new ArrayList<>();

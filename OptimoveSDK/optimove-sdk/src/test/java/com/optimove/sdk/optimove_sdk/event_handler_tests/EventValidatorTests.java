@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_BOOLEAN_TYPE;
+import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_NUMBER_TYPE;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_STRING_TYPE;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.USER_ID_MAX_LENGTH;
@@ -58,6 +59,39 @@ public class EventValidatorTests {
                         .get(0)
                         .getStatus()
                 , EventValidator.ValidationIssueCode.EVENT_MISSING.rawValue)));
+    }
+
+    //1020
+    @Test
+    public void eventWithTooManyParamsShouldBeTruncatedWithValidationIssues() {
+        String eventName = "some_name";
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+        when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
+        Map<String, EventConfigs.ParameterConfig> parameterConfigMap = new HashMap<>();
+        when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
+
+        //add many random configured params
+        HashMap<String, Object> eventParams = new HashMap<>();
+        for (int i = 0; i < eventValidator.getMaxNumberOfParams() + 6; i ++) {
+            String randomKey = String.valueOf(Math.random() * Math.random());
+            double randomValue = Math.random();
+            eventParams.put(randomKey, randomValue);
+            EventConfigs.ParameterConfig parameterConfig = mock(EventConfigs.ParameterConfig.class);
+            when(parameterConfig.getType()).thenReturn(PARAMETER_NUMBER_TYPE);
+            parameterConfigMap.put(randomKey, parameterConfig);
+        }
+
+
+
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, eventParams);
+
+
+        eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
+                        .getValidationIssues(),
+                EventValidator.ValidationIssueCode.TOO_MANY_PARAMS.rawValue) && (arg.get(0)
+                .getParameters()
+                .size() == eventValidator.getMaxNumberOfParams()))));
     }
 
     //1030
@@ -205,6 +239,7 @@ public class EventValidatorTests {
                         .getValidationIssues()
                 , null)));
     }
+
     //1080
     @Test
     public void eventShouldContainValidationIssueIfsetUserEmailAndEmailInvalid() {
@@ -220,6 +255,7 @@ public class EventValidatorTests {
                         .getValidationIssues()
                 , EventValidator.ValidationIssueCode.EMAIL_IS_INVALID.rawValue))));
     }
+
     @Test
     public void eventShouldntContainValidationIssueIfsetUserEmailAndEmailValid() {
 
@@ -240,6 +276,7 @@ public class EventValidatorTests {
                         .getValidationIssues()
                 , null)));
     }
+
     private boolean validationsContainStatus(List<OptimoveEvent.ValidationIssue> validationIssues, int desiredStatus) {
         if (validationIssues == null) {
             return false;
