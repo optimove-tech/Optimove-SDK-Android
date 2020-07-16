@@ -1,9 +1,12 @@
 package com.optimove.sdk.optimove_sdk.main.events.decorators;
 
+import android.support.annotation.Nullable;
+
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_DEVICE_TYPE_DEFAULT_VALUE;
@@ -74,6 +77,12 @@ public class OptimoveEventDecorator extends OptimoveEvent {
   @Override
   public Map<String, Object> getParameters() {
     return modifiedEventParams;
+  }
+
+  @Nullable
+  @Override
+  public List<ValidationIssue> getValidationIssues() {
+    return optimoveEvent.getValidationIssues();
   }
 
   public void setParameters(Map<String, Object> parameters){
