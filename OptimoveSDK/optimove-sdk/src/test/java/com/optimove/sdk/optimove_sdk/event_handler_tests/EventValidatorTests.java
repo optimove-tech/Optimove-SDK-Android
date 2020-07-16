@@ -182,6 +182,29 @@ public class EventValidatorTests {
                 , EventValidator.ValidationIssueCode.USER_ID_TOO_LONG.rawValue))));
     }
 
+    @Test
+    public void eventShouldtContainValidationIssueIfsetUserIdValid() {
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+
+        when(eventConfigsMap.get(SetUserIdEvent.EVENT_NAME)).thenReturn(eventConfigs);
+
+        SetUserIdEvent setUserIdEvent =
+                new SetUserIdEvent("some_visitor_id", "some_user_id", "some_updated_visitor_id");
+
+        Map<String, EventConfigs.ParameterConfig> parameterConfigMap = new HashMap<>();
+        EventConfigs.ParameterConfig mandatoryParamConfig = mock(EventConfigs.ParameterConfig.class);
+        when(mandatoryParamConfig.getType()).thenReturn(PARAMETER_STRING_TYPE);
+        parameterConfigMap.put(SetUserIdEvent.USER_ID_PARAM_KEY, mandatoryParamConfig);
+        parameterConfigMap.put(SetUserIdEvent.ORIGINAL_VISITOR_ID_PARAM_KEY, mandatoryParamConfig);
+        parameterConfigMap.put(SetUserIdEvent.UPDATED_VISITOR_ID_PARAM_KEY, mandatoryParamConfig);
+
+        when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
+        eventValidator.reportEvent(Collections.singletonList(setUserIdEvent));
+
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
+                        .getValidationIssues()
+                , null)));
+    }
     //1080
     @Test
     public void eventShouldContainValidationIssueIfsetUserEmailAndEmailInvalid() {
@@ -196,6 +219,26 @@ public class EventValidatorTests {
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
                         .getValidationIssues()
                 , EventValidator.ValidationIssueCode.EMAIL_IS_INVALID.rawValue))));
+    }
+    @Test
+    public void eventShouldntContainValidationIssueIfsetUserEmailAndEmailValid() {
+
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+
+        when(eventConfigsMap.get(SetEmailEvent.EVENT_NAME)).thenReturn(eventConfigs);
+
+        SetEmailEvent setEmailEvent = new SetEmailEvent("dfgdfg@gmail.com");
+
+        Map<String, EventConfigs.ParameterConfig> parameterConfigMap = new HashMap<>();
+        EventConfigs.ParameterConfig mandatoryParamConfig = mock(EventConfigs.ParameterConfig.class);
+        when(mandatoryParamConfig.getType()).thenReturn(PARAMETER_STRING_TYPE);
+        parameterConfigMap.put(SetEmailEvent.EMAIL_PARAM_KEY, mandatoryParamConfig);
+        when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
+        eventValidator.reportEvent(Collections.singletonList(setEmailEvent));
+
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
+                        .getValidationIssues()
+                , null)));
     }
     private boolean validationsContainStatus(List<OptimoveEvent.ValidationIssue> validationIssues, int desiredStatus) {
         if (validationIssues == null) {
