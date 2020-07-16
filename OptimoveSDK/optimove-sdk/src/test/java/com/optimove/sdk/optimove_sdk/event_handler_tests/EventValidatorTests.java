@@ -57,7 +57,7 @@ public class EventValidatorTests {
                         .getValidationIssues()
                         .get(0)
                         .getStatus()
-                , 1010)));
+                , EventValidator.ValidationIssueCode.EVENT_MISSING.rawValue)));
     }
 
     //1030
@@ -79,7 +79,7 @@ public class EventValidatorTests {
 
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
                         .getValidationIssues(),
-                1030))));
+                EventValidator.ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.rawValue))));
     }
 
     //1040
@@ -103,7 +103,7 @@ public class EventValidatorTests {
         eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
 
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
-                .getValidationIssues(), 1040))));
+                .getValidationIssues(), EventValidator.ValidationIssueCode.MANDATORY_PARAM_MISSING.rawValue))));
     }
 
     //1050
@@ -132,7 +132,7 @@ public class EventValidatorTests {
 
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
                         .getValidationIssues()
-                , 1050))));
+                , EventValidator.ValidationIssueCode.PARAM_VALUE_TOO_LONG.rawValue))));
     }
 
     //1060
@@ -157,7 +157,7 @@ public class EventValidatorTests {
 
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
                         .getValidationIssues()
-                , 1060))));
+                , EventValidator.ValidationIssueCode.PARAM_VALUE_TYPE_INCORRECT.rawValue))));
     }
 
     //1071
@@ -179,7 +179,7 @@ public class EventValidatorTests {
 
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
                         .getValidationIssues()
-                , 1071))));
+                , EventValidator.ValidationIssueCode.USER_ID_TOO_LONG.rawValue))));
     }
 
     //1080
@@ -195,7 +195,7 @@ public class EventValidatorTests {
 
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
                         .getValidationIssues()
-                , 1080))));
+                , EventValidator.ValidationIssueCode.EMAIL_IS_INVALID.rawValue))));
     }
     private boolean validationsContainStatus(List<OptimoveEvent.ValidationIssue> validationIssues, int desiredStatus) {
         if (validationIssues == null) {

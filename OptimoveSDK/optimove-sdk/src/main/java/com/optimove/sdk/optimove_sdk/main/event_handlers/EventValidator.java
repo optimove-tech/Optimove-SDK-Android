@@ -37,6 +37,21 @@ public class EventValidator extends EventHandler {
 
         reportEventNext(optimoveEvents);
     }
+    public enum ValidationIssueCode {
+        EVENT_MISSING(1010),
+        PARAM_DOESNT_APPEAR_IN_CONFIG(1030),
+        MANDATORY_PARAM_MISSING(1040),
+        PARAM_VALUE_TOO_LONG(1050),
+        PARAM_VALUE_TYPE_INCORRECT(1060),
+        USER_ID_TOO_LONG(1071),
+        EMAIL_IS_INVALID(1080);
+
+        public int rawValue;
+
+        ValidationIssueCode(int rawValue) {
+            this.rawValue = rawValue;
+        }
+    }
 
     @Nullable
     private List<OptimoveEvent.ValidationIssue> getValidationIssuesIfAny(OptimoveEvent optimoveEvent) {
@@ -49,7 +64,7 @@ public class EventValidator extends EventHandler {
         if (eventConfig == null) {
             String message = eventName + " is an undefined event";
             OptiLoggerStreamsContainer.error(message);
-            validationIssues.add(new OptimoveEvent.ValidationIssue(1010, message));
+            validationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.EVENT_MISSING.rawValue, message));
             return validationIssues;
         }
 
@@ -81,7 +96,6 @@ public class EventValidator extends EventHandler {
         }
     }
 
-    //1040
     @Nullable
     private List<OptimoveEvent.ValidationIssue> checkIfAllMandatoryParamsAreExisted(OptimoveEvent optimoveEvent,
                                                                                     EventConfigs eventConfig,
@@ -99,7 +113,7 @@ public class EventValidator extends EventHandler {
                 String message = String.format("event %s has a mandatory parameter, %s which is undefined or empty",
                         optimoveEvent.getName(), paramConfigKey);
                 OptiLoggerStreamsContainer.error(message);
-                missingMandatoryParams.add(new OptimoveEvent.ValidationIssue(1040, message));
+                missingMandatoryParams.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.MANDATORY_PARAM_MISSING.rawValue, message));
             }
         }
         if (!missingMandatoryParams.isEmpty()) {
@@ -121,7 +135,7 @@ public class EventValidator extends EventHandler {
                 String message = key + " is an undefined parameter. It will not be tracked and cannot be used " +
                         "within a trigger";
                 OptiLoggerStreamsContainer.error(message);
-                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(1030, message));
+                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.rawValue, message));
                 continue;
             }
             Object value = parameters.get(key);
@@ -131,13 +145,14 @@ public class EventValidator extends EventHandler {
             if (isIncorrectParameterValueType(parameterConfig, value)) {
                 String message = key + " should be of type " + parameterConfig.getType();
                 OptiLoggerStreamsContainer.error(message);
-                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(1060, message));
+                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TYPE_INCORRECT.rawValue, message));
             }
             if (isValueTooLarge(value)) {
                 String message = String.format("%s has exceeded the limit of allowed number of characters. The " +
                         "character limit is %s", key, OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH);
                 OptiLoggerStreamsContainer.error(message);
-                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(1050, message));
+                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TOO_LONG.rawValue,
+                        message));
             }
         }
 
@@ -148,7 +163,6 @@ public class EventValidator extends EventHandler {
         }
     }
 
-    //1071
     @Nullable
     private OptimoveEvent.ValidationIssue verifyUserIdIfSetUserId(OptimoveEvent optimoveEvent) {
         if (optimoveEvent.getName()
@@ -158,12 +172,11 @@ public class EventValidator extends EventHandler {
             String message = String.format("userId, %s, is too " +
                     "long, the userId limit is %s", ((SetUserIdEvent) optimoveEvent).getUserId(), USER_ID_MAX_LENGTH);
             OptiLoggerStreamsContainer.error(message);
-            return new OptimoveEvent.ValidationIssue(1071, message);
+            return new OptimoveEvent.ValidationIssue(ValidationIssueCode.USER_ID_TOO_LONG.rawValue, message);
         }
         return null;
     }
 
-    //1080
     @Nullable
     private OptimoveEvent.ValidationIssue verifyEmailIfSetEmail(OptimoveEvent optimoveEvent) {
         if (optimoveEvent.getName()
@@ -171,7 +184,7 @@ public class EventValidator extends EventHandler {
                 && ((SetEmailEvent) optimoveEvent).getEmail() != null && !OptiUtils.isValidEmailAddress(((SetEmailEvent) optimoveEvent).getEmail())) {
             String message = String.format("Email, %s, is invalid", ((SetEmailEvent) optimoveEvent).getEmail());
             OptiLoggerStreamsContainer.error(message);
-            return new OptimoveEvent.ValidationIssue(1080, message);
+            return new OptimoveEvent.ValidationIssue(ValidationIssueCode.EMAIL_IS_INVALID.rawValue, message);
         }
         return null;
     }
