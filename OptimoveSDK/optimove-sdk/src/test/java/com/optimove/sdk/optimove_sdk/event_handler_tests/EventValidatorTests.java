@@ -4,6 +4,8 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.SimpleCustomEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 
 import org.junit.Assert;
@@ -20,10 +22,10 @@ import java.util.Map;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_BOOLEAN_TYPE;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_STRING_TYPE;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH;
+import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.USER_ID_MAX_LENGTH;
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class EventValidatorTests {
@@ -132,6 +134,7 @@ public class EventValidatorTests {
                         .getValidationIssues()
                 , 1050))));
     }
+
     //1060
     @Test
     public void eventShouldContainValidationIssueIfParamValueTypeDoesntFitTheConfig() {
@@ -157,6 +160,43 @@ public class EventValidatorTests {
                 , 1060))));
     }
 
+    //1071
+    @Test
+    public void eventShouldContainValidationIssueIfsetUserIdAndUserIdIsTooLong() {
+        StringBuilder longUserId = new StringBuilder();
+        for (int i = 0; i < USER_ID_MAX_LENGTH + 1; i++) {
+            longUserId.append("d");
+        }
+
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+
+        when(eventConfigsMap.get(SetUserIdEvent.EVENT_NAME)).thenReturn(eventConfigs);
+
+        SetUserIdEvent setUserIdEvent =
+                new SetUserIdEvent("some_visitor_id", longUserId.toString(), "some_updated_visitor_id");
+
+        eventValidator.reportEvent(Collections.singletonList(setUserIdEvent));
+
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
+                        .getValidationIssues()
+                , 1071))));
+    }
+
+    //1080
+    @Test
+    public void eventShouldContainValidationIssueIfsetUserEmailAndEmailInvalid() {
+
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+
+        when(eventConfigsMap.get(SetEmailEvent.EVENT_NAME)).thenReturn(eventConfigs);
+
+        SetEmailEvent setEmailEvent = new SetEmailEvent("dfgdgsdfg");
+        eventValidator.reportEvent(Collections.singletonList(setEmailEvent));
+
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(validationsContainStatus(arg.get(0)
+                        .getValidationIssues()
+                , 1080))));
+    }
     private boolean validationsContainStatus(List<OptimoveEvent.ValidationIssue> validationIssues, int desiredStatus) {
         if (validationIssues == null) {
             return false;

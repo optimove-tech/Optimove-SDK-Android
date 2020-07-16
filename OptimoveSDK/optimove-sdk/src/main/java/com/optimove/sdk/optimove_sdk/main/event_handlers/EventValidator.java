@@ -3,8 +3,10 @@ package com.optimove.sdk.optimove_sdk.main.event_handlers;
 import android.support.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
+import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
+import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
@@ -66,6 +68,10 @@ public class EventValidator extends EventHandler {
         OptimoveEvent.ValidationIssue userIdValidationIssue = verifyUserIdIfSetUserId(optimoveEvent);
         if (userIdValidationIssue != null) {
             validationIssues.add(userIdValidationIssue);
+        }
+        OptimoveEvent.ValidationIssue userEmailValidationIssue = verifyEmailIfSetEmail(optimoveEvent);
+        if (userEmailValidationIssue != null) {
+            validationIssues.add(userEmailValidationIssue);
         }
 
         if (!validationIssues.isEmpty()) {
@@ -153,6 +159,19 @@ public class EventValidator extends EventHandler {
                     "long, the userId limit is %s", ((SetUserIdEvent) optimoveEvent).getUserId(), USER_ID_MAX_LENGTH);
             OptiLoggerStreamsContainer.error(message);
             return new OptimoveEvent.ValidationIssue(1071, message);
+        }
+        return null;
+    }
+
+    //1080
+    @Nullable
+    private OptimoveEvent.ValidationIssue verifyEmailIfSetEmail(OptimoveEvent optimoveEvent) {
+        if (optimoveEvent.getName()
+                .equals(SetEmailEvent.EVENT_NAME) && (optimoveEvent instanceof SetEmailEvent)
+                && ((SetEmailEvent) optimoveEvent).getEmail() != null && !OptiUtils.isValidEmailAddress(((SetEmailEvent) optimoveEvent).getEmail())) {
+            String message = String.format("Email, %s, is invalid", ((SetEmailEvent) optimoveEvent).getEmail());
+            OptiLoggerStreamsContainer.error(message);
+            return new OptimoveEvent.ValidationIssue(1080, message);
         }
         return null;
     }

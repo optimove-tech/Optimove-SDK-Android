@@ -369,9 +369,7 @@ final public class Optimove {
             return null;
         }
 
-        if (!OptiUtils.isValidEmailAddress(trimmedEmail)) {
-            OptiLogger.f89(trimmedEmail);
-        } else {
+        if (OptiUtils.isValidEmailAddress(trimmedEmail)) {
             this.userInfo.setEmail(trimmedEmail);
         }
 
