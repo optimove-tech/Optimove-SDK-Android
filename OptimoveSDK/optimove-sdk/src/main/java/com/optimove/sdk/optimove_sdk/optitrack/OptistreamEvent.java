@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class OptistreamEvent {
     @SerializedName("tenant")
@@ -241,6 +242,9 @@ public class OptistreamEvent {
         @SerializedName("airship")
         @Nullable
         private AirshipMetadata airship;
+        @SerializedName("eventId")
+        @Nullable
+        private String eventId;
         @SerializedName("validations")
         @Nullable
         private List<ValidationIssue> validationIssues;
@@ -248,6 +252,7 @@ public class OptistreamEvent {
         public Metadata(boolean realtime, long firstVisitorDate) {
             this.realtime = realtime;
             this.firstVisitorDate = firstVisitorDate;
+            this.eventId = UUID.randomUUID().toString();
         }
 
         public void setAirship(@NonNull AirshipMetadata airship){
