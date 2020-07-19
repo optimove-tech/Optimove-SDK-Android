@@ -11,15 +11,22 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
+import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -52,7 +59,7 @@ public class EventHandlerProviderTests {
         eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
         when(eventHandlerFactory.getDestinationDecider(any(), any(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(destinationDecider);
         when(eventHandlerFactory.getEventDecorator(any())).thenReturn(eventDecorator);
-        when(eventHandlerFactory.getEventValidator(any(), any())).thenReturn(eventValidator);
+        when(eventHandlerFactory.getEventValidator(any(), anyInt())).thenReturn(eventValidator);
         when(eventHandlerFactory.getEventNormalizer()).thenReturn(eventNormalizer);
         when(eventHandlerFactory.getEventBuffer()).thenReturn(eventMemoryBuffer);
         when(eventHandlerFactory.getEventSynchronizer(any())).thenReturn(eventSynchronizer);
@@ -66,9 +73,12 @@ public class EventHandlerProviderTests {
         verify(eventMemoryBuffer, times(0)).setNext(any());
     }
 
+
     @Test
     public void setConfigsShouldBuildAFullChain() {
-        eventHandlerProvider.processConfigs(mock(Configs.class));
+        Configs configs = mock(Configs.class);
+        when(configs.getOptitrackConfigs()).thenReturn(mock(OptitrackConfigs.class));
+        eventHandlerProvider.processConfigs(configs);
         verify(eventSynchronizer, timeout(1000)).setNext(eventMemoryBuffer);
         verify(eventMemoryBuffer, timeout(1000)).setNext(eventNormalizer);
         verify(eventNormalizer, timeout(1000)).setNext(eventValidator);
