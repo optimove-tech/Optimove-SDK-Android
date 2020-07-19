@@ -49,7 +49,8 @@ public class EventHandlerProvider {
         ensureHandlersInitialization();
         singleThreadExecutor.submit(() -> {
             EventNormalizer eventNormalizer = eventHandlerFactory.getEventNormalizer();
-            EventValidator eventValidator = eventHandlerFactory.getEventValidator(configs.getEventsConfigs());
+            EventValidator eventValidator = eventHandlerFactory.getEventValidator(configs.getEventsConfigs(),
+                    configs.getOptitrackConfigs().getMaxNumberOfParameters());
             EventDecorator eventDecorator = eventHandlerFactory.getEventDecorator(configs.getEventsConfigs());
             RealtimeManager realtimeManager = eventHandlerFactory.getRealtimeMananger(configs.getRealtimeConfigs());
             OptistreamHandler optistreamHandler =

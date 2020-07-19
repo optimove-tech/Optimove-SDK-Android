@@ -37,10 +37,12 @@ public class EventValidatorTests {
 
     private EventValidator eventValidator;
 
+    private int maxNumberOfParams = 10;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        eventValidator = new EventValidator(eventConfigsMap);
+        eventValidator = new EventValidator(eventConfigsMap, maxNumberOfParams);
         eventValidator.setNext(nextEventHandler);
     }
 

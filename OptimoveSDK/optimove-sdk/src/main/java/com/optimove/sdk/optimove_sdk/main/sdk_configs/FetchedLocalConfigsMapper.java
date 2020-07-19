@@ -59,6 +59,7 @@ public class FetchedLocalConfigsMapper {
         optitrackConfigs.setSiteId(tenantId);
         optitrackConfigs.setEnableAdvertisingIdReport(fetchedTenantConfigs.mobile.optipushMetaData.enableAdvertisingIdReport);
         optitrackConfigs.setOptitrackEndpoint(fetchedTenantConfigs.optitrackMetaData.optitrackEndpoint);
+        optitrackConfigs.setMaxNumberOfParameters(fetchedTenantConfigs.optitrackMetaData.maxActionCustomDimensions);
 
         return optitrackConfigs;
     }

@@ -8,6 +8,8 @@ public class OptitrackConfigs {
 
     private boolean enableAdvertisingIdReport;
 
+    private int maxNumberOfParameters;
+
 
     public String getOptitrackEndpoint() {
         return optitrackEndpoint;
@@ -31,5 +33,13 @@ public class OptitrackConfigs {
 
     public void setEnableAdvertisingIdReport(boolean enableAdvertisingIdReport) {
         this.enableAdvertisingIdReport = enableAdvertisingIdReport;
+    }
+
+    public int getMaxNumberOfParameters() {
+        return maxNumberOfParameters;
+    }
+
+    public void setMaxNumberOfParameters(int maxNumberOfParameters) {
+        this.maxNumberOfParameters = maxNumberOfParameters;
     }
 }

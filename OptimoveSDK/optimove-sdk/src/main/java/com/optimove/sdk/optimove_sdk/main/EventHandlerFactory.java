@@ -52,8 +52,8 @@ public class EventHandlerFactory {
         return new EventSynchronizer(singleThreadExecutor);
     }
 
-    public EventValidator getEventValidator(Map<String, EventConfigs> eventConfigs) {
-        return new EventValidator(eventConfigs);
+    public EventValidator getEventValidator(Map<String, EventConfigs> eventConfigs, int maxNumberOfParams) {
+        return new EventValidator(eventConfigs, maxNumberOfParams);
     }
 
     public EventNormalizer getEventNormalizer() {

@@ -24,9 +24,9 @@ public class EventValidator extends EventHandler {
     private Map<String, EventConfigs> eventConfigsMap;
     private int maxNumberOfParams;
 
-    public EventValidator(Map<String, EventConfigs> eventConfigsMap) {
+    public EventValidator(Map<String, EventConfigs> eventConfigsMap, int maxNumberOfParams) {
         this.eventConfigsMap = eventConfigsMap;
-        maxNumberOfParams = 10;
+        this.maxNumberOfParams = maxNumberOfParams;
     }
 
     @Override
@@ -53,6 +53,7 @@ public class EventValidator extends EventHandler {
         MANDATORY_PARAM_MISSING(1040),
         PARAM_VALUE_TOO_LONG(1050),
         PARAM_VALUE_TYPE_INCORRECT(1060),
+        USER_ID_NULL_INVALID(1070),
         USER_ID_TOO_LONG(1071),
         EMAIL_IS_INVALID(1080);
 

@@ -43,6 +43,9 @@ public class FetchedTenantConfigs {
         @SerializedName("optitrackEndpoint")
         @Expose
         public String optitrackEndpoint;
+        @SerializedName("maxActionCustomDimensions")
+        @Expose
+        public int maxActionCustomDimensions;
         @SerializedName("siteId")
         @Expose
         public int siteId;
