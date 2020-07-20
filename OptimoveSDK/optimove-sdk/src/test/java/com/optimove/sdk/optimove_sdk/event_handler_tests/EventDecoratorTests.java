@@ -51,7 +51,9 @@ public class EventDecoratorTests {
         when(parameterConfigMap.containsKey(EVENT_OS_PARAM_KEY)).thenReturn(true);
         when(parameterConfigMap.containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY)).thenReturn(true);
 
+        when(eventConfigsMap.containsKey(eventName)).thenReturn(true);
         when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
+
         when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
         eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
