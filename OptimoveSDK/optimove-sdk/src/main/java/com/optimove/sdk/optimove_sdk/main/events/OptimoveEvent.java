@@ -13,7 +13,7 @@ public abstract class OptimoveEvent {
   private long timestamp;
 
   @Nullable
-  private List<ValidationIssue> validationIssues;
+  protected List<ValidationIssue> validationIssues;
 
   public OptimoveEvent() {
     this.timestamp = System.currentTimeMillis();
