@@ -41,7 +41,7 @@ public class DestinationDecider extends EventHandler {
             EventConfigs eventConfigs = eventConfigsMap.get(optimoveEvent.getName());
 
             OptistreamEvent optistreamEvent;
-            if (!realtimeEnabled || !eventConfigs.isSupportedOnRealtime()){
+            if (eventConfigs == null || !realtimeEnabled || !eventConfigs.isSupportedOnRealtime()){
                 // Only optistream
                 optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
                         false);

@@ -18,13 +18,17 @@ public class EventDecorator extends EventHandler {
 
     @Override
     public void reportEvent(List<OptimoveEvent> optimoveEvents) {
-        List<OptimoveEvent> optimoveEventsDecorated = new ArrayList<>();
+        List<OptimoveEvent> optimoveEventsToSendToNext = new ArrayList<>();
 
         for (OptimoveEvent optimoveEvent: optimoveEvents) {
-            optimoveEventsDecorated.add(new OptimoveEventDecorator(optimoveEvent,
-                    eventConfigsMap.get(optimoveEvent.getName())));
+            if (eventConfigsMap.containsKey(optimoveEvent.getName())) {
+                optimoveEventsToSendToNext.add(new OptimoveEventDecorator(optimoveEvent,
+                        eventConfigsMap.get(optimoveEvent.getName())));
+            } else {
+                optimoveEventsToSendToNext.add(optimoveEvent);
+            }
         }
-        reportEventNext(optimoveEventsDecorated);
+        reportEventNext(optimoveEventsToSendToNext);
     }
 
 }
