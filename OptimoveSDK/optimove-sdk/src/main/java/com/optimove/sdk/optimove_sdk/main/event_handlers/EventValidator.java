@@ -125,7 +125,7 @@ public class EventValidator extends EventHandler {
                 continue; // protection
             }
             if (!parameterConfig.isOptional() && parameters.get(paramConfigKey) == null) {
-                String message = String.format("event %s has a mandatory parameter, %s which is undefined or empty",
+                String message = String.format("event %s has a mandatory parameter, %s, which is undefined or empty",
                         optimoveEvent.getName(), paramConfigKey);
                 OptiLoggerStreamsContainer.error(message);
                 missingMandatoryParams.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.MANDATORY_PARAM_MISSING.rawValue, message));
@@ -149,7 +149,7 @@ public class EventValidator extends EventHandler {
             if (parameterConfig == null) {
                 String message = key + " is an undefined parameter. It will not be tracked and cannot be used " +
                         "within a trigger";
-                OptiLoggerStreamsContainer.error(message);
+                OptiLoggerStreamsContainer.warn(message);
                 paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.rawValue, message));
                 continue;
             }
@@ -208,10 +208,10 @@ public class EventValidator extends EventHandler {
     @NonNull
     private OptimoveEvent removeParamsIfTooMany(OptimoveEvent optimoveEvent) {
         if (optimoveEvent.getParameters().size() > maxNumberOfParams) {
-            String message = String.format("event %s, contains %s parameters while the allowed number of parameters " +
-                            "is %s, we removed some of them to process the event",
+            String message = String.format("event %s contains %s parameters while the allowed number of parameters " +
+                            "is %s. Some parameters were removed to process the event.",
                      optimoveEvent.getName(), optimoveEvent.getParameters().size(), maxNumberOfParams);
-            OptiLoggerStreamsContainer.error(message);
+            OptiLoggerStreamsContainer.warn(message);
             int count = 0;
             Map<String, Object> newParams = new HashMap<>();
             for (String paramKey : optimoveEvent.getParameters().keySet()) {
