@@ -36,20 +36,20 @@ public class EventDecoratorTests {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        eventDecorator = new EventDecorator(eventConfigsMap, 56);
+        eventDecorator = new EventDecorator(eventConfigsMap, 4);
         eventDecorator.setNext(nextEventHandler);
     }
 
     @Test
-    public void reportedEventsShouldBeDecorated() {
+    public void reportedEventsShouldBeFullyDecoratedIfNumberOfParamsAllows() {
         String eventName = "some_event_name";
         EventConfigs eventConfigs = mock(EventConfigs.class);
-        Map<String, EventConfigs.ParameterConfig> parameterConfigMap = mock(Map.class);
+        Map<String, EventConfigs.ParameterConfig> parameterConfigMap = new HashMap<>();
 
-        when(parameterConfigMap.containsKey(EVENT_PLATFORM_PARAM_KEY)).thenReturn(true);
-        when(parameterConfigMap.containsKey(EVENT_DEVICE_TYPE_PARAM_KEY)).thenReturn(true);
-        when(parameterConfigMap.containsKey(EVENT_OS_PARAM_KEY)).thenReturn(true);
-        when(parameterConfigMap.containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY)).thenReturn(true);
+        parameterConfigMap.put(EVENT_PLATFORM_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        parameterConfigMap.put(EVENT_DEVICE_TYPE_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        parameterConfigMap.put(EVENT_OS_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        parameterConfigMap.put(EVENT_NATIVE_MOBILE_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
 
         when(eventConfigsMap.containsKey(eventName)).thenReturn(true);
         when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
@@ -65,5 +65,51 @@ public class EventDecoratorTests {
                 .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
+    }
+    @Test
+    public void reportedEventsShouldBePartiallyDecoratedIfNumberOfParamsDoesntAllow() {
+        String eventName = "some_event_name";
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put("some_param", "some_value");
+        EventConfigs eventConfigs = mock(EventConfigs.class);
+        when(eventConfigsMap.containsKey(eventName)).thenReturn(true);
+        when(eventConfigsMap.get(eventName)).thenReturn(eventConfigs);
+
+        Map<String, EventConfigs.ParameterConfig> parameterConfigMap = new HashMap<>();
+
+        parameterConfigMap.put(EVENT_PLATFORM_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        parameterConfigMap.put(EVENT_DEVICE_TYPE_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        parameterConfigMap.put(EVENT_OS_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        parameterConfigMap.put(EVENT_NATIVE_MOBILE_PARAM_KEY, mock(EventConfigs.ParameterConfig.class));
+        when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
+
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, eventParams);
+        eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
+                .getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
+                .getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
+                .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
+        //shouldnt reach the EVENT_OS_PARAM_KEY param
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
+                .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
+    }
+    @Test
+    public void nonConfiguredEventShouldntBeDecorated() {
+        String eventName = "some_event_name";
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put("some_param", "some_value");
+
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, eventParams);
+        eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
+                .getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
+                .getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
+                .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
+                .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
     }
 }
