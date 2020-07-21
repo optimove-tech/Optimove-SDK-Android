@@ -29,7 +29,7 @@ public class EventNormalizerTests {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        eventNormalizer = new EventNormalizer();
+        eventNormalizer = new EventNormalizer(56);
         eventNormalizer.setNext(nextEventHandler);
     }
 

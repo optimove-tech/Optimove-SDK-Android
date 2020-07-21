@@ -48,10 +48,14 @@ public class EventHandlerProvider {
     public void processConfigs(Configs configs) {
         ensureHandlersInitialization();
         singleThreadExecutor.submit(() -> {
-            EventNormalizer eventNormalizer = eventHandlerFactory.getEventNormalizer();
+            EventNormalizer eventNormalizer = eventHandlerFactory.getEventNormalizer(configs.getOptitrackConfigs()
+                    .getMaxNumberOfParameters());
             EventValidator eventValidator = eventHandlerFactory.getEventValidator(configs.getEventsConfigs(),
-                    configs.getOptitrackConfigs().getMaxNumberOfParameters());
-            EventDecorator eventDecorator = eventHandlerFactory.getEventDecorator(configs.getEventsConfigs());
+                    configs.getOptitrackConfigs()
+                            .getMaxNumberOfParameters());
+            EventDecorator eventDecorator =
+                    eventHandlerFactory.getEventDecorator(configs.getEventsConfigs(), configs.getOptitrackConfigs()
+                            .getMaxNumberOfParameters());
             RealtimeManager realtimeManager = eventHandlerFactory.getRealtimeMananger(configs.getRealtimeConfigs());
             OptistreamHandler optistreamHandler =
                     eventHandlerFactory.getOptistreamHandler(configs.getOptitrackConfigs());

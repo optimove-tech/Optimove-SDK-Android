@@ -25,17 +25,20 @@ public class OptimoveEventDecorator extends OptimoveEvent {
 
   protected OptimoveEvent optimoveEvent;
   protected Map<String, Object> modifiedEventParams;
+  private int maxNumberOfParamsToAdd;
 
-  public OptimoveEventDecorator(OptimoveEvent optimoveEvent) {
+  public OptimoveEventDecorator(OptimoveEvent optimoveEvent, int maxNumberOfParamsToAdd) {
     super(optimoveEvent.getTimestamp());
     this.optimoveEvent = optimoveEvent;
     this.validationIssues = optimoveEvent.getValidationIssues();
+    this.maxNumberOfParamsToAdd =  maxNumberOfParamsToAdd;
     this.setupParameters();
   }
-  public OptimoveEventDecorator(OptimoveEvent optimoveEvent, EventConfigs eventConfigs) {
+  public OptimoveEventDecorator(OptimoveEvent optimoveEvent, EventConfigs eventConfigs,  int maxNumberOfParamsToAdd) {
     super(optimoveEvent.getTimestamp());
     this.optimoveEvent = optimoveEvent;
     this.validationIssues = optimoveEvent.getValidationIssues();
+    this.maxNumberOfParamsToAdd =  maxNumberOfParamsToAdd;
     this.setupParameters();
     this.processEventConfigurations(eventConfigs);
   }
@@ -92,16 +95,19 @@ public class OptimoveEventDecorator extends OptimoveEvent {
   private Map<String, Object> getAdditionalAttributesMap(EventConfigs eventConfig) {
     Map<String, Object> parameters = new HashMap<>(4);
     Map<String, EventConfigs.ParameterConfig> parameterConfigs = eventConfig.getParameterConfigs();
-    if (parameterConfigs.containsKey(EVENT_PLATFORM_PARAM_KEY)) {
+    if (parameterConfigs.containsKey(EVENT_PLATFORM_PARAM_KEY) && maxNumberOfParamsToAdd > 0) {
+      maxNumberOfParamsToAdd--;
       parameters.put(EVENT_PLATFORM_PARAM_KEY, EVENT_PLATFORM_DEFAULT_VALUE);
     }
-    if (parameterConfigs.containsKey(EVENT_DEVICE_TYPE_PARAM_KEY)) {
+    if (parameterConfigs.containsKey(EVENT_DEVICE_TYPE_PARAM_KEY) && maxNumberOfParamsToAdd > 0) {
+      maxNumberOfParamsToAdd--;
       parameters.put(EVENT_DEVICE_TYPE_PARAM_KEY, EVENT_DEVICE_TYPE_DEFAULT_VALUE);
     }
-    if (parameterConfigs.containsKey(EVENT_OS_PARAM_KEY)) {
+    if (parameterConfigs.containsKey(EVENT_OS_PARAM_KEY) && maxNumberOfParamsToAdd > 0) {
+      maxNumberOfParamsToAdd--;
       parameters.put(EVENT_OS_PARAM_KEY, EVENT_OS_DEFAULT_VALUE);
     }
-    if (parameterConfigs.containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY)) {
+    if (parameterConfigs.containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY) && maxNumberOfParamsToAdd > 0) {
       parameters.put(EVENT_NATIVE_MOBILE_PARAM_KEY, EVENT_NATIVE_MOBILE_DEFAULT_VALUE);
     }
     return parameters;

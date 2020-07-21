@@ -1,7 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.event_handlers.DestinationDecider;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
@@ -14,7 +13,6 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
@@ -56,12 +54,12 @@ public class EventHandlerFactory {
         return new EventValidator(eventConfigs, maxNumberOfParams);
     }
 
-    public EventNormalizer getEventNormalizer() {
-        return new EventNormalizer();
+    public EventNormalizer getEventNormalizer(int maxNumberOfParams) {
+        return new EventNormalizer(maxNumberOfParams);
     }
 
-    public EventDecorator getEventDecorator(Map<String, EventConfigs> eventConfigs) {
-        return new EventDecorator(eventConfigs);
+    public EventDecorator getEventDecorator(Map<String, EventConfigs> eventConfigs,  int maxNumberOfParams) {
+        return new EventDecorator(eventConfigs, maxNumberOfParams);
     }
 
     public RealtimeManager getRealtimeMananger(RealtimeConfigs realtimeConfigs) {

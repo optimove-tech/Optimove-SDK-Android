@@ -16,8 +16,8 @@ public class OptimoveCustomEventDecorator extends OptimoveEventDecorator {
 
   private String formattedEventName;
 
-  public OptimoveCustomEventDecorator(OptimoveEvent optimoveEvent) {
-    super(optimoveEvent);
+  public OptimoveCustomEventDecorator(OptimoveEvent optimoveEvent,  int maxNumberOfParamsToAdd) {
+    super(optimoveEvent, maxNumberOfParamsToAdd);
     this.formattedEventName = optimoveEvent.getName().trim().toLowerCase().replace(" ", "_");
 
     Map<String, Object> newModifiedParams = new HashMap<>(modifiedEventParams.size());

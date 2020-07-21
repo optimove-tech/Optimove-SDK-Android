@@ -41,6 +41,7 @@ import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.Ten
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TOKEN;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_BUFFER_SIZE;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_SP_NAME;
+import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.USER_ID_MAX_LENGTH;
 
 /**
  * The main access point for the {@code Optimove SDK}.
@@ -379,6 +380,8 @@ final public class Optimove {
     private @Nullable SetUserIdEvent processUserId(String userId) {
         if (OptiUtils.isNullNoneOrUndefined(userId)) {
             return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), null, this.userInfo.getVisitorId());
+        } else if (userId.length() > USER_ID_MAX_LENGTH) {
+            return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), userId, this.userInfo.getVisitorId());
         }
         String newUserId = userId.trim(); // Safe to trim now as it could never be null
 

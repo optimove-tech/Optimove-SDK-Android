@@ -9,6 +9,10 @@ import java.util.List;
 
 public class EventNormalizer extends EventHandler {
 
+    private int maxNumberOfParams;
+    public EventNormalizer(int maxNumberOfParams) {
+        this.maxNumberOfParams =  maxNumberOfParams;
+    }
 
     @Override
     public void reportEvent(List<OptimoveEvent> optimoveEvents) {
@@ -16,7 +20,8 @@ public class EventNormalizer extends EventHandler {
 
         for (OptimoveEvent optimoveEvent: optimoveEvents) {
             if (!(optimoveEvent instanceof OptimoveCoreEvent)) {
-                optimoveEventsNormalized.add(new OptimoveCustomEventDecorator(optimoveEvent));
+                optimoveEventsNormalized.add(new OptimoveCustomEventDecorator(optimoveEvent,
+                        maxNumberOfParams - optimoveEvent.getParameters().size()));
             }  else {
                 optimoveEventsNormalized.add(optimoveEvent);
             }

@@ -36,7 +36,7 @@ public class EventDecoratorTests {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        eventDecorator = new EventDecorator(eventConfigsMap);
+        eventDecorator = new EventDecorator(eventConfigsMap, 56);
         eventDecorator.setNext(nextEventHandler);
     }
 

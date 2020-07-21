@@ -147,8 +147,8 @@ public class EventValidator extends EventHandler {
             EventConfigs.ParameterConfig parameterConfig = eventConfig.getParameterConfigs()
                     .get(key);
             if (parameterConfig == null) {
-                String message = key + " is an undefined parameter. It will not be tracked and cannot be used " +
-                        "within a trigger";
+                String message = String.format("parameter %s has not been configured for this event. It " +
+                        "will not be tracked and cannot be used within a trigger.", key);
                 OptiLoggerStreamsContainer.warn(message);
                 paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.rawValue, message));
                 continue;

@@ -52,9 +52,9 @@ public class EventHandlerProviderTests {
 
         eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
         when(eventHandlerFactory.getDestinationDecider(any(), any(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(destinationDecider);
-        when(eventHandlerFactory.getEventDecorator(any())).thenReturn(eventDecorator);
+        when(eventHandlerFactory.getEventDecorator(any(), anyInt())).thenReturn(eventDecorator);
         when(eventHandlerFactory.getEventValidator(any(), anyInt())).thenReturn(eventValidator);
-        when(eventHandlerFactory.getEventNormalizer()).thenReturn(eventNormalizer);
+        when(eventHandlerFactory.getEventNormalizer(anyInt())).thenReturn(eventNormalizer);
         when(eventHandlerFactory.getEventBuffer()).thenReturn(eventMemoryBuffer);
         when(eventHandlerFactory.getEventSynchronizer(any())).thenReturn(eventSynchronizer);
     }
