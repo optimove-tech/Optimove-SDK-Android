@@ -3,6 +3,7 @@ package com.optimove.sdk.optimove_sdk.main;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
@@ -63,7 +64,8 @@ public class OptistreamEventBuilder {
                 .withTimestamp(simpleDateFormat.format(new Date()))
                 .withContext(optimoveEvent.getParameters());
 
-        OptistreamEvent.Metadata metadata = new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate());
+        OptistreamEvent.Metadata metadata = new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate(),
+                Constants.PLATFORM, BuildConfig.VERSION_NAME);
 
         if (airshipMetadata != null) {
             metadata.setAirship(airshipMetadata);

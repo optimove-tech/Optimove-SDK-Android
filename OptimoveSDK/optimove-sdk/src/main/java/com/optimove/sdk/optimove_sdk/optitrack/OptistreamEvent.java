@@ -245,14 +245,20 @@ public class OptistreamEvent {
         @SerializedName("eventId")
         @Nullable
         private String eventId;
+        @SerializedName("sdk_platform")
+        private String sdkPlatform;
+        @SerializedName("sdk_version")
+        private String sdkVersion;
         @SerializedName("validations")
         @Nullable
         private List<ValidationIssue> validationIssues;
 
-        public Metadata(boolean realtime, long firstVisitorDate) {
+        public Metadata(boolean realtime, long firstVisitorDate, String sdkPlatform, String sdkVersion) {
             this.realtime = realtime;
             this.firstVisitorDate = firstVisitorDate;
             this.eventId = UUID.randomUUID().toString();
+            this.sdkPlatform = sdkPlatform;
+            this.sdkVersion = sdkVersion;
         }
 
         public void setAirship(@NonNull AirshipMetadata airship){
