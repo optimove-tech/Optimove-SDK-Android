@@ -60,7 +60,7 @@ public class OptipushMessageCommandTests {
         optipushMessageCommand = new OptipushMessageCommand(ApplicationProvider.getApplicationContext(),eventHandler, deviceInfoProvider,
                 notificationCreator);
         when(remoteMessage.getData()).thenReturn(remoteMessageData);
-        when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS)).thenReturn("some_dl_string");
+        when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DEEP_LINK)).thenReturn("some_dl_string");
     }
 
     @Test
@@ -91,7 +91,7 @@ public class OptipushMessageCommandTests {
     public void shouldCallShowNotificationIfNotificationsAreEnabledAndDlStringIsNull() {
         when(notificationData.getScheduledCampaign()).thenReturn(scheduledCampaign);
         when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
-        when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DYNAMIC_LINKS)).thenReturn(null);
+        when(remoteMessageData.get(OptipushConstants.PushSchemaKeys.DEEP_LINK)).thenReturn(null);
 
         optipushMessageCommand.processRemoteMessage(remoteMessage,notificationData);
         verify(notificationCreator).showNotification(notificationData);
