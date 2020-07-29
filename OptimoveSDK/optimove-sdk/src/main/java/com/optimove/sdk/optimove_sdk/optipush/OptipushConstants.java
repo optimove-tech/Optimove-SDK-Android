@@ -4,9 +4,7 @@ public interface OptipushConstants {
 
   interface PushSchemaKeys {
 
-    String DEEP_LINK_PERSONALIZATION_VALUES = "deep_link_personalization_values";
-    String DYNAMIC_LINKS = "dynamic_links";
-    String ANDROID_DYNAMIC_LINKS = "android";
+    String DEEP_LINK = "dl";
 
     String IS_OPTIPUSH = "is_optipush";
 
