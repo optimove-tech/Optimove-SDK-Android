@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 /**
  * When the hosting Application was {@code updated}, this broadcast is notified. <br>
@@ -18,6 +19,6 @@ public class AppUpdateReceiver extends BroadcastReceiver {
     if (action != null && action.equals(Intent.ACTION_MY_PACKAGE_REPLACED))
       AppUpdateService.enqueueWork(context, intent);
     else
-      OptiLogger.f124(action);
+      OptiLoggerStreamsContainer.error("Suspicious action %s was received by the AppUpdateReceiver", action);
   }
 }

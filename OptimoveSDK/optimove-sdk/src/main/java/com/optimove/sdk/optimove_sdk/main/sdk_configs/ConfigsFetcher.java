@@ -15,6 +15,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.util.Set;
 
@@ -161,7 +162,7 @@ public class ConfigsFetcher {
 
     private void backupInitData(final Configs configs) {
         new Thread(() -> {
-            OptiLogger.f110();
+            OptiLoggerStreamsContainer.debug("Saving fetched configurations file");
             Gson gson = new Gson();
             localConfigKeysPreferences.edit()
                     .putBoolean(configName, true)
@@ -194,7 +195,7 @@ public class ConfigsFetcher {
                         .named(configName)
                         .from(FileUtils.SourceDir.INTERNAL)
                         .now();
-                OptiLogger.f115(configName);
+                OptiLoggerStreamsContainer.debug("Deleted local configurations named %s", configName);
             }
             editor.apply();
         }).start();

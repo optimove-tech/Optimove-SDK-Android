@@ -12,6 +12,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
 import java.util.Collections;
@@ -54,7 +55,7 @@ public class NotificationOpenedEventDispatchService extends Service {
                 //wait until the event will be handled
                 Thread.sleep(executionTimeInMilliseconds + (int) TimeUnit.SECONDS.toMillis(2));
             } catch (InterruptedException e) {
-                OptiLogger.f149();
+                OptiLoggerStreamsContainer.warn("Thread.sleep after dispatching event was interrupted");
             } finally {
                 stopSelf();
             }

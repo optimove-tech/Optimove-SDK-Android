@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.JobIntentService;
 
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 /**
  * When the hosting Application was {@code updated}, this service is notified and ensures a first background silent initialization of the SDK
@@ -23,6 +24,6 @@ public class AppUpdateService extends JobIntentService {
 
   @Override
   protected void onHandleWork(@NonNull Intent intent) {
-    OptiLogger.f125();
+    OptiLoggerStreamsContainer.info("Starting on-update background SDK initialization");
   }
 }

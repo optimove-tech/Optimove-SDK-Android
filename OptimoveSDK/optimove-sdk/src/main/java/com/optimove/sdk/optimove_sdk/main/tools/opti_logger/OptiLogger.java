@@ -55,71 +55,10 @@ public final class OptiLogger {
   public static void optipushFailedToGetSecondaryToken(String reason) {
     OptiLoggerStreamsContainer.error("Failed to get FCM token for AppController as a secondary app due to: %s. Will retry later", reason);
   }
-
-
-  public static void f82() {
-    OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
-  }
-
-  public static void f83() {
-    OptiLoggerStreamsContainer.debug("Optimove.configure() was called from a worker thread, moving call to main thread");
-  }
-
-  public static void f84() {
-    OptiLoggerStreamsContainer.debug("Optimove.configureUrgently() is starting");
-  }
-
-  public static void f91(String userId) {
-    OptiLoggerStreamsContainer.warn("The provided user ID %s, was already set", userId);
-  }
-
-  public static void f95() {
-    OptiLoggerStreamsContainer.error("Cannot report event with name null");
-  }
-
-  public static void f110() {
-    OptiLoggerStreamsContainer.debug("Saving fetched configurations file");
-  }
-
-
-  public static void f115(String configName) {
-    OptiLoggerStreamsContainer.debug("Deleted local configurations named %s", configName);
-  }
-
-  public static void f116() {
-    OptiLoggerStreamsContainer.debug("Configuration file was already loaded, no need to load again");
-  }
+  
   public static void configurationsAreAlreadySet() {
     OptiLoggerStreamsContainer.debug("Configuration file was already set, no need to set again");
   }
-
-  public static void f117(int tenantId) {
-    OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantId);
-  }
-
-
-  public static void f122(String e) {
-    OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e);
-  }
-
-  public static void f123(String error) {
-    OptiLoggerStreamsContainer.warn("Can't report Ad-ID due to: %s", error);
-  }
-
-  public static void f124(String action) {
-    OptiLoggerStreamsContainer.error("Suspicious action %s was received by the AppUpdateReceiver", action);
-  }
-
-  public static void f125() {
-    OptiLoggerStreamsContainer.info("Starting on-update background SDK initialization");
-  }
-
-  public static void f149() {
-    OptiLoggerStreamsContainer.warn("Thread.sleep after dispatching event was interrupted");
-  }
-
-
-
 
   public static void utilsFailedToCreateNewFile(String absolutePath, String reason) {
     OptiLoggerStreamsContainer.error("Failed to create file %s due to: %s", absolutePath, reason);
@@ -204,7 +143,7 @@ public final class OptiLogger {
   public static void f176() {
     OptiLoggerStreamsContainer.error("SHA1");
   }
-  
+
   public static void optipushNotificationBitmapFailedToLoad(String url){
     OptiLoggerStreamsContainer.error("Failed to get bitmap from url - %s", url);
   }

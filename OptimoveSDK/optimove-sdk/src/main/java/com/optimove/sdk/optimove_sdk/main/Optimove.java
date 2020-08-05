@@ -133,7 +133,7 @@ final public class Optimove {
         Runnable initCommand = () -> {
             boolean initializedSuccessfully = performSingletonInitialization(context, tenantInfo);
             if (initializedSuccessfully) {
-                OptiLogger.f82();
+                OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
                 shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
                 shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
                 ((Application) applicationContext).registerActivityLifecycleCallbacks(shared.lifecycleObserver);
@@ -141,7 +141,7 @@ final public class Optimove {
             }
         };
         if (!OptiUtils.isRunningOnMainThread()) {
-            OptiLogger.f83();
+            OptiLoggerStreamsContainer.debug("Optimove.configure() was called from a worker thread, moving call to main thread");
             OptiUtils.runOnMainThread(initCommand);
         } else {
             initCommand.run();
@@ -177,7 +177,7 @@ final public class Optimove {
      * and some observed crashes on Services in Android 8.0). This flow requires only {@code Context} and is faster.
      */
     public static void configureUrgently(Context context) {
-        OptiLogger.f84();
+        OptiLoggerStreamsContainer.debug("Optimove.configureUrgently() is starting");
         boolean initializedSuccessfully = performSingletonInitialization(context, null);
         if (initializedSuccessfully) {
             shared.executeUrgentInit();
@@ -206,7 +206,7 @@ final public class Optimove {
         if (!configSet.get()) {
             fetchConfigs(true);
         } else {
-            OptiLogger.f116();
+            OptiLoggerStreamsContainer.debug("Configuration file was already loaded, no need to load again");
         }
     }
 
@@ -221,7 +221,7 @@ final public class Optimove {
 
     private void updateConfigurations(Configs configs) {
         loadTenantId(configs);
-        OptiLogger.f117(tenantInfo.getTenantId());
+        OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantId);
 
         optipushManager.processConfigs(configs.getOptipushConfigs(), tenantInfo.getTenantId(), userInfo);
         eventHandlerProvider.processConfigs(configs);
@@ -387,7 +387,7 @@ final public class Optimove {
 
         if (this.userInfo.getUserId() != null && this.userInfo.getUserId()
                 .equals(newUserId)) {
-            OptiLogger.f91(userId);
+            OptiLoggerStreamsContainer.warn("The provided user ID %s, was already set", userId);
             return null;
         }
 
@@ -437,11 +437,6 @@ final public class Optimove {
      * @see OptimoveEvent
      */
     public void reportEvent(OptimoveEvent optimoveEvent) {
-        if (optimoveEvent.getName() == null) {
-            OptiLogger.f95();
-            return;
-        }
-
         eventHandlerProvider.getEventHandler()
                 .reportEvent(Collections.singletonList(optimoveEvent));
     }

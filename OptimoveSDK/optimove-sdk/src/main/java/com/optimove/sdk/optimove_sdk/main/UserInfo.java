@@ -10,6 +10,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -199,12 +200,12 @@ public class UserInfo {
     try {
       adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
     } catch (GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException | IOException e) {
-      OptiLogger.f122(e.getMessage());
+      OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e);
     }
     boolean canReportAdId = adInfo != null && !adInfo.isLimitAdTrackingEnabled();
     if (!canReportAdId) {
       String error = adInfo == null ? "no access to adInfo" : "user opted out of personal ads";
-      OptiLogger.f123(error);
+      OptiLoggerStreamsContainer.warn("Can't report Ad-ID due to: %s", error);
       return null;
     }
     return adInfo.getId();
