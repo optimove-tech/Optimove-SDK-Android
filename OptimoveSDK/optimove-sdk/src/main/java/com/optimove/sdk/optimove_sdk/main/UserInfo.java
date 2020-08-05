@@ -200,7 +200,7 @@ public class UserInfo {
     try {
       adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
     } catch (GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException | IOException e) {
-      OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e);
+      OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e.getMessage());
     }
     boolean canReportAdId = adInfo != null && !adInfo.isLimitAdTrackingEnabled();
     if (!canReportAdId) {

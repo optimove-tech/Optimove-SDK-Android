@@ -151,14 +151,14 @@ public class FileUtils {
                     try {
                         fileInputStream = new FileInputStream(file);
                     } catch (FileNotFoundException e) {
-                        OptiLogger.f159(e.getMessage());
+                        OptiLoggerStreamsContainer.error(e.getMessage());
                     }
                     break;
                 case INTERNAL:
                     try {
                         fileInputStream = context.openFileInput(fileName);
                     } catch (FileNotFoundException e) {
-                        OptiLogger.f160(e.getMessage());
+                        OptiLoggerStreamsContainer.error(e.getMessage());
                     }
                     break;
             }
@@ -184,12 +184,12 @@ public class FileUtils {
                 }
                 return dataBuilder.toString();
             } catch (IOException e) {
-                OptiLogger.f161(e.getMessage());
+                OptiLoggerStreamsContainer.error(e.getMessage());
             } finally {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    OptiLogger.f162(e.getMessage());
+                    OptiLoggerStreamsContainer.error(e.getMessage());
                 }
             }
             return null;

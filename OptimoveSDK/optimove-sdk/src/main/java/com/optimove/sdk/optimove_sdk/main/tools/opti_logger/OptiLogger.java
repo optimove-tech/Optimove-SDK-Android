@@ -63,31 +63,7 @@ public final class OptiLogger {
   public static void utilsFailedToCreateNewFile(String absolutePath, String reason) {
     OptiLoggerStreamsContainer.error("Failed to create file %s due to: %s", absolutePath, reason);
   }
-
-  public static void f157() {
-    OptiLoggerStreamsContainer.error("Missing file name to read from");
-  }
-
-  public static void f158(String fileName) {
-    OptiLoggerStreamsContainer.error("The cache directory has no %s file", fileName);
-  }
-
-  public static void f159(String reason) {
-    OptiLoggerStreamsContainer.error(reason);
-  }
-
-  public static void f160(String reason) {
-    OptiLoggerStreamsContainer.error(reason);
-  }
-
-  public static void f161(String reason) {
-    OptiLoggerStreamsContainer.error(reason);
-  }
-
-  public static void f162(String reason) {
-    OptiLoggerStreamsContainer.error(reason);
-  }
-
+  
   public static void f163(String reason) {
     OptiLoggerStreamsContainer.error(reason);
   }
