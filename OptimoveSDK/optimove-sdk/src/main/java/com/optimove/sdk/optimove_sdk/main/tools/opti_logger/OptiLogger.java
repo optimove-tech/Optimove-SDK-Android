@@ -27,10 +27,6 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.fatal("Failed to process an Optipush push notification because the Device's Notifications Manager is null");
   }
 
-  public static void optipushFailedToGetDeepLinkFromDynamicLink(String dynamicLink, String reason) {
-    OptiLoggerStreamsContainer.error("Failed to get deep link out of an Optipush dynamic link url %s due to: %s", dynamicLink, reason);
-  }
-
   public static void optipushNotificationNotPresented_WhenUserIdOptOut() {
     OptiLoggerStreamsContainer.warn("Optipush Notification blocked since the user is opt out");
   }
@@ -73,25 +69,12 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.debug("Optimove.configureUrgently() is starting");
   }
 
-  public static void f89(String email) {
-    OptiLoggerStreamsContainer.error("Invalid email was received: %s", email);
-  }
-
-  public static void f90(String userId) {
-    OptiLoggerStreamsContainer.error("Invalid user ID was received: %s, not even going to retry", userId);
-  }
-
   public static void f91(String userId) {
     OptiLoggerStreamsContainer.warn("The provided user ID %s, was already set", userId);
   }
 
   public static void f95() {
     OptiLoggerStreamsContainer.error("Cannot report event with name null");
-  }
-
-
-  public static void f97(String screenPath) {
-    OptiLoggerStreamsContainer.error("Tried to pass illegal screenPath %s to report Screen Visit", screenPath);
   }
 
   public static void f110() {
@@ -130,11 +113,6 @@ public final class OptiLogger {
   public static void f125() {
     OptiLoggerStreamsContainer.info("Starting on-update background SDK initialization");
   }
-
-  public static void f129(String paramKey, String eventName) {
-    OptiLoggerStreamsContainer.error("Mandatory parameter %s in event %s is missing", paramKey, eventName);
-  }
-
 
   public static void f149() {
     OptiLoggerStreamsContainer.warn("Thread.sleep after dispatching event was interrupted");
@@ -231,14 +209,6 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.error("MD5");
   }
 
-  public static void optipushDeepLinkPersonalizationValuesBadJson() {
-    OptiLoggerStreamsContainer.error("Failed to extract deep link values due to bad JSON format");
-  }
-
-  public static void optipushDeepLinkFailedToDecodeLinkParam() {
-    OptiLoggerStreamsContainer.error("Failed to decode personalized deep link param value");
-  }
-
   public static void optipushNotificationBitmapFailedToLoad(String url){
     OptiLoggerStreamsContainer.error("Failed to get bitmap from url - %s", url);
   }
@@ -248,9 +218,6 @@ public final class OptiLogger {
   }
   public static void providedEmailWasAlreadySet(String email){
     OptiLoggerStreamsContainer.warn("The provided email %s, was already set", email);
-  }
-  public static void providedEmailIsNull() {
-    OptiLoggerStreamsContainer.error("Email is null");
   }
 
   public static void failedToGetRemoteConfigurationFile(String reason){
