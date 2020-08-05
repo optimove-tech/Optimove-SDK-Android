@@ -63,7 +63,7 @@ public final class OptiLogger {
   public static void utilsFailedToCreateNewFile(String absolutePath, String reason) {
     OptiLoggerStreamsContainer.error("Failed to create file %s due to: %s", absolutePath, reason);
   }
-  
+
   public static void f163(String reason) {
     OptiLoggerStreamsContainer.error(reason);
   }
@@ -135,7 +135,7 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", reason);
   }
   public static void failedToGetConfigurationFile(String reason){
-    OptiLoggerStreamsContainer.error("Failed to get configuration file due to - %s", reason);
+    OptiLoggerStreamsContainer.fatal("Failed to get configuration file due to - %s", reason);
   }
 
   public static void optimoveInitializationFailedDueToCorruptedTenantInfo(){

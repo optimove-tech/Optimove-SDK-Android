@@ -79,7 +79,7 @@ public final class OptipushManager {
         NotificationCreator notificationCreator = new NotificationCreator(context);
         NotificationData notificationData = JsonUtils.parseJsonMap(remoteMessage.getData(),  NotificationData.class);
         if (notificationData == null) {
-            OptiLoggerStreamsContainer.error("Seems like you forgot to add the proguard rules of Optimove");
+            OptiLoggerStreamsContainer.fatal("Seems like you forgot to add the proguard rules of Optimove");
             return;
         }
         new OptipushMessageCommand(context, Optimove.getInstance()
