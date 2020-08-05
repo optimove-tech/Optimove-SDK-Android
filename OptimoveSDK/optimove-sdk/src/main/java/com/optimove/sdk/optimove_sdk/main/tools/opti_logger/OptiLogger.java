@@ -55,7 +55,7 @@ public final class OptiLogger {
   public static void optipushFailedToGetSecondaryToken(String reason) {
     OptiLoggerStreamsContainer.error("Failed to get FCM token for AppController as a secondary app due to: %s. Will retry later", reason);
   }
-  
+
   public static void configurationsAreAlreadySet() {
     OptiLoggerStreamsContainer.debug("Configuration file was already set, no need to set again");
   }

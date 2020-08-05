@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -137,14 +138,14 @@ public class FileUtils {
          */
         public Reader from(SourceDir sourceDir) {
             if (fileName == null) {
-                OptiLogger.f157();
+                OptiLoggerStreamsContainer.error("Missing file name to read from");
                 return this;
             }
             switch (sourceDir) {
                 case CACHE:
                     File file = new File(context.getCacheDir(), fileName);
                     if (!file.exists()) {
-                        OptiLogger.f158(fileName);
+                        OptiLoggerStreamsContainer.error("The cache directory has no %s file", fileName);
                         break;
                     }
                     try {

@@ -221,7 +221,7 @@ final public class Optimove {
 
     private void updateConfigurations(Configs configs) {
         loadTenantId(configs);
-        OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantId);
+        OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
 
         optipushManager.processConfigs(configs.getOptipushConfigs(), tenantInfo.getTenantId(), userInfo);
         eventHandlerProvider.processConfigs(configs);
