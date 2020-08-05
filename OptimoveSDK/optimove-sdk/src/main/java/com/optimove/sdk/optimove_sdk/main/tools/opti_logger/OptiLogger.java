@@ -204,11 +204,7 @@ public final class OptiLogger {
   public static void f176() {
     OptiLoggerStreamsContainer.error("SHA1");
   }
-
-  public static void f177() {
-    OptiLoggerStreamsContainer.error("MD5");
-  }
-
+  
   public static void optipushNotificationBitmapFailedToLoad(String url){
     OptiLoggerStreamsContainer.error("Failed to get bitmap from url - %s", url);
   }

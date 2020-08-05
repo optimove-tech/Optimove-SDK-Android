@@ -109,19 +109,6 @@ public class OptiUtils {
     return convertToHex(sha1hash);
   }
 
-  public static String MD5(String text) {
-    MessageDigest md;
-    try {
-      md = MessageDigest.getInstance("MD5");
-      md.update(text.getBytes("iso-8859-1"), 0, text.length());
-    } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-      OptiLogger.f177();
-      return text;
-    }
-    byte[] md5Hash = md.digest();
-    return convertToHex(md5Hash);
-  }
-
   private static String convertToHex(byte[] data) {
     StringBuilder buf = new StringBuilder();
     for (byte b : data) {
