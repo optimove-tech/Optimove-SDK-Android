@@ -16,11 +16,13 @@ public final class OptiLoggerStreamsContainer {
 
     private static List<OptiLoggerOutputStream> loggerOutputStreams;
     private static LogLevel minLogLevelToShow; // Applies to client visible Logs only
+    private static LogLevel minLogLevelRemote;
 
     static {
         loggerOutputStreams = new ArrayList<>();
         //default value, unless overridden
         minLogLevelToShow = LogLevel.WARN;
+        minLogLevelRemote = LogLevel.FATAL;
     }
 
 
@@ -42,6 +44,9 @@ public final class OptiLoggerStreamsContainer {
 
     public static void setMinLogLevelToShow(LogLevel minLogLevelToShow) {
         OptiLoggerStreamsContainer.minLogLevelToShow = minLogLevelToShow;
+    }
+    public static void setMinLogLevelRemote(LogLevel minLogLevelToShow) {
+        OptiLoggerStreamsContainer.minLogLevelRemote = minLogLevelToShow;
     }
 
     /* ****************************************************

@@ -79,7 +79,7 @@ public class OptiUtils {
       OptiLogger.f173(key);
     } catch (IllegalAccessException e) {
       OptiLogger.f174();
-    } catch (Exception e) {
+    } catch (Throwable e) {
       OptiLogger.f175(e.getMessage());
     }
     return result;

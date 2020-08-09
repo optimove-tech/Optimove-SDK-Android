@@ -71,25 +71,20 @@ public class OptimoveInitProvider extends ContentProvider {
         return false;
     }
     public static void initializeLogger(Context context, String packageName) {
-        if (packageName != null){
-            Boolean isClientStgEnv =
-                    (Boolean) OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_CLIENT_STG_ENV_KEY, false);
-            if (isClientStgEnv) {
-                SharedPreferences coreSharedPreferences =
-                        context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
-                OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context, packageName, coreSharedPreferences.getInt(TENANT_ID, -1)));
-            }
+        Boolean isClientStgEnv =
+                (Boolean) OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_CLIENT_STG_ENV_KEY, false);
+        SharedPreferences coreSharedPreferences =
+                context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
+        LogLevel sdkLogsServiceMinLogLevel = isClientStgEnv ? LogLevel.DEBUG : LogLevel.FATAL;
+        OptiLoggerStreamsContainer.setMinLogLevelRemote(sdkLogsServiceMinLogLevel);
+        OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context, packageName,
+                coreSharedPreferences.getInt(TENANT_ID, -1)));
 
-            Object minLogLevelObject =
-                    OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_MIN_LOG_LEVEL_KEY, null);
-            LogLevel minLogLevel =
-                    minLogLevelObject == null ? null : LogLevel.fromString(String.valueOf(minLogLevelObject));
-            if (minLogLevel != null) {
-                OptiLoggerStreamsContainer.setMinLogLevelToShow(minLogLevel);
-            }
-        }
-
-        // Added only after the minLogLevel was set because the LogCat stream is visible to the client
+        Object minLogLevelBuildConfigObject =
+                OptiUtils.getBuildConfig(packageName, BuildConfigKeys.OPTIMOVE_MIN_LOG_LEVEL_KEY, null);
+        LogLevel logcatMinLogLevel = minLogLevelBuildConfigObject == null ? LogLevel.WARN :
+                LogLevel.fromString(String.valueOf(minLogLevelBuildConfigObject));
+        OptiLoggerStreamsContainer.setMinLogLevelToShow(logcatMinLogLevel);
         OptiLoggerStreamsContainer.addOutputStream(new LogcatOptiLoggerOutputStream());
     }
 

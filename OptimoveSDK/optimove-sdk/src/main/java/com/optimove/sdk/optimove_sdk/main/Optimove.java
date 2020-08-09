@@ -161,10 +161,7 @@ final public class Optimove {
         OptiLoggerStreamsContainer.setMinLogLevelToShow(minLogLevel);
 
         if (isStgEnv) {
-            SharedPreferences coreSharedPreferences =
-                    context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
-            OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context,
-                    coreSharedPreferences.getInt(TENANT_ID, -1)));
+            OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
         }
         configure(context, tenantInfo);
     }
