@@ -77,7 +77,7 @@ public class OptimoveInitProvider extends ContentProvider {
                 context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
         LogLevel sdkLogsServiceMinLogLevel = isClientStgEnv ? LogLevel.DEBUG : LogLevel.FATAL;
         OptiLoggerStreamsContainer.setMinLogLevelRemote(sdkLogsServiceMinLogLevel);
-        OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context, packageName,
+        OptiLoggerStreamsContainer.addOutputStream(new SdkLogsServiceOutputStream(context,
                 coreSharedPreferences.getInt(TENANT_ID, -1)));
 
         Object minLogLevelBuildConfigObject =
