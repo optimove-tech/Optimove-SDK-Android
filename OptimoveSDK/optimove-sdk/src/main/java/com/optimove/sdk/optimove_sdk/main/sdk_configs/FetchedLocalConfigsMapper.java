@@ -43,6 +43,7 @@ public class FetchedLocalConfigsMapper {
         LogsConfigs logsConfigs = new LogsConfigs();
         logsConfigs.setTenantId(fetchedTenantConfigs.optitrackMetaData.siteId);
         logsConfigs.setLogsServiceEndpoint(fetchedGlobalConfig.fetchedGeneralConfigs.logsServiceEndpoint);
+        logsConfigs.setProdLogsEnabled(fetchedTenantConfigs.prodLogsEnabled);
         return logsConfigs;
     }
 

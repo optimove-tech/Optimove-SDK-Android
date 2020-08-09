@@ -218,6 +218,9 @@ final public class Optimove {
 
     private void updateConfigurations(Configs configs) {
         loadTenantId(configs);
+        if (configs.getLogsConfigs().isProdLogsEnabled()) {
+            OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.ERROR);
+        }
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
 
         optipushManager.processConfigs(configs.getOptipushConfigs(), tenantInfo.getTenantId(), userInfo);
@@ -236,7 +239,6 @@ final public class Optimove {
 
         eventGenerator.generateStartEvents(configs.getOptitrackConfigs()
                 .isEnableAdvertisingIdReport());
-
     }
 
     private void loadTenantId(Configs configs) {

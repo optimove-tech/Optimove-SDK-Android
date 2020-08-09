@@ -4,7 +4,7 @@ public class LogsConfigs {
 
     private String logsServiceEndpoint;
     private int tenantId;
-
+    private boolean prodLogsEnabled;
 
     public String getLogsServiceEndpoint() {
         return logsServiceEndpoint;
@@ -22,6 +22,11 @@ public class LogsConfigs {
         this.tenantId = tenantId;
     }
 
+    public boolean isProdLogsEnabled() {
+        return prodLogsEnabled;
+    }
 
-
+    public void setProdLogsEnabled(boolean prodLogsEnabled) {
+        this.prodLogsEnabled = prodLogsEnabled;
+    }
 }
