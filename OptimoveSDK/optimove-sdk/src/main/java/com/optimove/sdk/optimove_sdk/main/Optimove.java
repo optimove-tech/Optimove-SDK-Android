@@ -365,7 +365,7 @@ final public class Optimove {
         String trimmedEmail = email.trim();
         if (this.userInfo.getEmail() != null && this.userInfo.getEmail()
                 .equals(trimmedEmail)) {
-            OptiLogger.providedEmailWasAlreadySet(email);
+            OptiLoggerStreamsContainer.warn("The provided email %s, was already set", email);
             return null;
         }
 

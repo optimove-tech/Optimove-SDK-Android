@@ -77,7 +77,7 @@ public class EventValidator extends EventHandler {
 
         if (eventConfig == null) {
             String message = eventName + " is an undefined event";
-            OptiLoggerStreamsContainer.error(message);
+            OptiLoggerStreamsContainer.businessLogicError(message);
             validationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.EVENT_MISSING.rawValue, message));
             return validationIssues;
         }
@@ -127,7 +127,7 @@ public class EventValidator extends EventHandler {
             if (!parameterConfig.isOptional() && parameters.get(paramConfigKey) == null) {
                 String message = String.format("event %s has a mandatory parameter, %s, which is undefined or empty",
                         optimoveEvent.getName(), paramConfigKey);
-                OptiLoggerStreamsContainer.error(message);
+                OptiLoggerStreamsContainer.businessLogicError(message);
                 missingMandatoryParams.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.MANDATORY_PARAM_MISSING.rawValue, message));
             }
         }
@@ -159,13 +159,13 @@ public class EventValidator extends EventHandler {
             }
             if (isIncorrectParameterValueType(parameterConfig, value)) {
                 String message = String.format("%s should be of type %s", key, parameterConfig.getType());
-                OptiLoggerStreamsContainer.error(message);
+                OptiLoggerStreamsContainer.businessLogicError(message);
                 paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TYPE_INCORRECT.rawValue, message));
             }
             if (isValueTooLarge(value)) {
                 String message = String.format("%s has exceeded the limit of allowed number of characters. The " +
                         "character limit is %s", key, OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH);
-                OptiLoggerStreamsContainer.error(message);
+                OptiLoggerStreamsContainer.businessLogicError(message);
                 paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TOO_LONG.rawValue,
                         message));
             }
@@ -187,7 +187,7 @@ public class EventValidator extends EventHandler {
                 .length() > USER_ID_MAX_LENGTH) {
             String message = String.format("userId, %s, is too " +
                     "long, the userId limit is %s", ((SetUserIdEvent) optimoveEvent).getUserId(), USER_ID_MAX_LENGTH);
-            OptiLoggerStreamsContainer.error(message);
+            OptiLoggerStreamsContainer.businessLogicError(message);
             return new OptimoveEvent.ValidationIssue(ValidationIssueCode.USER_ID_TOO_LONG.rawValue, message);
         }
         return null;
@@ -199,7 +199,7 @@ public class EventValidator extends EventHandler {
                 .equals(SetEmailEvent.EVENT_NAME) && (optimoveEvent instanceof SetEmailEvent)
                 && ((SetEmailEvent) optimoveEvent).getEmail() != null && !OptiUtils.isValidEmailAddress(((SetEmailEvent) optimoveEvent).getEmail())) {
             String message = String.format("Email, %s, is invalid", ((SetEmailEvent) optimoveEvent).getEmail());
-            OptiLoggerStreamsContainer.error(message);
+            OptiLoggerStreamsContainer.businessLogicError(message);
             return new OptimoveEvent.ValidationIssue(ValidationIssueCode.EMAIL_IS_INVALID.rawValue, message);
         }
         return null;

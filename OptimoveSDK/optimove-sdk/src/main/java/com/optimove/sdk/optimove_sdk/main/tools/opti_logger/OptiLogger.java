@@ -127,9 +127,6 @@ public final class OptiLogger {
     OptiLoggerStreamsContainer.debug("Notification payload contains media that is not image, image type is: %s",
             actualType);
   }
-  public static void providedEmailWasAlreadySet(String email){
-    OptiLoggerStreamsContainer.warn("The provided email %s, was already set", email);
-  }
 
   public static void failedToGetRemoteConfigurationFile(String reason){
     OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", reason);

@@ -45,6 +45,7 @@ public final class OptiLoggerStreamsContainer {
     public static void setMinLogLevelToShow(LogLevel minLogLevelToShow) {
         OptiLoggerStreamsContainer.minLogLevelToShow = minLogLevelToShow;
     }
+
     public static void setMinLogLevelRemote(LogLevel minLogLevelToShow) {
         OptiLoggerStreamsContainer.minLogLevelRemote = minLogLevelToShow;
     }
@@ -55,32 +56,42 @@ public final class OptiLoggerStreamsContainer {
 
     public static void info(String message, Object... args) {
         Pair<String, String> classAndMethodName = getClassAndMethodName();
-        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.INFO, classAndMethodName.first, classAndMethodName.second, message, args);
+        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.INFO, classAndMethodName.first,
+                classAndMethodName.second, message, true, args);
     }
 
     public static void debug(String message, Object... args) {
         Pair<String, String> classAndMethodName = getClassAndMethodName();
-        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.DEBUG, classAndMethodName.first, classAndMethodName.second, message, args);
+        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.DEBUG, classAndMethodName.first,
+                classAndMethodName.second, message, true, args);
     }
 
     public static void warn(String message, Object... args) {
         Pair<String, String> classAndMethodName = getClassAndMethodName();
-        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.WARN, classAndMethodName.first, classAndMethodName.second, message, args);
+        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.WARN, classAndMethodName.first,
+                classAndMethodName.second, message, true, args);
     }
 
     public static void error(String message, Object... args) {
         Pair<String, String> classAndMethodName = getClassAndMethodName();
-        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.ERROR, classAndMethodName.first, classAndMethodName.second, message, args);
+        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.ERROR, classAndMethodName.first,
+                classAndMethodName.second, message, true, args);
     }
 
     public static void fatal(String message, Object... args) {
         Pair<String, String> classAndMethodName = getClassAndMethodName();
-        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.FATAL, classAndMethodName.first, classAndMethodName.second, message, args);
+        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.FATAL, classAndMethodName.first,
+                classAndMethodName.second, message, true, args);
     }
 
+    public static void businessLogicError(String message, Object... args) {
+        Pair<String, String> classAndMethodName = getClassAndMethodName();
+        OptiLoggerStreamsContainer.sendLogToStreams(LogLevel.ERROR, classAndMethodName.first,
+                classAndMethodName.second, message, false, args);
+    }
 
     private static void sendLogToStreams(LogLevel logLevel, String logClass, String logMethod, String message,
-                                         Object... args) {
+                                         boolean potentiallyRemote, Object... args) {
         String logMessage;
         if (args.length == 0) {
             logMessage = message;
@@ -98,7 +109,7 @@ public final class OptiLoggerStreamsContainer {
                 // The client shouldn't see logs less important than the minLogLevel
                 continue;
             }
-            if (!outputStream.isVisibleToClient() && logLevel.getRawLevel() < minLogLevelRemote.getRawLevel()) {
+            if (!outputStream.isVisibleToClient() && (logLevel.getRawLevel() < minLogLevelRemote.getRawLevel()) || !potentiallyRemote) {
                 continue;
             }
             outputStream.reportLog(logLevel, logClass, logMethod, logMessage);
