@@ -109,7 +109,7 @@ public final class OptiLoggerStreamsContainer {
                 // The client shouldn't see logs less important than the minLogLevel
                 continue;
             }
-            if (!outputStream.isVisibleToClient() && (logLevel.getRawLevel() < minLogLevelRemote.getRawLevel()) || !potentiallyRemote) {
+            if (!outputStream.isVisibleToClient() && ((logLevel.getRawLevel() < minLogLevelRemote.getRawLevel()) || !potentiallyRemote)) {
                 continue;
             }
             outputStream.reportLog(logLevel, logClass, logMethod, logMessage);
