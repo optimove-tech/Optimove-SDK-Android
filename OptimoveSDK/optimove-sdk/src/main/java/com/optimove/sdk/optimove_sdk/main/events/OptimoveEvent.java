@@ -10,74 +10,81 @@ import java.util.Map;
  */
 public abstract class OptimoveEvent {
 
-  private long timestamp;
+    private long timestamp;
 
-  @Nullable
-  protected List<ValidationIssue> validationIssues;
+    @Nullable
+    protected List<ValidationIssue> validationIssues;
 
-  public OptimoveEvent() {
-    this.timestamp = System.currentTimeMillis();
-  }
-  public OptimoveEvent(long timestamp) {
-    this.timestamp = timestamp;
-  }
-
-  /**
-   * <b>Mandatory</b>: Override this method to declare the Event's {@code name}.<br>
-   * <b>Note</b>: The event's name is the <b>key</b> that is set in the event's {@code configurations}, <b>not</b> its display name.
-   *
-   * @return the Event's {@code name}
-   */
-  public abstract String getName();
-
-  /**
-   * <b>Mandatory</b>: Override this method to declare the Event's {@code parameters}
-   *
-   * @return the Event's {@code parameters}
-   */
-  public abstract Map<String, Object> getParameters();
-
-  public long getTimestamp() {
-    return timestamp;
-  }
-
-  public void setTimestamp(long timestamp) {
-    this.timestamp = timestamp;
-  }
-
-  @Nullable
-  public List<ValidationIssue> getValidationIssues() {
-    return validationIssues;
-  }
-
-  public void setValidationIssues(
-          @Nullable List<ValidationIssue> validationIssues) {
-    this.validationIssues = validationIssues;
-  }
-
-  public static final class ValidationIssue {
-    private int status;
-    private String message;
-
-    public ValidationIssue(int status, String message) {
-      this.status = status;
-      this.message = message;
+    public OptimoveEvent() {
+        this.timestamp = System.currentTimeMillis();
     }
 
-    public int getStatus() {
-      return status;
+    public OptimoveEvent(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    public void setStatus(int status) {
-      this.status = status;
+    /**
+     * <b>Mandatory</b>: Override this method to declare the Event's {@code name}.<br>
+     * <b>Note</b>: The event's name is the <b>key</b> that is set in the event's {@code configurations}, <b>not</b> its display name.
+     *
+     * @return the Event's {@code name}
+     */
+    public abstract String getName();
+
+    /**
+     * <b>Mandatory</b>: Override this method to declare the Event's {@code parameters}
+     *
+     * @return the Event's {@code parameters}
+     */
+    public abstract Map<String, Object> getParameters();
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public String getMessage() {
-      return message;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    public void setMessage(String message) {
-      this.message = message;
+    @Nullable
+    public List<ValidationIssue> getValidationIssues() {
+        return validationIssues;
     }
-  }
+
+    public void setValidationIssues(
+            @Nullable List<ValidationIssue> validationIssues) {
+        this.validationIssues = validationIssues;
+    }
+
+    public static final class ValidationIssue {
+        private int status;
+        private String message;
+        private boolean isError;
+
+        public ValidationIssue(int status, String message, boolean isError) {
+            this.status = status;
+            this.message = message;
+            this.isError = isError;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public boolean isError() {
+            return isError;
+        }
+    }
 }

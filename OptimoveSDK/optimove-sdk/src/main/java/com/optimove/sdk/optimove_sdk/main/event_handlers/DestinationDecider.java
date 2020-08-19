@@ -22,7 +22,8 @@ public class DestinationDecider extends EventHandler {
 
 
     public DestinationDecider(Map<String, EventConfigs> eventConfigsMap, OptistreamHandler optistreamHandler,
-                              RealtimeManager realtimeManager, OptistreamEventBuilder optistreamEventBuilder, boolean realtimeEnabled,
+                              RealtimeManager realtimeManager, OptistreamEventBuilder optistreamEventBuilder,
+                              boolean realtimeEnabled,
                               boolean realtimeEnabledThroughOptistream) {
         this.eventConfigsMap = eventConfigsMap;
         this.optistreamHandler = optistreamHandler;
@@ -37,11 +38,11 @@ public class DestinationDecider extends EventHandler {
         List<OptistreamEvent> optistreamRealtimeEvents = new ArrayList<>();
         List<OptistreamEvent> optistreamEvents = new ArrayList<>();
 
-        for (OptimoveEvent optimoveEvent: optimoveEvents) {
+        for (OptimoveEvent optimoveEvent : optimoveEvents) {
             EventConfigs eventConfigs = eventConfigsMap.get(optimoveEvent.getName());
 
             OptistreamEvent optistreamEvent;
-            if (eventConfigs == null || !realtimeEnabled || !eventConfigs.isSupportedOnRealtime()){
+            if (eventConfigs == null || !realtimeEnabled || !eventConfigs.isSupportedOnRealtime()) {
                 // Only optistream
                 optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
                         false);
@@ -56,8 +57,19 @@ public class DestinationDecider extends EventHandler {
                 optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
                         false);
                 optistreamEvents.add(optistreamEvent);
-                if (optimoveEvent.getValidationIssues() == null) { //only if no validation issues
+                if (optimoveEvent.getValidationIssues() == null) {
                     optistreamRealtimeEvents.add(optistreamEvent);
+                } else {
+                    boolean errorFound = false;
+                    for (OptimoveEvent.ValidationIssue validationIssue : optimoveEvent.getValidationIssues()) {
+                        if (validationIssue.isError()) {
+                            errorFound = true;
+                            break;
+                        }
+                    }
+                    if (!errorFound) {
+                        optistreamRealtimeEvents.add(optistreamEvent);
+                    }
                 }
             }
         }

@@ -47,20 +47,23 @@ public class EventValidator extends EventHandler {
     }
 
     public enum ValidationIssueCode {
-        EVENT_MISSING(1010),
-        TOO_MANY_PARAMS(1020),
-        PARAM_DOESNT_APPEAR_IN_CONFIG(1030),
-        MANDATORY_PARAM_MISSING(1040),
-        PARAM_VALUE_TOO_LONG(1050),
-        PARAM_VALUE_TYPE_INCORRECT(1060),
-        USER_ID_TOO_LONG(1071),
-        EMAIL_IS_INVALID(1080);
+        EVENT_MISSING(1010, true),
+        TOO_MANY_PARAMS(1020, false),
+        PARAM_DOESNT_APPEAR_IN_CONFIG(1030, false),
+        MANDATORY_PARAM_MISSING(1040, true),
+        PARAM_VALUE_TOO_LONG(1050, true),
+        PARAM_VALUE_TYPE_INCORRECT(1060, true),
+        USER_ID_TOO_LONG(1071, true),
+        EMAIL_IS_INVALID(1080, true);
 
         public int rawValue;
+        public boolean isError;
 
-        ValidationIssueCode(int rawValue) {
+        ValidationIssueCode(int rawValue, boolean isError) {
             this.rawValue = rawValue;
+            this.isError = isError;
         }
+
     }
 
     public int getMaxNumberOfParams() {
@@ -78,7 +81,8 @@ public class EventValidator extends EventHandler {
         if (eventConfig == null) {
             String message = eventName + " is an undefined event";
             OptiLoggerStreamsContainer.businessLogicError(message);
-            validationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.EVENT_MISSING.rawValue, message));
+            validationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.EVENT_MISSING.rawValue,
+                    message, ValidationIssueCode.EVENT_MISSING.isError));
             return validationIssues;
         }
 
@@ -128,7 +132,7 @@ public class EventValidator extends EventHandler {
                 String message = String.format("event %s has a mandatory parameter, %s, which is undefined or empty",
                         optimoveEvent.getName(), paramConfigKey);
                 OptiLoggerStreamsContainer.businessLogicError(message);
-                missingMandatoryParams.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.MANDATORY_PARAM_MISSING.rawValue, message));
+                missingMandatoryParams.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.MANDATORY_PARAM_MISSING.rawValue, message, ValidationIssueCode.MANDATORY_PARAM_MISSING.isError));
             }
         }
         if (!missingMandatoryParams.isEmpty()) {
@@ -150,7 +154,7 @@ public class EventValidator extends EventHandler {
                 String message = String.format("parameter %s has not been configured for this event. It " +
                         "will not be tracked and cannot be used within a trigger.", key);
                 OptiLoggerStreamsContainer.warn(message);
-                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.rawValue, message));
+                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.rawValue, message, ValidationIssueCode.PARAM_DOESNT_APPEAR_IN_CONFIG.isError));
                 continue;
             }
             Object value = parameters.get(key);
@@ -160,14 +164,14 @@ public class EventValidator extends EventHandler {
             if (isIncorrectParameterValueType(parameterConfig, value)) {
                 String message = String.format("%s should be of type %s", key, parameterConfig.getType());
                 OptiLoggerStreamsContainer.businessLogicError(message);
-                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TYPE_INCORRECT.rawValue, message));
+                paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TYPE_INCORRECT.rawValue, message, ValidationIssueCode.PARAM_VALUE_TYPE_INCORRECT.isError));
             }
             if (isValueTooLarge(value)) {
                 String message = String.format("%s has exceeded the limit of allowed number of characters. The " +
                         "character limit is %s", key, OptitrackConstants.PARAMETER_VALUE_MAX_LENGTH);
                 OptiLoggerStreamsContainer.businessLogicError(message);
                 paramValidationIssues.add(new OptimoveEvent.ValidationIssue(ValidationIssueCode.PARAM_VALUE_TOO_LONG.rawValue,
-                        message));
+                        message, ValidationIssueCode.PARAM_VALUE_TOO_LONG.isError));
             }
         }
 
@@ -188,7 +192,8 @@ public class EventValidator extends EventHandler {
             String message = String.format("userId, %s, is too " +
                     "long, the userId limit is %s", ((SetUserIdEvent) optimoveEvent).getUserId(), USER_ID_MAX_LENGTH);
             OptiLoggerStreamsContainer.businessLogicError(message);
-            return new OptimoveEvent.ValidationIssue(ValidationIssueCode.USER_ID_TOO_LONG.rawValue, message);
+            return new OptimoveEvent.ValidationIssue(ValidationIssueCode.USER_ID_TOO_LONG.rawValue, message,
+                    ValidationIssueCode.USER_ID_TOO_LONG.isError);
         }
         return null;
     }
@@ -200,29 +205,35 @@ public class EventValidator extends EventHandler {
                 && ((SetEmailEvent) optimoveEvent).getEmail() != null && !OptiUtils.isValidEmailAddress(((SetEmailEvent) optimoveEvent).getEmail())) {
             String message = String.format("Email, %s, is invalid", ((SetEmailEvent) optimoveEvent).getEmail());
             OptiLoggerStreamsContainer.businessLogicError(message);
-            return new OptimoveEvent.ValidationIssue(ValidationIssueCode.EMAIL_IS_INVALID.rawValue, message);
+            return new OptimoveEvent.ValidationIssue(ValidationIssueCode.EMAIL_IS_INVALID.rawValue, message,
+                    ValidationIssueCode.EMAIL_IS_INVALID.isError);
         }
         return null;
     }
 
     @NonNull
     private OptimoveEvent removeParamsIfTooMany(OptimoveEvent optimoveEvent) {
-        if (optimoveEvent.getParameters().size() > maxNumberOfParams) {
+        if (optimoveEvent.getParameters()
+                .size() > maxNumberOfParams) {
             String message = String.format("event %s contains %s parameters while the allowed number of parameters " +
                             "is %s. Some parameters were removed to process the event.",
-                     optimoveEvent.getName(), optimoveEvent.getParameters().size(), maxNumberOfParams);
+                    optimoveEvent.getName(), optimoveEvent.getParameters()
+                            .size(), maxNumberOfParams);
             OptiLoggerStreamsContainer.warn(message);
             int count = 0;
             Map<String, Object> newParams = new HashMap<>();
-            for (String paramKey : optimoveEvent.getParameters().keySet()) {
+            for (String paramKey : optimoveEvent.getParameters()
+                    .keySet()) {
                 if (count < maxNumberOfParams) {
-                    newParams.put(paramKey, optimoveEvent.getParameters().get(paramKey));
+                    newParams.put(paramKey, optimoveEvent.getParameters()
+                            .get(paramKey));
                 }
                 count++;
             }
             OptimoveEvent truncatedParamsSimpleEvent = new SimpleCustomEvent(optimoveEvent.getName(), newParams);
             OptimoveEvent.ValidationIssue tooManyParamsValidationIssue =
-                    new OptimoveEvent.ValidationIssue(ValidationIssueCode.TOO_MANY_PARAMS.rawValue, message);
+                    new OptimoveEvent.ValidationIssue(ValidationIssueCode.TOO_MANY_PARAMS.rawValue, message,
+                            ValidationIssueCode.TOO_MANY_PARAMS.isError);
             List<OptimoveEvent.ValidationIssue> newArrayOfValidationIssues = new ArrayList<>();
             if (optimoveEvent.getValidationIssues() != null) {
                 newArrayOfValidationIssues.addAll(optimoveEvent.getValidationIssues());
