@@ -60,10 +60,14 @@ public class NotificationCreator {
     }
     private void handleNotificationChannel(NotificationData notificationData){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if  (notificationData.getChannelId() == null) {
-                createSdkNotificationChannel();
+            if  (notificationData.getChannelInfo() == null) {
+                createSdkDefaultNotificationChannel();
             } else {
                 notificationManager.deleteNotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID);
+                if (notificationData.getChannelInfo().getChannelName() != null) {
+                    createCustomNotificationChannel(notificationData.getChannelInfo().getChannelId(),
+                            notificationData.getChannelInfo().getChannelName());
+                }
             }
         }
     }
@@ -81,8 +85,8 @@ public class NotificationCreator {
         NotificationCompat.Builder builder;
 
         builder = new NotificationCompat.Builder(context,
-                notificationData.getChannelId() == null ? OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID
-                : notificationData.getChannelId());
+                notificationData.getChannelInfo() == null ? OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID
+                : notificationData.getChannelInfo().getChannelId());
 
         builder
                 .setContentTitle(notificationData.getTitle())
@@ -134,10 +138,17 @@ public class NotificationCreator {
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    private void createSdkNotificationChannel() {
+    private void createSdkDefaultNotificationChannel() {
         NotificationChannel channel =
                 new NotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID,
-                                getApplicationName(), NotificationManager.IMPORTANCE_HIGH);
+                        getApplicationName(), NotificationManager.IMPORTANCE_HIGH);
+        notificationManager.createNotificationChannel(channel);
+    }
+    @TargetApi(Build.VERSION_CODES.O)
+    private void createCustomNotificationChannel(String channelId, String channelName) {
+        NotificationChannel channel =
+                new NotificationChannel(channelId,
+                        channelName, NotificationManager.IMPORTANCE_HIGH);
         notificationManager.createNotificationChannel(channel);
     }
 

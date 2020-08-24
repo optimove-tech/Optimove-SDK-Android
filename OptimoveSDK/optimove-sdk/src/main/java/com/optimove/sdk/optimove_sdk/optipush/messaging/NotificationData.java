@@ -30,10 +30,9 @@ public class NotificationData {
     @SerializedName("collapse_Key")
     @Nullable
     private String collapseKey;
-    @SerializedName("channelId")
+    @SerializedName("channel")
     @Nullable
-    private String channelId;
-
+    private ChannelInfo channelInfo;
     @SerializedName("media")
     @Nullable
     private NotificationMedia notificationMedia;
@@ -92,21 +91,57 @@ public class NotificationData {
     }
 
     @Nullable
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public void setChannelId(@Nullable String channelId) {
-        this.channelId = channelId;
-    }
-
-    @Nullable
     public String getScheduledCampaign() {
         return scheduledCampaign;
     }
 
     public void setScheduledCampaign(@Nullable String scheduledCampaign) {
         this.scheduledCampaign = scheduledCampaign;
+    }
+
+    @Nullable
+    public ChannelInfo getChannelInfo() {
+        return channelInfo;
+    }
+
+    public void setChannelInfo(@Nullable ChannelInfo channelInfo) {
+        this.channelInfo = channelInfo;
+    }
+
+    public static final class NotificationMedia {
+        @SerializedName("url")
+        public String url;
+        @SerializedName("media_type")
+        public String mediaType;
+
+        public String getMediaType() {
+            return mediaType;
+        }
+    }
+
+    public static final class ChannelInfo {
+        @SerializedName("channel_name")
+        @Nullable
+        private String channelName;
+        @SerializedName("channel_id")
+        private String channelId;
+
+        @Nullable
+        public String getChannelName() {
+            return channelName;
+        }
+
+        public void setChannelName(@Nullable String channelName) {
+            this.channelName = channelName;
+        }
+
+        public String getChannelId() {
+            return channelId;
+        }
+
+        public void setChannelId(String channelId) {
+            this.channelId = channelId;
+        }
     }
 
     public static class IdentityTokenDeserializer implements JsonDeserializer<String> {
