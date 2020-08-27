@@ -64,9 +64,9 @@ public class NotificationCreator {
                 createSdkDefaultNotificationChannel();
             } else {
                 notificationManager.deleteNotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID);
-                if (notificationData.getChannelInfo().getChannelName() != null) {
-                    createCustomNotificationChannel(notificationData.getChannelInfo().getChannelId(),
-                            notificationData.getChannelInfo().getChannelName());
+                if (notificationData.getChannelInfo().channelId != null) {
+                    createCustomNotificationChannel(notificationData.getChannelInfo().channelId,
+                            notificationData.getChannelInfo().channelName);
                 }
             }
         }
@@ -86,7 +86,7 @@ public class NotificationCreator {
 
         builder = new NotificationCompat.Builder(context,
                 notificationData.getChannelInfo() == null ? OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID
-                : notificationData.getChannelInfo().getChannelId());
+                : notificationData.getChannelInfo().channelId);
 
         builder
                 .setContentTitle(notificationData.getTitle())

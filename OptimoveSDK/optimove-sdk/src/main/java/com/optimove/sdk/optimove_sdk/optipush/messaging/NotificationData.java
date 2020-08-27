@@ -113,35 +113,14 @@ public class NotificationData {
         public String url;
         @SerializedName("media_type")
         public String mediaType;
-
-        public String getMediaType() {
-            return mediaType;
-        }
     }
 
     public static final class ChannelInfo {
         @SerializedName("channel_name")
         @Nullable
-        private String channelName;
+        public String channelName;
         @SerializedName("channel_id")
-        private String channelId;
-
-        @Nullable
-        public String getChannelName() {
-            return channelName;
-        }
-
-        public void setChannelName(@Nullable String channelName) {
-            this.channelName = channelName;
-        }
-
-        public String getChannelId() {
-            return channelId;
-        }
-
-        public void setChannelId(String channelId) {
-            this.channelId = channelId;
-        }
+        public String channelId;
     }
 
     public static class IdentityTokenDeserializer implements JsonDeserializer<String> {
