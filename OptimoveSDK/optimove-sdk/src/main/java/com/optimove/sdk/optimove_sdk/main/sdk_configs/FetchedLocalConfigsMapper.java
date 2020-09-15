@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.sdk_configs;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.LogsConfigs;

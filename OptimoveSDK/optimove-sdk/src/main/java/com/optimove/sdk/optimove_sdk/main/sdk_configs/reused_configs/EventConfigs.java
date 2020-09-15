@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 

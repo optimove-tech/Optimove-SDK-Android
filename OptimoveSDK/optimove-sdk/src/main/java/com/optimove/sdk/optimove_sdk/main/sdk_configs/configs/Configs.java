@@ -1,7 +1,7 @@
 package com.optimove.sdk.optimove_sdk.main.sdk_configs.configs;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 

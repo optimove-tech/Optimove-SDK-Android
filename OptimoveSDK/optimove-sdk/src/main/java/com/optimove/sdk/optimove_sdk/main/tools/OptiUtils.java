@@ -2,18 +2,14 @@ package com.optimove.sdk.optimove_sdk.main.tools;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
