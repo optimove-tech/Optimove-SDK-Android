@@ -1,7 +1,5 @@
 package com.optimove.sdk.optimove_sdk.optipush.registration.requests;
 
-import android.os.Build;
-
 import com.google.gson.annotations.SerializedName;
 
 public class InstallationRequest {

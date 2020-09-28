@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 
 import com.optimove.sdk.optimove_sdk.optipush.events_dispatch_service.NotificationOpenedEventDispatchService;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
@@ -61,7 +60,7 @@ public class NotificationInteractionReceiver extends BroadcastReceiver {
       linkIntent.setAction(Intent.ACTION_VIEW);
     }
     linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    linkIntent.setPackage(ApplicationHelper.getFullPackageName(context));
+    linkIntent.setPackage(context.getPackageName());
     try {
       context.startActivity(linkIntent);
     } catch (Exception e) {
@@ -71,7 +70,7 @@ public class NotificationInteractionReceiver extends BroadcastReceiver {
   }
 
   private void openMainActivity(Context context) {
-    Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(ApplicationHelper.getFullPackageName(context));
+    Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
     if (launchIntent == null)
       return;
     launchIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);

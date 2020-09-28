@@ -27,9 +27,3 @@
 -keepclassmembers class * extends android.app.Activity {
        public void *(android.view.View);
 }
-
--keep class com.optimove.sdk.optimovemobilesdk.BuildConfig { *; }
--keep class com.optimove.sdk.optimove_sdk.main.sdk_configs.** { <fields>; }
--keep class com.optimove.sdk.optimove_sdk.optipush.campaigns.** { <fields>; }
--keep class com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData { <fields>; }
--keep class com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationMedia { <fields>; }

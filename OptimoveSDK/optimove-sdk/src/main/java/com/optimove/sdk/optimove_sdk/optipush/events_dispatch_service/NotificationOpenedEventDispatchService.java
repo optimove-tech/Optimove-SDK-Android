@@ -9,9 +9,7 @@ import android.support.annotation.Nullable;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
@@ -42,13 +40,13 @@ public class NotificationOpenedEventDispatchService extends Service {
                     .getEventHandlerProvider()
                     .getEventHandler()
                     .reportEvent(Collections.singletonList(new TriggeredNotificationOpenedEvent(OptiUtils.currentTimeSeconds(),
-                            ApplicationHelper.getFullPackageName(this), triggeredIdentityToken)));
+                            this.getPackageName(), triggeredIdentityToken)));
         } else if (scheduledIdentityToken != null) {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
                     .reportEvent(Collections.singletonList(new ScheduledNotificationOpenedEvent(OptiUtils.currentTimeSeconds(),
-                            ApplicationHelper.getFullPackageName(this), scheduledIdentityToken)));
+                            this.getPackageName(), scheduledIdentityToken)));
         }
         new Thread(() -> {
             try {

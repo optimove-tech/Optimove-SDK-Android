@@ -10,12 +10,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <provider
-            android:name=".main.OptimoveInitProvider"
-            android:authorities="${applicationId}.optimoveinitprovider"
-            android:exported="false"
-            android:initOrder="50"/> <!-- Firebase initOrder is 101 so for clients with default Firebase this ensures that the Optimove SDK would be initialized second -->
-
         <service
             android:name=".optipush.messaging.OptipushMessagingService"
             android:exported="false">

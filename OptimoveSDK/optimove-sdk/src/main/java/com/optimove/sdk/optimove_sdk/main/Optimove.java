@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.webkit.WebSettings;
 
 import com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys;
 import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
@@ -17,7 +16,6 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.SetPageVisitEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
@@ -26,7 +24,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.SdkLogsServiceOutputStream;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
@@ -97,7 +95,7 @@ final public class Optimove {
         this.optipushManager = new OptipushManager(new RegistrationDao(context),
                 deviceInfoProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                ApplicationHelper.getFullPackageName(context),
+                context.getPackageName(),
                 context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), deviceInfoProvider);
         this.configSet = new AtomicBoolean(false);
     }
@@ -117,12 +115,12 @@ final public class Optimove {
     /**
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
-     *
      * @param context    The instance of the current {@code Context} object.
      * @param tenantInfo The {@link TenantInfo} as provided by <i>Optimove</i>
      */
     public static void configure(Context context, TenantInfo tenantInfo) {
         Context applicationContext = context.getApplicationContext();
+        OptiLoggerStreamsContainer.initializeLogger(context);
         if (!(applicationContext instanceof Application)) {
             OptiLoggerStreamsContainer.fatal("Optimove#configure", "Can't initialize Optimove SDK since the ApplicationContext isn't an instance of Application class but of %s",
                     applicationContext.getClass()
@@ -151,20 +149,23 @@ final public class Optimove {
     /**
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
-     *
      * @param context     The instance of the current {@code Context} object.
      * @param tenantInfo  The {@link TenantInfo} as provided by <i>Optimove</i>.
-     * @param isStgEnv    An indication whether this is a staging environment.
-     * @param minLogLevel Logcat minimum log level to show.
+     * @param logcatMinLogLevel Logcat minimum log level to show.
      */
-    public static void configure(Context context, TenantInfo tenantInfo, Boolean isStgEnv, LogLevel minLogLevel) {
-        OptiLoggerStreamsContainer.setMinLogLevelToShow(minLogLevel);
-
-        if (isStgEnv) {
-            OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
-        }
+    public static void configure(Context context, TenantInfo tenantInfo, LogLevel logcatMinLogLevel) {
+        OptiLoggerStreamsContainer.setMinLogLevelToShow(logcatMinLogLevel);
         configure(context, tenantInfo);
     }
+
+    /**
+     * Enables remote logs for investigations. Don't call it unless you told to.
+     */
+    public static void enableStagingRemoteLogs() {
+        OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
+    }
+
+
 
     /**
      * THIS IS AN <b>INTERNAL</b> FUNCTION, <b>NOT</b> TO BE CALLED BY THE CLIENT.
@@ -208,7 +209,6 @@ final public class Optimove {
     }
 
     private void setConfigurationsIfNotSet(@NonNull Configs configs) {
-
         if (configSet.compareAndSet(false, true)) {
             updateConfigurations(configs);
         } else {
@@ -229,7 +229,7 @@ final public class Optimove {
         EventGenerator eventGenerator =
                 EventGenerator.builder()
                         .withUserInfo(userInfo)
-                        .withPackageName(ApplicationHelper.getFullPackageName(context))
+                        .withPackageName(context.getPackageName())
                         .withDeviceId(userInfo.getInstallationId())
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
@@ -244,8 +244,8 @@ final public class Optimove {
     private void loadTenantId(Configs configs) {
         // If this is the first time the tenantId was set, we need to update the Service Logger (if exists)
         for (OptiLoggerOutputStream stream : OptiLoggerStreamsContainer.getLoggerOutputStreams()) {
-            if (stream instanceof SdkLogsServiceOutputStream) {
-                SdkLogsServiceOutputStream logsServiceOutputStream = (SdkLogsServiceOutputStream) stream;
+            if (stream instanceof RemoteLogsServiceOutputStream) {
+                RemoteLogsServiceOutputStream logsServiceOutputStream = (RemoteLogsServiceOutputStream) stream;
                 logsServiceOutputStream.setTenantId(configs.getLogsConfigs()
                         .getTenantId());
             }

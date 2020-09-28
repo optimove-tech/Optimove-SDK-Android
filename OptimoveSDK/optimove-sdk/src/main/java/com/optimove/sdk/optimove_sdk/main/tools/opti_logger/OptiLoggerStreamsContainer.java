@@ -1,9 +1,15 @@
 package com.optimove.sdk.optimove_sdk.main.tools.opti_logger;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Pair;
+
+import com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TENANT_ID;
 
 /**
  * Manages {@code logging} of the <i>Optimove SDK</i>.
@@ -20,11 +26,18 @@ public final class OptiLoggerStreamsContainer {
 
     static {
         loggerOutputStreams = new ArrayList<>();
-        //default value, unless overridden
+        //default values, unless overridden
         minLogLevelToShow = LogLevel.WARN;
         minLogLevelRemote = LogLevel.FATAL;
     }
 
+    public static void initializeLogger(Context context) {
+        SharedPreferences coreSharedPreferences =
+                context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
+        OptiLoggerStreamsContainer.addOutputStream(new RemoteLogsServiceOutputStream(context,
+                coreSharedPreferences.getInt(TENANT_ID, -1)));
+        OptiLoggerStreamsContainer.addOutputStream(new LogcatOptiLoggerOutputStream());
+    }
 
     /*****
      * Output Streams

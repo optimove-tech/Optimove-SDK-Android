@@ -10,7 +10,6 @@ import com.google.gson.JsonSyntaxException;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.fetched_configs.FetchedGlobalConfig;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.fetched_configs.FetchedTenantConfigs;
-import com.optimove.sdk.optimove_sdk.main.tools.ApplicationHelper;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
@@ -80,7 +79,7 @@ public class ConfigsFetcher {
         HttpClient.RequestBuilder<FetchedGlobalConfig> globalConfigRequestBuilder = httpClient
                 .getObject(GLOBAL_CONFIG_FILE_BASE_URL, FetchedGlobalConfig.class)
                 .destination("%s/%s/%s.json", GLOBAL_CONFIG_VERSION,
-                        OptiUtils.getSdkEnv(ApplicationHelper.getBasePackageName(context)), "configs");
+                        OptiUtils.getSdkEnv(context.getPackageName()), "configs");
         HttpClient.RequestBuilder<FetchedTenantConfigs> tenantConfigRequestBuilder = httpClient
                 .getObject(TENANT_CONFIG_FILE_BASE_URL, FetchedTenantConfigs.class)
                 .destination("%s/%s.json", tenantToken, configName);
@@ -117,7 +116,7 @@ public class ConfigsFetcher {
     private void sendConfigsIfGlobalAndTenantArrived(ConfigsListener configsListener) {
         if (fetchedGlobalConfig != null && fetchedTenantConfigs != null) {
             Configs configs =
-                    FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(ApplicationHelper.getFullPackageName(context), fetchedGlobalConfig, fetchedTenantConfigs);
+                    FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(context.getPackageName(), fetchedGlobalConfig, fetchedTenantConfigs);
             backupInitData(configs);
             configsListener.setConfigs(configs);
         }

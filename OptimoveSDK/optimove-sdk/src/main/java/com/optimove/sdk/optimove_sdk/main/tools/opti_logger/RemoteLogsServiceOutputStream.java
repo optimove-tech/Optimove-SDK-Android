@@ -10,14 +10,14 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SdkLogsServiceOutputStream implements OptiLoggerOutputStream {
+public class RemoteLogsServiceOutputStream implements OptiLoggerOutputStream {
 
     private static final String LOG_SERVICE_BASE_URL = "https://mbaas-qa.optimove.net/";
 
     private Context context;
     private int tenantId;
 
-    public SdkLogsServiceOutputStream(Context context, int tenantId) {
+    public RemoteLogsServiceOutputStream(Context context, int tenantId) {
         this.context = context;
         this.tenantId = tenantId;
     }

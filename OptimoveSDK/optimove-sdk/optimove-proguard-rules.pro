@@ -23,3 +23,9 @@
 # If you keep the line number information, uncomment this destination
 # hide the original destination file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.optimove.sdk.optimove_sdk.main.sdk_configs.* { <fields>; }
+-keep class com.optimove.sdk.optimove_sdk.optipush.registration.requests.*
+-keep class com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonDeserializer
