@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.event_handler_tests;
 
-import com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder;
+import com.optimove.sdk.optimove_sdk.main.common.OptistreamEventBuilder;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.DestinationDecider;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;

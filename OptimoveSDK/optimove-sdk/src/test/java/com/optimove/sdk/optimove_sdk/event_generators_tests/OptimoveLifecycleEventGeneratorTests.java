@@ -3,9 +3,9 @@ package com.optimove.sdk.optimove_sdk.event_generators_tests;
 import android.app.Activity;
 import android.content.SharedPreferences;
 
-import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.event_generators.OptimoveLifecycleEventGenerator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.AppOpenEvent;

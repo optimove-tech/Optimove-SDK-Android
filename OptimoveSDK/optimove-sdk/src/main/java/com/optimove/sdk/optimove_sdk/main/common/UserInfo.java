@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.main;
+package com.optimove.sdk.optimove_sdk.main.common;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
@@ -17,12 +18,12 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.INITIAL_VISITOR_ID_KEY;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.INSTALLATION_ID_KEY;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.USER_EMAIL_KEY;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.USER_IDS_SP;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.USER_ID_KEY;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.VISITOR_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.INITIAL_VISITOR_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.INSTALLATION_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.USER_EMAIL_KEY;
+import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.USER_IDS_SP;
+import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.USER_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.VISITOR_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.DEVICE_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
 import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.FIRST_VISIT_TIMESTAMP_KEY;

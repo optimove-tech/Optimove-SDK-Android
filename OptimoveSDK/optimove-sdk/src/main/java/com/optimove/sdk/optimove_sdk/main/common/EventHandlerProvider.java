@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.main;
+package com.optimove.sdk.optimove_sdk.main.common;
 
 import com.optimove.sdk.optimove_sdk.main.event_handlers.DestinationDecider;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;

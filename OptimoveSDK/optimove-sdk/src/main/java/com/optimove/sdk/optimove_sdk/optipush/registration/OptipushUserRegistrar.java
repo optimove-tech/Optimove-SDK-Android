@@ -2,8 +2,8 @@ package com.optimove.sdk.optimove_sdk.optipush.registration;
 
 
 import com.google.gson.Gson;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;

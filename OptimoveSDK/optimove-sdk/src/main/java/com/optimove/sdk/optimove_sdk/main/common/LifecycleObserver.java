@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.main;
+package com.optimove.sdk.optimove_sdk.main.common;
 
 import android.app.Activity;
 import android.app.Application;

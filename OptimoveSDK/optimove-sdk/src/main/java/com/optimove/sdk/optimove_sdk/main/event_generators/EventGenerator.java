@@ -4,9 +4,9 @@ import android.content.Context;
 import android.location.Location;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
-import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
-import com.optimove.sdk.optimove_sdk.main.TenantInfo;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;

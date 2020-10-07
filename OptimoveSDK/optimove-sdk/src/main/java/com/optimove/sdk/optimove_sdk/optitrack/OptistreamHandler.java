@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -18,7 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
+import static com.optimove.sdk.optimove_sdk.main.common.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
 
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 

@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.main;
+package com.optimove.sdk.optimove_sdk.main.common;
 
 /**
  * Describes the <b>Tenant Configurations</b> as provided by <i>Optimove</i>.

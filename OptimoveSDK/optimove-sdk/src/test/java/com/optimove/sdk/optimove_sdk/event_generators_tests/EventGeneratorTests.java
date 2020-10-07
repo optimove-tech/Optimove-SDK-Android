@@ -4,10 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 
-import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
-import com.optimove.sdk.optimove_sdk.main.Optimove;
-import com.optimove.sdk.optimove_sdk.main.TenantInfo;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
@@ -29,7 +28,6 @@ import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_RE
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;

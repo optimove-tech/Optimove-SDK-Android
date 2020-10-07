@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.google.gson.Gson;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetUserIdEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;

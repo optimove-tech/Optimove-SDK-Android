@@ -2,8 +2,8 @@ package com.optimove.sdk.optimove_sdk;
 
 import com.android.volley.Response;
 import com.google.gson.Gson;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.optimove.sdk.optimove_sdk.main.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
+import static com.optimove.sdk.optimove_sdk.main.common.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;

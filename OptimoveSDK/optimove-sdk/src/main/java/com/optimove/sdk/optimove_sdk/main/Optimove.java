@@ -7,6 +7,11 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerFactory;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys;
 import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
 import com.optimove.sdk.optimove_sdk.main.event_generators.OptimoveLifecycleEventGenerator;

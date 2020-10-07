@@ -2,9 +2,9 @@ package com.optimove.sdk.optimove_sdk.main.event_generators;
 
 import android.content.SharedPreferences;
 
-import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.AppOpenEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;

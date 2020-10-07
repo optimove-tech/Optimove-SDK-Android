@@ -4,8 +4,8 @@ import android.app.Activity;
 
 import com.android.volley.ParseError;
 import com.android.volley.Response;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;

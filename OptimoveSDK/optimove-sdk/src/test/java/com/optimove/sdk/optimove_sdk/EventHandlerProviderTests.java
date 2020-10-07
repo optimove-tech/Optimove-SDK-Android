@@ -1,7 +1,7 @@
 package com.optimove.sdk.optimove_sdk;
 
-import com.optimove.sdk.optimove_sdk.main.EventHandlerFactory;
-import com.optimove.sdk.optimove_sdk.main.EventHandlerProvider;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerFactory;
+import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.DestinationDecider;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;

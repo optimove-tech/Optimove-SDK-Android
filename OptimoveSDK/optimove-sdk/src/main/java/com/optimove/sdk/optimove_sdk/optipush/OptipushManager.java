@@ -10,9 +10,9 @@ import androidx.annotation.Nullable;
 
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.BuildConfig;
-import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
-import com.optimove.sdk.optimove_sdk.main.UserInfo;
+import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
