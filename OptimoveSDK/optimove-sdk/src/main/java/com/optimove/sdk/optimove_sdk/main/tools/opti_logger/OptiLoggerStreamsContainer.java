@@ -18,7 +18,6 @@ public final class OptiLoggerStreamsContainer {
 
     private static final String OPTI_LOGGER_STREAMS_CONTAINER_CLASS_NAME =
             String.format("%s.java", OptiLoggerStreamsContainer.class.getSimpleName());
-    private static final String OPTI_LOGGER_CLASS_NAME = String.format("%s.java", OptiLogger.class.getSimpleName());
 
     private static List<OptiLoggerOutputStream> loggerOutputStreams;
     private static LogLevel minLogLevelToShow; // Applies to client visible Logs only
@@ -142,8 +141,7 @@ public final class OptiLoggerStreamsContainer {
         for (int i = 2; i < stackTrace.length; i++) {
             StackTraceElement candidate = stackTrace[i];
             if (candidate.getFileName() != null && !candidate.getFileName()
-                    .equals(OPTI_LOGGER_STREAMS_CONTAINER_CLASS_NAME) && !candidate.getFileName()
-                    .equals(OPTI_LOGGER_CLASS_NAME)) {
+                    .equals(OPTI_LOGGER_STREAMS_CONTAINER_CLASS_NAME)) {
                 return new Pair<>(candidate.getFileName(), candidate.getMethodName());
             }
         }

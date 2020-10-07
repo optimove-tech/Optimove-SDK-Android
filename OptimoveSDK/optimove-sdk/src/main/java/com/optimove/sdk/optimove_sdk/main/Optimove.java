@@ -3,6 +3,7 @@ package com.optimove.sdk.optimove_sdk.main;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -21,7 +22,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
@@ -115,6 +115,7 @@ final public class Optimove {
     /**
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
+     *
      * @param context    The instance of the current {@code Context} object.
      * @param tenantInfo The {@link TenantInfo} as provided by <i>Optimove</i>
      */
@@ -149,8 +150,9 @@ final public class Optimove {
     /**
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
-     * @param context     The instance of the current {@code Context} object.
-     * @param tenantInfo  The {@link TenantInfo} as provided by <i>Optimove</i>.
+     *
+     * @param context           The instance of the current {@code Context} object.
+     * @param tenantInfo        The {@link TenantInfo} as provided by <i>Optimove</i>.
      * @param logcatMinLogLevel Logcat minimum log level to show.
      */
     public static void configure(Context context, TenantInfo tenantInfo, LogLevel logcatMinLogLevel) {
@@ -164,7 +166,6 @@ final public class Optimove {
     public static void enableStagingRemoteLogs() {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
     }
-
 
 
     /**
@@ -196,8 +197,9 @@ final public class Optimove {
                 .fileProvider(new FileUtils())
                 .context(context)
                 .build();
-        configsFetcher.fetchConfigs(this::setConfigurationsIfNotSet,
-                OptiLogger::failedToGetConfigurationFile);
+        configsFetcher.fetchConfigs(this::setConfigurationsIfNotSet, error -> {
+            OptiLoggerStreamsContainer.fatal("Failed to get configuration file due to - %s", error);
+        });
     }
 
     private void executeUrgentInit() {
@@ -212,13 +214,14 @@ final public class Optimove {
         if (configSet.compareAndSet(false, true)) {
             updateConfigurations(configs);
         } else {
-            OptiLogger.configurationsAreAlreadySet();
+            OptiLoggerStreamsContainer.debug("Configuration file was already set, no need to set again");
         }
     }
 
     private void updateConfigurations(Configs configs) {
         loadTenantId(configs);
-        if (configs.getLogsConfigs().isProdLogsEnabled()) {
+        if (configs.getLogsConfigs()
+                .isProdLogsEnabled()) {
             OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.ERROR);
         }
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
@@ -272,7 +275,7 @@ final public class Optimove {
         if (shared != null) {
             boolean tenantInfoExists = (shared.retrieveLocalTenantInfo() != null || newTenantInfo != null);
             if (!tenantInfoExists) {
-                OptiLogger.optimoveInitializationFailedDueToCorruptedTenantInfo();
+                OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
             }
             return tenantInfoExists;
         } else {
@@ -281,7 +284,7 @@ final public class Optimove {
 
                 TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
                 if (newTenantInfo == null && localTenantInfo == null) {
-                    OptiLogger.optimoveInitializationFailedDueToCorruptedTenantInfo();
+                    OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
                     return false;
                 }
                 // Merge the local and the new TenantInfo objects
@@ -358,7 +361,8 @@ final public class Optimove {
         }
     }
 
-    private @Nullable SetEmailEvent processUserEmail(String email){
+    private @Nullable
+    SetEmailEvent processUserEmail(String email) {
         if (OptiUtils.isNullNoneOrUndefined(email)) {
             return new SetEmailEvent(email);
         }
@@ -376,7 +380,8 @@ final public class Optimove {
         return new SetEmailEvent(trimmedEmail);
     }
 
-    private @Nullable SetUserIdEvent processUserId(String userId) {
+    private @Nullable
+    SetUserIdEvent processUserId(String userId) {
         if (OptiUtils.isNullNoneOrUndefined(userId)) {
             return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), null, this.userInfo.getVisitorId());
         } else if (userId.length() > USER_ID_MAX_LENGTH) {

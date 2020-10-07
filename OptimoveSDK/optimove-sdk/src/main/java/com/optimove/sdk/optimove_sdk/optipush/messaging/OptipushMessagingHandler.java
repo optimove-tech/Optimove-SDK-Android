@@ -4,12 +4,10 @@ import android.content.Context;
 
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
 import org.json.JSONObject;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * When passed a {@code RemoteMessage}, this object validates it is indeed an {@code Optipush} Message
@@ -31,7 +29,7 @@ public class OptipushMessagingHandler {
      * @return {@code true} if the message was handled by the <i>Optimove SDK</i>, {@code false} otherwise.
      */
     public boolean onMessageReceived(RemoteMessage remoteMessage) {
-        OptiLogger.optipushReceivedNewPushMessage(new JSONObject(remoteMessage.getData()).toString());
+        OptiLoggerStreamsContainer.debug("New incoming push message with payload: %s", new JSONObject(remoteMessage.getData()).toString());
 
         Optimove.configureUrgently(context);
 

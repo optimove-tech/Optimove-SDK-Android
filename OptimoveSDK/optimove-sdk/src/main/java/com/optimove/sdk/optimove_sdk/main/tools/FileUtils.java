@@ -3,7 +3,6 @@ package com.optimove.sdk.optimove_sdk.main.tools;
 import android.content.Context;
 import androidx.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import org.json.JSONException;
@@ -95,7 +94,7 @@ public class FileUtils {
         try {
             return file.createNewFile();
         } catch (IOException e) {
-            OptiLogger.utilsFailedToCreateNewFile(file.getAbsolutePath(), e.getMessage());
+            OptiLoggerStreamsContainer.error("Failed to create file %s due to: %s", file.getAbsolutePath(), e.getMessage());
             return false;
         }
     }
@@ -209,7 +208,7 @@ public class FileUtils {
                 if (jsonString != null)
                     return new JSONObject(jsonString);
             } catch (JSONException e) {
-                OptiLogger.f163(e.getMessage());
+                OptiLoggerStreamsContainer.error(e.getMessage());
             }
             return null;
         }
@@ -266,7 +265,7 @@ public class FileUtils {
          */
         public Writer in(SourceDir sourceDir) {
             if (fileName == null) {
-                OptiLogger.f164();
+                OptiLoggerStreamsContainer.error("Missing a file name to write to");
                 return this;
             }
             switch (sourceDir) {
@@ -274,20 +273,20 @@ public class FileUtils {
                     File file = new File(context.getCacheDir(), fileName);
                     boolean fileExists = createFile(file);
                     if (!fileExists) {
-                        OptiLogger.f165(fileName);
+                        OptiLoggerStreamsContainer.error("File name %s couldn't be created for write operation", fileName);
                         break;
                     }
                     try {
                         fileOutputStream = new FileOutputStream(file, append);
                     } catch (FileNotFoundException e) {
-                        OptiLogger.f166(e.getMessage());
+                        OptiLoggerStreamsContainer.error(e.getMessage());
                     }
                     break;
                 case INTERNAL:
                     try {
                         fileOutputStream = context.openFileOutput(fileName, append ? Context.MODE_APPEND : Context.MODE_PRIVATE);
                     } catch (FileNotFoundException e) {
-                        OptiLogger.f167(e.getMessage());
+                        OptiLoggerStreamsContainer.error(e.getMessage());
                     }
                     break;
             }
@@ -308,12 +307,12 @@ public class FileUtils {
                 writer.flush();
                 return true;
             } catch (IOException e) {
-                OptiLogger.f168(e.getMessage());
+                OptiLoggerStreamsContainer.error(e.getMessage());
             } finally {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    OptiLogger.f169(e.getMessage());
+                    OptiLoggerStreamsContainer.error(e.getMessage());
                 }
             }
             return false;
@@ -364,11 +363,11 @@ public class FileUtils {
          */
         public boolean now() {
             if (sourceDir == null) {
-                OptiLogger.f170();
+                OptiLoggerStreamsContainer.error("Parent dir wasn't set when attempting to delete");
                 return false;
             }
             if (fileName == null) {
-                OptiLogger.f171();
+                OptiLoggerStreamsContainer.error("Missing a file name to delete");
                 return false;
             }
             switch (sourceDir) {

@@ -8,7 +8,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
 import java.util.Collections;
@@ -35,7 +35,7 @@ public class OptipushMessageCommand {
     public void processRemoteMessage(RemoteMessage remoteMessage,
                                      NotificationData notificationData) {
         if (context.getSystemService(NOTIFICATION_SERVICE) == null) {
-            OptiLogger.optipushFailedToProcessNotification_WhenNotificationManagerIsNull();
+            OptiLoggerStreamsContainer.fatal("Failed to process an Optipush push notification because the Device's Notifications Manager is null");
             return;
         }
 
@@ -71,7 +71,7 @@ public class OptipushMessageCommand {
     private void showNotificationIfUserIsOptIn(NotificationData notificationData) {
         boolean optIn = deviceInfoProvider.notificaionsAreEnabled();
         if (!optIn) {
-            OptiLogger.optipushNotificationNotPresented_WhenUserIdOptOut();
+            OptiLoggerStreamsContainer.warn("Optipush Notification blocked since the user is opt out");
             return;
         }
         notificationCreator.showNotification(notificationData);

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 
 import com.optimove.sdk.optimove_sdk.optipush.events_dispatch_service.NotificationOpenedEventDispatchService;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
@@ -27,7 +26,7 @@ public class NotificationInteractionReceiver extends BroadcastReceiver {
     }
 
     boolean isDelete = intent.getBooleanExtra(OptipushConstants.Notifications.IS_DELETE_KEY, false);
-    OptiLogger.optipushReceivedUserResponse(isDelete);
+    OptiLoggerStreamsContainer.info("User has responded to Optipush Notification with %s", isDelete ? "dismiss" : "open");
     if (!isDelete) {
       dispatchNotificationOpenedEventToService(context, intent);
       openApplication(context, intent);
@@ -64,7 +63,7 @@ public class NotificationInteractionReceiver extends BroadcastReceiver {
     try {
       context.startActivity(linkIntent);
     } catch (Exception e) {
-      OptiLogger.optipushFailedToDeepLinkToScreen(dynamicLink, e.getMessage());
+      OptiLoggerStreamsContainer.error("Failed to redirect user to deep link %s due to: %s", dynamicLink, e.getMessage());
       openMainActivity(context);
     }
   }

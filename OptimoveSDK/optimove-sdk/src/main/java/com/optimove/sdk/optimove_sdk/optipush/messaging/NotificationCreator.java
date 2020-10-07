@@ -18,7 +18,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import com.optimove.sdk.optimove_sdk.main.tools.UiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
@@ -45,7 +45,7 @@ public class NotificationCreator {
                 Bitmap notificationDecodedBitmap =
                         UiUtils.getBitmapFromURL(notificationData.getNotificationMedia().url);
                 if (notificationDecodedBitmap == null) {
-                    OptiLogger.optipushNotificationBitmapFailedToLoad(notificationData.getNotificationMedia().url);
+                    OptiLoggerStreamsContainer.error("Failed to get bitmap from url - %s", notificationData.getNotificationMedia().url);
                     presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
                 } else {
                     presentNotification(applyBigImageStyle(basicNotificationBuilder, notificationDecodedBitmap).build(), notificationData);
@@ -53,7 +53,8 @@ public class NotificationCreator {
             }).start();
         } else {
             if (notificationData.getNotificationMedia() != null) {
-                OptiLogger.optipushMediaTypeNotImage(notificationData.getNotificationMedia().mediaType);
+                OptiLoggerStreamsContainer.debug("Notification payload contains media that is not image, image type is: %s",
+                        notificationData.getNotificationMedia().mediaType);
             }
             presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
         }
@@ -168,7 +169,7 @@ public class NotificationCreator {
                 return bundle.getInt(OptipushConstants.Notifications.CUSTOM_ICON_META_DATA_KEY);
             }
         } catch (PackageManager.NameNotFoundException | NullPointerException e) {
-            OptiLogger.optipushNoCustomNotificationIconWasFound();
+            OptiLoggerStreamsContainer.debug("No custom notification icon was found, using default");
         }
         return context.getApplicationInfo().icon;
     }
@@ -183,7 +184,7 @@ public class NotificationCreator {
                 return bundle.getInt(OptipushConstants.Notifications.CUSTOM_COLOR_META_DATA_KEY);
             }
         } catch (PackageManager.NameNotFoundException | NullPointerException e) {
-            OptiLogger.optipushNoCustomNotificationColorWasFound();
+            OptiLoggerStreamsContainer.debug("No custom notification color was found, using default");
         }
         return OptipushConstants.Notifications.INVALID_CUSTOM_COLOR_VALUE;
     }

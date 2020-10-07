@@ -16,7 +16,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class DeviceInfoProvider {
         try {
             adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
         } catch (GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException | IOException e) {
-            OptiLogger.adIdFetcherFailedFetching(e.getMessage());
+            OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e.getMessage());
         }
         return adInfo != null && !adInfo.isLimitAdTrackingEnabled();
     }

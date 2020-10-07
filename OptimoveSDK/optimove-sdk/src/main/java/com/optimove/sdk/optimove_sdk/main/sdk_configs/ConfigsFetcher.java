@@ -13,7 +13,6 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.fetched_configs.FetchedTen
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.util.Set;
@@ -88,12 +87,14 @@ public class ConfigsFetcher {
                 this.fetchedGlobalConfig = fetchedGlobalConfig;
                 sendConfigsIfGlobalAndTenantArrived(configsListener);
             } catch (JsonSyntaxException exception) {
-                OptiLogger.failedToGetRemoteConfigurationFile(exception.getLocalizedMessage());
+                OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getLocalizedMessage());
+
                 getLocalConfig(configsListener, configsErrorListener);
             }
         })
                 .errorListener(error -> {
-                    OptiLogger.failedToGetRemoteConfigurationFile(error.getLocalizedMessage());
+                    OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", error.getLocalizedMessage());
+
                     getLocalConfig(configsListener, configsErrorListener);
                 })
                 .send();
@@ -102,12 +103,12 @@ public class ConfigsFetcher {
                 this.fetchedTenantConfigs = fetchedTenantConfigs;
                 sendConfigsIfGlobalAndTenantArrived(configsListener);
             } catch (JsonSyntaxException exception) {
-                OptiLogger.failedToGetRemoteConfigurationFile(exception.getLocalizedMessage());
+                OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getLocalizedMessage());
                 getLocalConfig(configsListener, configsErrorListener);
             }
         })
                 .errorListener(error -> {
-                    OptiLogger.failedToGetRemoteConfigurationFile(error.getLocalizedMessage());
+                    OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", error.getLocalizedMessage());
                     getLocalConfig(configsListener, configsErrorListener);
                 })
                 .send();

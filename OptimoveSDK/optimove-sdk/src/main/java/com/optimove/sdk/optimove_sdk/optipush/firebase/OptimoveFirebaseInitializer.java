@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 
 import com.google.firebase.FirebaseApp;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Firebase.APP_CONTROLLER_PROJECT_NAME;
 
@@ -45,7 +45,7 @@ public class OptimoveFirebaseInitializer {
         FirebaseApp.initializeApp(context, firebaseKeys.toFirebaseOptions());
       }
     } catch (Exception e) {
-      OptiLogger.optipushFirebaseProjectInitFailed(APP_CONTROLLER_PROJECT_NAME, e.getMessage());
+      OptiLoggerStreamsContainer.error("Failed to init Firebase project %s due to: %s", APP_CONTROLLER_PROJECT_NAME, e.getMessage());
       return false;
     }
     return true;

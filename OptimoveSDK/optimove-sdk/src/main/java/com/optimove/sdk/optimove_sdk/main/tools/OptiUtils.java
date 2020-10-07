@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -70,13 +70,13 @@ public class OptiUtils {
       Field field = buildConfig.getDeclaredField(key);
       result = field.get(null);
     } catch (ClassNotFoundException e) {
-      OptiLogger.f172();
+      OptiLoggerStreamsContainer.fatal("getBuildConfig failed due to: failed to find App BuildConfig class");
     } catch (NoSuchFieldException e) {
-      OptiLogger.f173(key);
+      OptiLoggerStreamsContainer.warn("getBuildConfig failed due to: failed to find Optimove SDK flag %s in BuildConfig class", key);
     } catch (IllegalAccessException e) {
-      OptiLogger.f174();
+      OptiLoggerStreamsContainer.warn("getBuildConfig failed due to: failed to get value of optimove flag");
     } catch (Throwable e) {
-      OptiLogger.f175(e.getMessage());
+      OptiLoggerStreamsContainer.error("getBuildConfig failed due to: %s", e.getMessage());
     }
     return result;
   }
@@ -98,7 +98,7 @@ public class OptiUtils {
       md = MessageDigest.getInstance("SHA-1");
       md.update(text.getBytes(StandardCharsets.ISO_8859_1), 0, text.length());
     } catch (NoSuchAlgorithmException e) {
-      OptiLogger.f176();
+      OptiLoggerStreamsContainer.error("SHA1");
       return text;
     }
     byte[] sha1hash = md.digest();

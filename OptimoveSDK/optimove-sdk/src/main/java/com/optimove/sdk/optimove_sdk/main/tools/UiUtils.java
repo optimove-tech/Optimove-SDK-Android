@@ -3,8 +3,6 @@ package com.optimove.sdk.optimove_sdk.main.tools;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLogger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
