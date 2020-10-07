@@ -3,7 +3,7 @@ package com.optimove.sdk.optimove_sdk.optipush.registration;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import androidx.annotation.NonNull;
+
 import androidx.annotation.Nullable;
 
 import java.util.Set;

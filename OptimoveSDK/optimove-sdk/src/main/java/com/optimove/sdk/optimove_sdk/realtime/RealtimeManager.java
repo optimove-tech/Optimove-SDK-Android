@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.realtime;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;

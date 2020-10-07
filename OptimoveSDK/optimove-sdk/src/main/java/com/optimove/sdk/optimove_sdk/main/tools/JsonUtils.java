@@ -1,7 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.tools;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 

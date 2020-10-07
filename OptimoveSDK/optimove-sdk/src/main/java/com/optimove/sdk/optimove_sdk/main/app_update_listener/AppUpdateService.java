@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.main.app_update_listener;
 
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 

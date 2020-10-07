@@ -13,7 +13,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
 import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_IN;

@@ -1,7 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events;
 
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
-import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
 import java.util.HashMap;
 import java.util.Map;

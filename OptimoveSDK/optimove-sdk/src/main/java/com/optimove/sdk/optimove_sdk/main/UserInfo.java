@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.main;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -16,7 +17,12 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static android.content.Context.MODE_PRIVATE;
-import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.*;
+import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.INITIAL_VISITOR_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.INSTALLATION_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.USER_EMAIL_KEY;
+import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.USER_IDS_SP;
+import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.USER_ID_KEY;
+import static com.optimove.sdk.optimove_sdk.main.UserInfo.UserInfoConstants.VISITOR_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.DEVICE_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
 import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.FIRST_VISIT_TIMESTAMP_KEY;

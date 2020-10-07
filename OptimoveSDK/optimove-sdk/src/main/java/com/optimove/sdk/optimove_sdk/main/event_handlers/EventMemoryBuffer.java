@@ -3,7 +3,6 @@ package com.optimove.sdk.optimove_sdk.main.event_handlers;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 

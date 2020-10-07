@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -13,8 +14,8 @@ import com.optimove.sdk.optimove_sdk.main.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
-import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
+import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;

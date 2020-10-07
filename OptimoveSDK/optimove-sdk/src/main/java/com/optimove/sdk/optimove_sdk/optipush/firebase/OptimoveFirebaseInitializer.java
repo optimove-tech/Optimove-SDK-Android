@@ -1,6 +1,7 @@
 package com.optimove.sdk.optimove_sdk.optipush.firebase;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.google.firebase.FirebaseApp;

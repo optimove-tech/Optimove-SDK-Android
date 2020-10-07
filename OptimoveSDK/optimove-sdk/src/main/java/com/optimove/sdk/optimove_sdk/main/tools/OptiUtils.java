@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.main.tools;
 
 import android.os.Handler;
 import android.os.Looper;
+
 import androidx.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;

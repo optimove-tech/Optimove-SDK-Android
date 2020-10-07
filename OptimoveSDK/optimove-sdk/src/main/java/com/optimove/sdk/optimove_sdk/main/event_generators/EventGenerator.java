@@ -12,7 +12,6 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEve
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.util.Collections;
 
