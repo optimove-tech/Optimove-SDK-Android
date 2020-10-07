@@ -58,7 +58,7 @@ public class OptimoveLifecycleEventGeneratorTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         lifecycleObserver = new LifecycleObserver();
         when(eventHandlerProvider.getEventHandler()).thenReturn(eventHandler);

@@ -28,7 +28,7 @@ public class EventNormalizerTests {
     private EventNormalizer eventNormalizer;
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         eventNormalizer = new EventNormalizer(56);
         eventNormalizer.setNext(nextEventHandler);
     }

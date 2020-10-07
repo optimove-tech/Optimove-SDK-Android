@@ -48,7 +48,7 @@ public class EventHandlerProviderTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
         when(eventHandlerFactory.getDestinationDecider(any(), any(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(destinationDecider);

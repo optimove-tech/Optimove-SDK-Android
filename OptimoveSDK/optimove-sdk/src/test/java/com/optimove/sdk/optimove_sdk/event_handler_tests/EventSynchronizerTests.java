@@ -26,7 +26,7 @@ public class EventSynchronizerTests {
     private EventSynchronizer eventSynchronizer;
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         eventSynchronizer = new EventSynchronizer(Executors.newSingleThreadExecutor());
         eventSynchronizer.setNext(nextEventHandler);
     }

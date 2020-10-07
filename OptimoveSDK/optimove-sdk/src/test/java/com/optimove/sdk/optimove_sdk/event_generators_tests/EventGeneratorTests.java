@@ -71,7 +71,7 @@ public class EventGeneratorTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         //shared prefs
         when(optitrackPreferences.edit()).thenReturn(editor);

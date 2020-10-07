@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 

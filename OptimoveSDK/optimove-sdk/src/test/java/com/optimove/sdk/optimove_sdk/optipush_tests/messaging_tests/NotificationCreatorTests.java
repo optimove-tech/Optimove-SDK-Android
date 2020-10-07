@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -18,13 +19,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotificationManager;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(RobolectricTestRunner.class)
-//@Config(sdk = Build.VERSION_CODES.P)
+@Config(sdk = Build.VERSION_CODES.P)
 public class NotificationCreatorTests {
 
     //@Mock
@@ -44,7 +46,7 @@ public class NotificationCreatorTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         this.context = ApplicationProvider.getApplicationContext();
         this.notificationCreator = new NotificationCreator(context);
 

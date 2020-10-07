@@ -1,5 +1,6 @@
 package com.optimove.sdk.optimove_sdk.tools_tests;
 
+import android.os.Build;
 import android.util.ArrayMap;
 
 import com.google.gson.annotations.SerializedName;
@@ -9,12 +10,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.Map;
 
 
 @RunWith(RobolectricTestRunner.class)
-//@Config(sdk = Build.VERSION_CODES.P)
+@Config(sdk = Build.VERSION_CODES.P)
 public class JsonUtilsTests {
 
     @Test

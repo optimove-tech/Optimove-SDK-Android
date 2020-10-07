@@ -2,7 +2,7 @@ package com.optimove.sdk.optimove_sdk.realtime;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SetEmailEvent;

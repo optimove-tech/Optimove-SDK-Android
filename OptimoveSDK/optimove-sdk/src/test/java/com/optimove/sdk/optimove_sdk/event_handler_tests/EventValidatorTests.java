@@ -41,7 +41,7 @@ public class EventValidatorTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         eventValidator = new EventValidator(eventConfigsMap, maxNumberOfParams);
         eventValidator.setNext(nextEventHandler);
     }

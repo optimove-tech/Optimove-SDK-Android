@@ -26,7 +26,6 @@ import org.mockito.verification.VerificationMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +58,7 @@ public class OptitrackTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         when(httpClient.postJsonArray(any(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);

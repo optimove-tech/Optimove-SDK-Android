@@ -29,7 +29,7 @@ public class EventMemoryBufferTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         eventMemoryBuffer = new EventMemoryBuffer(bufferMaximumSize);
     }
 

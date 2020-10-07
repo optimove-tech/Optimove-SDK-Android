@@ -61,7 +61,7 @@ public class OptipushUserRegistrarTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         lifecycleObserver = new LifecycleObserver();
 
         //registration

@@ -2,7 +2,7 @@ package com.optimove.sdk.optimove_sdk.main_tests;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.v4.util.ArraySet;
+import androidx.collection.ArraySet;
 
 import com.android.volley.ParseError;
 import com.android.volley.Response;
@@ -71,7 +71,7 @@ public class ConfigsFetcherTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         gson = new Gson();
         Class<FetchedGlobalConfig> fetchedGlobalConfigClass = FetchedGlobalConfig.class;
         Class<FetchedTenantConfigs> fetchedTenantConfigsClass = FetchedTenantConfigs.class;

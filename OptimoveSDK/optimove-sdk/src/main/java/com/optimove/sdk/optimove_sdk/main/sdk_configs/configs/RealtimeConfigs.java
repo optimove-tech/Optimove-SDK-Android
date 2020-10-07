@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.sdk_configs.configs;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class RealtimeConfigs {
 

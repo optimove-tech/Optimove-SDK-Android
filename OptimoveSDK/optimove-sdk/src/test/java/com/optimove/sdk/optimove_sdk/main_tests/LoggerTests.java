@@ -22,7 +22,7 @@ public class LoggerTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.FATAL);
         OptiLoggerStreamsContainer.setMinLogLevelToShow(LogLevel.WARN);
 

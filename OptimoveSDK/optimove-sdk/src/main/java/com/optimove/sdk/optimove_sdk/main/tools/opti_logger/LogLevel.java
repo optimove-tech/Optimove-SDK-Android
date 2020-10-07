@@ -1,6 +1,6 @@
 package com.optimove.sdk.optimove_sdk.main.tools.opti_logger;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 

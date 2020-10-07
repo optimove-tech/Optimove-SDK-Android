@@ -1,6 +1,7 @@
 package com.optimove.sdk.optimove_sdk.optipush_tests.messaging_tests;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.Map;
 
@@ -31,7 +33,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
-//@Config(sdk = Build.VERSION_CODES.P)
+@Config(sdk = Build.VERSION_CODES.P)
 public class OptipushMessageCommandTests {
 
     @Mock
@@ -55,7 +57,7 @@ public class OptipushMessageCommandTests {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         optipushMessageCommand = new OptipushMessageCommand(ApplicationProvider.getApplicationContext(),eventHandler, deviceInfoProvider,
                 notificationCreator);
