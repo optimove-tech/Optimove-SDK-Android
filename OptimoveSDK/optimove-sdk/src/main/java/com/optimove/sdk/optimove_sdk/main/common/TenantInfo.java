@@ -13,7 +13,7 @@ public class TenantInfo {
     this(-1, tenantToken, configName);
   }
 
-  TenantInfo(int tenantId, String tenantToken, String configName) {
+  public TenantInfo(int tenantId, String tenantToken, String configName) {
     this.tenantId = tenantId;
     this.tenantToken = tenantToken;
     this.configName = configName;

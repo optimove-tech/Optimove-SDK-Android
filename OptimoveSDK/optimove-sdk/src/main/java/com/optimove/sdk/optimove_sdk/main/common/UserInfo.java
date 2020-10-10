@@ -56,7 +56,7 @@ public class UserInfo {
     this.installationId = null;
   }
 
-  static UserInfo newInstance(Context context) {
+  public static UserInfo newInstance(Context context) {
     UserInfo userInfo = new UserInfo();
     userInfo.userIdsSp = context.getSharedPreferences(USER_IDS_SP, Context.MODE_PRIVATE);
 

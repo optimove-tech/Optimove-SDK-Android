@@ -14,7 +14,6 @@
             android:name=".optipush.messaging.OptipushMessagingService"
             android:exported="false">
             <!--Firebase's Messaging Service priority is -500 so set to the -400 to get the messages-->
-            <!--Firebase's Messaging Service priority is -500 so set to the -400 to get the messages-->
             <intent-filter android:priority="-400">
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
