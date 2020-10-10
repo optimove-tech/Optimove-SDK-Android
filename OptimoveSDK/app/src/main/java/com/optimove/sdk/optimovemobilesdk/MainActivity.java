@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
       @Override
       public void onDataExtracted(String screenName, Map<String, String> parameters) {
         Toast.makeText(MainActivity.this, String.format("New Intent called with screed %s, and data: %s",
-            screenName, Arrays.deepToString(parameters.values().toArray(new String[parameters.size()]))), Toast.LENGTH_SHORT).show();
+            screenName, Arrays.deepToString(parameters.values().toArray(new String[0]))), Toast.LENGTH_SHORT).show();
       }
 
       @Override
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     new Thread(runnable).start();
   }
 
-  private class SimpleCustomEvent extends OptimoveEvent {
+  private static class SimpleCustomEvent extends OptimoveEvent {
 
     SimpleCustomEvent() {
     }
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public Map<String, Object> getParameters() {
       HashMap<String, Object> result = new HashMap<>();
-      String val = "  oaisjdoiajdsoiajsdoiajsdoiajsdoij  ";
+      String val = "  some_string  ";
       result.put("strinG_param", val);
       result.put("number_param", 42);
       return result;

@@ -10,7 +10,9 @@ import android.os.Bundle;
 import android.provider.Settings;
 
 import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
 import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
@@ -37,6 +39,9 @@ public class MyApplication extends Application {
       OptiLoggerStreamsContainer.addOutputStream(FileOptiLoggerOutputStream.getInstance(this, new FileUtils()));
     }
     registerActivityLifecycleCallbacks(new MyActivitiesListener());
+    TenantInfo tenantInfo = new TenantInfo("internal-token", "dev");
+    Optimove.enableStagingRemoteLogs();
+    Optimove.configure(this, tenantInfo, LogLevel.DEBUG);
   }
 
   /**
