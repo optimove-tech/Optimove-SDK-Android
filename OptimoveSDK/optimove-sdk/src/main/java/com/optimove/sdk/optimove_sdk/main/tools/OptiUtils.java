@@ -59,11 +59,6 @@ public class OptiUtils {
   }
 
 
-  @Nullable
-  public static Object getBuildConfig(String packageName, String key) {
-    return getBuildConfig(packageName, key, null);
-  }
-
   public static Object getBuildConfig(String packageName, String key, Object defaultValue) {
     Object result = defaultValue;
     try {
@@ -71,7 +66,7 @@ public class OptiUtils {
       Field field = buildConfig.getDeclaredField(key);
       result = field.get(null);
     } catch (ClassNotFoundException e) {
-      OptiLoggerStreamsContainer.fatal("getBuildConfig failed due to: failed to find App BuildConfig class");
+      OptiLoggerStreamsContainer.error("getBuildConfig failed due to: failed to find App BuildConfig class");
     } catch (NoSuchFieldException e) {
       OptiLoggerStreamsContainer.warn("getBuildConfig failed due to: failed to find Optimove SDK flag %s in BuildConfig class", key);
     } catch (IllegalAccessException e) {

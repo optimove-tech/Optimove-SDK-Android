@@ -226,7 +226,7 @@ final public class Optimove {
     private void updateConfigurations(Configs configs) {
         loadTenantId(configs);
         if (configs.getLogsConfigs()
-                .isProdLogsEnabled()) {
+                .isProdLogsEnabled() && OptiLoggerStreamsContainer.getMinLogLevelRemote().getRawLevel() > LogLevel.ERROR.getRawLevel()) {
             OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.ERROR);
         }
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());

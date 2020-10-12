@@ -62,6 +62,10 @@ public final class OptiLoggerStreamsContainer {
         OptiLoggerStreamsContainer.minLogLevelRemote = minLogLevelToShow;
     }
 
+    public static LogLevel getMinLogLevelRemote(){
+        return OptiLoggerStreamsContainer.minLogLevelRemote;
+    }
+
     /* ****************************************************
      * Log Functions
      * ****************************************************/
