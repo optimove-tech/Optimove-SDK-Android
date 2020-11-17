@@ -127,7 +127,7 @@ public final class OptipushManager {
                         context.getPackageName(), tenantId, deviceInfoProvider, registrationDao, userInfo,
                         lifecycleObserver, getMetadata());
 
-        new OptipushFcmTokenHandler().completeLastTokenRefreshIfFailed();
+        new OptipushFcmTokenHandler().syncTokenIfRequired();
     }
 
     private Metadata getMetadata() {

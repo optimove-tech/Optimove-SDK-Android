@@ -33,6 +33,8 @@ android {
             buildConfigField "Boolean", "OPTIMOVE_DISABLE_AUTO_INIT", 'false'
             // Add this only for the buildTypes that are considered "Staging"
             buildConfigField "Boolean", "OPTIMOVE_CLIENT_STG_ENV", 'true' // For "false" you can just remove this flag as it is the default value
+            buildConfigField "String", "OPTIMOVE_SDK_RUNTIME_ENV", '"dev"'
+
 
             //applicationIdSuffix ".debug"
         }
