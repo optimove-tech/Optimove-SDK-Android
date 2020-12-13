@@ -85,14 +85,6 @@ public final class RegistrationDao {
       return this;
     }
 
-    public FlagsEditor markTokenRefreshAsFailed() {
-      editor.putBoolean(TOKEN_REFRESH_FAILED_KEY, true);
-      return this;
-    }
-    public FlagsEditor unmarkTokenRefreshAsFailed() {
-      editor.remove(TOKEN_REFRESH_FAILED_KEY);
-      return this;
-    }
     public FlagsEditor markSetInstallationAsFailed() {
       editor.putBoolean(SET_INSTALLATION_FAILED_KEY, true);
       return this;

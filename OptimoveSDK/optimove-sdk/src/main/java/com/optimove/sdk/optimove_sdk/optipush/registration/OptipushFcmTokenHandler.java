@@ -33,54 +33,25 @@ public class OptipushFcmTokenHandler {
     newToken = null;
   }
 
-  public void completeLastTokenRefreshIfFailed() {
-    if (registrationDao.isTokenRefreshMarkedAsFailed()) {
-      onTokenRefresh();
-    }
-  }
-
   /**
    * A callback informing the Optimove SDK that a new Instance ID Token is available.
    */
   public void onTokenRefresh() {
+    syncTokenIfRequired();
+  }
+
+  public void syncTokenIfRequired() {
     if (!isRunning.compareAndSet(false, true)) {
       OptiLoggerStreamsContainer.info("Skipping on token refresh as someone else is already refreshing the token");
       return;
     }
-    processToken();
-  }
-
-  private void processToken(){
-    FirebaseInstanceId.getInstance().getInstanceId()
-            .addOnSuccessListener(instanceIdResult -> {
-              registrationDao.editFlags().unmarkTokenRefreshAsFailed().save();
-              this.newToken = instanceIdResult.getToken();
-              OptiLoggerStreamsContainer.debug("Got new FCM token %s", newToken);
-
-              lastToken = registrationDao.getLastToken();
-              Context context = Optimove.getInstance().getApplicationContext();
-              boolean clientHasDefaultFirebaseApp = FirebaseApp.getApps(context).size() > 1;
-              if (clientHasDefaultFirebaseApp) {
-                fetchNewSecondaryToken();
-              } else {
-                proceedOnlyIfTokenWasChanged();
-              }
-            })
-            .addOnFailureListener(e -> {
-              OptiLoggerStreamsContainer.error("Failed to get new token from InstanceId due to: %s. Will retry later", e.getMessage());
-              registrationDao.editFlags().markTokenRefreshAsFailed().save();
-              isRunning.set(false);
-            });
-  }
-
-
-  private void fetchNewSecondaryToken() {
+    lastToken = registrationDao.getLastToken();
     FirebaseApp firebaseApp;
     try {
-      firebaseApp = FirebaseApp.getInstance(OptipushConstants.Firebase.APP_CONTROLLER_PROJECT_NAME);
+      firebaseApp = FirebaseApp.getApps(Optimove.getInstance().getApplicationContext()).size() > 1 ?
+              FirebaseApp.getInstance(OptipushConstants.Firebase.APP_CONTROLLER_PROJECT_NAME) : FirebaseApp.getInstance();
     } catch (Exception e) {
-      OptiLoggerStreamsContainer.error("Failed to get FCM token for AppController as a secondary app due to: %s. Will retry later", e.getMessage());
-      registrationDao.editFlags().markTokenRefreshAsFailed().save();
+      OptiLoggerStreamsContainer.error("Failed to get FCM token due to: %s. Will retry later", e.getMessage());
       isRunning.set(false);
       return;
     }
@@ -90,8 +61,7 @@ public class OptipushFcmTokenHandler {
         newToken = FirebaseInstanceId.getInstance().getToken(gcmSenderId, "FCM");
         new Handler(Looper.getMainLooper()).post(this::proceedOnlyIfTokenWasChanged);
       } catch (IOException e) {
-        OptiLoggerStreamsContainer.error("Failed to get FCM token for AppController as a secondary app due to: %s. Will retry later", e.getMessage());
-        registrationDao.editFlags().markTokenRefreshAsFailed().save();
+        OptiLoggerStreamsContainer.error("Failed to get FCM token due to: %s. Will retry later", e.getMessage());
         isRunning.set(false);
       }
     }).start();
