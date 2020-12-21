@@ -16,7 +16,6 @@ import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registrat
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.PUSH_CAMPAIGNS_DISABLED_KEY;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.SET_INSTALLATION_FAILED_KEY;
-import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.TOKEN_REFRESH_FAILED_KEY;
 
 /**
  * Manages access to every locally stored data relevant to registration operations
@@ -43,9 +42,6 @@ public final class RegistrationDao {
     return registrationPreferences.getStringSet(FAILED_USER_IDS_KEY, null);
   }
 
-  public boolean isTokenRefreshMarkedAsFailed() {
-    return registrationPreferences.getBoolean(TOKEN_REFRESH_FAILED_KEY, false);
-  }
   public boolean isSetInstallationMarkedAsFailed() {
     return registrationPreferences.getBoolean(SET_INSTALLATION_FAILED_KEY, false);
   }

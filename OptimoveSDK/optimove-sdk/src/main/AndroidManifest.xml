@@ -10,18 +10,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <service
-            android:name=".optipush.messaging.OptipushMessagingService"
-            android:exported="false">
-            <!--Firebase's Messaging Service priority is -500 so set to the -400 to get the messages-->
-            <intent-filter android:priority="-400">
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
+
         <service
             android:name=".optipush.events_dispatch_service.NotificationOpenedEventDispatchService"
             android:enabled="true"/>
-
 
         <service
             android:name=".main.app_update_listener.AppUpdateService"

@@ -81,7 +81,6 @@ public class OptipushUserRegistrarTests {
 
 
         //failed ops
-        when(registrationDao.isTokenRefreshMarkedAsFailed()).thenReturn(false);
         when(registrationDao.isSetInstallationMarkedAsFailed()).thenReturn(false);
         when(registrationDao.wasTheUserOptIn()).thenReturn(true);
         when(registrationDao.getFailedUserAliases()).thenReturn(null);

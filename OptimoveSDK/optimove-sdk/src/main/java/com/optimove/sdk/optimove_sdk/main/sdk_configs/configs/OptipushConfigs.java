@@ -7,7 +7,6 @@ public class OptipushConfigs {
 
     private FirebaseConfigs appControllerProjectConfigs;
 
-
     public String getRegistrationServiceEndpoint() {
         return registrationServiceEndpoint;
     }

@@ -18,17 +18,23 @@ import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.OptimoveFirebaseInitializer;
+import com.optimove.sdk.optimove_sdk.optipush.firebase.FirebaseTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.OptipushMessageCommand;
-import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushFcmTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.registration.OptipushUserRegistrar;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optipush.registration.requests.Metadata;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public final class OptipushManager {
 
+
+    // Don't forget to set back to false once processing is done
+    private AtomicBoolean tokenRefreshInProgress;
+    @NonNull
+    private FirebaseTokenHandler firebaseTokenHandler;
     @NonNull
     private RegistrationDao registrationDao;
     @NonNull
@@ -43,24 +49,17 @@ public final class OptipushManager {
     @Nullable
     private OptipushUserRegistrar optipushUserRegistrar;
 
-    public OptipushManager(@NonNull RegistrationDao registrationDao,@NonNull DeviceInfoProvider deviceInfoProvider,
-                           @NonNull HttpClient httpClient,@NonNull LifecycleObserver lifecycleObserver,
+    public OptipushManager(@NonNull FirebaseTokenHandler firebaseTokenHandler, @NonNull RegistrationDao registrationDao,
+                           @NonNull DeviceInfoProvider deviceInfoProvider,
+                           @NonNull HttpClient httpClient, @NonNull LifecycleObserver lifecycleObserver,
                            @NonNull Context context) {
+        this.firebaseTokenHandler = firebaseTokenHandler;
         this.registrationDao = registrationDao;
         this.deviceInfoProvider = deviceInfoProvider;
         this.httpClient = httpClient;
         this.lifecycleObserver = lifecycleObserver;
         this.context = context;
-    }
-
-    public void tokenWasChanged() {
-        if (optipushUserRegistrar != null) {
-            optipushUserRegistrar.userTokenChanged();
-        } else {
-            registrationDao.editFlags()
-                    .markSetInstallationAsFailed()
-                    .save();
-        }
+        this.tokenRefreshInProgress = new AtomicBoolean(false);
     }
 
     public void userIdChanged() {
@@ -74,11 +73,11 @@ public final class OptipushManager {
     }
 
     public void optipushMessageCommand(RemoteMessage remoteMessage) {
-        if (registrationDao.isPushCampaignsDisabled()){
+        if (registrationDao.isPushCampaignsDisabled()) {
             return;
         }
         NotificationCreator notificationCreator = new NotificationCreator(context);
-        NotificationData notificationData = JsonUtils.parseJsonMap(remoteMessage.getData(),  NotificationData.class);
+        NotificationData notificationData = JsonUtils.parseJsonMap(remoteMessage.getData(), NotificationData.class);
         if (notificationData == null) {
             OptiLoggerStreamsContainer.error("No notification data");
             return;
@@ -90,7 +89,7 @@ public final class OptipushManager {
                 .processRemoteMessage(remoteMessage, notificationData);
     }
 
-    public void disablePushCampaigns(){
+    public void disablePushCampaigns() {
         if (optipushUserRegistrar != null) {
             optipushUserRegistrar.disablePushCampaigns();
         } else {
@@ -101,7 +100,7 @@ public final class OptipushManager {
         }
     }
 
-    public void enablePushCampaigns(){
+    public void enablePushCampaigns() {
         if (optipushUserRegistrar != null) {
             optipushUserRegistrar.enablePushCampaigns();
         } else {
@@ -115,20 +114,54 @@ public final class OptipushManager {
 
     public void processConfigs(OptipushConfigs optipushConfigs, int tenantId, UserInfo userInfo) {
         if (!deviceInfoProvider.isGooglePlayServicesAvailable()) {
+            OptiLoggerStreamsContainer.error("GooglePlay services are not available");
             return;
         }
 
-        boolean succeeded = new OptimoveFirebaseInitializer(context).setup(optipushConfigs);
-        if (!succeeded) {
+        OptipushConfigs.FirebaseConfigs firebaseConfigs = optipushConfigs.getAppControllerProjectConfigs();
+        if (firebaseConfigs == null) {
+            OptiLoggerStreamsContainer.error("No firebase configs in the config file");
             return;
         }
 
+        boolean firebaseSetupSucceeded = firebaseTokenHandler.setup(firebaseConfigs);
         this.optipushUserRegistrar =
                 OptipushUserRegistrar.create(optipushConfigs.getRegistrationServiceEndpoint(), httpClient,
                         context.getPackageName(), tenantId, deviceInfoProvider, registrationDao, userInfo,
                         lifecycleObserver, getMetadata());
+        if (firebaseSetupSucceeded) {
+            syncToken();
+        }
+    }
 
-        new OptipushFcmTokenHandler().syncTokenIfRequired();
+    public void syncToken() {
+        if (optipushUserRegistrar == null){
+            // refresh is about to happen due to config fetch
+            return;
+        }
+        if (!tokenRefreshInProgress.compareAndSet(false, true)) {
+            // refresh is in progress
+            return;
+        }
+        firebaseTokenHandler.getOptimoveFCMToken(new FirebaseTokenHandler.TokenListener() {
+            @Override
+            public void sendToken(String token) {
+                String lastToken = registrationDao.getLastToken();
+                if (lastToken == null || !lastToken.equals(token)) {
+                    registrationDao.editFlags()
+                            .putNewToken(token)
+                            .save();
+                    optipushUserRegistrar.userTokenChanged();
+                }
+                tokenRefreshInProgress.set(false);
+            }
+
+            @Override
+            public void tokenRefreshFailed(String reason) {
+                OptiLoggerStreamsContainer.error(reason);
+                tokenRefreshInProgress.set(false);
+            }
+        });
     }
 
     private Metadata getMetadata() {

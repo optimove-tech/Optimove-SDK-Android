@@ -31,6 +31,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStre
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
+import com.optimove.sdk.optimove_sdk.optipush.firebase.FirebaseTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
 
@@ -97,7 +98,7 @@ final public class Optimove {
                 .build();
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
 
-        this.optipushManager = new OptipushManager(new RegistrationDao(context),
+        this.optipushManager = new OptipushManager(new FirebaseTokenHandler(context), new RegistrationDao(context),
                 deviceInfoProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 context.getPackageName(),
@@ -166,7 +167,7 @@ final public class Optimove {
     }
 
     /**
-     * Enables remote logs for investigations. Don't call it unless you told to.
+     * Enables remote logs for investigations. Don't call it unless we explicitly asked you to.
      */
     public static void enableStagingRemoteLogs() {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
@@ -458,6 +459,10 @@ final public class Optimove {
     public void reportScreenVisit(@NonNull String screenName, @Nullable String screenCategory) {
         eventHandlerProvider.getEventHandler()
                 .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName, screenCategory)));
+    }
+
+    public void fcmTokenRefreshed(){
+        optipushManager.syncToken();
     }
 
     public void disablePushCampaigns() {

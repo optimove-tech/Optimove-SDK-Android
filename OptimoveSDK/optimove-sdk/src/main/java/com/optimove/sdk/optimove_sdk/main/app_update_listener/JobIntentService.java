@@ -50,14 +50,6 @@ import java.util.HashMap;
  * dispatched to and handled by your service.  It will be executed in
  * {@link #onHandleWork(Intent)}.</p>
  *
- * <p>You do not need to use {@link androidx.legacy.content.WakefulBroadcastReceiver}
- * when using this class.  When running on {@link android.os.Build.VERSION_CODES#O Android O},
- * the JobScheduler will take care of wake locks for you (holding a wake lock from the time
- * you enqueue work until the job has been dispatched and while it is running).  When running
- * on previous versions of the platform, this wake lock handling is emulated in the class here
- * by directly calling the PowerManager; this means the application must request the
- * {@link android.Manifest.permission#WAKE_LOCK} permission.</p>
- *
  * <p>There are a few important differences in behavior when running on
  * {@link android.os.Build.VERSION_CODES#O Android O} or later as a Job vs. pre-O:</p>
  *
@@ -82,8 +74,6 @@ import java.util.HashMap;
  *
  * <p>Here is an example implementation of this class:</p>
  *
- * {@sample frameworks/support/samples/Support4Demos/src/main/java/com/example/android/supportv4/app/SimpleJobIntentService.java
- *      complete}
  */
 public abstract class JobIntentService extends Service {
     static final String TAG = "JobIntentService";

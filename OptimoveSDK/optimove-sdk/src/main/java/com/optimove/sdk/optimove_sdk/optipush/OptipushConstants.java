@@ -19,7 +19,6 @@ public interface OptipushConstants {
     String SDK_NOTIFICATION_CHANNEL_ID = "optimove.sdk.notifications";
     String IS_DELETE_KEY = "is_delete";
     String DYNAMIC_LINK = "dynamic_link";
-    //String CAMPAIGN_ID_CARD = "campaign_id_card";
     String SCHEDULED_IDENTITY_TOKEN = "scheduled_identity_token";
     String TRIGGERED_IDENTITY_TOKEN = "triggered_identity_token";
 
@@ -29,17 +28,12 @@ public interface OptipushConstants {
     int INVALID_CUSTOM_COLOR_VALUE = -1;
   }
 
-  interface Firebase {
-    String APP_CONTROLLER_PROJECT_NAME = "optimove.sdk.app_controller";
-  }
 
   interface Registration {
     String REGISTRATION_PREFERENCES_NAME = "com.optimove.sdk.registration_preferences";
 
     String LAST_TOKEN_KEY = "lastToken";
-   // String LAST_OPT_STATUS_KEY = "lastOptStatus";
     String LAST_NOTIFICATION_PERMISSION_STATUS = "lastNotificationPermissionStatus";
-    String TOKEN_REFRESH_FAILED_KEY = "last_refresh_failed_key";
     //the key value remains the same to maintain users that have this value from previous versions
     String SET_INSTALLATION_FAILED_KEY = "tokenUpdateFailedKey";
     String API_V3_SYNCED_KEY = "apiV3SyncedKey";
