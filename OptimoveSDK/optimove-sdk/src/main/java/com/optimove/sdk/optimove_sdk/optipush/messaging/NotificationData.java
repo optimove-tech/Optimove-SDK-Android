@@ -36,6 +36,9 @@ public class NotificationData {
     @SerializedName("media")
     @Nullable
     private NotificationMedia notificationMedia;
+    @SerializedName("request_id")
+    @Nullable
+    private String requestId;
 
 
     public String getTitle() {
@@ -89,7 +92,14 @@ public class NotificationData {
     public void setNotificationMedia(@Nullable NotificationMedia notificationMedia) {
         this.notificationMedia = notificationMedia;
     }
+    @Nullable
+    public String getRequestId() {
+        return requestId;
+    }
 
+    public void setRequestId(@Nullable String requestId) {
+        this.requestId = requestId;
+    }
     @Nullable
     public String getScheduledCampaign() {
         return scheduledCampaign;

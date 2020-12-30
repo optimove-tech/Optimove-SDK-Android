@@ -30,6 +30,7 @@ public class SetEmailEvent extends OptimoveEvent implements OptimoveCoreEvent {
     return EVENT_NAME;
   }
 
+
   @Override
   public Map<String, Object> getParameters() {
     Map<String, Object> params = new HashMap<>();

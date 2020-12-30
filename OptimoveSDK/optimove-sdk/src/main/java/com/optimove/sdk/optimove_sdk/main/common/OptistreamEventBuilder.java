@@ -65,7 +65,7 @@ public class OptistreamEventBuilder {
                 .withContext(optimoveEvent.getParameters());
 
         OptistreamEvent.Metadata metadata = new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate(),
-                Constants.PLATFORM, BuildConfig.VERSION_NAME);
+                Constants.PLATFORM, BuildConfig.VERSION_NAME, optimoveEvent.getRequestId());
 
         if (airshipMetadata != null) {
             metadata.setAirship(airshipMetadata);

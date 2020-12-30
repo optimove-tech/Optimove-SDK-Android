@@ -26,6 +26,8 @@ public class OptistreamEvent {
     private String timestamp;
     @SerializedName("context")
     private Map<String, Object> context;
+    @SerializedName("metadata")
+    private Metadata metadata;
 
     public int getTenantId() {
         return tenantId;
@@ -83,8 +85,6 @@ public class OptistreamEvent {
         this.context = context;
     }
 
-    @SerializedName("metadata")
-    private Metadata metadata;
 
     private OptistreamEvent(Builder builder) {
         tenantId = builder.tenantId;
@@ -249,16 +249,19 @@ public class OptistreamEvent {
         private String sdkPlatform;
         @SerializedName("sdk_version")
         private String sdkVersion;
+        @SerializedName("requestId")
+        private String requestId;
         @SerializedName("validations")
         @Nullable
         private List<ValidationIssue> validationIssues;
 
-        public Metadata(boolean realtime, long firstVisitorDate, String sdkPlatform, String sdkVersion) {
+        public Metadata(boolean realtime, long firstVisitorDate, String sdkPlatform, String sdkVersion, String requestId) {
             this.realtime = realtime;
             this.firstVisitorDate = firstVisitorDate;
             this.eventId = UUID.randomUUID().toString();
             this.sdkPlatform = sdkPlatform;
             this.sdkVersion = sdkVersion;
+            this.requestId = requestId;
         }
 
         public void setAirship(@NonNull AirshipMetadata airship){

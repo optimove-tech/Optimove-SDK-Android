@@ -31,7 +31,7 @@ public class NotificationOpenedEventDispatchService extends Service {
         if (intent.hasExtra(OptipushConstants.Notifications.SCHEDULED_IDENTITY_TOKEN)) {
             scheduledIdentityToken = intent.getStringExtra(OptipushConstants.Notifications.SCHEDULED_IDENTITY_TOKEN);
         } else if (intent.hasExtra(OptipushConstants.Notifications.TRIGGERED_IDENTITY_TOKEN)) {
-            triggeredIdentityToken = intent.getParcelableExtra(OptipushConstants.Notifications.TRIGGERED_IDENTITY_TOKEN);
+            triggeredIdentityToken = intent.getStringExtra(OptipushConstants.Notifications.TRIGGERED_IDENTITY_TOKEN);
         }
 
         Optimove.configureUrgently(this);
@@ -41,13 +41,14 @@ public class NotificationOpenedEventDispatchService extends Service {
                     .getEventHandlerProvider()
                     .getEventHandler()
                     .reportEvent(Collections.singletonList(new TriggeredNotificationOpenedEvent(OptiUtils.currentTimeSeconds(),
-                            this.getPackageName(), triggeredIdentityToken)));
+                            this.getPackageName(), triggeredIdentityToken,
+                            intent.getStringExtra(OptipushConstants.Notifications.REQUEST_ID))));
         } else if (scheduledIdentityToken != null) {
             Optimove.getInstance()
                     .getEventHandlerProvider()
                     .getEventHandler()
                     .reportEvent(Collections.singletonList(new ScheduledNotificationOpenedEvent(OptiUtils.currentTimeSeconds(),
-                            this.getPackageName(), scheduledIdentityToken)));
+                            this.getPackageName(), scheduledIdentityToken, intent.getStringExtra(OptipushConstants.Notifications.REQUEST_ID))));
         }
         new Thread(() -> {
             try {

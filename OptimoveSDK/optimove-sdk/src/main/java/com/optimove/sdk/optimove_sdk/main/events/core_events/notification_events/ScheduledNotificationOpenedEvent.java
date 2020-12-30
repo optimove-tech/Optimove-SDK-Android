@@ -1,5 +1,7 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events;
 
+import androidx.annotation.Nullable;
+
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptimoveCoreEvent;
 
 public final class ScheduledNotificationOpenedEvent extends NotificationEvent implements OptimoveCoreEvent {
@@ -7,8 +9,9 @@ public final class ScheduledNotificationOpenedEvent extends NotificationEvent im
   public static final String NAME = "notification_opened";
 
 
-  public ScheduledNotificationOpenedEvent(long timestamp,String packageName, String identityToken)  {
-    super(timestamp, packageName, identityToken);
+  public ScheduledNotificationOpenedEvent(long timestamp,String packageName, String identityToken,
+                                          @Nullable String requestId)  {
+    super(timestamp, packageName, identityToken, requestId);
   }
 
   @Override

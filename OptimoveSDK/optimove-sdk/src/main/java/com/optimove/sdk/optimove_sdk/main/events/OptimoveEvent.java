@@ -2,8 +2,11 @@ package com.optimove.sdk.optimove_sdk.main.events;
 
 import androidx.annotation.Nullable;
 
+import com.optimove.sdk.optimove_sdk.main.Optimove;
+
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Defines a <i><b>Custom Event</b></i> that can be validated by the {@code SDK} and reported to <b>OptiTrack</b>.
@@ -11,16 +14,24 @@ import java.util.Map;
 public abstract class OptimoveEvent {
 
     private long timestamp;
+    private String requestId;
 
     @Nullable
     protected List<ValidationIssue> validationIssues;
 
     public OptimoveEvent() {
         this.timestamp = System.currentTimeMillis();
+        this.requestId = UUID.randomUUID().toString();
     }
 
-    public OptimoveEvent(long timestamp) {
+    public OptimoveEvent(long timestamp, String requestId) {
         this.timestamp = timestamp;
+        this.requestId = requestId == null ? UUID.randomUUID().toString() : requestId;
+    }
+
+    public OptimoveEvent(String requestId) {
+        this.timestamp = System.currentTimeMillis();
+        this.requestId = requestId;
     }
 
     /**
@@ -40,6 +51,10 @@ public abstract class OptimoveEvent {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public String getRequestId() {
+        return requestId;
     }
 
     public void setTimestamp(long timestamp) {

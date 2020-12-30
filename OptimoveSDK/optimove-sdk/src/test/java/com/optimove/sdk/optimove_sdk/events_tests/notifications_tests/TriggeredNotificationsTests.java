@@ -11,17 +11,18 @@ public class TriggeredNotificationsTests {
     private long timestamp = 12323;
     private String packageName = "package_name";
     private String identityToken = "identity_token";
+    private String requestId = "some_request_id";
     @Test
     public void triggeredNotificationDeliveredShouldContainTheRightName(){
         TriggeredNotificationDeliveredEvent triggeredNotificationDeliveredEvent =
-                new TriggeredNotificationDeliveredEvent(timestamp, packageName, identityToken);
+                new TriggeredNotificationDeliveredEvent(timestamp, packageName, identityToken, requestId);
 
         Assert.assertEquals(TriggeredNotificationDeliveredEvent.NAME, triggeredNotificationDeliveredEvent.getName());
     }
     @Test
     public void triggeredNotificationOpenedShouldContainTheRightName(){
         TriggeredNotificationOpenedEvent triggeredNotificationOpenedEvent =
-                new TriggeredNotificationOpenedEvent(timestamp, packageName, identityToken);
+                new TriggeredNotificationOpenedEvent(timestamp, packageName, identityToken, requestId);
 
         Assert.assertEquals(TriggeredNotificationOpenedEvent.NAME, triggeredNotificationOpenedEvent.getName());
     }

@@ -41,10 +41,10 @@ public class OptipushMessageCommand {
 
         if (notificationData.getScheduledCampaign() != null) {
             eventHandler.reportEvent(Collections.singletonList(new ScheduledNotificationDeliveredEvent(OptiUtils.currentTimeSeconds(), fullPackageName,
-                    notificationData.getScheduledCampaign())));
+                    notificationData.getScheduledCampaign(), notificationData.getRequestId())));
         } else if (notificationData.getTriggeredCampaign() != null) {
             eventHandler.reportEvent(Collections.singletonList(new TriggeredNotificationDeliveredEvent(OptiUtils.currentTimeSeconds(), fullPackageName,
-                    notificationData.getTriggeredCampaign())));
+                    notificationData.getTriggeredCampaign(), notificationData.getRequestId())));
         }
 
 

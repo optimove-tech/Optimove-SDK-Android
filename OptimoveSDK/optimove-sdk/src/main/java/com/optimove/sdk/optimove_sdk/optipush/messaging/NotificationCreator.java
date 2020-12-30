@@ -128,6 +128,9 @@ public class NotificationCreator {
         if (notificationData.getDynamicLink() != null) {
             intent.putExtra(OptipushConstants.Notifications.DYNAMIC_LINK, notificationData.getDynamicLink());
         }
+        if (notificationData.getRequestId() != null) {
+            intent.putExtra(OptipushConstants.Notifications.REQUEST_ID, notificationData.getRequestId());
+        }
 
         int rc;
         if (notificationData.getCollapseKey() != null) {

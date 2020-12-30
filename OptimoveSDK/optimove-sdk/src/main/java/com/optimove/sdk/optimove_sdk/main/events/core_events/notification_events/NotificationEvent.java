@@ -1,5 +1,7 @@
 package com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events;
 
+import androidx.annotation.Nullable;
+
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 import java.util.HashMap;
@@ -16,7 +18,9 @@ public abstract class NotificationEvent extends OptimoveEvent {
     protected String identityToken;
 
 
-    protected NotificationEvent(long timestamp, String packageName, String identityToken) {
+    protected NotificationEvent(long timestamp, String packageName, String identityToken,
+                                @Nullable String requestId) {
+        super(requestId);
         this.timestamp = timestamp;
         this.packageName = packageName;
         this.identityToken = identityToken;

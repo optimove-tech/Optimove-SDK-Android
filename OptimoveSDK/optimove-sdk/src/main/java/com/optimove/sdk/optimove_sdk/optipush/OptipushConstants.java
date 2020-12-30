@@ -21,6 +21,7 @@ public interface OptipushConstants {
     String DYNAMIC_LINK = "dynamic_link";
     String SCHEDULED_IDENTITY_TOKEN = "scheduled_identity_token";
     String TRIGGERED_IDENTITY_TOKEN = "triggered_identity_token";
+    String REQUEST_ID = "request_id";
 
 
     String CUSTOM_ICON_META_DATA_KEY = "com.optimove.sdk.custom-notification-icon";
