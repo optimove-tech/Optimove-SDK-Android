@@ -11,17 +11,18 @@ public class ScheduledNotificationsTests {
     private long timestamp = 12323;
     private String packageName = "package_name";
     private String identityToken = "identity_token";
+    private String requestId = "request_id";
     @Test
     public void scheduledNotificationDeliveredShouldContainTheRightName(){
         ScheduledNotificationDeliveredEvent scheduledNotificationDeliveredEvent =
-                new ScheduledNotificationDeliveredEvent(timestamp, packageName, identityToken);
+                new ScheduledNotificationDeliveredEvent(timestamp, packageName, identityToken, requestId);
 
         Assert.assertEquals(ScheduledNotificationDeliveredEvent.NAME, scheduledNotificationDeliveredEvent.getName());
     }
     @Test
     public void scheduledNotificationOpenedShouldContainTheRightName(){
         ScheduledNotificationOpenedEvent scheduledNotificationOpenedEvent =
-                new ScheduledNotificationOpenedEvent(timestamp, packageName, identityToken);
+                new ScheduledNotificationOpenedEvent(timestamp, packageName, identityToken, requestId);
 
         Assert.assertEquals(ScheduledNotificationOpenedEvent.NAME, scheduledNotificationOpenedEvent.getName());
     }
