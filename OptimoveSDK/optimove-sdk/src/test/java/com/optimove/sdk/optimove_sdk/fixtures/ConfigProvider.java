@@ -8,13 +8,13 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.fetched_configs.FetchedTen
 
 public class ConfigProvider {
 
-    public static Configs getConfigs(String packageName){
+    public static Configs getConfigs(){
         Gson gson = new Gson();
         FetchedTenantConfigs fetchedTenantConfigs = gson.fromJson(ConfigProvider.getTenantConfigJsonString(),
                 FetchedTenantConfigs.class);
         FetchedGlobalConfig fetchedGlobalConfig = gson.fromJson(ConfigProvider.getGlobalConfigJsonString(),
                 FetchedGlobalConfig.class);
-        return FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(packageName,
+        return FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(
                 fetchedGlobalConfig, fetchedTenantConfigs);
     }
 

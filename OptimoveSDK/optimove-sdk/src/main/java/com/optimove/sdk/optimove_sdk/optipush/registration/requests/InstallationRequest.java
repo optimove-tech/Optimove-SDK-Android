@@ -11,6 +11,8 @@ public class InstallationRequest {
     private String customerId;
     @SerializedName("device_token")
     private String deviceToken;
+    @SerializedName("is_tenant_token")
+    private boolean isTenantToken;
     @SerializedName("push_provider")
     private String pushProvider;
     @SerializedName("app_ns")
@@ -31,6 +33,7 @@ public class InstallationRequest {
         visitorId = builder.visitorId;
         customerId = builder.customerId;
         deviceToken = builder.deviceToken;
+        isTenantToken = builder.isTenantToken;
         pushProvider = builder.pushProvider;
         packageName = builder.packageName;
         os = builder.os;
@@ -77,7 +80,11 @@ public class InstallationRequest {
     }
 
     public interface IDeviceToken {
-        IPushProvider withDeviceToken(String val);
+        IIsTenantToken withDeviceToken(String val);
+    }
+
+    public interface IIsTenantToken {
+        IPushProvider withIsTenantToken(boolean val);
     }
 
     public interface ICustomerId {
@@ -92,7 +99,9 @@ public class InstallationRequest {
         IVisitorId withInstallationId(String val);
     }
 
-    public static final class Builder implements IMetadata, IIsPushCampaignsDisabled, IIsDev, IOptIn, IOs, IPackageName, IPushProvider, IDeviceToken, ICustomerId, IVisitorId, IInstallationId, IBuild {
+    public static final class Builder implements IMetadata, IIsPushCampaignsDisabled, IIsDev, IOptIn, IOs,
+            IPackageName, IPushProvider, IDeviceToken, IIsTenantToken, ICustomerId, IVisitorId, IInstallationId,
+            IBuild {
         private Metadata metadata;
         private boolean isPushCampaignsDisabled;
         private boolean isDev;
@@ -101,6 +110,7 @@ public class InstallationRequest {
         private String packageName;
         private String pushProvider;
         private String deviceToken;
+        private boolean isTenantToken;
         private String customerId;
         private String visitorId;
         private String installationId;
@@ -151,8 +161,14 @@ public class InstallationRequest {
         }
 
         @Override
-        public IPushProvider withDeviceToken(String val) {
+        public IIsTenantToken withDeviceToken(String val) {
             deviceToken = val;
+            return this;
+        }
+
+        @Override
+        public IPushProvider withIsTenantToken(boolean val) {
+            isTenantToken = val;
             return this;
         }
 

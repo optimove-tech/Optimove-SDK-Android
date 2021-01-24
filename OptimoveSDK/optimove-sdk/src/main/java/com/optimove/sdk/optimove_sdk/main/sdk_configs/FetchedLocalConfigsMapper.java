@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.LogsConfigs;
-import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.fetched_configs.FetchedGlobalConfig;
@@ -16,15 +15,13 @@ import java.util.Map;
 
 public class FetchedLocalConfigsMapper {
 
-    public static Configs mapFetchedConfigsToLocal(@NonNull String packageName,
-                                                   @NonNull FetchedGlobalConfig fetchedGlobalConfig,
+    public static Configs mapFetchedConfigsToLocal(@NonNull FetchedGlobalConfig fetchedGlobalConfig,
                                                    @NonNull FetchedTenantConfigs fetchedTenantConfigs) {
         int tenantId = fetchedTenantConfigs.optitrackMetaData.siteId;
 
         LogsConfigs logsConfigs = getLogsConfigs(fetchedGlobalConfig, fetchedTenantConfigs);
         RealtimeConfigs realtimeConfigs = getRealtimeConfigs(fetchedTenantConfigs);
         OptitrackConfigs optitrackConfigs = getOptitrackConfigs(tenantId, fetchedTenantConfigs);
-        OptipushConfigs optipushConfigs = getOptipushConfigs(fetchedGlobalConfig, fetchedTenantConfigs, packageName);
         Map<String, EventConfigs> eventConfigsMap = new HashMap<>();
         eventConfigsMap.putAll(fetchedTenantConfigs.eventsConfigs);
         eventConfigsMap.putAll(fetchedGlobalConfig.coreEventsConfigs); // second! to override tenant configs
@@ -34,7 +31,7 @@ public class FetchedLocalConfigsMapper {
                 logsConfigs,
                 realtimeConfigs,
                 optitrackConfigs,
-                optipushConfigs,
+                fetchedGlobalConfig.fetchedOptipushConfigs.mbaasEndpoint,
                 eventConfigsMap);
     }
 
@@ -65,20 +62,4 @@ public class FetchedLocalConfigsMapper {
         return optitrackConfigs;
     }
 
-    private static OptipushConfigs getOptipushConfigs(@NonNull FetchedGlobalConfig fetchedGlobalConfig,
-                                                      @NonNull FetchedTenantConfigs fetchedTenantConfigs,
-                                                      @NonNull String packageName) {
-        OptipushConfigs optipushConfigs = new OptipushConfigs();
-        optipushConfigs.setRegistrationServiceEndpoint(fetchedGlobalConfig.fetchedOptipushConfigs.mbaasEndpoint);
-        OptipushConfigs.FirebaseConfigs appControllerFirebaseConfigs = optipushConfigs.new FirebaseConfigs();
-        appControllerFirebaseConfigs.setAppId(fetchedTenantConfigs.mobile.firebaseProjectKeys.appIds.androidAppIds.get(packageName));
-        appControllerFirebaseConfigs.setDbUrl(fetchedTenantConfigs.mobile.firebaseProjectKeys.dbUrl);
-        appControllerFirebaseConfigs.setProjectId(fetchedTenantConfigs.mobile.firebaseProjectKeys.projectId);
-        appControllerFirebaseConfigs.setSenderId(fetchedTenantConfigs.mobile.firebaseProjectKeys.senderId);
-        appControllerFirebaseConfigs.setStorageBucket(fetchedTenantConfigs.mobile.firebaseProjectKeys.storageBucket);
-        appControllerFirebaseConfigs.setWebApiKey(fetchedTenantConfigs.mobile.firebaseProjectKeys.webApiKey);
-        optipushConfigs.setAppControllerProjectConfigs(appControllerFirebaseConfigs);
-
-        return optipushConfigs;
-    }
 }

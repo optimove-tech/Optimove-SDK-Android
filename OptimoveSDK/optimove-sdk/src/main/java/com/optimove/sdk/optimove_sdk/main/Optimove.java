@@ -31,7 +31,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStre
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.FirebaseTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
 
@@ -98,7 +97,7 @@ final public class Optimove {
                 .build();
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
 
-        this.optipushManager = new OptipushManager(new FirebaseTokenHandler(context), new RegistrationDao(context),
+        this.optipushManager = new OptipushManager(new RegistrationDao(context),
                 deviceInfoProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 context.getPackageName(),
@@ -232,7 +231,7 @@ final public class Optimove {
         }
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
 
-        optipushManager.processConfigs(configs.getOptipushConfigs(), tenantInfo.getTenantId(), userInfo);
+        optipushManager.processConfigs(configs.getOptipushRegistrationServiceEndpoint(), tenantInfo.getTenantId(), userInfo);
         eventHandlerProvider.processConfigs(configs);
         //sends initial events
         EventGenerator eventGenerator =

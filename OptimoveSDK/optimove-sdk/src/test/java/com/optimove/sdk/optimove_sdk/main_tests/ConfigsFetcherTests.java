@@ -61,11 +61,9 @@ public class ConfigsFetcherTests {
 
     private String configName = "config_name";
     private String tenantToken = "tenant_info";
-    private String packageName = "some_package_name";
     private ConfigsFetcher regularConfigFetcher;
     private Configs configs;
 
-    private int timeout = 1000;
     private Gson gson;
 
 
@@ -95,6 +93,7 @@ public class ConfigsFetcherTests {
         when(reader.from(FileUtils.SourceDir.INTERNAL)).thenReturn(reader);
         when(reader.named(configName)).thenReturn(reader);
 
+        String packageName = "some_package_name";
         when(context.getPackageName()).thenReturn(packageName);
 
         regularConfigFetcher = ConfigsFetcher.builder()
@@ -106,7 +105,7 @@ public class ConfigsFetcherTests {
                 .fileProvider(fileUtils)
                 .context(context)
                 .build();
-        configs = ConfigProvider.getConfigs(packageName);
+        configs = ConfigProvider.getConfigs();
 
     }
 
@@ -125,7 +124,7 @@ public class ConfigsFetcherTests {
         int randomTenantId = 56757;
         Gson gson = new Gson();
         when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs(packageName);
+        Configs storedInFileConfig = ConfigProvider.getConfigs();
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
@@ -146,7 +145,7 @@ public class ConfigsFetcherTests {
         int randomTenantId = 56757;
         Gson gson = new Gson();
         when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs(packageName);
+        Configs storedInFileConfig = ConfigProvider.getConfigs();
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
@@ -166,7 +165,7 @@ public class ConfigsFetcherTests {
         int randomTenantId = 56757;
         Gson gson = new Gson();
         when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs(packageName);
+        Configs storedInFileConfig = ConfigProvider.getConfigs();
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
@@ -202,6 +201,7 @@ public class ConfigsFetcherTests {
         regularConfigFetcher.fetchConfigs(configs ->  Assert.fail()
                 , error -> {});
         InOrder inOrder = Mockito.inOrder(editor);
+        int timeout = 1000;
         verify(editor, timeout(timeout)).remove(first);
         verify(editor, timeout(timeout)).remove(second);
         inOrder.verify(editor, timeout(timeout)).apply();

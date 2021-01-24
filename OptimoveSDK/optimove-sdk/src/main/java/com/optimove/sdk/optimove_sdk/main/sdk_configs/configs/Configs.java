@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class Configs {
 
-
     private int tenantId;
     private boolean enableRealtime;
     private boolean enableRealtimeThroughOptistream;
@@ -16,7 +15,7 @@ public class Configs {
     private LogsConfigs logsConfigs;
     private RealtimeConfigs realtimeConfigs;
     private OptitrackConfigs optitrackConfigs;
-    private OptipushConfigs optipushConfigs;
+    private String optipushRegistrationServiceEndpoint;
     private Map<String, EventConfigs> eventsConfigs;
 
     public Configs(int tenantId, boolean enableRealtime,
@@ -25,7 +24,7 @@ public class Configs {
                    @NonNull LogsConfigs logsConfigs,
                    @NonNull RealtimeConfigs realtimeConfigs,
                    @NonNull OptitrackConfigs optitrackConfigs,
-                   @NonNull OptipushConfigs optipushConfigs,
+                   @NonNull String optipushRegistrationServiceEndpoint,
                    @NonNull Map<String, EventConfigs> eventsConfigs) {
         this.tenantId = tenantId;
         this.enableRealtime = enableRealtime;
@@ -34,7 +33,7 @@ public class Configs {
         this.logsConfigs = logsConfigs;
         this.realtimeConfigs = realtimeConfigs;
         this.optitrackConfigs = optitrackConfigs;
-        this.optipushConfigs = optipushConfigs;
+        this.optipushRegistrationServiceEndpoint = optipushRegistrationServiceEndpoint;
         this.eventsConfigs = eventsConfigs;
     }
 
@@ -62,12 +61,12 @@ public class Configs {
         this.optitrackConfigs = optitrackConfigs;
     }
 
-    public OptipushConfigs getOptipushConfigs() {
-        return optipushConfigs;
+    public String getOptipushRegistrationServiceEndpoint() {
+        return optipushRegistrationServiceEndpoint;
     }
 
-    public void setOptipushConfigs(@NonNull OptipushConfigs optipushConfigs) {
-        this.optipushConfigs = optipushConfigs;
+    public void setOptipushConfigs(@NonNull String optipushRegistrationServiceEndpoint) {
+        this.optipushRegistrationServiceEndpoint = optipushRegistrationServiceEndpoint;
     }
 
     public Map<String, EventConfigs> getEventsConfigs() {

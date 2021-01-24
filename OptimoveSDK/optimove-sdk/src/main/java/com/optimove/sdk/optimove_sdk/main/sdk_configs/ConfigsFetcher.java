@@ -118,7 +118,7 @@ public class ConfigsFetcher {
     private void sendConfigsIfGlobalAndTenantArrived(ConfigsListener configsListener) {
         if (fetchedGlobalConfig != null && fetchedTenantConfigs != null) {
             Configs configs =
-                    FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(context.getPackageName(), fetchedGlobalConfig, fetchedTenantConfigs);
+                    FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(fetchedGlobalConfig, fetchedTenantConfigs);
             backupInitData(configs);
             configsListener.setConfigs(configs);
         }

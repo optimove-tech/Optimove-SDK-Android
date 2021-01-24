@@ -8,17 +8,16 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 import com.optimove.sdk.optimove_sdk.BuildConfig;
-import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptipushConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.JsonUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.optipush.firebase.FirebaseTokenHandler;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationCreator;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.NotificationData;
 import com.optimove.sdk.optimove_sdk.optipush.messaging.OptipushMessageCommand;
@@ -34,8 +33,6 @@ public final class OptipushManager {
     // Don't forget to set back to false once processing is done
     private AtomicBoolean tokenRefreshInProgress;
     @NonNull
-    private FirebaseTokenHandler firebaseTokenHandler;
-    @NonNull
     private RegistrationDao registrationDao;
     @NonNull
     private DeviceInfoProvider deviceInfoProvider;
@@ -49,11 +46,10 @@ public final class OptipushManager {
     @Nullable
     private OptipushUserRegistrar optipushUserRegistrar;
 
-    public OptipushManager(@NonNull FirebaseTokenHandler firebaseTokenHandler, @NonNull RegistrationDao registrationDao,
+    public OptipushManager(@NonNull RegistrationDao registrationDao,
                            @NonNull DeviceInfoProvider deviceInfoProvider,
                            @NonNull HttpClient httpClient, @NonNull LifecycleObserver lifecycleObserver,
                            @NonNull Context context) {
-        this.firebaseTokenHandler = firebaseTokenHandler;
         this.registrationDao = registrationDao;
         this.deviceInfoProvider = deviceInfoProvider;
         this.httpClient = httpClient;
@@ -112,26 +108,16 @@ public final class OptipushManager {
     }
 
 
-    public void processConfigs(OptipushConfigs optipushConfigs, int tenantId, UserInfo userInfo) {
+    public void processConfigs(String optipushRegistrationServiceEndpoint, int tenantId, UserInfo userInfo) {
         if (!deviceInfoProvider.isGooglePlayServicesAvailable()) {
             OptiLoggerStreamsContainer.error("GooglePlay services are not available");
             return;
         }
-
-        OptipushConfigs.FirebaseConfigs firebaseConfigs = optipushConfigs.getAppControllerProjectConfigs();
-        if (firebaseConfigs == null) {
-            OptiLoggerStreamsContainer.error("No firebase configs in the config file");
-            return;
-        }
-
-        boolean firebaseSetupSucceeded = firebaseTokenHandler.setup(firebaseConfigs);
         this.optipushUserRegistrar =
-                OptipushUserRegistrar.create(optipushConfigs.getRegistrationServiceEndpoint(), httpClient,
+                OptipushUserRegistrar.create(optipushRegistrationServiceEndpoint, httpClient,
                         context.getPackageName(), tenantId, deviceInfoProvider, registrationDao, userInfo,
                         lifecycleObserver, getMetadata());
-        if (firebaseSetupSucceeded) {
-            syncToken();
-        }
+        syncToken();
     }
 
     public void syncToken() {
@@ -143,25 +129,25 @@ public final class OptipushManager {
             // refresh is in progress
             return;
         }
-        firebaseTokenHandler.getOptimoveFCMToken(new FirebaseTokenHandler.TokenListener() {
-            @Override
-            public void sendToken(String token) {
-                String lastToken = registrationDao.getLastToken();
-                if (lastToken == null || !lastToken.equals(token)) {
-                    registrationDao.editFlags()
-                            .putNewToken(token)
-                            .save();
-                    optipushUserRegistrar.userTokenChanged();
-                }
-                tokenRefreshInProgress.set(false);
-            }
 
-            @Override
-            public void tokenRefreshFailed(String reason) {
-                OptiLoggerStreamsContainer.error(reason);
-                tokenRefreshInProgress.set(false);
-            }
-        });
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        OptiLoggerStreamsContainer.error("Failed to get token");
+                        return;
+                    }
+
+                    // Get new FCM registration token
+                    String token = task.getResult();
+                    String lastToken = registrationDao.getLastToken();
+                    if (lastToken == null || !lastToken.equals(token)) {
+                        registrationDao.editFlags()
+                                .putNewToken(token)
+                                .save();
+                        optipushUserRegistrar.userTokenChanged();
+                    }
+                    tokenRefreshInProgress.set(false);
+                });
     }
 
     private Metadata getMetadata() {

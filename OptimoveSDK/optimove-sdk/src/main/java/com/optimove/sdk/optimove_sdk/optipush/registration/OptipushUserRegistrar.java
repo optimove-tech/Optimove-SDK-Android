@@ -114,6 +114,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                         .withVisitorId(userInfo.getInitialVisitorId())
                         .withCustomerId(userInfo.getUserId())
                         .withDeviceToken(registrationDao.getLastToken())
+                        .withIsTenantToken(true)
                         .withPushProvider("fcm")
                         .withPackageName(packageName)
                         .withOs("android")
