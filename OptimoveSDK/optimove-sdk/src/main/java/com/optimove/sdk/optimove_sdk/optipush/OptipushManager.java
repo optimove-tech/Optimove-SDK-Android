@@ -130,24 +130,32 @@ public final class OptipushManager {
             return;
         }
 
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(task -> {
-                    if (!task.isSuccessful()) {
-                        OptiLoggerStreamsContainer.error("Failed to get token");
-                        return;
-                    }
+        try {
+            FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            OptiLoggerStreamsContainer.error("Failed to get token");
+                            return;
+                        }
 
-                    // Get new FCM registration token
-                    String token = task.getResult();
-                    String lastToken = registrationDao.getLastToken();
-                    if (lastToken == null || !lastToken.equals(token)) {
-                        registrationDao.editFlags()
-                                .putNewToken(token)
-                                .save();
-                        optipushUserRegistrar.userTokenChanged();
-                    }
-                    tokenRefreshInProgress.set(false);
-                });
+                        // Get new FCM registration token
+                        String token = task.getResult();
+                        String lastToken = registrationDao.getLastToken();
+                        if (lastToken == null || !lastToken.equals(token)) {
+                            registrationDao.editFlags()
+                                    .putNewToken(token)
+                                    .save();
+                            optipushUserRegistrar.userTokenChanged();
+                        }
+                        tokenRefreshInProgress.set(false);
+                    });
+        } catch (IllegalStateException e) {
+            OptiLoggerStreamsContainer.warn(e.getMessage());
+        } catch (Throwable throwable) {
+            OptiLoggerStreamsContainer.error(throwable.getMessage());
+        }
+
+
     }
 
     private Metadata getMetadata() {
