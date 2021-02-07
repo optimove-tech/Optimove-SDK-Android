@@ -39,9 +39,8 @@ public class MyApplication extends Application {
       OptiLoggerStreamsContainer.addOutputStream(FileOptiLoggerOutputStream.getInstance(this, new FileUtils()));
     }
     registerActivityLifecycleCallbacks(new MyActivitiesListener());
-    TenantInfo tenantInfo = new TenantInfo("internal-token", "dev");
     Optimove.enableStagingRemoteLogs();
-    Optimove.configure(this, tenantInfo, LogLevel.DEBUG);
+    Optimove.configure(this, new TenantInfo("internal-token", "dev"));
   }
 
   /**
