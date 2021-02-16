@@ -29,8 +29,6 @@ public class FetchedTenantConfigs {
 
         @SerializedName("optipushMetaData")
         public OptipushMetaData optipushMetaData;
-        @SerializedName("firebaseProjectKeys")
-        public FirebaseProjectKeys firebaseProjectKeys;
     }
 
     public class OptipushMetaData {
