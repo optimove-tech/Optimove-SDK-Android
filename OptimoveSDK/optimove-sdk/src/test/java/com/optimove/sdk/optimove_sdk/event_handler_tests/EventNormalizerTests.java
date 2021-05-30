@@ -48,4 +48,13 @@ public class EventNormalizerTests {
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
                 .getParameters().containsKey(formattedParameter))));
     }
+
+    @Test
+    public void eventWithNoParamsShouldBeReportedNormally() {
+        String formattedName = "some_event";
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(formattedName, null);
+        eventNormalizer.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
+                .getName(), formattedName)));
+    }
 }

@@ -26,8 +26,7 @@ public class EventDecorator extends EventHandler {
             if (eventConfigsMap.containsKey(optimoveEvent.getName())) {
                 optimoveEventsToSendToNext.add(new OptimoveEventDecorator(optimoveEvent,
                         eventConfigsMap.get(optimoveEvent.getName()),
-                        maxNumberOfParams - optimoveEvent.getParameters()
-                                .size()));
+                        getMaxNumOfParams(optimoveEvent)));
             } else {
                 optimoveEventsToSendToNext.add(optimoveEvent);
             }
@@ -35,4 +34,9 @@ public class EventDecorator extends EventHandler {
         reportEventNext(optimoveEventsToSendToNext);
     }
 
+    private int getMaxNumOfParams(OptimoveEvent optimoveEvent) {
+        return maxNumberOfParams - (optimoveEvent.getParameters() != null ?
+                optimoveEvent.getParameters()
+                        .size() : 0);
+    }
 }

@@ -47,14 +47,15 @@ public class OptimoveEventDecorator extends OptimoveEvent {
   private void setupParameters(){
     this.modifiedEventParams = new HashMap<>();
     Map<String, Object> optimoveEventParameters = optimoveEvent.getParameters();
-    if (optimoveEventParameters != null) {
-      for (String paramKey : optimoveEventParameters.keySet()) {
-        Object val = optimoveEventParameters.get(paramKey);
-        if (val instanceof String) {
-          modifiedEventParams.put(paramKey, val.toString().trim());
-        } else {
-          modifiedEventParams.put(paramKey, val);
-        }
+    if (optimoveEventParameters == null) {
+      return;
+    }
+    for (String paramKey : optimoveEventParameters.keySet()) {
+      Object val = optimoveEventParameters.get(paramKey);
+      if (val instanceof String) {
+        modifiedEventParams.put(paramKey, val.toString().trim());
+      } else {
+        modifiedEventParams.put(paramKey, val);
       }
     }
   }

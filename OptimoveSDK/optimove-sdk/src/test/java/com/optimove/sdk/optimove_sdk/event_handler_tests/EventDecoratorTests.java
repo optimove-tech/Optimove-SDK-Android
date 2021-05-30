@@ -112,4 +112,13 @@ public class EventDecoratorTests {
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
                 .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
     }
+
+    @Test
+    public void eventWithNoParamsShouldBeReportedNormally() {
+        String eventName = "some_event";
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, null);
+        eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
+                .getName(), eventName)));
+    }
 }

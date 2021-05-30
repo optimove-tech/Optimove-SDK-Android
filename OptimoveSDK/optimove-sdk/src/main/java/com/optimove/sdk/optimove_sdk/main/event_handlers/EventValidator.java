@@ -87,7 +87,7 @@ public class EventValidator extends EventHandler {
         }
 
         List<OptimoveEvent.ValidationIssue> missingMandatoryParams =
-                checkIfAllMandatoryParamsAreExisted(optimoveEvent, eventConfig, optimoveEvent.getParameters());
+                checkIfAllMandatoryParamsExist(optimoveEvent, eventConfig, optimoveEvent.getParameters());
         if (missingMandatoryParams != null) {
             validationIssues.addAll(missingMandatoryParams);
         }
@@ -110,15 +110,14 @@ public class EventValidator extends EventHandler {
 
         if (!validationIssues.isEmpty()) {
             return validationIssues;
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Nullable
-    private List<OptimoveEvent.ValidationIssue> checkIfAllMandatoryParamsAreExisted(OptimoveEvent optimoveEvent,
-                                                                                    EventConfigs eventConfig,
-                                                                                    Map<String, Object> parameters) {
+    private List<OptimoveEvent.ValidationIssue> checkIfAllMandatoryParamsExist(OptimoveEvent optimoveEvent,
+                                                                               EventConfigs eventConfig,
+                                                                               @Nullable  Map<String, Object> parameters) {
         List<OptimoveEvent.ValidationIssue> missingMandatoryParams = new ArrayList<>();
 
         for (String paramConfigKey : eventConfig.getParameterConfigs()
@@ -126,9 +125,10 @@ public class EventValidator extends EventHandler {
             EventConfigs.ParameterConfig parameterConfig = eventConfig.getParameterConfigs()
                     .get(paramConfigKey);
             if (parameterConfig == null) {
-                continue; // protection
+                continue;
             }
-            if (!parameterConfig.isOptional() && parameters.get(paramConfigKey) == null) {
+
+            if(!parameterConfig.isOptional() && (parameters == null || !parameters.containsKey(paramConfigKey))) {
                 String message = String.format("event %s has a mandatory parameter, %s, which is undefined or empty",
                         optimoveEvent.getName(), paramConfigKey);
                 OptiLoggerStreamsContainer.businessLogicError(message);
@@ -137,14 +137,17 @@ public class EventValidator extends EventHandler {
         }
         if (!missingMandatoryParams.isEmpty()) {
             return missingMandatoryParams;
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Nullable
     private List<OptimoveEvent.ValidationIssue> findValidationIssuesInsideParams(EventConfigs eventConfig,
-                                                                                 Map<String, Object> parameters) {
+                                                                                 @Nullable Map<String, Object> parameters) {
+        if (parameters == null) {
+            return null;
+        }
+
         List<OptimoveEvent.ValidationIssue> paramValidationIssues = new ArrayList<>();
 
         for (String key : parameters.keySet()) {
@@ -177,9 +180,8 @@ public class EventValidator extends EventHandler {
 
         if (!paramValidationIssues.isEmpty()) {
             return paramValidationIssues;
-        } else {
-            return null;
         }
+        return null;
     }
 
 
@@ -213,37 +215,35 @@ public class EventValidator extends EventHandler {
 
     @NonNull
     private OptimoveEvent removeParamsIfTooMany(OptimoveEvent optimoveEvent) {
-        if (optimoveEvent.getParameters()
-                .size() > maxNumberOfParams) {
-            String message = String.format("event %s contains %s parameters while the allowed number of parameters " +
-                            "is %s. Some parameters were removed to process the event.",
-                    optimoveEvent.getName(), optimoveEvent.getParameters()
-                            .size(), maxNumberOfParams);
-            OptiLoggerStreamsContainer.warn(message);
-            int count = 0;
-            Map<String, Object> newParams = new HashMap<>();
-            for (String paramKey : optimoveEvent.getParameters()
-                    .keySet()) {
-                if (count < maxNumberOfParams) {
-                    newParams.put(paramKey, optimoveEvent.getParameters()
-                            .get(paramKey));
-                }
-                count++;
-            }
-            OptimoveEvent truncatedParamsSimpleEvent = new SimpleCustomEvent(optimoveEvent.getName(), newParams);
-            OptimoveEvent.ValidationIssue tooManyParamsValidationIssue =
-                    new OptimoveEvent.ValidationIssue(ValidationIssueCode.TOO_MANY_PARAMS.rawValue, message,
-                            ValidationIssueCode.TOO_MANY_PARAMS.isError);
-            List<OptimoveEvent.ValidationIssue> newArrayOfValidationIssues = new ArrayList<>();
-            if (optimoveEvent.getValidationIssues() != null) {
-                newArrayOfValidationIssues.addAll(optimoveEvent.getValidationIssues());
-            }
-            newArrayOfValidationIssues.add(tooManyParamsValidationIssue);
-            truncatedParamsSimpleEvent.setValidationIssues(newArrayOfValidationIssues);
-            return truncatedParamsSimpleEvent;
-        } else {
+        if (optimoveEvent.getParameters() == null || optimoveEvent.getParameters().size() <= maxNumberOfParams) {
             return optimoveEvent;
         }
+        String message = String.format("event %s contains %s parameters while the allowed number of parameters " +
+                        "is %s. Some parameters were removed to process the event.",
+                optimoveEvent.getName(), optimoveEvent.getParameters()
+                        .size(), maxNumberOfParams);
+        OptiLoggerStreamsContainer.warn(message);
+        int count = 0;
+        Map<String, Object> newParams = new HashMap<>();
+        for (String paramKey : optimoveEvent.getParameters()
+                .keySet()) {
+            if (count < maxNumberOfParams) {
+                newParams.put(paramKey, optimoveEvent.getParameters()
+                        .get(paramKey));
+            }
+            count++;
+        }
+        OptimoveEvent truncatedParamsSimpleEvent = new SimpleCustomEvent(optimoveEvent.getName(), newParams);
+        OptimoveEvent.ValidationIssue tooManyParamsValidationIssue =
+                new OptimoveEvent.ValidationIssue(ValidationIssueCode.TOO_MANY_PARAMS.rawValue, message,
+                        ValidationIssueCode.TOO_MANY_PARAMS.isError);
+        List<OptimoveEvent.ValidationIssue> newArrayOfValidationIssues = new ArrayList<>();
+        if (optimoveEvent.getValidationIssues() != null) {
+            newArrayOfValidationIssues.addAll(optimoveEvent.getValidationIssues());
+        }
+        newArrayOfValidationIssues.add(tooManyParamsValidationIssue);
+        truncatedParamsSimpleEvent.setValidationIssues(newArrayOfValidationIssues);
+        return truncatedParamsSimpleEvent;
     }
 
     private boolean isIncorrectParameterValueType(EventConfigs.ParameterConfig parameterConfig, Object value) {

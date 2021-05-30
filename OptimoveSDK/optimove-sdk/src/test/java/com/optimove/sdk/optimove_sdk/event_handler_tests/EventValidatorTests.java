@@ -308,4 +308,12 @@ public class EventValidatorTests {
         eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
         verify(nextEventHandler).reportEvent(Collections.singletonList(optimoveEvent));
     }
+    @Test
+    public void eventWithNoParamsShouldBeReportedNormally() {
+        String eventName = "some_event";
+        OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, null);
+        eventValidator.reportEvent(Collections.singletonList(optimoveEvent));
+        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
+                .getName(), eventName)));
+    }
 }
