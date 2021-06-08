@@ -25,7 +25,7 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 4. [Disable push campaigns](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Disable-push-campaigns)
 
 ### Migrations
-1. [Migration from 3.x to 4.0.0](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x.x-to-4.0.0)
+1. [Migration from 3.x to 4.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x.x-to-4.0.0)
 
 ### Executing campaigns using your Optimove instance
 Stay tuned for our how-to guides
