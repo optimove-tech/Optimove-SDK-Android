@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.1
+
+- Migrated to Maven Central
+- Fixed a crash when an event reported without params
+
 ## 4.0.0
 
 Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x.x-to-4.0.0)
