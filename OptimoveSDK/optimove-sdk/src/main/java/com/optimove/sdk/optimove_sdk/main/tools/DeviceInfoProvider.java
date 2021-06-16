@@ -14,7 +14,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GoogleApiAvailabilityLight;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
@@ -54,7 +54,7 @@ public class DeviceInfoProvider {
     }
 
     public boolean isGooglePlayServicesAvailable() {
-        int servicesAvailable = GoogleApiAvailability.getInstance()
+        int servicesAvailable = GoogleApiAvailabilityLight.getInstance()
                 .isGooglePlayServicesAvailable(context);
         return servicesAvailable == ConnectionResult.SUCCESS;
     }
