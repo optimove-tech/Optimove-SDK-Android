@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.2
+
+- Updated FCM and Play Services dependencies
+
 ## 4.0.1
 
 - Migrated to Maven Central
