@@ -110,7 +110,7 @@ public final class OptipushManager {
 
     public void processConfigs(String optipushRegistrationServiceEndpoint, int tenantId, UserInfo userInfo) {
         if (!deviceInfoProvider.isGooglePlayServicesAvailable()) {
-            OptiLoggerStreamsContainer.error("GooglePlay services are not available");
+            OptiLoggerStreamsContainer.fatal("GooglePlay services are not available");
             return;
         }
         this.optipushUserRegistrar =

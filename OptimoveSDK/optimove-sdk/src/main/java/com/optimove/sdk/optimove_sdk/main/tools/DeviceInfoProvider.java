@@ -54,9 +54,13 @@ public class DeviceInfoProvider {
     }
 
     public boolean isGooglePlayServicesAvailable() {
-        int servicesAvailable = GoogleApiAvailabilityLight.getInstance()
-                .isGooglePlayServicesAvailable(context);
-        return servicesAvailable == ConnectionResult.SUCCESS;
+        try {
+            int servicesAvailable = GoogleApiAvailabilityLight.getInstance()
+                    .isGooglePlayServicesAvailable(context);
+            return servicesAvailable == ConnectionResult.SUCCESS;
+        } catch (Throwable throwable) {
+            return false;
+        }
     }
 
     public String getDeviceLanguage() {
