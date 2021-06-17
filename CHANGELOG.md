@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.0.2
+## 4.1.0
 
 - Updated FCM and Play Services dependencies
 
