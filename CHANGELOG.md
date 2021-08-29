@@ -11,7 +11,7 @@
 
 ## 4.0.0
 
-Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x.x-to-4.0.0)
+Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x-to-4.x)
 - Added requestId to events.
 - Added Optimove proguard rules.
 - Fully migrated to AndroidX dependencies.
@@ -51,7 +51,11 @@ Major breaking update - [Migration guide](https://github.com/optimove-tech/Optim
 - Added support for non defined params.
 - Fixed a collision between App Links and Deep Links.
 - Fixed a potential crash in Samsung devices with Android 5.x.
+
 ## 3.0.0
+
+Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-2.x-to-3.x)
+
 - Added a support of the new Optistream events.
 - Added Airship integration.
 - Changed persistent layer for events.
