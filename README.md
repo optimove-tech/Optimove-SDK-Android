@@ -26,6 +26,7 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 
 ### Migrations
 1. [Migration from 3.x to 4.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x-to-4.x)
+2. [Migration from 2.x to 3.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-2.x-to-3.x)
 
 ### Executing campaigns using your Optimove instance
 Stay tuned for our how-to guides
