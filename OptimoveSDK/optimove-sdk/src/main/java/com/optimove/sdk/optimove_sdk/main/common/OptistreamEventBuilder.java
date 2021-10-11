@@ -46,7 +46,7 @@ public class OptistreamEventBuilder {
     }
 
     public OptistreamEvent convertOptimoveToOptistreamEvent(OptimoveEvent optimoveEvent, boolean isRealtime) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ", Locale.US);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         if (airshipEnabled && airshipMetadata == null) {
@@ -65,7 +65,7 @@ public class OptistreamEventBuilder {
                 .withContext(optimoveEvent.getParameters());
 
         OptistreamEvent.Metadata metadata = new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate(),
-                Constants.PLATFORM, BuildConfig.VERSION_NAME, optimoveEvent.getRequestId());
+                Constants.PLATFORM, BuildConfig.OPTIMOVE_VERSION_NAME, optimoveEvent.getRequestId());
 
         if (airshipMetadata != null) {
             metadata.setAirship(airshipMetadata);

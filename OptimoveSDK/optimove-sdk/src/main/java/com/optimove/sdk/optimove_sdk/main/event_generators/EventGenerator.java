@@ -13,7 +13,9 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEven
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class EventGenerator {
 
@@ -81,7 +83,7 @@ public class EventGenerator {
         SdkMetadataEvent sdkMetadataEvent =
                 SdkMetadataEvent.builder()
                         .withSdkPlatform("Android")
-                        .withSdkVersion(BuildConfig.VERSION_NAME)
+                        .withSdkVersion(BuildConfig.OPTIMOVE_VERSION_NAME)
                         .withAppNs(packageName)
                         .withLocation(cityName)
                         .withLocationLongitude(locationLongitude)

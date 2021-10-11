@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.optimove.sdk'
 
@@ -10,10 +9,9 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode Integer.parseInt("$sdk_version_code")
-        versionName "$sdk_version"
         consumerProguardFiles 'optimove-proguard-rules.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField "String", "OPTIMOVE_VERSION_NAME", "\"$sdk_version\""
     }
 
     buildTypes {
@@ -58,18 +56,6 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-android:2.7.15'
 }
 
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            group "com.optimove.sdk"
-            artifactId "optimove-sdk"
-            version "$sdk_version"
-            packaging "aar"
-            name "OptimoveMobileSDK"
-        }
-    }
-}
-
 ext {
     PUBLISH_GROUP_ID = 'com.optimove.sdk'
     PUBLISH_VERSION = "$sdk_version"
@@ -77,23 +63,3 @@ ext {
 }
 
 apply from: "${rootProject.projectDir}/scripts/publish-module.gradle"
-
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
