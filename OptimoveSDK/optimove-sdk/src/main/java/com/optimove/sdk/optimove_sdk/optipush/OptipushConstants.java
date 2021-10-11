@@ -5,11 +5,8 @@ public interface OptipushConstants {
   interface PushSchemaKeys {
 
     String DEEP_LINK = "dl";
-
     String IS_OPTIPUSH = "is_optipush";
-
     String MEDIA_TYPE_IMAGE = "image";
-
   }
 
   interface Notifications {
