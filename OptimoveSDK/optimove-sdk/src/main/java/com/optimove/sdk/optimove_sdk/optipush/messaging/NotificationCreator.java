@@ -139,7 +139,7 @@ public class NotificationCreator {
             rc = OptipushConstants.Notifications.PENDING_INTENT_OPEN_RC;
         }
 
-        return PendingIntent.getBroadcast(context, rc, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, rc, intent, PendingIntent.FLAG_IMMUTABLE);
     }
 
     @TargetApi(Build.VERSION_CODES.O)
