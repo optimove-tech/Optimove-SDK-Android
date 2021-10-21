@@ -218,10 +218,6 @@ public class ConfigsFetcher {
         IsUrgentStep configName(String configName);
     }
 
-//    public interface DeviceStateMonitorStep {
-//        IsUrgentStep deviceStateMonitor(DeviceStateMonitor deviceStateMonitor);
-//    }
-
     public interface IsUrgentStep {
         SharedPrefsStep urgent(boolean isUrgent);
     }
