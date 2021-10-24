@@ -148,11 +148,9 @@ public class ConfigsFetcher {
                     } else {
                         configsErrorListener.error("Local configs corrupted");
                     }
-                } catch (JsonSyntaxException exception) {
+                } catch (Throwable exception) {
                     configsErrorListener.error("Local configs corrupted");
                 }
-
-
             }
         }).start();
     }
