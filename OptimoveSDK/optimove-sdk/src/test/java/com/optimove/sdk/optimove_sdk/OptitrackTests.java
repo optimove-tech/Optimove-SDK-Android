@@ -46,6 +46,8 @@ public class OptitrackTests {
     @Mock
     HttpClient.RequestBuilder<JSONObject> builder;
     @Mock
+    HttpClient.RequestBuilder<JSONObject> delayedResponseBuilder;
+    @Mock
     UserInfo userInfo;
     @Mock
     LifecycleObserver lifecycleObserver;
@@ -89,8 +91,7 @@ public class OptitrackTests {
     }
 
     @Test
-    public void eventsShouldBeDispatchedOnceAndInOrderInSpiteOfAThreadChaos() throws Exception {
-
+    public void eventsShouldBeDispatchedOnceAndInOrder() throws Exception {
         long maxResponseTime = 80;
         int numOfEvents = 40;
         OptistreamPersistanceAdapter optistreamPersistanceAdapter = new MockedOptistreamPersistency();
@@ -115,9 +116,7 @@ public class OptitrackTests {
             }
         }).run();
 
-        //The dispatch should be serial, it cant take than the maximum response time numOfEvents times, because those
-        // are background threads, lets give it twice
-        Thread.sleep(maxResponseTime * numOfEvents * 2);
+        Thread.sleep(maxResponseTime * numOfEvents);
 
         //verifying that all of the events exist and all of them are ordered
         verify(httpClient, new VerificationMode() {
@@ -293,8 +292,8 @@ public class OptitrackTests {
                 successListener.onResponse(jsonObject);
             }).start();
 
-            return builder;
-        }).when(builder)
+            return delayedResponseBuilder;
+        }).when(delayedResponseBuilder)
                 .successListener(any());
     }
 

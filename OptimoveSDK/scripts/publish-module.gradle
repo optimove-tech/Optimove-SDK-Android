@@ -8,8 +8,21 @@ task androidSourcesJar(type: Jar) {
     }
 }
 
+task javadoc(type: Javadoc) {
+    source = project.android.sourceSets.main.java.srcDirs
+    options.linkSource true
+    classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
+    failOnError false
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
 artifacts {
     archives androidSourcesJar
+    archives javadocJar
 }
 
 group = PUBLISH_GROUP_ID

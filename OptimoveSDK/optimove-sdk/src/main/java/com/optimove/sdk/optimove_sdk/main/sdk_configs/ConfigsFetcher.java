@@ -148,11 +148,9 @@ public class ConfigsFetcher {
                     } else {
                         configsErrorListener.error("Local configs corrupted");
                     }
-                } catch (JsonSyntaxException exception) {
+                } catch (Throwable exception) {
                     configsErrorListener.error("Local configs corrupted");
                 }
-
-
             }
         }).start();
     }
@@ -217,10 +215,6 @@ public class ConfigsFetcher {
     public interface ConfigNameStep {
         IsUrgentStep configName(String configName);
     }
-
-//    public interface DeviceStateMonitorStep {
-//        IsUrgentStep deviceStateMonitor(DeviceStateMonitor deviceStateMonitor);
-//    }
 
     public interface IsUrgentStep {
         SharedPrefsStep urgent(boolean isUrgent);
