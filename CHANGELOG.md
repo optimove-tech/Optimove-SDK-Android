@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.1
+
+- Fixed a crash on start due to missing r8 rules
+
 ## 4.1.0
 
 - Updated FCM and Play Services dependencies
