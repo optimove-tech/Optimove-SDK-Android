@@ -128,7 +128,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
             registrationDao.editFlags()
                     .markApiV3AsSynced()
                     .save();
-            httpClient.postJsonWithoutJsonResponse(null, installationRequestJson)
+            httpClient.postJsonWithoutJsonResponse(registrationEndPoint, installationRequestJson)
                     .errorListener(this::setInstallationFailed)
                     .successListener(this::setInstallationSucceeded)
                     .destination("%s/%s/%s/%s", "v3", "tenants", tenantId,
