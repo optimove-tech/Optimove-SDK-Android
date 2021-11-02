@@ -2,6 +2,7 @@ package com.optimove.sdk.optimove_sdk.main_tests;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.collection.ArraySet;
 
 import com.android.volley.ParseError;
@@ -28,6 +29,7 @@ import java.util.Set;
 
 import static com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher.GLOBAL_CONFIG_FILE_BASE_URL;
 import static com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher.TENANT_CONFIG_FILE_BASE_URL;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -86,7 +88,7 @@ public class ConfigsFetcherTests {
         when(tenantBuilder.errorListener(any())).thenReturn(tenantBuilder);
 
         when(localConfigKeysPreferences.edit()).thenReturn(editor);
-        when(editor.putBoolean(anyString(),anyBoolean())).thenReturn(editor);
+        when(editor.putBoolean(anyString(), anyBoolean())).thenReturn(editor);
         when(tenantBuilder.successListener(any())).thenReturn(tenantBuilder);
         when(globalBuilder.successListener(any())).thenReturn(globalBuilder);
         when(fileUtils.readFile(eq(context))).thenReturn(reader);
@@ -129,9 +131,10 @@ public class ConfigsFetcherTests {
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
         urgentConfigFetcher.fetchConfigs(configs -> Assert.assertEquals(configs.getTenantId(), randomTenantId)
-        , Assert::fail);
+                , Assert::fail);
 
     }
+
     @Test(timeout = 1000)
     public void shouldReadFromFileIfNetworkErrorFromTenantConfigsFetch() {
         doAnswer(invocation -> {
@@ -152,6 +155,7 @@ public class ConfigsFetcherTests {
         regularConfigFetcher.fetchConfigs(configs -> Assert.assertEquals(configs.getTenantId(), randomTenantId)
                 , Assert::fail);
     }
+
     @Test(timeout = 1000)
     public void shouldReadFromFileIfNetworkErrorFromGlobalConfigsFetch() {
         doAnswer(invocation -> {
@@ -174,23 +178,17 @@ public class ConfigsFetcherTests {
     }
 
     @Test(timeout = 1000)
-    public void shouldDeleteRedundantLocalConfigsIfTakenFromLocal(){
+    public void shouldDeleteRedundantLocalConfigsIfTakenFromLocal() {
         String first = "first";
         String second = "second";
-        Map savedFiles  = mock(Map.class);
+        Map savedFiles = mock(Map.class);
         Set<String> keySet = new ArraySet<>();
         keySet.add(first);
         keySet.add(second);
 
         when(localConfigKeysPreferences.getAll()).thenReturn(savedFiles);
         when(savedFiles.keySet()).thenReturn(keySet);
-        doAnswer(invocation -> {
-            Response.ErrorListener errorListener =
-                    (Response.ErrorListener) invocation.getArguments()[0];
-            errorListener.onErrorResponse(mock(ParseError.class));
-            return globalBuilder;
-        }).when(globalBuilder)
-                .errorListener(any());
+        applyParseErrorOnGlobalBuilder();
         FileUtils.Deleter deleter = mock(FileUtils.Deleter.class);
         when(fileUtils.deleteFile(context)).thenReturn(deleter);
         when(deleter.named(first)).thenReturn(deleter);
@@ -198,61 +196,147 @@ public class ConfigsFetcherTests {
         when(deleter.from(FileUtils.SourceDir.INTERNAL)).thenReturn(deleter);
 
 
-        regularConfigFetcher.fetchConfigs(configs ->  Assert.fail()
-                , error -> {});
+        regularConfigFetcher.fetchConfigs(configs -> fail()
+                , error -> {
+                });
         InOrder inOrder = Mockito.inOrder(editor);
         int timeout = 1000;
         verify(editor, timeout(timeout)).remove(first);
         verify(editor, timeout(timeout)).remove(second);
-        inOrder.verify(editor, timeout(timeout)).apply();
+        inOrder.verify(editor, timeout(timeout))
+                .apply();
         inOrder.verifyNoMoreInteractions();
 
-        verify(deleter,times(keySet.size())).now();
+        verify(deleter, times(keySet.size())).now();
     }
 
 
-
-    @Test(timeout = 1000)
+    @Test
     public void shouldFetchConfigFileCorrectlyAndSaveIt() {
         applyPositiveConfigFetch();
-        FileUtils.Writer writer = mock(FileUtils.Writer.class);
-        when(fileUtils.write(eq(context),eq(new Gson().toJson(this.configs)))).thenReturn(writer);
-        when(writer.to(configName)).thenReturn(writer);
-        when(writer.in(FileUtils.SourceDir.INTERNAL)).thenReturn(writer);
-
-        regularConfigFetcher.fetchConfigs(configs -> Assert.assertTrue(configsAreTheSame(configs, this.configs))
+        FileUtils.Writer writer = getMockFileWriter();
+        regularConfigFetcher.fetchConfigs(configs ->
+                        Assert.assertTrue(configsAreTheSame(configs, this.configs))
                 , Assert::fail);
-        InOrder inOrder = Mockito.inOrder(editor);
-        inOrder.verify(editor, timeout(1000)).putBoolean(configName,true);
-        inOrder.verify(editor, timeout(1000)).apply();
 
+        InOrder inOrder = Mockito.inOrder(editor);
+        inOrder.verify(editor, timeout(1000))
+                .putBoolean(configName, true);
+        inOrder.verify(editor, timeout(1000))
+                .apply();
         verify(writer, timeout(1000)).now();
     }
 
-    private void applyPositiveConfigFetch(){
+    @Test(timeout = 1000)
+    public void shouldFailConfigIfRemoteGlobalConfigMissesMBaaSEndpoint() {
+        FetchedTenantConfigs fetchedTenantConfigs = gson.fromJson(ConfigProvider.getTenantConfigJsonString(),
+                FetchedTenantConfigs.class);
+        FetchedGlobalConfig fetchedGlobalConfig = gson.fromJson(ConfigProvider.getGlobalConfigJsonString(),
+                FetchedGlobalConfig.class);
+        fetchedGlobalConfig.fetchedOptipushConfigs.mbaasEndpoint = null;
+        applyCustomConfigFetch(fetchedTenantConfigs, fetchedGlobalConfig);
+
+        regularConfigFetcher.fetchConfigs(configs -> fail(), Assert::assertNotNull);
+    }
+
+    @Test
+    public void shouldFailConfigIfLocalFileMissesMBaaSEndpoint() {
+        int randomTenantId = 56757;
+        Gson gson = new Gson();
+        ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
+        applyParseErrorOnGlobalBuilder();
+
+        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
+        Configs storedInFileConfig = ConfigProvider.getConfigs();
+        storedInFileConfig.setOptipushConfigs(null);
+        storedInFileConfig.setTenantId(randomTenantId);
+        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
+
+        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
+        verify(configsErrorListener, timeout(1000)).error(anyString());
+    }
+
+    @Test
+    public void shouldFailConfigIfLocalFileMissesOptitrackConfigs() {
+        int randomTenantId = 56757;
+        Gson gson = new Gson();
+        ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
+        applyParseErrorOnGlobalBuilder();
+
+        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
+        Configs storedInFileConfig = ConfigProvider.getConfigs();
+        storedInFileConfig.setOptitrackConfigs(null);
+        storedInFileConfig.setTenantId(randomTenantId);
+        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
+
+        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
+        verify(configsErrorListener, timeout(1000)).error(anyString());
+    }
+
+    @Test
+    public void shouldFailConfigIfLocalFileMissesRealtimeConfigs() {
+        int randomTenantId = 56757;
+        Gson gson = new Gson();
+        ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
+        applyParseErrorOnGlobalBuilder();
+
+        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
+        Configs storedInFileConfig = ConfigProvider.getConfigs();
+        storedInFileConfig.setRealtimeConfigs(null);
+        storedInFileConfig.setTenantId(randomTenantId);
+        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
+
+        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
+        verify(configsErrorListener, timeout(1000)).error(anyString());
+    }
+
+    private void applyParseErrorOnGlobalBuilder() {
+        doAnswer(invocation -> {
+            Response.ErrorListener errorListener =
+                    (Response.ErrorListener) invocation.getArguments()[0];
+            errorListener.onErrorResponse(mock(ParseError.class));
+            return globalBuilder;
+        }).when(globalBuilder)
+                .errorListener(any());
+    }
+
+    private FileUtils.Writer getMockFileWriter() {
+        FileUtils.Writer writer = mock(FileUtils.Writer.class);
+        when(fileUtils.write(eq(context), eq(new Gson().toJson(this.configs)))).thenReturn(writer);
+        when(writer.to(configName)).thenReturn(writer);
+        when(writer.in(FileUtils.SourceDir.INTERNAL)).thenReturn(writer);
+        return writer;
+    }
+
+    private void applyPositiveConfigFetch() {
+        applyCustomConfigFetch(gson.fromJson(ConfigProvider.getTenantConfigJsonString(),
+                FetchedTenantConfigs.class), gson.fromJson(ConfigProvider.getGlobalConfigJsonString(),
+                FetchedGlobalConfig.class));
+    }
+
+    private void applyCustomConfigFetch(FetchedTenantConfigs fetchedTenantConfigs,
+                                        FetchedGlobalConfig fetchedGlobalConfig) {
         doAnswer(invocation -> {
             Response.Listener<FetchedTenantConfigs> successListener =
                     (Response.Listener<FetchedTenantConfigs>) invocation.getArguments()[0];
-            successListener.onResponse(gson.fromJson(ConfigProvider.getTenantConfigJsonString(),
-                    FetchedTenantConfigs.class));
+            successListener.onResponse(fetchedTenantConfigs);
             return tenantBuilder;
         }).when(tenantBuilder)
                 .successListener(any());
         doAnswer(invocation -> {
             Response.Listener<FetchedGlobalConfig> successListener =
                     (Response.Listener<FetchedGlobalConfig>) invocation.getArguments()[0];
-             successListener.onResponse(gson.fromJson(ConfigProvider.getGlobalConfigJsonString(),
-                    FetchedGlobalConfig.class));
+            successListener.onResponse(fetchedGlobalConfig);
             return globalBuilder;
         }).when(globalBuilder)
                 .successListener(any());
     }
 
-    private boolean configsAreTheSame(Configs configsFirst, Configs configsSecond){
+    private boolean configsAreTheSame(Configs configsFirst, Configs configsSecond) {
         Gson gson = new Gson();
-        return gson.toJson(configsFirst).equals(gson.toJson(configsSecond));
+        return gson.toJson(configsFirst)
+                .equals(gson.toJson(configsSecond));
     }
-
 
 
 }
