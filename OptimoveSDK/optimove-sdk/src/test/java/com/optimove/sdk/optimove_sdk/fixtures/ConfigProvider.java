@@ -36,7 +36,7 @@ public class ConfigProvider {
                 "        }\n" +
                 "    },\n" +
                 "    \"optipush\": {\n" +
-                "        \"registration_service_endpoint\": \"https://registartion-service-prod.optimove.net/\"\n" +
+                "        \"mbaas_endpoint\": \"https://registartion-service-prod.optimove.net/\"\n" +
                 "    },\n" +
                 "    \"core_events\": {\n" +
                 "        \"set_user_id_event\": {\n" +

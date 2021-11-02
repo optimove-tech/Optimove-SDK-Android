@@ -10,7 +10,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsCon
 import com.optimove.sdk.optimove_sdk.optipush.registration.requests.InstallationRequest;
 import com.optimove.sdk.optimove_sdk.optipush.registration.requests.Metadata;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted {
@@ -135,7 +134,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                     .destination("%s/%s/%s/%s", "v3", "tenants", tenantId,
                             "installation")
                     .send();
-        } catch (JSONException e) {
+        } catch (Throwable e) {
             setInstallationFailed(e);
         }
 
@@ -150,7 +149,7 @@ public class OptipushUserRegistrar implements LifecycleObserver.ActivityStarted 
                 .save();
     }
 
-    private void setInstallationFailed(Exception error) {
+    private void setInstallationFailed(Throwable error) {
         OptiLoggerStreamsContainer.debug("Set installation failed - %s", error.getMessage());
         registrationDao.editFlags()
                 .markSetInstallationAsFailed()

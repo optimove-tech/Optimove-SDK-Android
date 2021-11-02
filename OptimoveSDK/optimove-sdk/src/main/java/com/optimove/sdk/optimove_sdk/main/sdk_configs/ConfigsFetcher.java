@@ -30,19 +30,19 @@ public class ConfigsFetcher {
     @Nullable
     private FetchedGlobalConfig fetchedGlobalConfig;
 
-    private boolean isUrgent;
+    private final boolean isUrgent;
     @NonNull
-    private String configName;
+    private final String configName;
     @NonNull
-    private String tenantToken;
+    private final String tenantToken;
     @NonNull
-    private SharedPreferences localConfigKeysPreferences;
+    private final SharedPreferences localConfigKeysPreferences;
     @NonNull
-    private HttpClient httpClient;
+    private final HttpClient httpClient;
     @NonNull
-    private FileUtils fileUtils;
+    private final FileUtils fileUtils;
     @NonNull
-    private Context context;
+    private final Context context;
 
     public interface ConfigsListener {
         void setConfigs(Configs configs);
@@ -53,7 +53,7 @@ public class ConfigsFetcher {
     }
 
     private ConfigsFetcher(@NonNull String tenantToken, @NonNull String configName,
-                            boolean isUrgent,
+                           boolean isUrgent,
                            @NonNull SharedPreferences localConfigKeysPreferences,
                            @NonNull HttpClient httpClient, @NonNull FileUtils fileUtils,
                            @NonNull Context context) {
@@ -86,10 +86,9 @@ public class ConfigsFetcher {
         globalConfigRequestBuilder.successListener(fetchedGlobalConfig -> {
             try {
                 this.fetchedGlobalConfig = fetchedGlobalConfig;
-                sendConfigsIfGlobalAndTenantArrived(configsListener);
+                sendConfigsIfGlobalAndTenantArrived(configsListener, configsErrorListener);
             } catch (JsonSyntaxException exception) {
                 OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getLocalizedMessage());
-
                 getLocalConfig(configsListener, configsErrorListener);
             }
         })
@@ -102,7 +101,7 @@ public class ConfigsFetcher {
         tenantConfigRequestBuilder.successListener(fetchedTenantConfigs -> {
             try {
                 this.fetchedTenantConfigs = fetchedTenantConfigs;
-                sendConfigsIfGlobalAndTenantArrived(configsListener);
+                sendConfigsIfGlobalAndTenantArrived(configsListener, configsErrorListener);
             } catch (JsonSyntaxException exception) {
                 OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getLocalizedMessage());
                 getLocalConfig(configsListener, configsErrorListener);
@@ -115,13 +114,34 @@ public class ConfigsFetcher {
                 .send();
     }
 
-    private void sendConfigsIfGlobalAndTenantArrived(ConfigsListener configsListener) {
-        if (fetchedGlobalConfig != null && fetchedTenantConfigs != null) {
-            Configs configs =
-                    FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(fetchedGlobalConfig, fetchedTenantConfigs);
-            backupInitData(configs);
-            configsListener.setConfigs(configs);
+    private void sendConfigsIfGlobalAndTenantArrived(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
+        if (fetchedGlobalConfig == null || fetchedTenantConfigs == null) {
+            return;
         }
+        Configs configs;
+        try {
+            configs = FetchedLocalConfigsMapper.mapFetchedConfigsToLocal(fetchedGlobalConfig, fetchedTenantConfigs);
+        } catch (Throwable throwable) {
+            configsErrorListener.error("Failed to build a config from global and tenant configs");
+            return;
+        }
+        if (!verifyConfigValidity(configs)) {
+            configsErrorListener.error("Config file is corrupted");
+            return;
+        }
+
+        backupInitData(configs);
+        configsListener.setConfigs(configs);
+    }
+
+    private boolean verifyConfigValidity(Configs configs) {
+        return configs.getTenantId() != 0
+                && configs.getOptipushRegistrationServiceEndpoint() != null
+                && !configs.getOptipushRegistrationServiceEndpoint().isEmpty()
+                && configs.getLogsConfigs() != null
+                && configs.getEventsConfigs() != null
+                && configs.getOptitrackConfigs() != null
+                && configs.getRealtimeConfigs() != null;
     }
 
     private void getLocalConfig(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
@@ -143,7 +163,7 @@ public class ConfigsFetcher {
                 try {
                     Configs configs = new Gson().fromJson(configString, Configs.class);
                     // in case of failed app update fetch
-                    if ((configs != null) && (configsAreValid(configs))) {
+                    if ((configs != null) && (verifyConfigValidity(configs))) {
                         configsListener.setConfigs(configs);
                     } else {
                         configsErrorListener.error("Local configs corrupted");
@@ -153,10 +173,6 @@ public class ConfigsFetcher {
                 }
             }
         }).start();
-    }
-
-    private boolean configsAreValid(Configs configs) {
-        return configs.getTenantId() != 0;
     }
 
     private void backupInitData(final Configs configs) {
