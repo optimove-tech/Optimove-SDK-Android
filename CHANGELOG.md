@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.1.2
+
+- Fixed a background initialization crash when the SDK tries to start from a corrupted local configuration file
+
 ## 4.1.1
 
 - Fixed a crash on start due to missing r8 rules
