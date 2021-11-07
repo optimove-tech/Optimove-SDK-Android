@@ -5,17 +5,17 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
-import com.optimove.sdk.optimove_sdk.main.tools.FileUtils;
 import com.optimove.sdk.optimove_sdk.optipush.deep_link.DeepLinkHandler;
 import com.optimove.sdk.optimove_sdk.optipush.deep_link.LinkDataError;
 import com.optimove.sdk.optimove_sdk.optipush.deep_link.LinkDataExtractedListener;
@@ -67,17 +67,6 @@ public class MainActivity extends AppCompatActivity {
     runFromWorker(() -> Optimove.getInstance().reportEvent("Event_No ParaMs     "));
   }
 
-  public void sendLog(View view) {
-    outputTv.setText("Wait please!!!");
-    FileOptiLoggerOutputStream.getInstance(this, new FileUtils()).sendAndCleanLogs(success -> {
-      if (success) {
-        outputTv.setText("The logs are waiting for you in the downloads dir");
-      } else {
-        outputTv.setText("Failed to save logs, ask Noy WTF");
-      }
-    });
-  }
-
   public void updateUserId(View view) {
     EditText uidInput = findViewById(R.id.userIdInput);
     EditText emailInput = findViewById(R.id.userEmailInput);
@@ -102,8 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
   private static class SimpleCustomEvent extends OptimoveEvent {
 
-    SimpleCustomEvent() {
-    }
+    SimpleCustomEvent(){}
 
     @Override
     public String getName() {
