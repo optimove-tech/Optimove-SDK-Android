@@ -15,7 +15,7 @@ import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Actions.A
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Actions.ACTION_NOTIFICATION_CLICKED;
 
 public class OptipushNotificationOpenActivity extends AppCompatActivity {
-
+    
     @Override
     protected void onResume() {
         super.onResume();
@@ -50,6 +50,8 @@ public class OptipushNotificationOpenActivity extends AppCompatActivity {
         try {
             context.startActivity(linkIntent);
         } catch (ActivityNotFoundException e) {
+            OptiLoggerStreamsContainer.warn("Was not able to open an activity using the com.optimove.sdk" +
+                    ".optimove_sdk.DEEPLINK action, about to try the legacy action");
             startActivityWithLegacyAction(context, linkIntent);
         }
     }
@@ -60,12 +62,10 @@ public class OptipushNotificationOpenActivity extends AppCompatActivity {
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            logErrorAndOpenMainActivity(context, e);
+            OptiLoggerStreamsContainer.error("Was not able to open the deep link due to - %s, opening the main " +
+                    "activity", e.getMessage());
+            openMainActivity(context);
         }
-    }
-
-    private void logErrorAndOpenMainActivity(Context context, Exception e){
-
     }
 
     private void openMainActivity(Context context) {

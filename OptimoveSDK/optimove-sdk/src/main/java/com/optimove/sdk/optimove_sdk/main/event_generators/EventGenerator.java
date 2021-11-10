@@ -13,9 +13,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEven
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class EventGenerator {
 
