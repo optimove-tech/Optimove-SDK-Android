@@ -15,7 +15,7 @@ import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Actions.A
 import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Actions.ACTION_NOTIFICATION_CLICKED;
 
 public class OptipushNotificationOpenActivity extends AppCompatActivity {
-    
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -56,7 +56,7 @@ public class OptipushNotificationOpenActivity extends AppCompatActivity {
         }
     }
 
-    //backward compatibility for intent filters prior to ACTION_DEEPLINK
+    //backward compatibility for intent filters prior to ACTION_DEEPLINK, remove on v5
     private void startActivityWithLegacyAction(Context context, Intent intent) {
         intent.setAction(Intent.ACTION_VIEW);
         try {
