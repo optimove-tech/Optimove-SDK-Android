@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <device-transfer>
+        <!--Client Rules-->
+        <exclude
+            domain="file"
+            path="log.txt"/>
+
+        <!--Optimove SDK-->
+        <exclude domain="sharedpref" path="com.optimove.sdk.user_ids.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.optitrack_shared_pref.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.local_init.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.registration_preferences.xml"/>
+    </device-transfer>
+    <cloud-backup>
+        <!--Client Rules-->
+        <exclude
+            domain="file"
+            path="log.txt"/>
+
+        <!--Optimove SDK-->
+        <exclude domain="sharedpref" path="com.optimove.sdk.user_ids.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.optitrack_shared_pref.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.local_init.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.registration_preferences.xml"/>
+    </cloud-backup>
+</data-extraction-rules>

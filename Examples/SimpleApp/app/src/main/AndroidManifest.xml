@@ -8,12 +8,13 @@
     <application
         android:name=".MyApplication"
         android:fullBackupContent="@xml/sdk_tester_backup_rules"
+        android:dataExtractionRules="@xml/sdk_tester_backup_rules_api31"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:fullBackupContent"
+        tools:replace="android:fullBackupContent,android:dataExtractionRules"
         android:allowBackup="true">
 
 
