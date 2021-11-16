@@ -18,17 +18,20 @@ import androidx.annotation.DrawableRes;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import com.optimove.sdk.optimove_sdk.OptipushNotificationOpenActivity;
 import com.optimove.sdk.optimove_sdk.main.tools.UiUtils;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optipush.OptipushConstants;
+
+import java.util.concurrent.Executors;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class NotificationCreator {
 
-    private Context context;
-    private NotificationManager notificationManager;
-    private String fullPackageName;
+    private final Context context;
+    private final NotificationManager notificationManager;
+    private final String fullPackageName;
 
     public NotificationCreator(Context context) {
         this.context = context;
@@ -42,35 +45,40 @@ public class NotificationCreator {
         final NotificationCompat.Builder basicNotificationBuilder =
                 createBasicNotificationBuilder(notificationData);
         if (notificationData.getNotificationMedia() != null && notificationData.getNotificationMedia().mediaType.equals(OptipushConstants.PushSchemaKeys.MEDIA_TYPE_IMAGE)) {
-            new Thread(() -> {
-                Bitmap notificationDecodedBitmap =
-                        UiUtils.getBitmapFromURL(notificationData.getNotificationMedia().url);
-                if (notificationDecodedBitmap == null) {
-                    OptiLoggerStreamsContainer.error("Failed to get bitmap from url - %s", notificationData.getNotificationMedia().url);
-                    presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
-                } else {
-                    presentNotification(applyBigImageStyle(basicNotificationBuilder, notificationDecodedBitmap).build(), notificationData);
-                }
-            }).start();
-        } else {
-            if (notificationData.getNotificationMedia() != null) {
-                OptiLoggerStreamsContainer.debug("Notification payload contains media that is not image, image type is: %s",
-                        notificationData.getNotificationMedia().mediaType);
-            }
-            presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
+            Executors.newSingleThreadExecutor()
+                    .execute(() -> {
+                        Bitmap notificationDecodedBitmap =
+                                UiUtils.getBitmapFromURL(notificationData.getNotificationMedia().url);
+                        if (notificationDecodedBitmap == null) {
+                            OptiLoggerStreamsContainer.error("Failed to get bitmap from url - %s", notificationData.getNotificationMedia().url);
+                            presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
+                        } else {
+                            presentNotification(applyBigImageStyle(basicNotificationBuilder, notificationDecodedBitmap).build(), notificationData);
+                        }
+                    });
+            return;
         }
+        if (notificationData.getNotificationMedia() != null) {
+            OptiLoggerStreamsContainer.debug("Notification payload contains media that is not image, image type is: %s",
+                    notificationData.getNotificationMedia().mediaType);
+        }
+        presentNotification(applyBigTextStyle(basicNotificationBuilder, notificationData.getBody()).build(), notificationData);
     }
-    private void handleNotificationChannel(NotificationData notificationData){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if  (notificationData.getChannelInfo() == null) {
-                createSdkDefaultNotificationChannel();
-            } else {
-                notificationManager.deleteNotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID);
-                if (notificationData.getChannelInfo().channelId != null) {
-                    createCustomNotificationChannel(notificationData.getChannelInfo().channelId,
-                            notificationData.getChannelInfo().channelName);
-                }
-            }
+
+    private void handleNotificationChannel(NotificationData notificationData) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
+        if (notificationData.getChannelInfo() == null) {
+            createSdkDefaultNotificationChannel();
+            return;
+        }
+
+        notificationManager.deleteNotificationChannel(OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID);
+        if (notificationData.getChannelInfo().channelId != null) {
+            createCustomNotificationChannel(notificationData.getChannelInfo().channelId,
+                    notificationData.getChannelInfo().channelName);
         }
     }
 
@@ -88,12 +96,11 @@ public class NotificationCreator {
 
         builder = new NotificationCompat.Builder(context,
                 notificationData.getChannelInfo() == null ? OptipushConstants.Notifications.SDK_NOTIFICATION_CHANNEL_ID
-                : notificationData.getChannelInfo().channelId);
+                        : notificationData.getChannelInfo().channelId);
 
-        builder
-                .setContentTitle(notificationData.getTitle())
+        builder.setContentTitle(notificationData.getTitle())
                 .setContentText(notificationData.getBody())
-                .setContentIntent(createPendingIntent(notificationData))
+                .setContentIntent(createClickPendingIntent(notificationData))
                 .setSmallIcon(getNotificationIcon())
                 .setAutoCancel(true);
 
@@ -117,9 +124,9 @@ public class NotificationCreator {
         return builder;
     }
 
-    private PendingIntent createPendingIntent(NotificationData notificationData) {
-        Intent intent = new Intent(context, NotificationInteractionReceiver.class);
-        intent.putExtra(OptipushConstants.Notifications.IS_DELETE_KEY, false);
+    private PendingIntent createClickPendingIntent(NotificationData notificationData) {
+        Intent intent = new Intent(OptipushConstants.Actions.ACTION_NOTIFICATION_CLICKED).setClass(context,
+                OptipushNotificationOpenActivity.class);
         if (notificationData.getScheduledCampaign() != null) {
             intent.putExtra(OptipushConstants.Notifications.SCHEDULED_IDENTITY_TOKEN, notificationData.getScheduledCampaign());
         } else if (notificationData.getTriggeredCampaign() != null) {
@@ -133,13 +140,18 @@ public class NotificationCreator {
         }
 
         int rc;
+
         if (notificationData.getCollapseKey() != null) {
             rc = (notificationData.getCollapseKey() + "_open").hashCode();
         } else {
             rc = OptipushConstants.Notifications.PENDING_INTENT_OPEN_RC;
         }
 
-        return PendingIntent.getBroadcast(context, rc, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        int flags = (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) ?
+                PendingIntent.FLAG_ONE_SHOT :
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE;
+
+        return PendingIntent.getActivity(context, rc, intent, flags);
     }
 
     @TargetApi(Build.VERSION_CODES.O)
@@ -149,6 +161,7 @@ public class NotificationCreator {
                         getApplicationName(), NotificationManager.IMPORTANCE_HIGH);
         notificationManager.createNotificationChannel(channel);
     }
+
     @TargetApi(Build.VERSION_CODES.O)
     private void createCustomNotificationChannel(String channelId, String channelName) {
         NotificationChannel channel =

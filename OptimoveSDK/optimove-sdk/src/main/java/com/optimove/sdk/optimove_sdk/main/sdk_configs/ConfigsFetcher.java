@@ -17,6 +17,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 public class ConfigsFetcher {
 
@@ -24,11 +25,6 @@ public class ConfigsFetcher {
     private static final String GLOBAL_CONFIG_VERSION = "v4";
     public static final String TENANT_CONFIG_FILE_BASE_URL = "https://sdk-cdn.optimove.net/mobilesdkconfig/";
     public static final String GLOBAL_CONFIG_FILE_BASE_URL = "https://sdk-cdn.optimove.net/configs/mobile/global/";
-
-    @Nullable
-    private FetchedTenantConfigs fetchedTenantConfigs;
-    @Nullable
-    private FetchedGlobalConfig fetchedGlobalConfig;
 
     private final boolean isUrgent;
     @NonNull
@@ -44,8 +40,14 @@ public class ConfigsFetcher {
     @NonNull
     private final Context context;
 
+    @Nullable
+    private FetchedTenantConfigs fetchedTenantConfigs;
+    @Nullable
+    private FetchedGlobalConfig fetchedGlobalConfig;
+
     public interface ConfigsListener {
         void setConfigs(Configs configs);
+
     }
 
     public interface ConfigsErrorListener {
@@ -76,45 +78,53 @@ public class ConfigsFetcher {
     }
 
     private void fetchRemoteConfig(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
-        HttpClient.RequestBuilder<FetchedGlobalConfig> globalConfigRequestBuilder = httpClient
-                .getObject(GLOBAL_CONFIG_FILE_BASE_URL, FetchedGlobalConfig.class)
+        httpClient.getObject(GLOBAL_CONFIG_FILE_BASE_URL, FetchedGlobalConfig.class)
                 .destination("%s/%s/%s.json", GLOBAL_CONFIG_VERSION,
-                        OptiUtils.getSdkEnv(context.getPackageName()), "configs");
-        HttpClient.RequestBuilder<FetchedTenantConfigs> tenantConfigRequestBuilder = httpClient
-                .getObject(TENANT_CONFIG_FILE_BASE_URL, FetchedTenantConfigs.class)
-                .destination("%s/%s.json", tenantToken, configName);
-        globalConfigRequestBuilder.successListener(fetchedGlobalConfig -> {
-            try {
-                this.fetchedGlobalConfig = fetchedGlobalConfig;
-                sendConfigsIfGlobalAndTenantArrived(configsListener, configsErrorListener);
-            } catch (JsonSyntaxException exception) {
-                OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getLocalizedMessage());
-                getLocalConfig(configsListener, configsErrorListener);
-            }
-        })
-                .errorListener(error -> {
-                    OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", error.getLocalizedMessage());
-
-                    getLocalConfig(configsListener, configsErrorListener);
-                })
+                        OptiUtils.getSdkEnv(context.getPackageName()), "configs")
+                .successListener(fetchedGlobalConfig -> setFetchedGlobalConfigs(fetchedGlobalConfig, configsListener,
+                        configsErrorListener))
+                .errorListener(e -> configFetchFailed(e, configsListener, configsErrorListener))
                 .send();
-        tenantConfigRequestBuilder.successListener(fetchedTenantConfigs -> {
-            try {
-                this.fetchedTenantConfigs = fetchedTenantConfigs;
-                sendConfigsIfGlobalAndTenantArrived(configsListener, configsErrorListener);
-            } catch (JsonSyntaxException exception) {
-                OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getLocalizedMessage());
-                getLocalConfig(configsListener, configsErrorListener);
-            }
-        })
-                .errorListener(error -> {
-                    OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", error.getLocalizedMessage());
-                    getLocalConfig(configsListener, configsErrorListener);
-                })
+        httpClient.getObject(TENANT_CONFIG_FILE_BASE_URL, FetchedTenantConfigs.class)
+                .destination("%s/%s.json", tenantToken, configName)
+                .successListener(fetchedTenantConfigs -> setFetchedTenantConfigs(fetchedTenantConfigs, configsListener,
+                        configsErrorListener))
+                .errorListener(e -> configFetchFailed(e, configsListener, configsErrorListener))
                 .send();
     }
 
-    private void sendConfigsIfGlobalAndTenantArrived(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
+
+    private void setFetchedGlobalConfigs(FetchedGlobalConfig fetchedGlobalConfig, ConfigsListener configsListener,
+                                         ConfigsErrorListener configsErrorListener) {
+        try {
+            this.fetchedGlobalConfig = fetchedGlobalConfig;
+            sendConfigsIfGlobalAndTenantArrived(configsListener, configsErrorListener);
+        } catch (JsonSyntaxException exception) {
+            OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getMessage());
+            getLocalConfig(configsListener, configsErrorListener);
+        }
+    }
+
+    private void setFetchedTenantConfigs(FetchedTenantConfigs fetchedTenantConfigs, ConfigsListener configsListener,
+                                         ConfigsErrorListener configsErrorListener) {
+        try {
+            this.fetchedTenantConfigs = fetchedTenantConfigs;
+            sendConfigsIfGlobalAndTenantArrived(configsListener, configsErrorListener);
+        } catch (JsonSyntaxException exception) {
+            OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s", exception.getMessage());
+            getLocalConfig(configsListener, configsErrorListener);
+        }
+    }
+
+    private void configFetchFailed(Throwable throwable, ConfigsListener configsListener,
+                                         ConfigsErrorListener configsErrorListener) {
+        OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s",
+                throwable.getMessage());
+        getLocalConfig(configsListener, configsErrorListener);
+    }
+
+    private void sendConfigsIfGlobalAndTenantArrived(ConfigsListener configsListener,
+                                                     ConfigsErrorListener configsErrorListener) {
         if (fetchedGlobalConfig == null || fetchedTenantConfigs == null) {
             return;
         }
@@ -137,7 +147,8 @@ public class ConfigsFetcher {
     private boolean verifyConfigValidity(Configs configs) {
         return configs.getTenantId() != 0
                 && configs.getOptipushRegistrationServiceEndpoint() != null
-                && !configs.getOptipushRegistrationServiceEndpoint().isEmpty()
+                && !configs.getOptipushRegistrationServiceEndpoint()
+                .isEmpty()
                 && configs.getLogsConfigs() != null
                 && configs.getEventsConfigs() != null
                 && configs.getOptitrackConfigs() != null
@@ -152,68 +163,73 @@ public class ConfigsFetcher {
             return;
         }
 
-        new Thread(() -> {
-            String configString = fileUtils.readFile(context)
-                    .named(configName)
-                    .from(FileUtils.SourceDir.INTERNAL)
-                    .asString();
-            if (configString == null) {
-                configsErrorListener.error("Local configs reading error");
-            } else {
-                try {
-                    Configs configs = new Gson().fromJson(configString, Configs.class);
-                    // in case of failed app update fetch
-                    if ((configs != null) && (verifyConfigValidity(configs))) {
-                        configsListener.setConfigs(configs);
-                    } else {
-                        configsErrorListener.error("Local configs corrupted");
-                    }
-                } catch (Throwable exception) {
+        Executors.newSingleThreadExecutor()
+                .execute(() -> getLocalConfigFromFile(configsListener,
+                        configsErrorListener));
+    }
+
+    private void getLocalConfigFromFile(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
+        String configString = fileUtils.readFile(context)
+                .named(configName)
+                .from(FileUtils.SourceDir.INTERNAL)
+                .asString();
+        if (configString == null) {
+            configsErrorListener.error("Local configs reading error");
+        } else {
+            try {
+                Configs configs = new Gson().fromJson(configString, Configs.class);
+                // in case of failed app update fetch
+                if ((configs != null) && (verifyConfigValidity(configs))) {
+                    configsListener.setConfigs(configs);
+                } else {
                     configsErrorListener.error("Local configs corrupted");
                 }
+            } catch (Throwable exception) {
+                configsErrorListener.error("Local configs corrupted");
             }
-        }).start();
+        }
     }
 
     private void backupInitData(final Configs configs) {
-        new Thread(() -> {
-            OptiLoggerStreamsContainer.debug("Saving fetched configurations file");
-            Gson gson = new Gson();
-            localConfigKeysPreferences.edit()
-                    .putBoolean(configName, true)
-                    .apply();
+        Executors.newSingleThreadExecutor()
+                .execute(() -> {
+                    OptiLoggerStreamsContainer.debug("Saving fetched configurations file");
+                    Gson gson = new Gson();
+                    localConfigKeysPreferences.edit()
+                            .putBoolean(configName, true)
+                            .apply();
 
-            fileUtils.write(context, gson.toJson(configs))
-                    .to(configName)
-                    .in(FileUtils.SourceDir.INTERNAL)
-                    .now();
-        }).start();
+                    fileUtils.write(context, gson.toJson(configs))
+                            .to(configName)
+                            .in(FileUtils.SourceDir.INTERNAL)
+                            .now();
+                });
     }
 
 
     private void deleteRedundantLocalConfigs() {
-        new Thread(() -> {
-            Set<String> savedNames = localConfigKeysPreferences.getAll()
-                    .keySet();
+        Executors.newSingleThreadExecutor()
+                .execute(() -> {
+                    Set<String> savedNames = localConfigKeysPreferences.getAll()
+                            .keySet();
 
-            if (savedNames.size() <= 1) { //Only the one latest config is saved
-                return;
-            }
-            SharedPreferences.Editor editor = localConfigKeysPreferences.edit();
-            for (String configName : savedNames) {
-
-                if (configName.equals(this.configName)) {
-                    continue;
-                }
-                editor.remove(configName);
-                fileUtils.deleteFile(context)
-                        .named(configName)
-                        .from(FileUtils.SourceDir.INTERNAL)
-                        .now();
-                OptiLoggerStreamsContainer.debug("Deleted local configurations named %s", configName);
-            }
-            editor.apply();
-        }).start();
+                    if (savedNames.size() <= 1) { //Only the one latest config is saved
+                        return;
+                    }
+                    SharedPreferences.Editor editor = localConfigKeysPreferences.edit();
+                    for (String configName : savedNames) {
+                        if (configName.equals(this.configName)) {
+                            continue;
+                        }
+                        editor.remove(configName);
+                        fileUtils.deleteFile(context)
+                                .named(configName)
+                                .from(FileUtils.SourceDir.INTERNAL)
+                                .now();
+                        OptiLoggerStreamsContainer.debug("Deleted local configurations named %s", configName);
+                    }
+                    editor.apply();
+                });
     }
 
     public static HttpClientStep builder() {

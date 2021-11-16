@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.0
+
+- Changed the target sdk version to 31 
+
 ## 4.1.2
 
 - Fixed a background initialization crash when the SDK tries to start from a corrupted local configuration file

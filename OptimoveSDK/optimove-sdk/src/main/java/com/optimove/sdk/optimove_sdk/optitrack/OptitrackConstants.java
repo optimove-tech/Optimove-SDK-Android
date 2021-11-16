@@ -38,7 +38,6 @@ public interface OptitrackConstants {
    * *********************************/
 
   String OPTITRACK_SP_NAME = "com.optimove.sdk.optitrack_shared_pref";
-  String OPTITRACK_USER_ID_KEY = "optitrack_user_id";
   String LAST_OPT_REPORTED_KEY = "last_opt_reported";
   int LAST_REPORTED_OPT_IN = 1;
   int LAST_REPORTED_OPT_OUT = 2;

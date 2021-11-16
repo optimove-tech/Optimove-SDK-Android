@@ -81,7 +81,7 @@ public class EventGenerator {
         SdkMetadataEvent sdkMetadataEvent =
                 SdkMetadataEvent.builder()
                         .withSdkPlatform("Android")
-                        .withSdkVersion(BuildConfig.VERSION_NAME)
+                        .withSdkVersion(BuildConfig.OPTIMOVE_VERSION_NAME)
                         .withAppNs(packageName)
                         .withLocation(cityName)
                         .withLocationLongitude(locationLongitude)

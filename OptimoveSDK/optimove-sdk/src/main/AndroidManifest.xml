@@ -1,35 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.optimove.sdk.optimove_sdk">
+    package="com.optimove.sdk.optimove_sdk">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:fullBackupContent="@xml/optimove_backup_rules"
+        android:dataExtractionRules="@xml/optimove_backup_rules_api31"
         android:label="@string/app_name"
         android:supportsRtl="true">
-
-
         <service
             android:name=".optipush.events_dispatch_service.NotificationOpenedEventDispatchService"
-            android:enabled="true"/>
-
+            android:enabled="true"
+            android:exported="false" />
         <service
             android:name=".main.app_update_listener.AppUpdateService"
             android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE"/>
-
-        <receiver android:name=".optipush.messaging.NotificationInteractionReceiver"/>
-
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver
             android:name=".main.app_update_listener.AppUpdateReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
-
+        <activity
+            android:name=".OptipushNotificationOpenActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:theme="@style/Optimove.Optipush.Transparent"/>
     </application>
-
 </manifest>

@@ -167,7 +167,7 @@ public final class OptipushManager {
         } catch (PackageManager.NameNotFoundException e) {
             appVersion = "VersionNotFound";
         }
-        return new Metadata(BuildConfig.VERSION_NAME, appVersion, Build.VERSION.RELEASE,
+        return new Metadata(BuildConfig.OPTIMOVE_VERSION_NAME, appVersion, Build.VERSION.RELEASE,
                 Build.MODEL);
     }
 }

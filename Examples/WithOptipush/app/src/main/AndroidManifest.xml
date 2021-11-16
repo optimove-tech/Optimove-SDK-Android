@@ -8,14 +8,16 @@
     <application
         android:name=".MyApplication"
         android:fullBackupContent="@xml/sdk_tester_backup_rules"
+        android:dataExtractionRules="@xml/sdk_tester_backup_rules_api31"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:fullBackupContent">
+        tools:replace="android:fullBackupContent,android:dataExtractionRules">
 
-        <activity android:name="com.optimove.sdk.demo.MainActivity">
+        <activity android:name="com.optimove.sdk.demo.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -27,7 +29,8 @@
         <!--This Activity can be reached through Optipush Deep Links-->
         <activity
             android:name="com.optimove.sdk.demo.deep_links.DeepLinkActivity"
-            android:parentActivityName="com.optimove.sdk.demo.MainActivity">
+            android:parentActivityName="com.optimove.sdk.demo.MainActivity"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="com.optimove.sdk.optimove_sdk.DEEPLINK"/>
@@ -66,8 +69,9 @@
             android:name="com.optimove.sdk.custom-notification-color"
             android:resource="@android:color/holo_red_light"/>
 
-        <!-- If you're using Firebase Messaging you'd have this service in your manifest-->
-        <service android:name=".optipush.MyMessagingService">
+        <service
+            android:name="com.optimove.sdk.optimove_sdk.optipush.messaging.OptipushMessagingService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>

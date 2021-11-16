@@ -5,11 +5,8 @@ public interface OptipushConstants {
   interface PushSchemaKeys {
 
     String DEEP_LINK = "dl";
-
     String IS_OPTIPUSH = "is_optipush";
-
     String MEDIA_TYPE_IMAGE = "image";
-
   }
 
   interface Notifications {
@@ -17,7 +14,6 @@ public interface OptipushConstants {
     int PENDING_INTENT_OPEN_RC = 100;
     int NOTIFICATION_ID = 1001;
     String SDK_NOTIFICATION_CHANNEL_ID = "optimove.sdk.notifications";
-    String IS_DELETE_KEY = "is_delete";
     String DYNAMIC_LINK = "dynamic_link";
     String SCHEDULED_IDENTITY_TOKEN = "scheduled_identity_token";
     String TRIGGERED_IDENTITY_TOKEN = "triggered_identity_token";
@@ -29,6 +25,10 @@ public interface OptipushConstants {
     int INVALID_CUSTOM_COLOR_VALUE = -1;
   }
 
+  interface Actions {
+    String ACTION_NOTIFICATION_CLICKED = "com.optimove.sdk.optimove_sdk.NOTIFICATION_CLICKED";
+    String ACTION_DEEPLINK = "com.optimove.sdk.optimove_sdk.DEEPLINK";
+  }
 
   interface Registration {
     String REGISTRATION_PREFERENCES_NAME = "com.optimove.sdk.registration_preferences";
@@ -41,8 +41,5 @@ public interface OptipushConstants {
     String PUSH_CAMPAIGNS_DISABLED_KEY = "pushCampaignsDisabledKey";
     String FAILED_USER_IDS_KEY ="failedUserIdsKey";
     String DEVICE_ID_KEY = "deviceIdKey";
-
-
-
   }
 }

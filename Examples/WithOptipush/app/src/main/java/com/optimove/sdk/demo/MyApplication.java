@@ -10,8 +10,6 @@ public class MyApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    // If you are initializing Firebase manually (if you don't use the google-service.json file),
-    // you should initialize the it before you initialize Optimove
-    Optimove.configure(this, new TenantInfo(BuildConfig.OPTIMOVE_TENANT_TOKEN, BuildConfig.OPTIMOVE_CONFIG_NAME));
+    Optimove.configure(this, new TenantInfo("<YOUR_OPTIMOVE_TENANT_TOKEN>", "<YOUR_OPTIMOVE_CONFIG_NAME>"));
   }
 }
