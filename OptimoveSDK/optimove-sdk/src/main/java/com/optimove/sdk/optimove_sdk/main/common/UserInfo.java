@@ -6,14 +6,9 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.optimove.sdk.optimove_sdk.main.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -191,33 +186,6 @@ public class UserInfo {
   public String getInitialVisitorId() {
     return initialVisitorId;
   }
-
-  /**
-   * Get the user's Advertising ID. Must be called from a worker thread. Any call on the UI thread results in {@link IllegalStateException}.
-   *
-   * @return The user's Advertising ID
-   * @throws IllegalStateException If called from the UI Thread
-   */
-  @Nullable
-  public String getAdvertisingId() {
-    AdvertisingIdClient.Info adInfo = null;
-    Context context = Optimove.getInstance()
-            .getApplicationContext();
-    try {
-      adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
-    } catch (GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException | IOException e) {
-      OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e.getMessage());
-    }
-    boolean canReportAdId = adInfo != null && !adInfo.isLimitAdTrackingEnabled();
-    if (!canReportAdId) {
-      String error = adInfo == null ? "no access to adInfo" : "user opted out of personal ads";
-      OptiLoggerStreamsContainer.warn("Can't report Ad-ID due to: %s", error);
-      return null;
-    }
-    return adInfo.getId();
-  }
-
-
 
   interface UserInfoConstants {
 

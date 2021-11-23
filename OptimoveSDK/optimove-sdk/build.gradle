@@ -44,7 +44,6 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
-    implementation 'com.google.android.gms:play-services-ads-identifier:17.1.0'
     implementation 'com.google.code.gson:gson:2.8.8'
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.mockito:mockito-core:3.5.13'
