@@ -20,24 +20,9 @@ public class FetchedTenantConfigs {
     public RealtimeMetaData realtimeMetaData;
     @SerializedName("optitrackMetaData")
     public OptitrackMetaData optitrackMetaData;
-    @SerializedName("mobile")
-    public Mobile mobile;
     @SerializedName("events")
     public Map<String , EventConfigs> eventsConfigs;
 
-    public class Mobile {
-
-        @SerializedName("optipushMetaData")
-        public OptipushMetaData optipushMetaData;
-    }
-
-    public class OptipushMetaData {
-
-        @SerializedName("enableAdvertisingIdReport")
-        @Expose
-        public Boolean enableAdvertisingIdReport;
-
-    }
     public class OptitrackMetaData {
 
         @SerializedName("optitrackEndpoint")
@@ -60,35 +45,6 @@ public class FetchedTenantConfigs {
         @SerializedName("realtimeGateway")
         @Expose
         public String realtimeGateway;
-
-    }
-    public class FirebaseProjectKeys {
-
-        @SerializedName("appIds")
-        @Expose
-        public AppIds appIds;
-        @SerializedName("webApiKey")
-        @Expose
-        public String webApiKey;
-        @SerializedName("dbUrl")
-        @Expose
-        public String dbUrl;
-        @SerializedName("senderId")
-        @Expose
-        public String senderId;
-        @SerializedName("storageBucket")
-        @Expose
-        public String storageBucket;
-        @SerializedName("projectId")
-        @Expose
-        public String projectId;
-
-    }
-
-    public class AppIds {
-        @SerializedName("android")
-        @Expose
-        public Map<String , String> androidAppIds;
 
     }
 }

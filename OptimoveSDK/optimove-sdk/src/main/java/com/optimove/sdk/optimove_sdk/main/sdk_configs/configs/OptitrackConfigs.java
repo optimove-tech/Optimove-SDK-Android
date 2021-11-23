@@ -6,8 +6,6 @@ public class OptitrackConfigs {
     private String optitrackEndpoint;
     private int siteId;
 
-    private boolean enableAdvertisingIdReport;
-
     private int maxNumberOfParameters;
 
 
@@ -25,14 +23,6 @@ public class OptitrackConfigs {
 
     public void setSiteId(int siteId) {
         this.siteId = siteId;
-    }
-
-    public boolean isEnableAdvertisingIdReport() {
-        return enableAdvertisingIdReport;
-    }
-
-    public void setEnableAdvertisingIdReport(boolean enableAdvertisingIdReport) {
-        this.enableAdvertisingIdReport = enableAdvertisingIdReport;
     }
 
     public int getMaxNumberOfParameters() {

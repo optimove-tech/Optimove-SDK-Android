@@ -32,20 +32,10 @@ import static android.content.Context.WIFI_SERVICE;
 
 public class DeviceInfoProvider {
 
-    private Context context;
+    private final Context context;
 
     public DeviceInfoProvider(Context context) {
         this.context = context;
-    }
-
-    public boolean canReportAdId() {
-        AdvertisingIdClient.Info adInfo = null;
-        try {
-            adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
-        } catch (GooglePlayServicesNotAvailableException | GooglePlayServicesRepairableException | IOException e) {
-            OptiLoggerStreamsContainer.warn("Failed to get AdvertisingId due to: %s", e.getMessage());
-        }
-        return adInfo != null && !adInfo.isLimitAdTrackingEnabled();
     }
 
     public boolean notificaionsAreEnabled() {

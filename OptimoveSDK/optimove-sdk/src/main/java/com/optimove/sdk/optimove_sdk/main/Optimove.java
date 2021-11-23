@@ -236,17 +236,14 @@ final public class Optimove {
         //sends initial events
         EventGenerator eventGenerator =
                 EventGenerator.builder()
-                        .withUserInfo(userInfo)
                         .withPackageName(context.getPackageName())
-                        .withDeviceId(userInfo.getInstallationId())
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)
                         .withContext(context)
                         .build();
 
-        eventGenerator.generateStartEvents(configs.getOptitrackConfigs()
-                .isEnableAdvertisingIdReport());
+        eventGenerator.generateStartEvents();
     }
 
     private void loadTenantId(Configs configs) {

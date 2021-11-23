@@ -11,7 +11,6 @@ import com.optimove.sdk.optimove_sdk.main.event_generators.EventGenerator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
@@ -33,7 +32,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -89,9 +87,7 @@ public class EventGeneratorTests {
 
         eventGenerator =
                 EventGenerator.builder()
-                        .withUserInfo(userInfo)
                         .withPackageName(packageName)
-                        .withDeviceId(encryptedDeviceId)
                         .withRequirementProvider(deviceInfoProvider)
                         .withTenantInfo(tenantInfo)
                         .withEventHandlerProvider(eventHandlerProvider)
@@ -101,7 +97,7 @@ public class EventGeneratorTests {
 
     @Test
     public void userAgentEventShouldBeSentWhenInitialized() {
-        eventGenerator.generateStartEvents(false);
+        eventGenerator.generateStartEvents();
         verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arrayContains(arg,
                 UserAgentHeaderEvent.EVENT_NAME))));
     }
@@ -116,45 +112,16 @@ public class EventGeneratorTests {
 
     @Test
     public void sdkMetadataEventShouldBeSentWhenInitialized() {
-        eventGenerator.generateStartEvents(false);
+        eventGenerator.generateStartEvents();
         verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SdkMetadataEvent.EVENT_NAME)));
     }
 
     @Test
-    public void adIdShouldBeReportedIfAdIdAllowedAndCanReportAdAndAdvertisingIdIsNotNull() {
-        when(deviceInfoProvider.canReportAdId()).thenReturn(true);
-        when(userInfo.getAdvertisingId()).thenReturn("sdfgdsf");
-        eventGenerator.generateStartEvents(true);
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
-    }
-    @Test
-    public void adIdShouldntBeReportedIfAdvertisingIdIsntAllowed() {
-        eventGenerator.generateStartEvents(false);
-        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
-    }
-    @Test
-    public void adIdShouldntBeReportedIfCantReportAdId() {
-        when(deviceInfoProvider.canReportAdId()).thenReturn(false);
-        eventGenerator.generateStartEvents(true);
-        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
-    }
-    @Test
-    public void adIdShouldntBeReportedIfAdvertisingIdIsNull() {
-        when(deviceInfoProvider.canReportAdId()).thenReturn(true);
-        when(userInfo.getAdvertisingId()).thenReturn(null);
-        eventGenerator.generateStartEvents(true);
-        verify(eventHandler, times(0)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), SetAdvertisingIdEvent.EVENT_NAME)));
-    }
-    @Test
     public void neitherOptInNorOptOutShouldBeSentWhenWasOptinAndCurrentlyOptIn() {
         when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_IN);
         when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
-        eventGenerator.generateStartEvents(false);
+        eventGenerator.generateStartEvents();
         verifyZeroInteractions(editor);
     }
 }

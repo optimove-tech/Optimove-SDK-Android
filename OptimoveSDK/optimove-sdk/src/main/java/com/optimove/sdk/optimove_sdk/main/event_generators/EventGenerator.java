@@ -6,30 +6,25 @@ import android.location.Location;
 import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
-import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.SdkMetadataEvent;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.SetAdvertisingIdEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.ConfigsFetcher;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 
 import java.util.Collections;
+import java.util.concurrent.Executors;
 
 public class EventGenerator {
 
-    private UserInfo userInfo;
-    private String packageName;
-    private String encryptedDeviceId;
-    private DeviceInfoProvider deviceInfoProvider;
-    private TenantInfo tenantInfo;
-    private EventHandlerProvider eventHandlerProvider;
-    private Context context;
+    private final String packageName;
+    private final DeviceInfoProvider deviceInfoProvider;
+    private final TenantInfo tenantInfo;
+    private final EventHandlerProvider eventHandlerProvider;
+    private final Context context;
 
 
     private EventGenerator(Builder builder) {
-        userInfo = builder.userInfo;
         packageName = builder.packageName;
-        encryptedDeviceId = builder.encryptedDeviceId;
         deviceInfoProvider = builder.deviceInfoProvider;
         tenantInfo = builder.tenantInfo;
         eventHandlerProvider = builder.eventHandlerProvider;
@@ -37,31 +32,13 @@ public class EventGenerator {
     }
 
 
-    public void generateStartEvents(boolean advertisingIdReportEnabled) {
-        new Thread(() -> {
-            reportAdId(advertisingIdReportEnabled);
-            reportMetadataEvent();
-            reportUserAgent();
-        }).start();
+    public void generateStartEvents() {
+        Executors.newSingleThreadExecutor()
+                .execute(() -> {
+                    reportMetadataEvent();
+                    reportUserAgent();
+                });
     }
-
-    private void reportAdId(boolean isEnableAdvertisingIdReport) {
-        if (!isEnableAdvertisingIdReport) {
-            return;
-        }
-
-        if (deviceInfoProvider.canReportAdId()) {
-            String advertisingId = userInfo.getAdvertisingId();
-            if (advertisingId == null) {
-                return;
-            }
-
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Collections.singletonList(new SetAdvertisingIdEvent(advertisingId,
-                            packageName, encryptedDeviceId)));
-        }
-    }
-
 
     private void reportMetadataEvent() {
         String language = deviceInfoProvider.getDeviceLanguage()
@@ -105,7 +82,7 @@ public class EventGenerator {
     }
 
 
-    public static IUserInfo builder() {
+    public static IPackageName builder() {
         return new Builder();
     }
 
@@ -129,27 +106,17 @@ public class EventGenerator {
         ITenantInfo withRequirementProvider(DeviceInfoProvider val);
     }
 
-    public interface IDeviceId {
-        IRequirementProvider withDeviceId(String val);
-    }
-
     public interface IPackageName {
-        IDeviceId withPackageName(String val);
-    }
-
-    public interface IUserInfo {
-        IPackageName withUserInfo(UserInfo val);
+        IRequirementProvider withPackageName(String val);
     }
 
     public static final class Builder implements IContext, IEventHandlerProvider,
-            ITenantInfo, IRequirementProvider, IDeviceId, IPackageName, IUserInfo, IBuild {
+            ITenantInfo, IRequirementProvider, IPackageName, IBuild {
         private Context context;
         private EventHandlerProvider eventHandlerProvider;
         private TenantInfo tenantInfo;
         private DeviceInfoProvider deviceInfoProvider;
-        private String encryptedDeviceId;
         private String packageName;
-        private UserInfo userInfo;
 
         private Builder() {
         }
@@ -179,20 +146,8 @@ public class EventGenerator {
         }
 
         @Override
-        public IRequirementProvider withDeviceId(String val) {
-            encryptedDeviceId = val;
-            return this;
-        }
-
-        @Override
-        public IDeviceId withPackageName(String val) {
+        public IRequirementProvider withPackageName(String val) {
             packageName = val;
-            return this;
-        }
-
-        @Override
-        public IPackageName withUserInfo(UserInfo val) {
-            userInfo = val;
             return this;
         }
 
