@@ -6,7 +6,6 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
-import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
@@ -50,9 +49,6 @@ public class EventHandlerProvider {
         singleThreadExecutor.submit(() -> {
             EventNormalizer eventNormalizer = eventHandlerFactory.getEventNormalizer(configs.getOptitrackConfigs()
                     .getMaxNumberOfParameters());
-            EventValidator eventValidator = eventHandlerFactory.getEventValidator(configs.getEventsConfigs(),
-                    configs.getOptitrackConfigs()
-                            .getMaxNumberOfParameters());
             EventDecorator eventDecorator =
                     eventHandlerFactory.getEventDecorator(configs.getEventsConfigs(), configs.getOptitrackConfigs()
                             .getMaxNumberOfParameters());
@@ -65,8 +61,7 @@ public class EventHandlerProvider {
                     eventHandlerFactory.getDestinationDecider(configs.getEventsConfigs(), optistreamHandler,
                             realtimeManager, optistreamEventBuilder, configs.isEnableRealtime(), configs.isEnableRealtimeThroughOptistream());
 
-            eventNormalizer.setNext(eventValidator);
-            eventValidator.setNext(eventDecorator);
+            eventNormalizer.setNext(eventDecorator);
             //optistream
             eventDecorator.setNext(destinationDecider);
 

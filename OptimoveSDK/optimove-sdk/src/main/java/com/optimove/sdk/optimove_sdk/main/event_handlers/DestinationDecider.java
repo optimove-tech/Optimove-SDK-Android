@@ -13,12 +13,12 @@ import java.util.Map;
 
 public class DestinationDecider extends EventHandler {
 
-    private OptistreamHandler optistreamHandler;
-    private RealtimeManager realtimeManager;
-    private Map<String, EventConfigs> eventConfigsMap;
-    private boolean realtimeEnabled;
-    private boolean realtimeEnabledThroughOptistream;
-    private OptistreamEventBuilder optistreamEventBuilder;
+    private final OptistreamHandler optistreamHandler;
+    private final RealtimeManager realtimeManager;
+    private final Map<String, EventConfigs> eventConfigsMap;
+    private final boolean realtimeEnabled;
+    private final boolean realtimeEnabledThroughOptistream;
+    private final OptistreamEventBuilder optistreamEventBuilder;
 
 
     public DestinationDecider(Map<String, EventConfigs> eventConfigsMap, OptistreamHandler optistreamHandler,
@@ -41,36 +41,11 @@ public class DestinationDecider extends EventHandler {
         for (OptimoveEvent optimoveEvent : optimoveEvents) {
             EventConfigs eventConfigs = eventConfigsMap.get(optimoveEvent.getName());
 
-            OptistreamEvent optistreamEvent;
-            if (eventConfigs == null || !realtimeEnabled || !eventConfigs.isSupportedOnRealtime()) {
-                // Only optistream
-                optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                        false);
-                optistreamEvents.add(optistreamEvent);
-            } else if (realtimeEnabledThroughOptistream) {
-                // Only to optistream, with realtime enabled for Optistream (only if no validation errors)
-                optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                        optimoveEvent.getValidationIssues() == null);
-                optistreamEvents.add(optistreamEvent);
-            } else {
-                // Both to optistream and to realtime, with realtime disabled for Optistream
-                optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
-                        false);
-                optistreamEvents.add(optistreamEvent);
-                if (optimoveEvent.getValidationIssues() == null) {
-                    optistreamRealtimeEvents.add(optistreamEvent);
-                } else {
-                    boolean errorFound = false;
-                    for (OptimoveEvent.ValidationIssue validationIssue : optimoveEvent.getValidationIssues()) {
-                        if (validationIssue.isError()) {
-                            errorFound = true;
-                            break;
-                        }
-                    }
-                    if (!errorFound) {
-                        optistreamRealtimeEvents.add(optistreamEvent);
-                    }
-                }
+            OptistreamEvent optistreamEvent = optistreamEventBuilder.convertOptimoveToOptistreamEvent(optimoveEvent,
+                    realtimeEnabledThroughOptistream);
+            optistreamEvents.add(optistreamEvent);
+            if (eventConfigs != null && realtimeEnabled && eventConfigs.isSupportedOnRealtime() && !realtimeEnabledThroughOptistream){
+                optistreamRealtimeEvents.add(optistreamEvent);
             }
         }
         if (!optistreamRealtimeEvents.isEmpty()) {

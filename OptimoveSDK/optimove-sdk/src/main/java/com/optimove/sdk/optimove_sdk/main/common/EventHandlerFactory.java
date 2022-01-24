@@ -7,7 +7,6 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventDecorator;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
-import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
@@ -48,10 +47,6 @@ public class EventHandlerFactory {
 
     public EventSynchronizer getEventSynchronizer(ExecutorService singleThreadExecutor) {
         return new EventSynchronizer(singleThreadExecutor);
-    }
-
-    public EventValidator getEventValidator(Map<String, EventConfigs> eventConfigs, int maxNumberOfParams) {
-        return new EventValidator(eventConfigs, maxNumberOfParams);
     }
 
     public EventNormalizer getEventNormalizer(int maxNumberOfParams) {

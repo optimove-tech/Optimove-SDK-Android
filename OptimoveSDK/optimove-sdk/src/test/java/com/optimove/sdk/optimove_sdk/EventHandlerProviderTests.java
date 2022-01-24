@@ -8,7 +8,6 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventNormalizer;
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventSynchronizer;
-import com.optimove.sdk.optimove_sdk.main.event_handlers.EventValidator;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.Configs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 
@@ -36,8 +35,6 @@ public class EventHandlerProviderTests {
     @Mock
     private DestinationDecider destinationDecider;
     @Mock
-    private EventValidator eventValidator;
-    @Mock
     private EventDecorator eventDecorator;
     @Mock
     private EventNormalizer eventNormalizer;
@@ -53,7 +50,6 @@ public class EventHandlerProviderTests {
         eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
         when(eventHandlerFactory.getDestinationDecider(any(), any(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(destinationDecider);
         when(eventHandlerFactory.getEventDecorator(any(), anyInt())).thenReturn(eventDecorator);
-        when(eventHandlerFactory.getEventValidator(any(), anyInt())).thenReturn(eventValidator);
         when(eventHandlerFactory.getEventNormalizer(anyInt())).thenReturn(eventNormalizer);
         when(eventHandlerFactory.getEventBuffer()).thenReturn(eventMemoryBuffer);
         when(eventHandlerFactory.getEventSynchronizer(any())).thenReturn(eventSynchronizer);
@@ -75,8 +71,7 @@ public class EventHandlerProviderTests {
         eventHandlerProvider.processConfigs(configs);
         verify(eventSynchronizer, timeout(1000)).setNext(eventMemoryBuffer);
         verify(eventMemoryBuffer, timeout(1000)).setNext(eventNormalizer);
-        verify(eventNormalizer, timeout(1000)).setNext(eventValidator);
-        verify(eventValidator, timeout(1000)).setNext(eventDecorator);
+        verify(eventNormalizer, timeout(1000)).setNext(eventDecorator);
         verify(eventDecorator, timeout(1000)).setNext(destinationDecider);
         Assert.assertTrue(eventHandlerProvider.getEventHandler() instanceof EventSynchronizer);
 

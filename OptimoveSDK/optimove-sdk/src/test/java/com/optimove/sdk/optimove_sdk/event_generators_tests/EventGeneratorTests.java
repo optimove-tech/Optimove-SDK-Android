@@ -76,8 +76,6 @@ public class EventGeneratorTests {
         when(editor.putString(anyString(), any())).thenReturn(editor);
         when(editor.putInt(anyString(), anyInt())).thenReturn(editor);
 
-        when(userInfo.getAdvertisingId()).thenReturn("asdgsdfg");
-
         when(eventHandlerProvider.getEventHandler()).thenReturn(eventHandler);
 
         Location location = mock(Location.class);

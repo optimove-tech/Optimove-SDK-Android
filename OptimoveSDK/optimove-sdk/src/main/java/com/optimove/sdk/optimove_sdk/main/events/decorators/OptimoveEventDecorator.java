@@ -30,14 +30,12 @@ public class OptimoveEventDecorator extends OptimoveEvent {
   public OptimoveEventDecorator(OptimoveEvent optimoveEvent, int maxNumberOfParamsToAdd) {
     super(optimoveEvent.getTimestamp(), optimoveEvent.getRequestId());
     this.optimoveEvent = optimoveEvent;
-    this.validationIssues = optimoveEvent.getValidationIssues();
     this.maxNumberOfParamsToAdd =  maxNumberOfParamsToAdd;
     this.setupParameters();
   }
   public OptimoveEventDecorator(OptimoveEvent optimoveEvent, EventConfigs eventConfigs,  int maxNumberOfParamsToAdd) {
     super(optimoveEvent.getTimestamp(), optimoveEvent.getRequestId());
     this.optimoveEvent = optimoveEvent;
-    this.validationIssues = optimoveEvent.getValidationIssues();
     this.maxNumberOfParamsToAdd =  maxNumberOfParamsToAdd;
     this.setupParameters();
     this.processEventConfigurations(eventConfigs);

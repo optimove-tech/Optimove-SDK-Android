@@ -251,9 +251,6 @@ public class OptistreamEvent {
         private String sdkVersion;
         @SerializedName("requestId")
         private String requestId;
-        @SerializedName("validations")
-        @Nullable
-        private List<ValidationIssue> validationIssues;
 
         public Metadata(boolean realtime, long firstVisitorDate, String sdkPlatform, String sdkVersion, String requestId) {
             this.realtime = realtime;
@@ -267,9 +264,6 @@ public class OptistreamEvent {
         public void setAirship(@NonNull AirshipMetadata airship){
             this.airship = airship;
         }
-        public void setValidationIssues(@NonNull List<ValidationIssue> validationIssues){
-            this.validationIssues = validationIssues;
-        }
 
         public boolean isRealtime() {
             return realtime;
@@ -277,33 +271,6 @@ public class OptistreamEvent {
 
         public void setRealtime(boolean realtime) {
             this.realtime = realtime;
-        }
-    }
-    public static final class ValidationIssue {
-        @SerializedName("status")
-        private int status;
-        @SerializedName("message")
-        private String message;
-
-        public ValidationIssue(int status, String message) {
-            this.status = status;
-            this.message = message;
-        }
-
-        public int getStatus() {
-            return status;
-        }
-
-        public void setStatus(int status) {
-            this.status = status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
         }
     }
 
