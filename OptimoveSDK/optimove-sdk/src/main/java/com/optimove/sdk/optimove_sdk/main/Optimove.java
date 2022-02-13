@@ -408,7 +408,10 @@ final public class Optimove {
 
         return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
-
+    /** get visitor id of Optimove SDK  */
+    public String getVisitorId(){
+        return this.userInfo.getVisitorId();
+    }
     /**
      * Convenience method for reporting a <b>custom</b> {@link OptimoveEvent} without parameters
      *

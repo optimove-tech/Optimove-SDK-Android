@@ -1,7 +1,12 @@
 package com.optimove.sdk.optimove_sdk.event_handler_tests;
 
-import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
+
 import com.optimove.sdk.optimove_sdk.main.event_handlers.EventHandler;
+import com.optimove.sdk.optimove_sdk.main.event_handlers.EventMemoryBuffer;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.SimpleCustomEvent;
 
@@ -13,11 +18,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
 import java.util.HashMap;
-
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import java.util.List;
 
 public class EventMemoryBufferTests {
 
@@ -58,5 +59,13 @@ public class EventMemoryBufferTests {
         verify(nextEventHandler, times(1)).reportEvent(any());
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.size()
                 , bufferMaximumSize)));
+    }
+    @Test
+    public void reportEventcaseNextIsNull(){
+        List<OptimoveEvent> events = Collections.singletonList(new SimpleCustomEvent("some_name", new HashMap<>()));
+        eventMemoryBuffer.setNext(nextEventHandler);
+        eventMemoryBuffer.reportEvent(events);
+        verify(nextEventHandler).reportEvent(events);
+
     }
 }
