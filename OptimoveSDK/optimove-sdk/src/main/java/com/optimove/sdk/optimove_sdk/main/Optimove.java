@@ -408,7 +408,7 @@ final public class Optimove {
 
         return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
-    /** call this function if you need the internal visitor Id of Optipmove  */
+    /** get visitor id of Optimove SDK  */
     public String getVisitorId(){
         return this.userInfo.getVisitorId();
     }
