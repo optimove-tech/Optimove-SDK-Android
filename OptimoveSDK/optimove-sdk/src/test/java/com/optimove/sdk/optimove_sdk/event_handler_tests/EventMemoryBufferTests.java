@@ -11,13 +11,19 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class EventMemoryBufferTests {
 
@@ -58,5 +64,13 @@ public class EventMemoryBufferTests {
         verify(nextEventHandler, times(1)).reportEvent(any());
         verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.size()
                 , bufferMaximumSize)));
+    }
+    @Test
+    public void reportEventcaseNextIsNull(){
+        List<OptimoveEvent> events = Arrays.asList(new SimpleCustomEvent("some_name", new HashMap<>()));
+        eventMemoryBuffer.setNext(nextEventHandler);
+        eventMemoryBuffer.reportEvent(events);
+        verify(nextEventHandler).reportEvent(events);
+
     }
 }
