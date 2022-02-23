@@ -66,11 +66,11 @@ public class OptiUtils {
       Field field = buildConfig.getDeclaredField(key);
       result = field.get(null);
     } catch (ClassNotFoundException e) {
-      OptiLoggerStreamsContainer.error("getBuildConfig failed due to: failed to find App BuildConfig class");
+      OptiLoggerStreamsContainer.debug("getBuildConfig failed due to: failed to find App BuildConfig class");
     } catch (NoSuchFieldException e) {
-      OptiLoggerStreamsContainer.warn("getBuildConfig failed due to: failed to find Optimove SDK flag %s in BuildConfig class", key);
+      OptiLoggerStreamsContainer.debug("getBuildConfig failed due to: failed to find Optimove SDK flag %s in BuildConfig class", key);
     } catch (IllegalAccessException e) {
-      OptiLoggerStreamsContainer.warn("getBuildConfig failed due to: failed to get value of optimove flag");
+      OptiLoggerStreamsContainer.debug("getBuildConfig failed due to: failed to get value of optimove flag");
     } catch (Throwable e) {
       OptiLoggerStreamsContainer.error("getBuildConfig failed due to: %s", e.getMessage());
     }
