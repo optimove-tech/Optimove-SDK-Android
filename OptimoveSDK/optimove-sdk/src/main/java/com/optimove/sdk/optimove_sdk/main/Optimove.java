@@ -2,11 +2,18 @@ package com.optimove.sdk.optimove_sdk.main;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kumulos.android.Kumulos;
+import com.kumulos.android.KumulosConfig;
+import com.kumulos.android.PushActionHandlerInterface;
+import com.kumulos.android.PushTokenType;
 import com.optimove.sdk.optimove_sdk.main.common.EventHandlerFactory;
 import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
@@ -59,15 +66,14 @@ final public class Optimove {
     private static Optimove shared;
 
     @NonNull
-    private Context context;
-    private SharedPreferences coreSharedPreferences;
+    private final Context context;
+    private final SharedPreferences coreSharedPreferences;
     private TenantInfo tenantInfo;
-    private UserInfo userInfo;
+    private final UserInfo userInfo;
+
     /* *******************
      * Object Definition
      ******************* */
-
-
     private SharedPreferences localConfigKeysPreferences;
 
     private EventHandlerProvider eventHandlerProvider;
@@ -77,9 +83,10 @@ final public class Optimove {
     private AtomicBoolean configSet;
     private LifecycleObserver lifecycleObserver;
 
-    private Optimove(Context context) {
+    private Optimove(@NonNull Context context) {
         this.context = context;
-        this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
+        this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
+                Context.MODE_PRIVATE);
         this.deviceInfoProvider = new DeviceInfoProvider(context);
         this.tenantInfo = null;
         this.userInfo = UserInfo.newInstance(context);
@@ -106,7 +113,8 @@ final public class Optimove {
     }
 
     /**
-     * Gets the {@link Optimove} {@code singleton}. {@link Optimove#configure(Context, TenantInfo)} must be called before trying to access {@code Optimove}.
+     * Gets the {@link Optimove} {@code singleton}. {@link Optimove#initialize(Application, OptimobileConfig)} must be called
+     * before trying to access {@code Optimove}.
      *
      * @return the {@code Optimove singleton}
      */
@@ -121,26 +129,22 @@ final public class Optimove {
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
-     * @param context    The instance of the current {@code Context} object.
-     * @param tenantInfo The {@link TenantInfo} as provided by <i>Optimove</i>
+     * @param application    The instance of the current {@code Application} object.
+     * @param optimobileConfig The {@link OptimobileConfig} as provided by <i>Optimove</i>
      */
-    public static void configure(Context context, TenantInfo tenantInfo) {
-        Context applicationContext = context.getApplicationContext();
-        OptiLoggerStreamsContainer.initializeLogger(context);
-        if (!(applicationContext instanceof Application)) {
-            OptiLoggerStreamsContainer.fatal("Optimove#configure", "Can't initialize Optimove SDK since the ApplicationContext isn't an instance of Application class but of %s",
-                    applicationContext.getClass()
-                            .getCanonicalName());
-            return;
-        }
+    public static void initialize(@NonNull Application application, OptimobileConfig optimobileConfig) {
+        OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
+        Kumulos.initialize(application, new KumulosConfig.Builder(optimobileConfig.getApiKey(),
+                optimobileConfig.getSecretKey()).build());
 
         Runnable initCommand = () -> {
-            boolean initializedSuccessfully = performSingletonInitialization(context, tenantInfo);
+            boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
+                    new TenantInfo(optimobileConfig.getOptimoveToken(), optimobileConfig.getConfigFile()));
             if (initializedSuccessfully) {
                 OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
                 shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
                 shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
-                ((Application) applicationContext).registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+                application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
                 shared.fetchConfigs(false);
             }
         };
@@ -156,13 +160,13 @@ final public class Optimove {
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
-     * @param context           The instance of the current {@code Context} object.
-     * @param tenantInfo        The {@link TenantInfo} as provided by <i>Optimove</i>.
+     * @param application           The instance of the current {@code Application} object.
+     * @param optimobileConfig        The {@link OptimobileConfig} as provided by <i>Optimove</i>.
      * @param logcatMinLogLevel Logcat minimum log level to show.
      */
-    public static void configure(Context context, TenantInfo tenantInfo, LogLevel logcatMinLogLevel) {
+    public static void initialize(Application application, OptimobileConfig optimobileConfig, LogLevel logcatMinLogLevel) {
         OptiLoggerStreamsContainer.setMinLogLevelToShow(logcatMinLogLevel);
-        configure(context, tenantInfo);
+        initialize(application, optimobileConfig);
     }
 
     /**
@@ -269,11 +273,11 @@ final public class Optimove {
      * </ul>
      * <b>Note</b>: To initialize properly, the Optimove instance MUST have a {@link TenantInfo} property, either remote or local.
      *
-     * @param applicationContext The Application's Context.
+     * @param context The Context.
      * @param newTenantInfo      The {@code TenantInfo} that was sent by the client.
      * @throws IllegalArgumentException if <b>both</b> the new and the local {@code TenantInfo}s passed are null.
      */
-    private static boolean performSingletonInitialization(Context applicationContext, TenantInfo newTenantInfo) {
+    private static boolean performSingletonInitialization(Context context, TenantInfo newTenantInfo) {
         if (shared != null) {
             boolean tenantInfoExists = (shared.retrieveLocalTenantInfo() != null || newTenantInfo != null);
             if (!tenantInfoExists) {
@@ -282,7 +286,7 @@ final public class Optimove {
             return tenantInfoExists;
         } else {
             synchronized (LOCK) {
-                shared = new Optimove(applicationContext);
+                shared = new Optimove(context);
 
                 TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
                 if (newTenantInfo == null && localTenantInfo == null) {
@@ -353,10 +357,11 @@ final public class Optimove {
      * <b>Note</b>: The user ID must be the same user ID that is passed to Optimove at the daily ETL
      * If you report both the user ID and the email, use {@link Optimove#registerUser(String, String)}
      *
-     * @param sdkId The new User' SDK ID to set
+     * @param userId The new userId to set
      */
-    public void setUserId(String sdkId) {
-        SetUserIdEvent setUserIdEvent = processUserId(sdkId);
+    public void setUserId(String userId) {
+        Kumulos.associateUserWithInstall(context, userId);
+        SetUserIdEvent setUserIdEvent = processUserId(userId);
         if (setUserIdEvent != null) {
             eventHandlerProvider.getEventHandler()
                     .reportEvent(Collections.singletonList(setUserIdEvent));
@@ -471,6 +476,130 @@ final public class Optimove {
     public void enablePushCampaigns() {
         optipushManager.enablePushCampaigns();
     }
+
+    //==============================================================================================
+    //-- Location APIs
+
+    /**
+     * Updates the location of the current installation in Kumulos
+     * Accurate locaiton information is used for geofencing
+     * @param context
+     * @param location
+     */
+    public static void sendLocationUpdate(Context context, @Nullable Location location) {
+        Kumulos.sendLocationUpdate(context, location);
+    }
+
+    /**
+     * Records a proximity event for an Eddystone beacon. Proximity events can be used in automation rules.
+     * @param context
+     * @param hexNamespace
+     * @param hexInstance
+     * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
+     */
+    public static void trackEddystoneBeaconProximity(@NonNull Context context, @NonNull String hexNamespace, @NonNull String hexInstance, @Nullable Double distanceMetres) {
+        Kumulos.trackEddystoneBeaconProximity(context, hexNamespace, hexInstance, distanceMetres);
+    }
+
+    //==============================================================================================
+    //-- Analytics APIs
+
+    /**
+     * Clears any existing association between this install record and a user identifier
+     * @see Kumulos#associateUserWithInstall(Context, String)
+     * @see Kumulos#getCurrentUserIdentifier(Context)
+     * @param context
+     */
+    public static void clearUserAssociation(@NonNull Context context) {
+        Kumulos.clearUserAssociation(context);
+    }
+
+    /**
+     * Returns the identifier for the user currently associated with the Kumulos installation record
+     *
+     * @see Kumulos#associateUserWithInstall(Context, String)
+     * @see com.kumulos.android.Installation#id(Context)
+     *
+     * @param context
+     * @return The current user identifier (if available), otherwise the Kumulos installation ID
+     */
+    public static String getCurrentUserIdentifier(@NonNull Context context) {
+        return Kumulos.getCurrentUserIdentifier(context);
+    }
+
+    //==============================================================================================
+    //-- Push APIs
+
+    /**
+     * Used to register the device installation with FCM to receive push notifications
+     *
+     * @param context
+     */
+    public static void pushRegister(Context context) {
+        Kumulos.pushRegister(context);
+    }
+
+    /**
+     * Used to unregister the current installation from receiving push notifications
+     *
+     * @param context
+     */
+    public static void pushUnregister(Context context) {
+        Kumulos.pushUnregister(context);
+    }
+
+    /**
+     * Used to track a conversion from a push notification
+     *
+     * @param context
+     * @param id
+     */
+    public static void pushTrackOpen(Context context, final int id) throws Kumulos.UninitializedException {
+        Kumulos.pushTrackOpen(context, id);
+    }
+
+    /**
+     * Used to track a dismissal of a push notification
+     *
+     * @param context
+     * @param id
+     */
+    public static void pushTrackDismissed(Context context, final int id) throws Kumulos.UninitializedException {
+        Kumulos.pushTrackDismissed(context, id);
+    }
+
+    /**
+     * Registers the push token with Kumulos to allow sending push notifications to this install
+     * @param context
+     * @param token
+     */
+    public static void pushTokenStore(@NonNull Context context, @NonNull final PushTokenType type, @NonNull final String token) {
+       Kumulos.pushTokenStore(context, type, token);
+    }
+
+    /**
+     * Allows setting the handler you want to use for push action buttons
+     * @param handler
+     */
+    public static void setPushActionHandler(PushActionHandlerInterface handler) {
+        Kumulos.setPushActionHandler(handler);
+    }
+
+    //==============================================================================================
+    //-- DEFERRED DEEP LINKING
+
+    public static void seeIntent(Context context, Intent intent, @Nullable Bundle savedInstanceState) {
+        Kumulos.seeIntent(context, intent, savedInstanceState);
+    }
+
+    public static void seeIntent(Context context, Intent intent) {
+        Kumulos.seeIntent(context, intent);
+    }
+
+    public static void seeInputFocus(Context context, boolean hasFocus) {
+        Kumulos.seeInputFocus(context, hasFocus);
+    }
+
 
     /* *******************
      * Public Only to SDK Getters
