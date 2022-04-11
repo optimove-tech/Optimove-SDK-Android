@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Represents the configuration for the Kumulos client
  */
-public final class KumulosConfig {
+public final class OptimobileConfig {
 
     @DrawableRes
     static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.kumulos_ic_stat_notifications;
@@ -25,6 +25,10 @@ public final class KumulosConfig {
 
     private String apiKey;
     private String secretKey;
+
+    private String optimoveToken;
+    private String optimoveConfigFile;
+
     @DrawableRes
     private int notificationSmallIconId;
     private InAppConsentStrategy inAppConsentStrategy;
@@ -43,7 +47,7 @@ public final class KumulosConfig {
     }
 
     // Private constructor to discourage not using the Builder.
-    private KumulosConfig() {}
+    private OptimobileConfig() {}
 
     private void setApiKey(String apiKey) {
         this.apiKey = apiKey;
@@ -51,6 +55,14 @@ public final class KumulosConfig {
 
     private void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    private void setOptimoveToken(String optimoveToken) {
+        this.optimoveToken = optimoveToken;
+    }
+
+    private void setOptimoveConfigFile(String optimoveConfigFile) {
+        this.optimoveConfigFile = optimoveConfigFile;
     }
 
     private void setNotificationSmallIconId(@DrawableRes int notificationSmallIconId) {
@@ -92,6 +104,14 @@ public final class KumulosConfig {
         return secretKey;
     }
 
+    public String getOptimoveToken() {
+        return optimoveToken;
+    }
+
+    public String getOptimoveConfigFile() {
+        return optimoveConfigFile;
+    }
+
     public @DrawableRes int getNotificationSmallIconId() {
         return notificationSmallIconId;
     }
@@ -130,11 +150,13 @@ public final class KumulosConfig {
     public static class Builder {
         private final String apiKey;
         private final String secretKey;
+        private final String optimoveToken;
+        private final String optimoveConfigFile;
 
         @DrawableRes
-        private int notificationSmallIconDrawableId = KumulosConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        private int notificationSmallIconDrawableId = OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
         private InAppConsentStrategy consentStrategy = null;
-        private int sessionIdleTimeoutSeconds = KumulosConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
+        private int sessionIdleTimeoutSeconds = OptimobileConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
 
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
@@ -143,10 +165,12 @@ public final class KumulosConfig {
         private @Nullable URL deepLinkCname;
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
-        public Builder(@NonNull String apiKey, @NonNull String secretKey) {
+        public Builder(@NonNull String apiKey, @NonNull String secretKey, @NonNull String optimoveToken,
+                       @NonNull String optimoveConfigFile) {
             this.apiKey = apiKey;
             this.secretKey = secretKey;
-
+            this.optimoveToken = optimoveToken;
+            this.optimoveConfigFile = optimoveConfigFile;
             this.baseUrlMap = UrlBuilder.defaultMapping();
         }
 
@@ -224,14 +248,16 @@ public final class KumulosConfig {
             return this;
         }
 
-        public KumulosConfig build() {
+        public OptimobileConfig build() {
             if (TextUtils.isEmpty(apiKey) || TextUtils.isEmpty(secretKey)) {
                 throw new IllegalStateException("You need to provide apiKey and secretKey before you can build KumulosConfig.");
             }
 
-            KumulosConfig newConfig = new KumulosConfig();
+            OptimobileConfig newConfig = new OptimobileConfig();
             newConfig.setApiKey(apiKey);
             newConfig.setSecretKey(secretKey);
+            newConfig.setOptimoveConfigFile(optimoveConfigFile);
+            newConfig.setOptimoveConfigFile(optimoveConfigFile);
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);
             newConfig.setRuntimeInfo(this.runtimeInfo);

@@ -34,8 +34,6 @@ import com.optimove.sdk.optimove_sdk.BuildConfig;
  */
 public final class Kumulos {
 
-    public static final String VERSION = BuildConfig.OPTIMOVE_VERSION_NAME;
-
     private static final String TAG = Kumulos.class.getName();
 
     /** package */ static final String KEY_AUTH_HEADER = "Authorization";
@@ -43,7 +41,7 @@ public final class Kumulos {
 
     private static String installId;
 
-    private static KumulosConfig currentConfig;
+    private static OptimobileConfig currentConfig;
 
     static UrlBuilder urlBuilder;
 
@@ -84,7 +82,7 @@ public final class Kumulos {
      * @param application
      * @param config
      */
-    public static synchronized void initialize(final Application application, KumulosConfig config) {
+    public static synchronized void initialize(final Application application, OptimobileConfig config) {
         if (initialized) {
             log("Kumulos is already initialized, aborting...");
             return;
@@ -140,7 +138,7 @@ public final class Kumulos {
      *
      * @return
      */
-    public static KumulosConfig getConfig() {
+    public static OptimobileConfig getConfig() {
         return currentConfig;
     }
 

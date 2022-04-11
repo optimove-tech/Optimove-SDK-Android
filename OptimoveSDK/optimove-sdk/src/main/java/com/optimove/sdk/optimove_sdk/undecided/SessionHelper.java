@@ -87,7 +87,7 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
                 .build();
 
         Kumulos.executorService.submit(() -> {
-            KumulosConfig config = Kumulos.getConfig();
+            OptimobileConfig config = Kumulos.getConfig();
 
             OneTimeWorkRequest.Builder taskBuilder = new OneTimeWorkRequest.Builder(AnalyticsBackgroundEventWorker.class)
                     .setInitialDelay(config.getSessionIdleTimeoutSeconds(), TimeUnit.SECONDS)

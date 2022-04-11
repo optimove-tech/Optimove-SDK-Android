@@ -205,7 +205,7 @@ final class AnalyticsContract {
                 return;
             }
 
-            KumulosConfig config = Kumulos.getConfig();
+            OptimobileConfig config = Kumulos.getConfig();
             final JSONObject finalObj;
             try {
                 JSONObject app = new JSONObject()
@@ -217,7 +217,7 @@ final class AnalyticsContract {
                 if (null == sdk) {
                     sdk = new JSONObject()
                             .put("id", SDK_TYPE)
-                            .put("version", Kumulos.VERSION);
+                            .put("version", BuildConfig.OPTIMOVE_VERSION_NAME);
                 }
 
                 JSONObject runtime = config.getRuntimeInfo();

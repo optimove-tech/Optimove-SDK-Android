@@ -35,7 +35,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsCon
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
 import com.optimove.sdk.optimove_sdk.undecided.Kumulos;
-import com.optimove.sdk.optimove_sdk.undecided.KumulosConfig;
+import com.optimove.sdk.optimove_sdk.undecided.OptimobileConfig;
 import com.optimove.sdk.optimove_sdk.undecided.PushActionHandlerInterface;
 import com.optimove.sdk.optimove_sdk.undecided.PushTokenType;
 
@@ -129,12 +129,11 @@ final public class Optimove {
      */
     public static void initialize(@NonNull Application application, OptimobileConfig optimobileConfig) {
         OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
-        Kumulos.initialize(application, new KumulosConfig.Builder(optimobileConfig.getApiKey(),
-                optimobileConfig.getSecretKey()).build());
+        Kumulos.initialize(application, optimobileConfig);
 
         Runnable initCommand = () -> {
             boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
-                    new TenantInfo(optimobileConfig.getOptimoveToken(), optimobileConfig.getConfigFile()));
+                    new TenantInfo(optimobileConfig.getOptimoveToken(), optimobileConfig.getOptimoveConfigFile()));
             if (initializedSuccessfully) {
                 OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
                 shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);

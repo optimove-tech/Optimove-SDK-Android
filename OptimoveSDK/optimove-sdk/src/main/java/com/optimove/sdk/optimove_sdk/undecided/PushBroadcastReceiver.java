@@ -204,8 +204,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             notificationBuilder = new Notification.Builder(context);
         }
 
-        KumulosConfig config = Kumulos.getConfig();
-        int icon = config != null ? config.getNotificationSmallIconId() : KumulosConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        OptimobileConfig config = Kumulos.getConfig();
+        int icon = config != null ? config.getNotificationSmallIconId() : OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
 
         notificationBuilder
                 .setSmallIcon(icon)

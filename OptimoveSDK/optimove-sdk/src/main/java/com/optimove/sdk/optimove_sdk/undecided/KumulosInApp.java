@@ -131,7 +131,7 @@ public class KumulosInApp {
      */
 
     public static void updateConsentForUser(boolean consentGiven) {
-        if (Kumulos.getConfig().getInAppConsentStrategy() != KumulosConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
+        if (Kumulos.getConfig().getInAppConsentStrategy() != OptimobileConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
             throw new RuntimeException("Kumulos: It is only possible to update In App consent for user if consent strategy is set to EXPLICIT_BY_USER");
         }
 
@@ -155,13 +155,13 @@ public class KumulosInApp {
     //==============================================================================================
     //-- Internal Helpers
 
-    static void initialize(Application application, KumulosConfig currentConfig) {
+    static void initialize(Application application, OptimobileConfig currentConfig) {
         KumulosInApp.application = application;
 
-        KumulosConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
+        OptimobileConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
         boolean inAppEnabled = isInAppEnabled();
 
-        if (strategy == KumulosConfig.InAppConsentStrategy.AUTO_ENROLL && !inAppEnabled) {
+        if (strategy == OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL && !inAppEnabled) {
             inAppEnabled = true;
             updateInAppEnablementFlags(true);
         } else if (strategy == null && inAppEnabled) {
@@ -211,15 +211,15 @@ public class KumulosInApp {
         editor.apply();
     }
 
-    static void handleInAppUserChange(Context context, KumulosConfig currentConfig) {
+    static void handleInAppUserChange(Context context, OptimobileConfig currentConfig) {
         InAppMessageService.clearAllMessages(context);
         clearLastSyncTime(context);
 
-        KumulosConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
-        if (strategy == KumulosConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
+        OptimobileConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
+        if (strategy == OptimobileConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
             updateLocalInAppEnablementFlag(false);
             toggleInAppMessageMonitoring(false);
-        } else if (strategy == KumulosConfig.InAppConsentStrategy.AUTO_ENROLL) {
+        } else if (strategy == OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL) {
             updateRemoteInAppEnablementFlag(true);
 
             fetchMessages();
