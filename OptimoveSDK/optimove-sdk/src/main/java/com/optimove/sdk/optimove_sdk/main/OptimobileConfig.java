@@ -6,12 +6,11 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kumulos.android.DeferredDeepLinkHandlerInterface;
-import com.kumulos.android.KumulosConfig;
-import com.kumulos.android.UrlBuilder;
 import com.optimove.sdk.optimove_sdk.R;
+import com.optimove.sdk.optimove_sdk.undecided.DeferredDeepLinkHandlerInterface;
+import com.optimove.sdk.optimove_sdk.undecided.KumulosConfig;
+import com.optimove.sdk.optimove_sdk.undecided.UrlBuilder;
 
-import org.acra.config.CoreConfigurationBuilder;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
@@ -31,15 +30,12 @@ public class OptimobileConfig {
     private String secretKey;
     @DrawableRes
     private int notificationSmallIconId;
-    private boolean crashReportingEnabled;
     private KumulosConfig.InAppConsentStrategy inAppConsentStrategy;
     private int sessionIdleTimeoutSeconds;
 
     private JSONObject runtimeInfo;
     private JSONObject sdkInfo;
     private Map<UrlBuilder.Service, String> baseUrlMap;
-
-    private CoreConfigurationBuilder acraConfigBuilder;
 
     private URL deepLinkCname;
 
@@ -73,14 +69,6 @@ public class OptimobileConfig {
 
     public void setNotificationSmallIconId(int notificationSmallIconId) {
         this.notificationSmallIconId = notificationSmallIconId;
-    }
-
-    public boolean isCrashReportingEnabled() {
-        return crashReportingEnabled;
-    }
-
-    public void setCrashReportingEnabled(boolean crashReportingEnabled) {
-        this.crashReportingEnabled = crashReportingEnabled;
     }
 
     public KumulosConfig.InAppConsentStrategy getInAppConsentStrategy() {
@@ -123,14 +111,6 @@ public class OptimobileConfig {
         this.baseUrlMap = baseUrlMap;
     }
 
-    public CoreConfigurationBuilder getAcraConfigBuilder() {
-        return acraConfigBuilder;
-    }
-
-    public void setAcraConfigBuilder(CoreConfigurationBuilder acraConfigBuilder) {
-        this.acraConfigBuilder = acraConfigBuilder;
-    }
-
     public URL getDeepLinkCname() {
         return deepLinkCname;
     }
@@ -149,7 +129,7 @@ public class OptimobileConfig {
 
     private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
-    public OptimobileConfig(String optimoveToken, String configFile, String apiKey, String secretKey) {
+    private OptimobileConfig(String optimoveToken, String configFile, String apiKey, String secretKey) {
         this.optimoveToken = optimoveToken;
         this.configFile = configFile;
         this.apiKey = apiKey;
@@ -187,7 +167,6 @@ public class OptimobileConfig {
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
-        private boolean enableCrashReporting = false;
         private KumulosConfig.InAppConsentStrategy consentStrategy = null;
         private int sessionIdleTimeoutSeconds = OptimobileConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
 
@@ -202,11 +181,6 @@ public class OptimobileConfig {
 
         public OptimobileConfig.Builder setPushSmallIconId(@DrawableRes int drawableIconId) {
             this.notificationSmallIconDrawableId = drawableIconId;
-            return this;
-        }
-
-        public OptimobileConfig.Builder enableCrashReporting() {
-            this.enableCrashReporting = true;
             return this;
         }
 
@@ -263,7 +237,6 @@ public class OptimobileConfig {
             newConfig.setApiKey(apiKey);
             newConfig.setSecretKey(secretKey);
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
-            newConfig.setCrashReportingEnabled(enableCrashReporting);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);
             newConfig.setRuntimeInfo(this.runtimeInfo);
             newConfig.setSdkInfo(this.sdkInfo);

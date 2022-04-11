@@ -10,10 +10,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kumulos.android.Kumulos;
-import com.kumulos.android.KumulosConfig;
-import com.kumulos.android.PushActionHandlerInterface;
-import com.kumulos.android.PushTokenType;
 import com.optimove.sdk.optimove_sdk.main.common.EventHandlerFactory;
 import com.optimove.sdk.optimove_sdk.main.common.EventHandlerProvider;
 import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
@@ -37,9 +33,11 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
-import com.optimove.sdk.optimove_sdk.optipush.OptipushManager;
-import com.optimove.sdk.optimove_sdk.optipush.registration.RegistrationDao;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
+import com.optimove.sdk.optimove_sdk.undecided.Kumulos;
+import com.optimove.sdk.optimove_sdk.undecided.KumulosConfig;
+import com.optimove.sdk.optimove_sdk.undecided.PushActionHandlerInterface;
+import com.optimove.sdk.optimove_sdk.undecided.PushTokenType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -77,7 +75,6 @@ final public class Optimove {
     private SharedPreferences localConfigKeysPreferences;
 
     private EventHandlerProvider eventHandlerProvider;
-    private OptipushManager optipushManager;
     private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
     private DeviceInfoProvider deviceInfoProvider;
     private AtomicBoolean configSet;
@@ -104,8 +101,6 @@ final public class Optimove {
                 .build();
         this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
 
-        this.optipushManager = new OptipushManager(new RegistrationDao(context),
-                deviceInfoProvider, HttpClient.getInstance(context), lifecycleObserver, context);
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 context.getPackageName(),
                 context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), deviceInfoProvider);
@@ -235,7 +230,6 @@ final public class Optimove {
         }
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
 
-        optipushManager.processConfigs(configs.getOptipushRegistrationServiceEndpoint(), tenantInfo.getTenantId(), userInfo);
         eventHandlerProvider.processConfigs(configs);
         //sends initial events
         EventGenerator eventGenerator =
@@ -409,8 +403,6 @@ final public class Optimove {
         this.userInfo.setUserId(newUserId);
         this.userInfo.setVisitorId(updatedVisitorId);
 
-        optipushManager.userIdChanged();
-
         return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
     /** get visitor id of Optimove SDK  */
@@ -465,18 +457,6 @@ final public class Optimove {
                 .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName, screenCategory)));
     }
 
-    public void fcmTokenRefreshed(){
-        optipushManager.syncToken();
-    }
-
-    public void disablePushCampaigns() {
-        optipushManager.disablePushCampaigns();
-    }
-
-    public void enablePushCampaigns() {
-        optipushManager.enablePushCampaigns();
-    }
-
     //==============================================================================================
     //-- Location APIs
 
@@ -518,7 +498,7 @@ final public class Optimove {
      * Returns the identifier for the user currently associated with the Kumulos installation record
      *
      * @see Kumulos#associateUserWithInstall(Context, String)
-     * @see com.kumulos.android.Installation#id(Context)
+     * @see com.optimove.sdk.optimove_sdk.undecided.Installation#id(Context)
      *
      * @param context
      * @return The current user identifier (if available), otherwise the Kumulos installation ID
@@ -573,7 +553,8 @@ final public class Optimove {
      * @param context
      * @param token
      */
-    public static void pushTokenStore(@NonNull Context context, @NonNull final PushTokenType type, @NonNull final String token) {
+    public static void pushTokenStore(@NonNull Context context, @NonNull final PushTokenType type,
+                                      @NonNull final String token) {
        Kumulos.pushTokenStore(context, type, token);
     }
 
@@ -616,12 +597,6 @@ final public class Optimove {
     public UserInfo getUserInfo() {
         return userInfo;
     }
-
-    @NonNull
-    public OptipushManager getOptipushManager() {
-        return optipushManager;
-    }
-
 
     /* *******************
      * Private Instance Methods
