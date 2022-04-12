@@ -11,6 +11,16 @@
         android:dataExtractionRules="@xml/optimove_backup_rules_api31"
         android:label="@string/app_name"
         android:supportsRtl="true">
+        <provider
+            android:name=".undecided.KumulosInitProvider"
+            android:authorities="${applicationId}.kumulosinitprovider"
+            android:exported="false" />
+        <activity
+            android:name=".undecided.PushOpenInvisibleActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent"
+            android:exported="false" />
         <service
             android:name=".main.app_update_listener.AppUpdateService"
             android:exported="false"
