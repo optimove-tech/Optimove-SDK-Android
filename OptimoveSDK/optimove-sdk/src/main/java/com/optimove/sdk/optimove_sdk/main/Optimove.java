@@ -455,31 +455,7 @@ final public class Optimove {
         eventHandlerProvider.getEventHandler()
                 .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName, screenCategory)));
     }
-
-    //==============================================================================================
-    //-- Location APIs
-
-    /**
-     * Updates the location of the current installation in Kumulos
-     * Accurate locaiton information is used for geofencing
-     * @param context
-     * @param location
-     */
-    public static void sendLocationUpdate(Context context, @Nullable Location location) {
-        Kumulos.sendLocationUpdate(context, location);
-    }
-
-    /**
-     * Records a proximity event for an Eddystone beacon. Proximity events can be used in automation rules.
-     * @param context
-     * @param hexNamespace
-     * @param hexInstance
-     * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
-     */
-    public static void trackEddystoneBeaconProximity(@NonNull Context context, @NonNull String hexNamespace, @NonNull String hexInstance, @Nullable Double distanceMetres) {
-        Kumulos.trackEddystoneBeaconProximity(context, hexNamespace, hexInstance, distanceMetres);
-    }
-
+    
     //==============================================================================================
     //-- Analytics APIs
 
