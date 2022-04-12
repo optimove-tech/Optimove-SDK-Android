@@ -277,47 +277,48 @@ final public class Optimove {
                 OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
             }
             return tenantInfoExists;
-        } else {
-            synchronized (LOCK) {
-                shared = new Optimove(context);
-
-                TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
-                if (newTenantInfo == null && localTenantInfo == null) {
-                    OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
-                    return false;
-                }
-                // Merge the local and the new TenantInfo objects
-                if (localTenantInfo != null && newTenantInfo == null) {
-                    shared.tenantInfo =
-                            localTenantInfo; // No point in storing the tenant info as it was already fetched from local storage
-                } else if (localTenantInfo != null) {
-                    // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
-                    localTenantInfo.setTenantToken(newTenantInfo.getTenantToken());
-                    localTenantInfo.setConfigName(newTenantInfo.getConfigName());
-                    shared.setAndStoreTenantInfo(localTenantInfo);
-                } else {
-                    shared.tenantInfo =
-                            newTenantInfo; // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
-                }
-            }
-            return true;
         }
+
+        synchronized (LOCK) {
+            shared = new Optimove(context);
+
+            TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
+            if (newTenantInfo == null && localTenantInfo == null) {
+                OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
+                return false;
+            }
+            // Merge the local and the new TenantInfo objects
+            if (localTenantInfo != null && newTenantInfo == null) {
+                shared.tenantInfo =
+                        localTenantInfo; // No point in storing the tenant info as it was already fetched from local storage
+            } else if (localTenantInfo != null) {
+                // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
+                localTenantInfo.setTenantToken(newTenantInfo.getTenantToken());
+                localTenantInfo.setConfigName(newTenantInfo.getConfigName());
+                shared.setAndStoreTenantInfo(localTenantInfo);
+            } else {
+                shared.tenantInfo =
+                        newTenantInfo; // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
+            }
+        }
+
+        return true;
     }
 
-    /* *******************
-     * Public API
-     ******************* */
+    //==============================================================================================
+    //-- Analytics APIs
 
     /**
      * Method that performs both the {@code setUserId} and the {@code setUserEmail} flows from a single call.
      *
-     * @param sdkId The new User's SDK ID to set
+     * @param userId The new userId
      * @param email the <i>email address</i> to attach
      * @see Optimove#setUserId(String)
      * @see Optimove#setUserEmail(String)
      */
-    public void registerUser(String sdkId, String email) {
-        SetUserIdEvent setUserIdEvent = processUserId(sdkId);
+    public void registerUser(String userId, String email) {
+        Kumulos.associateUserWithInstall(context, userId);
+        SetUserIdEvent setUserIdEvent = processUserId(userId);
         SetEmailEvent setEmailEvent = processUserEmail(email);
         if (setUserIdEvent != null && setEmailEvent != null) {
             eventHandlerProvider.getEventHandler()
@@ -455,9 +456,6 @@ final public class Optimove {
         eventHandlerProvider.getEventHandler()
                 .reportEvent(Collections.singletonList(new SetPageVisitEvent(screenName, screenCategory)));
     }
-    
-    //==============================================================================================
-    //-- Analytics APIs
 
     /**
      * Clears any existing association between this install record and a user identifier
@@ -573,9 +571,8 @@ final public class Optimove {
         return userInfo;
     }
 
-    /* *******************
-     * Private Instance Methods
-     ******************* */
+    //==============================================================================================
+    //-- Private Instance Methods
 
     private void setAndStoreTenantInfo(TenantInfo tenantInfo) {
         this.tenantInfo = tenantInfo;
