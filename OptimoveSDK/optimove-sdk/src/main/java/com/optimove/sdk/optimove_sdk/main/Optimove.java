@@ -55,29 +55,19 @@ import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.USER_ID
  */
 final public class Optimove {
 
-
-    /* *******************
-     * Singleton
-     ******************* */
     private static final Object LOCK = new Object();
     private static Optimove shared;
-
     @NonNull
     private final Context context;
     private final SharedPreferences coreSharedPreferences;
     private TenantInfo tenantInfo;
     private final UserInfo userInfo;
-
-    /* *******************
-     * Object Definition
-     ******************* */
-    private SharedPreferences localConfigKeysPreferences;
-
-    private EventHandlerProvider eventHandlerProvider;
-    private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
-    private DeviceInfoProvider deviceInfoProvider;
-    private AtomicBoolean configSet;
-    private LifecycleObserver lifecycleObserver;
+    private final SharedPreferences localConfigKeysPreferences;
+    private final EventHandlerProvider eventHandlerProvider;
+    private final OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
+    private final DeviceInfoProvider deviceInfoProvider;
+    private final AtomicBoolean configSet;
+    private final LifecycleObserver lifecycleObserver;
 
     private Optimove(@NonNull Context context) {
         this.context = context;
@@ -86,20 +76,17 @@ final public class Optimove {
         this.deviceInfoProvider = new DeviceInfoProvider(context);
         this.tenantInfo = null;
         this.userInfo = UserInfo.newInstance(context);
-
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
         this.lifecycleObserver = new LifecycleObserver();
-        EventHandlerFactory eventHandlerFactory = EventHandlerFactory.builder()
+        this.eventHandlerProvider = new EventHandlerProvider(EventHandlerFactory.builder()
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance(context))
                 .maximumBufferSize(OPTITRACK_BUFFER_SIZE)
                 .optistreamDbHelper(new OptistreamDbHelper(context))
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
-                .build();
-        this.eventHandlerProvider = new EventHandlerProvider(eventHandlerFactory);
-
+                .build());
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 context.getPackageName(),
                 context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), deviceInfoProvider);
@@ -138,7 +125,7 @@ final public class Optimove {
                 shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
                 shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
                 application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
-                shared.fetchConfigs(false);
+                shared.fetchConfigs();
             }
         };
         if (!OptiUtils.isRunningOnMainThread()) {
@@ -169,32 +156,15 @@ final public class Optimove {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
     }
 
-
-    /**
-     * THIS IS AN <b>INTERNAL</b> FUNCTION, <b>NOT</b> TO BE CALLED BY THE CLIENT.
-     * <p>
-     * Initializes the {@code Optimove SDK} from local the configuration file.<br>
-     * <b>Discussion</b>: Background components need lean initialization that supports flows where the Application's {@code onCreate} callback wasn't called yet (e.g. Content providers
-     * and some observed crashes on Services in Android 8.0). This flow requires only {@code Context} and is faster.
-     */
-    public static void configureUrgently(Context context) {
-        OptiLoggerStreamsContainer.debug("Optimove.configureUrgently() is starting");
-        boolean initializedSuccessfully = performSingletonInitialization(context, null);
-        if (initializedSuccessfully) {
-            shared.executeUrgentInit();
-        }
-    }
-
     public EventHandlerProvider getEventHandlerProvider() {
         return eventHandlerProvider;
     }
 
-    private void fetchConfigs(boolean isUrgent) {
+    private void fetchConfigs() {
         ConfigsFetcher configsFetcher = ConfigsFetcher.builder()
                 .httpClient(HttpClient.getInstance(context))
                 .tenantToken(tenantInfo.getTenantToken())
                 .configName(tenantInfo.getConfigName())
-                .urgent(isUrgent)
                 .sharedPrefs(localConfigKeysPreferences)
                 .fileProvider(new FileUtils())
                 .context(context)
@@ -202,14 +172,6 @@ final public class Optimove {
         configsFetcher.fetchConfigs(this::setConfigurationsIfNotSet, error -> {
             OptiLoggerStreamsContainer.fatal("Failed to get configuration file due to - %s", error);
         });
-    }
-
-    private void executeUrgentInit() {
-        if (!configSet.get()) {
-            fetchConfigs(true);
-        } else {
-            OptiLoggerStreamsContainer.debug("Configuration file was already loaded, no need to load again");
-        }
     }
 
     private void setConfigurationsIfNotSet(@NonNull Configs configs) {
