@@ -1,7 +1,6 @@
 package com.optimove.sdk.optimove_sdk.events_tests;
 
 import com.optimove.sdk.optimove_sdk.main.events.core_events.UserAgentHeaderEvent;
-import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
 
 import org.junit.Assert;
 import org.junit.Test;

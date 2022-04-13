@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.optitrack;
+package com.optimove.sdk.optimove_sdk.optistream;
 
 import android.content.ContentValues;
 import android.content.Context;

@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 
 import java.util.HashMap;

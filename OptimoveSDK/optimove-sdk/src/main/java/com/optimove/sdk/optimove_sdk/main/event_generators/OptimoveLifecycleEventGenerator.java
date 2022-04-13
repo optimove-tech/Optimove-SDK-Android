@@ -10,13 +10,13 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptIn;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.OptipushOptOut;
 import com.optimove.sdk.optimove_sdk.main.tools.DeviceInfoProvider;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
-import com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants;
+import com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants;
 
 import java.util.Collections;
 
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_IN;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_OUT;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_OPT_REPORTED_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_REPORTED_OPT_IN;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_REPORTED_OPT_OUT;
 
 public class OptimoveLifecycleEventGenerator implements LifecycleObserver.ActivityStopped, LifecycleObserver.ActivityStarted {
 

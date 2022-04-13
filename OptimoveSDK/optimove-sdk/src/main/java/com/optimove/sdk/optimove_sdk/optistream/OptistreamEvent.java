@@ -1,11 +1,10 @@
-package com.optimove.sdk.optimove_sdk.optitrack;
+package com.optimove.sdk.optimove_sdk.optistream;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 

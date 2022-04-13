@@ -7,10 +7,10 @@ import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamHandler;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamPersistanceAdapter;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamEvent;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamHandler;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamPersistanceAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

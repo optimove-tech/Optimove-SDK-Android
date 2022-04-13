@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 
 import java.util.UUID;

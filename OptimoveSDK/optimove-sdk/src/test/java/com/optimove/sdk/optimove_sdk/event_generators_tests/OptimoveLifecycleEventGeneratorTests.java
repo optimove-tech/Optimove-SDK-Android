@@ -20,9 +20,9 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_OPT_REPORTED_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_IN;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.LAST_REPORTED_OPT_OUT;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_OPT_REPORTED_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_REPORTED_OPT_IN;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_REPORTED_OPT_OUT;
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;

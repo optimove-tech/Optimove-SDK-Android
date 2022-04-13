@@ -7,7 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.kumulos.OptimobileConfig;
 
 public class MyApplication extends Application {

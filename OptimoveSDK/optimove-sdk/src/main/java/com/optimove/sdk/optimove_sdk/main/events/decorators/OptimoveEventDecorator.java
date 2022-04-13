@@ -6,14 +6,14 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfig
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_DEVICE_TYPE_DEFAULT_VALUE;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_DEVICE_TYPE_PARAM_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_NATIVE_MOBILE_DEFAULT_VALUE;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_NATIVE_MOBILE_PARAM_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_OS_DEFAULT_VALUE;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_OS_PARAM_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_PLATFORM_DEFAULT_VALUE;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_PLATFORM_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_DEVICE_TYPE_DEFAULT_VALUE;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_DEVICE_TYPE_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_NATIVE_MOBILE_DEFAULT_VALUE;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_NATIVE_MOBILE_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_OS_DEFAULT_VALUE;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_OS_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_PLATFORM_DEFAULT_VALUE;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_PLATFORM_PARAM_KEY;
 
 /**
  * Decorator class to enforce BL on the incoming {@link OptimoveEvent}s:

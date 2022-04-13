@@ -5,8 +5,8 @@ import com.optimove.sdk.optimove_sdk.main.event_handlers.DestinationDecider;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
 import com.optimove.sdk.optimove_sdk.main.events.SimpleCustomEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamHandler;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamEvent;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
 import org.junit.Assert;

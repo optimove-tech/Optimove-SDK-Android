@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.optitrack;
+package com.optimove.sdk.optimove_sdk.optistream;
 
 import androidx.annotation.Nullable;
 

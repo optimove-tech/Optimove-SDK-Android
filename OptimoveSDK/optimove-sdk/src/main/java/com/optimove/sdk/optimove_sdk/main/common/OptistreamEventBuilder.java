@@ -10,7 +10,7 @@ import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamEvent;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamEvent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

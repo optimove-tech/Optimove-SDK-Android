@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.main;
+package com.optimove.sdk.optimove_sdk;
 
 import android.app.Application;
 import android.content.Context;
@@ -32,7 +32,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
 import com.optimove.sdk.optimove_sdk.kumulos.Kumulos;
 import com.optimove.sdk.optimove_sdk.kumulos.OptimobileConfig;
 import com.optimove.sdk.optimove_sdk.kumulos.PushActionHandlerInterface;
@@ -46,9 +46,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.CONFIG_NAME;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TENANT_ID;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TOKEN;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_BUFFER_SIZE;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.OPTITRACK_SP_NAME;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.USER_ID_MAX_LENGTH;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.OPTITRACK_BUFFER_SIZE;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.OPTITRACK_SP_NAME;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.USER_ID_MAX_LENGTH;
 
 /**
  * The main access point for the {@code Optimove SDK}.
@@ -354,7 +354,7 @@ final public class Optimove {
         if (userId.length() > USER_ID_MAX_LENGTH) {
             return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), userId, this.userInfo.getVisitorId());
         }
-        
+
         String newUserId = userId.trim(); // Safe to trim now as it could never be null
 
         if (this.userInfo.getUserId() != null && this.userInfo.getUserId()
