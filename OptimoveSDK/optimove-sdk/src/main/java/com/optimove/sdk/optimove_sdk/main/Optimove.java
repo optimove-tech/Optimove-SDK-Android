@@ -191,7 +191,10 @@ final public class Optimove {
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
 
         eventHandlerProvider.processConfigs(configs);
-        //sends initial events
+        sendInitialEvents();
+    }
+
+    private void sendInitialEvents(){
         EventGenerator eventGenerator =
                 EventGenerator.builder()
                         .withPackageName(context.getPackageName())
@@ -346,9 +349,12 @@ final public class Optimove {
     SetUserIdEvent processUserId(String userId) {
         if (OptiUtils.isNullNoneOrUndefined(userId)) {
             return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), null, this.userInfo.getVisitorId());
-        } else if (userId.length() > USER_ID_MAX_LENGTH) {
+        }
+
+        if (userId.length() > USER_ID_MAX_LENGTH) {
             return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), userId, this.userInfo.getVisitorId());
         }
+        
         String newUserId = userId.trim(); // Safe to trim now as it could never be null
 
         if (this.userInfo.getUserId() != null && this.userInfo.getUserId()
