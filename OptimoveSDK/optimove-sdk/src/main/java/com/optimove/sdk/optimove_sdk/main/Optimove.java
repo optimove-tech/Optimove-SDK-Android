@@ -4,7 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -34,10 +33,10 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStre
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
-import com.optimove.sdk.optimove_sdk.undecided.Kumulos;
-import com.optimove.sdk.optimove_sdk.undecided.OptimobileConfig;
-import com.optimove.sdk.optimove_sdk.undecided.PushActionHandlerInterface;
-import com.optimove.sdk.optimove_sdk.undecided.PushTokenType;
+import com.optimove.sdk.optimove_sdk.kumulos.Kumulos;
+import com.optimove.sdk.optimove_sdk.kumulos.OptimobileConfig;
+import com.optimove.sdk.optimove_sdk.kumulos.PushActionHandlerInterface;
+import com.optimove.sdk.optimove_sdk.kumulos.PushTokenType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -471,7 +470,7 @@ final public class Optimove {
      * Returns the identifier for the user currently associated with the Kumulos installation record
      *
      * @see Kumulos#associateUserWithInstall(Context, String)
-     * @see com.optimove.sdk.optimove_sdk.undecided.Installation#id(Context)
+     * @see com.optimove.sdk.optimove_sdk.kumulos.Installation#id(Context)
      *
      * @param context
      * @return The current user identifier (if available), otherwise the Kumulos installation ID

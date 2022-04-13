@@ -12,11 +12,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <provider
-            android:name=".undecided.KumulosInitProvider"
+            android:name=".kumulos.KumulosInitProvider"
             android:authorities="${applicationId}.kumulosinitprovider"
             android:exported="false" />
         <activity
-            android:name=".undecided.PushOpenInvisibleActivity"
+            android:name=".kumulos.PushOpenInvisibleActivity"
             android:noHistory="true"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent"
