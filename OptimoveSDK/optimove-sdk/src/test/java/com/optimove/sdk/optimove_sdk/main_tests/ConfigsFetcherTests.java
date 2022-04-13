@@ -102,36 +102,11 @@ public class ConfigsFetcherTests {
                 .httpClient(httpClient)
                 .tenantToken(tenantToken)
                 .configName(configName)
-                .urgent(false)
                 .sharedPrefs(localConfigKeysPreferences)
                 .fileProvider(fileUtils)
                 .context(context)
                 .build();
         configs = ConfigProvider.getConfigs();
-
-    }
-
-    @Test(timeout = 1000)
-    public void shouldReadFromFileIfUrgent() {
-        applyPositiveConfigFetch();
-        ConfigsFetcher urgentConfigFetcher = ConfigsFetcher.builder()
-                .httpClient(httpClient)
-                .tenantToken(tenantToken)
-                .configName(configName)
-                .urgent(true)
-                .sharedPrefs(localConfigKeysPreferences)
-                .fileProvider(fileUtils)
-                .context(context)
-                .build();
-        int randomTenantId = 56757;
-        Gson gson = new Gson();
-        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs();
-        storedInFileConfig.setTenantId(randomTenantId);
-        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
-
-        urgentConfigFetcher.fetchConfigs(configs -> Assert.assertEquals(configs.getTenantId(), randomTenantId)
-                , Assert::fail);
 
     }
 
