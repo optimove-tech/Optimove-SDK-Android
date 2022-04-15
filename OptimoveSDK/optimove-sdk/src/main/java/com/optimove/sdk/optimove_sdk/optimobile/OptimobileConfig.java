@@ -35,7 +35,7 @@ public final class OptimobileConfig {
     private @Nullable
     String optimoveToken;
     private @Nullable
-    String optimoveConfigFile;
+    String configFileName;
 
     @DrawableRes
     private int notificationSmallIconId;
@@ -70,8 +70,8 @@ public final class OptimobileConfig {
         this.optimoveToken = optimoveToken;
     }
 
-    private void setOptimoveConfigFile(@Nullable String optimoveConfigFile) {
-        this.optimoveConfigFile = optimoveConfigFile;
+    private void setConfigFileName(@Nullable String configFileName) {
+        this.configFileName = configFileName;
     }
 
     private void setNotificationSmallIconId(@DrawableRes int notificationSmallIconId) {
@@ -116,12 +116,12 @@ public final class OptimobileConfig {
         return secretKey;
     }
 
-    public String getOptimoveToken() {
+    public @Nullable String getOptimoveToken() {
         return optimoveToken;
     }
 
-    public String getOptimoveConfigFile() {
-        return optimoveConfigFile;
+    public @Nullable String getConfigFileName() {
+        return configFileName;
     }
 
     public @DrawableRes
@@ -159,7 +159,7 @@ public final class OptimobileConfig {
     }
 
     public boolean isOptimoveConfigured(){
-        return this.optimoveToken != null && this.optimoveConfigFile != null ;
+        return this.optimoveToken != null && this.configFileName != null ;
     }
 
     public boolean isOptimobileConfigured(){
@@ -177,7 +177,7 @@ public final class OptimobileConfig {
         private @Nullable
         String optimoveToken;
         private @Nullable
-        String optimoveConfigFile;
+        String configFileName;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -210,7 +210,7 @@ public final class OptimobileConfig {
                 JSONArray result = this.parseCredentials(optimoveCredentials);
 
                 this.optimoveToken = result.getString(1);
-                this.optimoveConfigFile = result.getString(2);
+                this.configFileName = result.getString(2);
             } catch (NullPointerException | JSONException | IllegalArgumentException e) {
                 throw new IllegalArgumentException("Optimove credentials are not correct");
             }
@@ -325,7 +325,7 @@ public final class OptimobileConfig {
             newConfig.setApiKey(apiKey);
             newConfig.setSecretKey(secretKey);
             newConfig.setOptimoveToken(optimoveToken);
-            newConfig.setOptimoveConfigFile(optimoveConfigFile);
+            newConfig.setConfigFileName(configFileName);
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);
             newConfig.setRuntimeInfo(this.runtimeInfo);

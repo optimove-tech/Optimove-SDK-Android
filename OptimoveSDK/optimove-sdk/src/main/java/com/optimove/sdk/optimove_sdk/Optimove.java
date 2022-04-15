@@ -123,7 +123,7 @@ final public class Optimove {
 
             Runnable initCommand = () -> {
                 boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
-                        new TenantInfo(config.getOptimoveToken(), config.getOptimoveConfigFile()));
+                        new TenantInfo(config.getOptimoveToken(), config.getConfigFileName()));
                 if (initializedSuccessfully) {
                     OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
                     shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
