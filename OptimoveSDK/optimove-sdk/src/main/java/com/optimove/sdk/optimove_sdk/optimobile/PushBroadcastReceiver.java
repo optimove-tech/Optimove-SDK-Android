@@ -38,17 +38,17 @@ import java.util.List;
 public class PushBroadcastReceiver extends BroadcastReceiver {
     public static final String TAG = PushBroadcastReceiver.class.getName();
 
-    public static String ACTION_PUSH_RECEIVED = "com.kumulos.push.RECEIVED";
-    public static String ACTION_PUSH_OPENED = "com.kumulos.push.OPENED";
-    public static String ACTION_PUSH_DISMISSED = "com.kumulos.push.DISMISSED";
-    public static String ACTION_BUTTON_CLICKED = "com.kumulos.push.BUTTON_CLICKED";
+    public static String ACTION_PUSH_RECEIVED = "com.optimobile.push.RECEIVED";
+    public static String ACTION_PUSH_OPENED = "com.optimobile.push.OPENED";
+    public static String ACTION_PUSH_DISMISSED = "com.optimobile.push.DISMISSED";
+    public static String ACTION_BUTTON_CLICKED = "com.optimobile.push.BUTTON_CLICKED";
 
-    static final String EXTRAS_KEY_TICKLE_ID = "com.kumulos.inapp.tickle.id";
-    static final String EXTRAS_KEY_BUTTON_ID = "com.kumulos.push.message.button.id";
+    static final String EXTRAS_KEY_TICKLE_ID = "com.optimobile.inapp.tickle.id";
+    static final String EXTRAS_KEY_BUTTON_ID = "com.optimobile.push.message.button.id";
 
     static final String DEFAULT_CHANNEL_ID = "kumulos_general_v3";
     static final String IMPORTANT_CHANNEL_ID = "kumulos_important_v1";
-    protected static final String KUMULOS_NOTIFICATION_TAG = "kumulos";
+    protected static final String OPTIMOBILE_NOTIFICATION_TAG = "optimobile";
 
     @Override
     final public void onReceive(Context context, Intent intent) {
@@ -120,7 +120,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        notificationManager.notify(KUMULOS_NOTIFICATION_TAG, this.getNotificationId(pushMessage), notification);
+        notificationManager.notify(OPTIMOBILE_NOTIFICATION_TAG, this.getNotificationId(pushMessage), notification);
     }
 
     protected void pushTrackDelivered(Context context, PushMessage pushMessage) {
@@ -646,7 +646,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        notificationManager.cancel(PushBroadcastReceiver.KUMULOS_NOTIFICATION_TAG, this.getNotificationId(pushMessage));
+        notificationManager.cancel(PushBroadcastReceiver.OPTIMOBILE_NOTIFICATION_TAG, this.getNotificationId(pushMessage));
     }
 
     // https://stackoverflow.com/a/53977057

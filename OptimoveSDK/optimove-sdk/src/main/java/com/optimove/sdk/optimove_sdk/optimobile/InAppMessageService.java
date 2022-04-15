@@ -200,7 +200,7 @@ class InAppMessageService {
 
     private static void clearNotification(Context context, int inAppId) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(PushBroadcastReceiver.KUMULOS_NOTIFICATION_TAG, inAppId);
+        notificationManager.cancel(PushBroadcastReceiver.OPTIMOBILE_NOTIFICATION_TAG, inAppId);
     }
 
     private static void storeLastSyncTime(Context context, List<InAppMessage> inAppMessages) {
