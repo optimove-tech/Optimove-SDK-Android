@@ -61,7 +61,6 @@ class InAppMessageView extends WebViewClient {
     private static final String TAG = InAppMessageView.class.getName();
 
     private static final String BUTTON_ACTION_CLOSE_MESSAGE = "closeMessage";
-    private static final String BUTTON_ACTION_SUBSCRIBE_TO_CHANNEL = "subscribeToChannel";
     private static final String BUTTON_ACTION_TRACK_CONVERSION_EVENT = "trackConversionEvent";
     private static final String BUTTON_ACTION_OPEN_URL = "openUrl";
     private static final String BUTTON_ACTION_DEEP_LINK = "deepLink";
@@ -507,10 +506,6 @@ class InAppMessageView extends WebViewClient {
                 case BUTTON_ACTION_CLOSE_MESSAGE:
                     closeCurrentMessage();
                     break;
-                case BUTTON_ACTION_SUBSCRIBE_TO_CHANNEL:
-                    PushSubscriptionManager psm = new PushSubscriptionManager();
-                    psm.subscribe(currentActivity, new String[]{action.getChannelUuid()});
-                    break;
                 case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
                     Kumulos.trackEventImmediately(currentActivity, action.getEventType(), action.getConversionEventData());
                     break;
@@ -589,14 +584,7 @@ class InAppMessageView extends WebViewClient {
             action.setType(actionType);
 
             switch (actionType) {
-                case BUTTON_ACTION_SUBSCRIBE_TO_CHANNEL:
-                    if (null == rawActionData) {
-                        continue;
-                    }
-                    String channelUuid = rawActionData.optString("channelUuid");
-                    action.setChannelUuid(channelUuid);
-                    break;
-                case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
+                 case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
                     if (null == rawActionData) {
                         continue;
                     }
