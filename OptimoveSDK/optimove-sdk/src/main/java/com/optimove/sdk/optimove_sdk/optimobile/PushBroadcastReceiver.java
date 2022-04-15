@@ -1,6 +1,5 @@
 package com.optimove.sdk.optimove_sdk.optimobile;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -46,8 +45,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     static final String EXTRAS_KEY_TICKLE_ID = "com.optimobile.inapp.tickle.id";
     static final String EXTRAS_KEY_BUTTON_ID = "com.optimobile.push.message.button.id";
 
-    static final String DEFAULT_CHANNEL_ID = "kumulos_general_v3";
-    static final String IMPORTANT_CHANNEL_ID = "kumulos_important_v1";
+    static final String DEFAULT_CHANNEL_ID = "optimobile_ch_general";
+    static final String IMPORTANT_CHANNEL_ID = "optimobile_ch_important";
     protected static final String OPTIMOBILE_NOTIFICATION_TAG = "optimobile";
 
     @Override
@@ -358,11 +357,6 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         NotificationChannel channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
         NotificationChannel importantChannel = notificationManager.getNotificationChannel(IMPORTANT_CHANNEL_ID);
 
-        //- Signalling a change / update to SDK
-        if (null == channel || null == importantChannel) {
-            this.clearOldChannels(notificationManager);
-        }
-
         if (null == channel) {
             channel = new NotificationChannel(DEFAULT_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setSound(null, null);
@@ -375,19 +369,6 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             channel.setSound(null, null);
             channel.setVibrationPattern(new long[]{0, 250, 250, 250});
             notificationManager.createNotificationChannel(channel);
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.O)
-    private void clearOldChannels(NotificationManager notificationManager) {
-        //Initial setup of channels changed multiple times. Remove old channels
-        String[] oldChannelIds = {"general", "kumulos_general"};
-
-        for (String channelId : oldChannelIds) {
-            NotificationChannel oldChannel = notificationManager.getNotificationChannel(channelId);
-            if (oldChannel != null) {
-                notificationManager.deleteNotificationChannel(channelId);
-            }
         }
     }
 
