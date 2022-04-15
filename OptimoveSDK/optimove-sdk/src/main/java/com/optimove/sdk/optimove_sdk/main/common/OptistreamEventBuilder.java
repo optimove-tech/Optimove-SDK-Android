@@ -5,10 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationOpenedEvent;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationDeliveredEvent;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.TriggeredNotificationOpenedEvent;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.optistream.OptistreamEvent;
 
@@ -31,7 +27,6 @@ public class OptistreamEventBuilder {
 
     public final static class Constants {
         private static final String CATEGORY_TRACK = "track";
-        public static final String CATEGORY_OPTIPUSH = "optipush";
         private static final String PLATFORM = "Android";
         private static final String ORIGIN = "sdk";
     }
@@ -58,8 +53,7 @@ public class OptistreamEventBuilder {
 
         OptistreamEvent.IMetadata iMetadata = OptistreamEvent.builder()
                 .withTenantId(tenantId)
-                .withCategory(isNotificationEvent(optimoveEvent) ? Constants.CATEGORY_OPTIPUSH :
-                        OptistreamEventBuilder.Constants.CATEGORY_TRACK)
+                .withCategory(OptistreamEventBuilder.Constants.CATEGORY_TRACK)
                 .withName(optimoveEvent.getName())
                 .withOrigin(OptistreamEventBuilder.Constants.ORIGIN)
                 .withUserId(userInfo.getUserId())
@@ -76,17 +70,6 @@ public class OptistreamEventBuilder {
 
         return iMetadata.withMetadata(metadata)
                 .build();
-    }
-
-    private boolean isNotificationEvent(OptimoveEvent optimoveEvent) {
-        return optimoveEvent.getName()
-                .equals(TriggeredNotificationDeliveredEvent.NAME) ||
-                optimoveEvent.getName()
-                        .equals(TriggeredNotificationOpenedEvent.NAME) ||
-                optimoveEvent.getName()
-                        .equals(ScheduledNotificationDeliveredEvent.NAME) ||
-                optimoveEvent.getName()
-                        .equals(ScheduledNotificationOpenedEvent.NAME);
     }
 
     private @Nullable

@@ -18,8 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static com.optimove.sdk.optimove_sdk.main.common.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
-
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     @NonNull
@@ -76,7 +74,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                 boolean immediateEventFound = false;
                 for (OptistreamEvent optistreamEvent: optistreamEvents) {
                     optistreamPersistanceAdapter.insertEvent(optistreamGson.toJson(optistreamEvent));
-                    if (optistreamEvent.getMetadata().isRealtime() || optistreamEvent.getCategory().equals(CATEGORY_OPTIPUSH)) {
+                    if (optistreamEvent.getMetadata().isRealtime()) {
                         immediateEventFound = true;
                     }
                 }

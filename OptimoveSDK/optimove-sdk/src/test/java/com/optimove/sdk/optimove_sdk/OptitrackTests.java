@@ -4,7 +4,6 @@ import com.android.volley.Response;
 import com.google.gson.Gson;
 import com.optimove.sdk.optimove_sdk.main.common.LifecycleObserver;
 import com.optimove.sdk.optimove_sdk.main.common.UserInfo;
-import com.optimove.sdk.optimove_sdk.main.events.core_events.notification_events.ScheduledNotificationDeliveredEvent;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
 import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
@@ -29,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.optimove.sdk.optimove_sdk.main.common.OptistreamEventBuilder.Constants.CATEGORY_OPTIPUSH;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -192,27 +190,6 @@ public class OptitrackTests {
     }
 
     @Test
-    public void optipushCategoryEventShouldBeDispatchedImmediately() throws Exception {
-        OptistreamEvent notificationEvent = getOptipushCategoryEvent();
-        String notificationEventJson = new Gson().toJson(notificationEvent);
-        OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
-        OptistreamDbHelper.EventsBulk eventBulk = new OptistreamDbHelper.EventsBulk("1",
-                Collections.singletonList(notificationEventJson));
-        when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(eventBulk);
-
-        optistreamHandler.reportEvents(Collections.singletonList(notificationEvent));
-
-
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
-
-        verify(httpClient, timeout(1000)).postJsonArray(any(), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
-        Assert.assertEquals(jsonArray.getJSONObject(0)
-                .getString("event"), ScheduledNotificationDeliveredEvent.NAME);
-    }
-
-    @Test
     public void nonRealtimeEventShouldntBeDispatchedImmediately() throws Exception {
         OptistreamEvent regularEvent = getRegularEvent(false, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
@@ -236,23 +213,6 @@ public class OptitrackTests {
                 .withTenantId(33333)
                 .withCategory("some_category")
                 .withName(name)
-                .withOrigin("some_origin")
-                .withUserId(userInfo.getUserId())
-                .withVisitorId(userInfo.getVisitorId())
-                .withTimestamp("timestamp")
-                .withContext(mock(Map.class))
-                .withMetadata(optistreamMetadata)
-                .build();
-    }
-
-    private OptistreamEvent getOptipushCategoryEvent() {
-        OptistreamEvent.Metadata optistreamMetadata = mock(OptistreamEvent.Metadata.class);
-
-        when(optistreamMetadata.isRealtime()).thenReturn(false);
-        return OptistreamEvent.builder()
-                .withTenantId(33333)
-                .withCategory(CATEGORY_OPTIPUSH)
-                .withName(ScheduledNotificationDeliveredEvent.NAME)
                 .withOrigin("some_origin")
                 .withUserId(userInfo.getUserId())
                 .withVisitorId(userInfo.getVisitorId())
