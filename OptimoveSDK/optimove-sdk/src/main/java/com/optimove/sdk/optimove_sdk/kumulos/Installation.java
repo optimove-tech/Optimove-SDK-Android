@@ -9,14 +9,14 @@ import java.io.RandomAccessFile;
 import java.util.UUID;
 
 /**
- * Represents the unique installation ID assigned the first time the Kumulos SDK is initialized
+ * Represents the unique installation ID assigned the first time the Optimobile SDK is initialized
  */
 public class Installation {
     private static String sID = null;
     private static final String INSTALLATION = "K_UDID";
 
     /**
-     * Returns the unique Kumulos installation ID, creating it if it doesn't exist
+     * Returns the unique Optimobile installation ID, creating it if it doesn't exist
      *
      * @param context
      * @return

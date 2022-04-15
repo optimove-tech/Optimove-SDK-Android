@@ -288,14 +288,14 @@ class InAppMessageView extends WebViewClient {
             dialog.show();
 
             setSpinnerVisibility(View.VISIBLE);
-            String iarUrl = Kumulos.urlBuilder.urlForService(UrlBuilder.Service.IAR, "");
+            String iarUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.IAR, "");
             // Use for simulating a renderer process crash (triggers onRenderProcessGone())
             // String iarUrl = "chrome://crash";
 
             wv.loadUrl(iarUrl);
             state = State.LOADING;
         } catch (Exception e) {
-            Kumulos.log(TAG, e.getMessage());
+            Optimobile.log(TAG, e.getMessage());
         }
     }
 
@@ -323,7 +323,7 @@ class InAppMessageView extends WebViewClient {
         String url = request.getUrl().toString();
         // Only consider handling for failures of our renderer assets
         // 3rd-party fonts/images etc. shouldn't trigger this
-        String iarBaseUrl = Kumulos.urlBuilder.urlForService(UrlBuilder.Service.IAR, "");
+        String iarBaseUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.IAR, "");
         if (!url.startsWith(iarBaseUrl)) {
             return;
         }
@@ -354,7 +354,7 @@ class InAppMessageView extends WebViewClient {
 
     @Override
     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-        Kumulos.log(TAG, "Error code: " + errorCode + ". " + description + " " + failingUrl);
+        Optimobile.log(TAG, "Error code: " + errorCode + ". " + description + " " + failingUrl);
 
         String extension = failingUrl.substring(failingUrl.length() - 4);
         boolean isVideo = extension.matches(".mp4|.m4a|.m4p|.m4b|.m4r|.m4v");
@@ -469,7 +469,7 @@ class InAppMessageView extends WebViewClient {
 
             sendToClient(HOST_MESSAGE_TYPE_SET_NOTCH_INSETS, notchData);
         } catch (JSONException e) {
-            Kumulos.log(TAG, e.getMessage());
+            Optimobile.log(TAG, e.getMessage());
         }
     }
 
@@ -507,7 +507,7 @@ class InAppMessageView extends WebViewClient {
                     closeCurrentMessage();
                     break;
                 case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
-                    Kumulos.trackEventImmediately(currentActivity, action.getEventType(), action.getConversionEventData());
+                    Optimobile.trackEventImmediately(currentActivity, action.getEventType(), action.getConversionEventData());
                     break;
             }
         }
@@ -521,10 +521,10 @@ class InAppMessageView extends WebViewClient {
                     this.openUrl(currentActivity, action.getUrl());
                     return;
                 case BUTTON_ACTION_DEEP_LINK:
-                    if (null != KumulosInApp.inAppDeepLinkHandler) {
+                    if (null != OptimobileInApp.inAppDeepLinkHandler) {
                         presenter.cancelCurrentPresentationQueue();
 
-                        KumulosInApp.inAppDeepLinkHandler.handle(currentActivity.getApplicationContext(),
+                        OptimobileInApp.inAppDeepLinkHandler.handle(currentActivity.getApplicationContext(),
                                 new InAppDeepLinkHandlerInterface.InAppButtonPress(
                                         action.getDeepLink(),
                                         currentMessage.getInAppId(),
@@ -541,7 +541,7 @@ class InAppMessageView extends WebViewClient {
                 case BUTTON_ACTION_PUSH_REGISTER:
                     presenter.cancelCurrentPresentationQueue();
 
-                    Kumulos.pushRegister(currentActivity);
+                    Optimobile.pushRegister(currentActivity);
                     return;
             }
         }

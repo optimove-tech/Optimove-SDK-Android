@@ -27,12 +27,12 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     InAppMessagePresenter(Context context) {
         this.context = context.getApplicationContext();
-        KumulosInitProvider.getAppStateWatcher().registerListener(this);
+        OptimobileInitProvider.getAppStateWatcher().registerListener(this);
     }
 
     @Override
     public void appEnteredForeground() {
-        if (!KumulosInApp.isInAppEnabled()) {
+        if (!OptimobileInApp.isInAppEnabled()) {
             return;
         }
 
@@ -41,7 +41,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void activityAvailable(@NonNull Activity activity) {
-        if (!KumulosInApp.isInAppEnabled()) {
+        if (!OptimobileInApp.isInAppEnabled()) {
             return;
         }
 
@@ -62,7 +62,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void activityUnavailable(@NonNull Activity activity) {
-        if (!KumulosInApp.isInAppEnabled()) {
+        if (!OptimobileInApp.isInAppEnabled()) {
             return;
         }
 
@@ -81,7 +81,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @AnyThread
     synchronized void presentMessages(List<InAppMessage> itemsToPresent, List<Integer> tickleIds) {
-        Kumulos.handler.post(() -> presentMessagesOnUiThread(itemsToPresent, tickleIds));
+        Optimobile.handler.post(() -> presentMessagesOnUiThread(itemsToPresent, tickleIds));
     }
 
     @UiThread

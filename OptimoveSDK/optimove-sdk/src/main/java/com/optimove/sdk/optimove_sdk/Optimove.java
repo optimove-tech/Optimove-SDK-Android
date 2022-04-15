@@ -33,7 +33,7 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStre
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
-import com.optimove.sdk.optimove_sdk.kumulos.Kumulos;
+import com.optimove.sdk.optimove_sdk.kumulos.Optimobile;
 import com.optimove.sdk.optimove_sdk.kumulos.OptimobileConfig;
 import com.optimove.sdk.optimove_sdk.kumulos.PushActionHandlerInterface;
 import com.optimove.sdk.optimove_sdk.kumulos.PushTokenType;
@@ -115,7 +115,7 @@ final public class Optimove {
      */
     public static void initialize(@NonNull Application application, OptimobileConfig config) {
         if (config.isOptimobileConfigured()){
-            Kumulos.initialize(application, config);
+            Optimobile.initialize(application, config);
         }
 
         if (config.isOptimoveConfigured()){
@@ -286,7 +286,7 @@ final public class Optimove {
      * @see Optimove#setUserEmail(String)
      */
     public void registerUser(String userId, String email) {
-        Kumulos.associateUserWithInstall(context, userId);
+        Optimobile.associateUserWithInstall(context, userId);
         SetUserIdEvent setUserIdEvent = processUserId(userId);
         SetEmailEvent setEmailEvent = processUserEmail(email);
         if (setUserIdEvent != null && setEmailEvent != null) {
@@ -323,7 +323,7 @@ final public class Optimove {
      * @param userId The new userId to set
      */
     public void setUserId(String userId) {
-        Kumulos.associateUserWithInstall(context, userId);
+        Optimobile.associateUserWithInstall(context, userId);
         SetUserIdEvent setUserIdEvent = processUserId(userId);
         if (setUserIdEvent != null) {
             eventHandlerProvider.getEventHandler()
@@ -431,25 +431,25 @@ final public class Optimove {
 
     /**
      * Clears any existing association between this install record and a user identifier
-     * @see Kumulos#associateUserWithInstall(Context, String)
-     * @see Kumulos#getCurrentUserIdentifier(Context)
+     * @see Optimobile#associateUserWithInstall(Context, String)
+     * @see Optimobile#getCurrentUserIdentifier(Context)
      * @param context
      */
     public static void clearUserAssociation(@NonNull Context context) {
-        Kumulos.clearUserAssociation(context);
+        Optimobile.clearUserAssociation(context);
     }
 
     /**
-     * Returns the identifier for the user currently associated with the Kumulos installation record
+     * Returns the identifier for the user currently associated with the Optimobile installation record
      *
-     * @see Kumulos#associateUserWithInstall(Context, String)
+     * @see Optimobile#associateUserWithInstall(Context, String)
      * @see com.optimove.sdk.optimove_sdk.kumulos.Installation#id(Context)
      *
      * @param context
-     * @return The current user identifier (if available), otherwise the Kumulos installation ID
+     * @return The current user identifier (if available), otherwise the Optimobile installation ID
      */
     public static String getCurrentUserIdentifier(@NonNull Context context) {
-        return Kumulos.getCurrentUserIdentifier(context);
+        return Optimobile.getCurrentUserIdentifier(context);
     }
 
     //==============================================================================================
@@ -461,7 +461,7 @@ final public class Optimove {
      * @param context
      */
     public static void pushRegister(Context context) {
-        Kumulos.pushRegister(context);
+        Optimobile.pushRegister(context);
     }
 
     /**
@@ -470,7 +470,7 @@ final public class Optimove {
      * @param context
      */
     public static void pushUnregister(Context context) {
-        Kumulos.pushUnregister(context);
+        Optimobile.pushUnregister(context);
     }
 
     /**
@@ -479,8 +479,8 @@ final public class Optimove {
      * @param context
      * @param id
      */
-    public static void pushTrackOpen(Context context, final int id) throws Kumulos.UninitializedException {
-        Kumulos.pushTrackOpen(context, id);
+    public static void pushTrackOpen(Context context, final int id) throws Optimobile.UninitializedException {
+        Optimobile.pushTrackOpen(context, id);
     }
 
     /**
@@ -489,18 +489,18 @@ final public class Optimove {
      * @param context
      * @param id
      */
-    public static void pushTrackDismissed(Context context, final int id) throws Kumulos.UninitializedException {
-        Kumulos.pushTrackDismissed(context, id);
+    public static void pushTrackDismissed(Context context, final int id) throws Optimobile.UninitializedException {
+        Optimobile.pushTrackDismissed(context, id);
     }
 
     /**
-     * Registers the push token with Kumulos to allow sending push notifications to this install
+     * Registers the push token with Optimobile to allow sending push notifications to this install
      * @param context
      * @param token
      */
     public static void pushTokenStore(@NonNull Context context, @NonNull final PushTokenType type,
                                       @NonNull final String token) {
-       Kumulos.pushTokenStore(context, type, token);
+       Optimobile.pushTokenStore(context, type, token);
     }
 
     /**
@@ -508,22 +508,22 @@ final public class Optimove {
      * @param handler
      */
     public static void setPushActionHandler(PushActionHandlerInterface handler) {
-        Kumulos.setPushActionHandler(handler);
+        Optimobile.setPushActionHandler(handler);
     }
 
     //==============================================================================================
     //-- DEFERRED DEEP LINKING
 
     public static void seeIntent(Context context, Intent intent, @Nullable Bundle savedInstanceState) {
-        Kumulos.seeIntent(context, intent, savedInstanceState);
+        Optimobile.seeIntent(context, intent, savedInstanceState);
     }
 
     public static void seeIntent(Context context, Intent intent) {
-        Kumulos.seeIntent(context, intent);
+        Optimobile.seeIntent(context, intent);
     }
 
     public static void seeInputFocus(Context context, boolean hasFocus) {
-        Kumulos.seeInputFocus(context, hasFocus);
+        Optimobile.seeInputFocus(context, hasFocus);
     }
 
 

@@ -37,7 +37,7 @@ final class PushRegistration {
             final Context context = mContextRef.get();
 
             if (null == context) {
-                Kumulos.log(TAG, "Context null in registration task, aborting");
+                Optimobile.log(TAG, "Context null in registration task, aborting");
                 return;
             }
 
@@ -82,7 +82,7 @@ final class PushRegistration {
                 Method getToken = instance.getClass().getMethod("getToken");
                 Task<String> result = (Task<String>) getToken.invoke(instance);
 
-                result.addOnCompleteListener(Kumulos.executorService, task -> {
+                result.addOnCompleteListener(Optimobile.executorService, task -> {
                     if (!task.isSuccessful()) {
                         Log.w(TAG, "Fetching FCM registration token failed for FirebaseMessaging >=21.0.0 ", task.getException());
                         return;
@@ -90,7 +90,7 @@ final class PushRegistration {
 
                     String token = task.getResult();
 
-                    Kumulos.pushTokenStore(context, PushTokenType.FCM, token);
+                    Optimobile.pushTokenStore(context, PushTokenType.FCM, token);
                 });
             } catch (NoSuchMethodException e) {
                 exception = e;
@@ -109,8 +109,8 @@ final class PushRegistration {
         private void registerFcmOld(Context context) {
             // Equivalent of:
             // Task<InstanceIdResult> result = com.google.firebase.iid.FirebaseInstanceId.getInstance().getInstanceId();
-            // result.addOnSuccessListener(Kumulos.executorService, instanceIdResult ->
-            //        Kumulos.pushTokenStore(context, PushTokenType.FCM, instanceIdResult.getToken()));
+            // result.addOnSuccessListener(Optimobile.executorService, instanceIdResult ->
+            //        Optimobile.pushTokenStore(context, PushTokenType.FCM, instanceIdResult.getToken()));
 
             Exception exception = null;
             try {
@@ -127,14 +127,14 @@ final class PushRegistration {
                         Method getTokenMethod = instanceIdResult.getClass().getMethod("getToken");
                         String token = (String) getTokenMethod.invoke(instanceIdResult);
 
-                        Kumulos.pushTokenStore(context, PushTokenType.FCM, token);
+                        Optimobile.pushTokenStore(context, PushTokenType.FCM, token);
                     } catch (Exception e) {
                         Log.e(TAG, "Failed to get FCM token with FirebaseMessaging <21.0.0, in callback : " + e.getMessage());
                     }
                 };
 
                 Method addOnSuccessListenerMethod = task.getClass().getMethod("addOnSuccessListener", Executor.class, OnSuccessListener.class);
-                addOnSuccessListenerMethod.invoke(task, Kumulos.executorService, callback);
+                addOnSuccessListenerMethod.invoke(task, Optimobile.executorService, callback);
             } catch (ClassNotFoundException e) {
                 exception = e;
             } catch (NoSuchMethodException e) {
@@ -163,7 +163,7 @@ final class PushRegistration {
                 String token = HmsInstanceId.getInstance(context).getToken(appId, HCM_SCOPE);
 
                 if (!TextUtils.isEmpty(token)) {
-                    Kumulos.pushTokenStore(context, PushTokenType.HCM, token);
+                    Optimobile.pushTokenStore(context, PushTokenType.HCM, token);
                 }
             } catch (ApiException e) {
                 Log.e(TAG, "get token failed, " + e);
@@ -186,7 +186,7 @@ final class PushRegistration {
             final Context context = mContextRef.get();
 
             if (null == context) {
-                Kumulos.log(TAG, "Context null in unregistration task, aborting");
+                Optimobile.log(TAG, "Context null in unregistration task, aborting");
                 return;
             }
 
@@ -231,13 +231,13 @@ final class PushRegistration {
                 Method deleteToken = instance.getClass().getMethod("deleteToken");
                 Task<Void> result = (Task<Void>) deleteToken.invoke(instance);
 
-                result.addOnCompleteListener(Kumulos.executorService, task -> {
+                result.addOnCompleteListener(Optimobile.executorService, task -> {
                     if (!task.isSuccessful()) {
                         Log.w(TAG, "Deleting FCM registration token failed for FirebaseMessaging >=21.0.0 ", task.getException());
                         return;
                     }
 
-                    Kumulos.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
+                    Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
                 });
             } catch (NoSuchMethodException e) {
                 exception = e;
@@ -270,14 +270,14 @@ final class PushRegistration {
 
                         Method getDeleteTokenMethod = instance.getClass().getMethod("deleteToken", String.class, String.class);
                         getDeleteTokenMethod.invoke(instance, token, FirebaseMessaging.INSTANCE_ID_SCOPE);
-                        Kumulos.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
+                        Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
                     } catch (Exception e) {
                         Log.e(TAG, "Failed to delete FCM token with FirebaseMessaging <21.0.0, in callback : " + e.getMessage());
                     }
                 };
 
                 Method addOnSuccessListenerMethod = task.getClass().getMethod("addOnSuccessListener", Executor.class, OnSuccessListener.class);
-                addOnSuccessListenerMethod.invoke(task, Kumulos.executorService, callback);
+                addOnSuccessListenerMethod.invoke(task, Optimobile.executorService, callback);
             } catch (ClassNotFoundException e) {
                 exception = e;
             } catch (NoSuchMethodException e) {
@@ -303,7 +303,7 @@ final class PushRegistration {
                 }
 
                 HmsInstanceId.getInstance(context).deleteToken(appId, HCM_SCOPE);
-                Kumulos.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
+                Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
             } catch (ApiException e) {
                 e.printStackTrace();
             }

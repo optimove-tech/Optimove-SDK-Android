@@ -25,12 +25,12 @@ class InAppRequestService {
 
     static List<InAppMessage> readInAppMessages(Context c, Date lastSyncTime) {
         OkHttpClient httpClient;
-        String userIdentifier = Kumulos.getCurrentUserIdentifier(c);
+        String userIdentifier = Optimobile.getCurrentUserIdentifier(c);
 
         try {
-            httpClient = Kumulos.getHttpClient();
-        } catch (Kumulos.UninitializedException e) {
-            Kumulos.log(TAG, e.getMessage());
+            httpClient = Optimobile.getHttpClient();
+        } catch (Optimobile.UninitializedException e) {
+            Optimobile.log(TAG, e.getMessage());
             return null;
         }
 
@@ -41,11 +41,11 @@ class InAppRequestService {
             params= "?after="+ sdf.format(lastSyncTime);
         }
         String encodedIdentifier = Uri.encode(userIdentifier);
-        String url = Kumulos.urlBuilder.urlForService(UrlBuilder.Service.PUSH, "/v1/users/"+encodedIdentifier+"/messages"+params);
+        String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.PUSH, "/v1/users/"+encodedIdentifier+"/messages"+params);
 
         final Request request = new Request.Builder()
                 .url(url)
-                .addHeader(Kumulos.KEY_AUTH_HEADER, Kumulos.authHeader)
+                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
                 .addHeader("Accept", "application/json")
                 .get()
                 .build();
@@ -70,17 +70,17 @@ class InAppRequestService {
     private static void logFailedResponse(Response response){
         switch (response.code()) {
             case 404:
-                Kumulos.log(TAG, "User not found");
+                Optimobile.log(TAG, "User not found");
                 break;
             case 422:
                 try {
-                    Kumulos.log(TAG, response.body().string());
+                    Optimobile.log(TAG, response.body().string());
                 } catch (NullPointerException|IOException e) {
-                    Kumulos.log(TAG, e.getMessage());
+                    Optimobile.log(TAG, e.getMessage());
                 }
                 break;
             default:
-                Kumulos.log(TAG, response.message());
+                Optimobile.log(TAG, response.message());
                 break;
         }
     }
@@ -99,7 +99,7 @@ class InAppRequestService {
             return inAppMessages;
         }
         catch (NullPointerException| JSONException | ParseException | IOException e) {
-            Kumulos.log(TAG, e.getMessage());
+            Optimobile.log(TAG, e.getMessage());
             return null;
         }
     }

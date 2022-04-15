@@ -66,7 +66,7 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
         ++runningActivities;
 
         if (1 == runningActivities && !appInForeground) {
-            Kumulos.log(TAG, "appEnteredForeground");
+            Optimobile.log(TAG, "appEnteredForeground");
             appInForeground = true;
 
             for (AppStateChangedListener listener : listeners) {
@@ -76,7 +76,7 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
 
         Activity current = currentActivityRef.get();
         if (current != activity) {
-            Kumulos.log(TAG, "activityAvailable");
+            Optimobile.log(TAG, "activityAvailable");
             currentActivityRef = new WeakReference<>(activity);
             for (AppStateChangedListener listener : listeners) {
                 listener.activityAvailable(activity);
@@ -88,11 +88,11 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
     public void onActivityPaused(@NonNull Activity activity) {
         --runningActivities;
 
-        Kumulos.handler.postDelayed(() -> {
+        Optimobile.handler.postDelayed(() -> {
             if (0 == runningActivities) {
                 appInForeground = false;
                 for (AppStateChangedListener listener : listeners) {
-                    Kumulos.log(TAG, "appEnteredBackground");
+                    Optimobile.log(TAG, "appEnteredBackground");
                     listener.appEnteredBackground();
                 }
             }
@@ -107,17 +107,17 @@ class AppStateWatcher implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
-        if (this.isKumulosInvisibleActivity(activity)) {
+        if (this.isOptimobileInvisibleActivity(activity)) {
             return;
         }
 
-        Kumulos.log(TAG, "activityUnavailable");
+        Optimobile.log(TAG, "activityUnavailable");
         for (AppStateChangedListener listener : listeners) {
             listener.activityUnavailable(activity);
         }
     }
 
-    private boolean isKumulosInvisibleActivity(@NonNull Activity activity){
+    private boolean isOptimobileInvisibleActivity(@NonNull Activity activity){
         return activity.getComponentName().getClassName().equals(PushOpenInvisibleActivity.class.getName());
     }
 }

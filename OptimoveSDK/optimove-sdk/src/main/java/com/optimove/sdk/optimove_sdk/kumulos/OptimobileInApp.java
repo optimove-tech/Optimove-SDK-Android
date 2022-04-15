@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class KumulosInApp {
+public class OptimobileInApp {
     static InAppDeepLinkHandlerInterface inAppDeepLinkHandler = null;
     static Application application;
     static InAppMessagePresenter presenter;
@@ -44,7 +44,7 @@ public class KumulosInApp {
     public static List<InAppInboxItem> getInboxItems(@NonNull Context context) {
         boolean inAppEnabled = isInAppEnabled();
         if (!inAppEnabled) {
-            throw new RuntimeException("Kumulos: It is only possible to read In App inbox if In App messaging is enabled");
+            throw new RuntimeException("Optimobile: It is only possible to read In App inbox if In App messaging is enabled");
         }
 
         return InAppMessageService.readInboxItems(context);
@@ -59,7 +59,7 @@ public class KumulosInApp {
     public static InboxMessagePresentationResult presentInboxMessage(@NonNull Context context, @NonNull InAppInboxItem item) {
         boolean inAppEnabled = isInAppEnabled();
         if (!inAppEnabled) {
-            throw new RuntimeException("Kumulos: It is only possible to present In App inbox if In App messaging is enabled");
+            throw new RuntimeException("Optimobile: It is only possible to present In App inbox if In App messaging is enabled");
         }
 
         return InAppMessageService.presentMessage(context, item);
@@ -109,7 +109,7 @@ public class KumulosInApp {
      * @param inboxUpdatedHandler handler
      */
     public static void setOnInboxUpdated(@Nullable InAppInboxUpdatedHandler inboxUpdatedHandler) {
-        KumulosInApp.inboxUpdatedHandler = inboxUpdatedHandler;
+        OptimobileInApp.inboxUpdatedHandler = inboxUpdatedHandler;
     }
 
     /**
@@ -120,7 +120,7 @@ public class KumulosInApp {
      */
     public static void getInboxSummaryAsync(@NonNull Context context, @NonNull InAppInboxSummaryHandler inboxSummaryHandler) {
         Runnable task = new InAppContract.ReadInboxSummaryRunnable(context, inboxSummaryHandler);
-        Kumulos.executorService.submit(task);
+        Optimobile.executorService.submit(task);
     }
 
 
@@ -131,8 +131,8 @@ public class KumulosInApp {
      */
 
     public static void updateConsentForUser(boolean consentGiven) {
-        if (Kumulos.getConfig().getInAppConsentStrategy() != OptimobileConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
-            throw new RuntimeException("Kumulos: It is only possible to update In App consent for user if consent strategy is set to EXPLICIT_BY_USER");
+        if (Optimobile.getConfig().getInAppConsentStrategy() != OptimobileConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
+            throw new RuntimeException("Optimobile: It is only possible to update In App consent for user if consent strategy is set to EXPLICIT_BY_USER");
         }
 
         boolean inAppWasEnabled = isInAppEnabled();
@@ -156,7 +156,7 @@ public class KumulosInApp {
     //-- Internal Helpers
 
     static void initialize(Application application, OptimobileConfig currentConfig) {
-        KumulosInApp.application = application;
+        OptimobileInApp.application = application;
 
         OptimobileConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
         boolean inAppEnabled = isInAppEnabled();
@@ -190,7 +190,7 @@ public class KumulosInApp {
         try {
             JSONObject params = new JSONObject().put("consented", enabled);
 
-            Kumulos.trackEvent(application, "k.inApp.statusUpdated", params);
+            Optimobile.trackEvent(application, "k.inApp.statusUpdated", params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -239,8 +239,8 @@ public class KumulosInApp {
     }
 
     private static void fetchMessages() {
-        Kumulos.executorService.submit(() -> {
-            InAppMessageService.fetch(KumulosInApp.application, true);
+        Optimobile.executorService.submit(() -> {
+            InAppMessageService.fetch(OptimobileInApp.application, true);
         });
     }
 
@@ -249,6 +249,6 @@ public class KumulosInApp {
             return;
         }
 
-        Kumulos.handler.post(inboxUpdatedHandler);
+        Optimobile.handler.post(inboxUpdatedHandler);
     }
 }

@@ -85,7 +85,7 @@ class InAppContract {
 
                 db.execSQL("delete from " + InAppMessageTable.TABLE_NAME);
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed clearing in-app db ");
+                Optimobile.log(TAG, "Failed clearing in-app db ");
                 e.printStackTrace();
             }
         }
@@ -115,7 +115,7 @@ class InAppContract {
                 c.moveToFirst();
                 c.close();
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed to track open for inAppID: " + mInAppMessage.getInAppId());
+                Optimobile.log(TAG, "Failed to track open for inAppID: " + mInAppMessage.getInAppId());
                 e.printStackTrace();
             }
         }
@@ -151,12 +151,12 @@ class InAppContract {
                 itemsToPresent = this.readRows(db);
                 inboxUpdated = this.isInboxUpdated(mInAppMessages, deleteResult.first);
 
-                Kumulos.log(TAG, "Saved messages: " + mInAppMessages.size());
+                Optimobile.log(TAG, "Saved messages: " + mInAppMessages.size());
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed to save messages: " + mInAppMessages.size());
+                Optimobile.log(TAG, "Failed to save messages: " + mInAppMessages.size());
                 e.printStackTrace();
             } catch (Exception e) {
-                Kumulos.log(TAG, e.getMessage());
+                Optimobile.log(TAG, e.getMessage());
             }
 
             return new InAppSaveResult(itemsToPresent, deliveredIds, deletedIds, inboxUpdated);
@@ -272,7 +272,7 @@ class InAppContract {
                     data = getNullableJsonObject(cursor, InAppMessageTable.COL_DATA_JSON);
                     inbox = getNullableJsonObject(cursor, InAppMessageTable.COL_INBOX_CONFIG_JSON);
                 } catch (JSONException e) {
-                    Kumulos.log(TAG, e.getMessage());
+                    Optimobile.log(TAG, e.getMessage());
                     continue;
                 }
 
@@ -428,7 +428,7 @@ class InAppContract {
             } catch (SQLiteException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                Kumulos.log(TAG, e.getMessage());
+                Optimobile.log(TAG, e.getMessage());
             }
 
             return inboxItems;
@@ -476,7 +476,7 @@ class InAppContract {
             } catch (SQLiteException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                Kumulos.log(TAG, e.getMessage());
+                Optimobile.log(TAG, e.getMessage());
             }
 
             return inboxMessage;
@@ -516,7 +516,7 @@ class InAppContract {
                     return false;
                 }
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed to delete inbox message with inAppID: " + mId);
+                Optimobile.log(TAG, "Failed to delete inbox message with inAppID: " + mId);
                 e.printStackTrace();
                 return false;
             }
@@ -554,7 +554,7 @@ class InAppContract {
                     return false;
                 }
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed to set readAt of inbox message with inAppID: " + mId);
+                Optimobile.log(TAG, "Failed to set readAt of inbox message with inAppID: " + mId);
                 e.printStackTrace();
                 return false;
             }
@@ -567,9 +567,9 @@ class InAppContract {
 
         private static final String TAG = ReadInboxSummaryRunnable.class.getName();
         private final Context mContext;
-        private final KumulosInApp.InAppInboxSummaryHandler callback;
+        private final OptimobileInApp.InAppInboxSummaryHandler callback;
 
-        ReadInboxSummaryRunnable(Context context, KumulosInApp.InAppInboxSummaryHandler callback) {
+        ReadInboxSummaryRunnable(Context context, OptimobileInApp.InAppInboxSummaryHandler callback) {
             mContext = context.getApplicationContext();
             this.callback = callback;
         }
@@ -595,7 +595,7 @@ class InAppContract {
 
                 summary = new InAppInboxSummary(totalCount, unreadCount);
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed to read inbox summary");
+                Optimobile.log(TAG, "Failed to read inbox summary");
                 e.printStackTrace();
             }
 
@@ -603,7 +603,7 @@ class InAppContract {
         }
 
         private void fireCallback(InAppInboxSummary summary) {
-            Kumulos.handler.post(() -> ReadInboxSummaryRunnable.this.callback.run(summary));
+            Optimobile.handler.post(() -> ReadInboxSummaryRunnable.this.callback.run(summary));
         }
     }
 }

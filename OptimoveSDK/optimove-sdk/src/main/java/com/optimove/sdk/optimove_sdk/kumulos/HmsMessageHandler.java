@@ -16,7 +16,7 @@ import org.json.JSONObject;
 /**
  * HmsMessageHandler provides helpers for handling HmsMessageService events
  *
- * This can allow interoperating Kumulos push with your own HCM service
+ * This can allow interoperating Optimobile push with your own HCM service
  */
 public class HmsMessageHandler {
 
@@ -24,7 +24,7 @@ public class HmsMessageHandler {
 
     /**
      * Handles the received notification from HCM, creating a PushMessage model and broadcasting
-     * the appropriate com.kumulos.push Intent
+     * the appropriate com.optimobile.push Intent
      * @param context
      * @param remoteMessage
      */
@@ -33,7 +33,7 @@ public class HmsMessageHandler {
             return;
         }
 
-        Kumulos.log(TAG, "Received a push message");
+        Optimobile.log(TAG, "Received a push message");
 
         JSONObject bundle;
 
@@ -63,7 +63,7 @@ public class HmsMessageHandler {
             id = data.getJSONObject("k.message").getJSONObject("data").getInt("id");
             buttons = data.optJSONArray("k.buttons");
         } catch (JSONException e) {
-            Kumulos.log(TAG, "Push received had no ID/data/uri or was incorrectly formatted, ignoring...");
+            Optimobile.log(TAG, "Push received had no ID/data/uri or was incorrectly formatted, ignoring...");
             return;
         }
 

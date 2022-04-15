@@ -26,7 +26,7 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
         startNewSession = new AtomicBoolean(true);
         this.mContextRef = new WeakReference<>(context.getApplicationContext());
 
-        KumulosInitProvider.getAppStateWatcher().registerListener(this);
+        OptimobileInitProvider.getAppStateWatcher().registerListener(this);
     }
 
     @Override
@@ -47,9 +47,9 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
                 DeferredDeepLinkHelper.nonContinuationLinkCheckedForSession.set(false);
             }
 
-            Kumulos.trackEvent(context, SessionHelper.EVENT_TYPE_FOREGROUND, null);
+            Optimobile.trackEvent(context, SessionHelper.EVENT_TYPE_FOREGROUND, null);
 
-            Kumulos.executorService.submit(() -> {
+            Optimobile.executorService.submit(() -> {
                 WorkManager.getInstance(context).cancelUniqueWork(AnalyticsBackgroundEventWorker.TAG);
             });
         }
@@ -86,8 +86,8 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
                 .putLong(AnalyticsBackgroundEventWorker.EXTRAS_KEY_TIMESTAMP, System.currentTimeMillis())
                 .build();
 
-        Kumulos.executorService.submit(() -> {
-            OptimobileConfig config = Kumulos.getConfig();
+        Optimobile.executorService.submit(() -> {
+            OptimobileConfig config = Optimobile.getConfig();
 
             OneTimeWorkRequest.Builder taskBuilder = new OneTimeWorkRequest.Builder(AnalyticsBackgroundEventWorker.class)
                     .setInitialDelay(config.getSessionIdleTimeoutSeconds(), TimeUnit.SECONDS)

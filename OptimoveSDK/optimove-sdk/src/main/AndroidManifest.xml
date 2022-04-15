@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <provider
-            android:name=".kumulos.KumulosInitProvider"
+            android:name=".kumulos.OptimobileInitProvider"
             android:authorities="${applicationId}.kumulosinitprovider"
             android:exported="false" />
         <activity

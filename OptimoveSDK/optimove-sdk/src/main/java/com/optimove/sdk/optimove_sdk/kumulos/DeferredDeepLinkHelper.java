@@ -213,14 +213,14 @@ public class DeferredDeepLinkHelper {
 
     private boolean urlShouldBeHandled(URL url) {
         String host = url.getHost();
-        OptimobileConfig config = Kumulos.getConfig();
+        OptimobileConfig config = Optimobile.getConfig();
         URL cname = config.getDeepLinkCname();
 
         return host.endsWith("lnk.click") || (cname != null && host.equals(cname.getHost()));
     }
 
     private void handleDeepLink(Context context, URL url, boolean wasDeferred) {
-        OkHttpClient httpClient = Kumulos.getHttpClient();
+        OkHttpClient httpClient = Optimobile.getHttpClient();
 
         String slug = Uri.encode(url.getPath().replaceAll("/$|^/", ""));
         String params = "?wasDeferred=" + (wasDeferred ? 1 : 0);
@@ -229,11 +229,11 @@ public class DeferredDeepLinkHelper {
             params = params + "&" + query;
         }
 
-        String requestUrl = Kumulos.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/" + slug + params);
+        String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/" + slug + params);
 
         final Request request = new Request.Builder()
                 .url(requestUrl)
-                .addHeader(Kumulos.KEY_AUTH_HEADER, Kumulos.authHeader)
+                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
                 .get()
@@ -243,7 +243,7 @@ public class DeferredDeepLinkHelper {
     }
 
     private void makeNetworkRequest(Context context, OkHttpClient httpClient, Request request, URL url, boolean wasDeferred) {
-        Kumulos.executorService.submit(new Runnable() {
+        Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
                 try (Response response = httpClient.newCall(request).execute()) {
@@ -285,7 +285,7 @@ public class DeferredDeepLinkHelper {
             params.put("url", url.toString());
             params.put("wasDeferred", wasDeferred);
 
-            Kumulos.trackEvent(context, AnalyticsContract.EVENT_TYPE_DEEP_LINK_MATCHED, params);
+            Optimobile.trackEvent(context, AnalyticsContract.EVENT_TYPE_DEEP_LINK_MATCHED, params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -309,13 +309,13 @@ public class DeferredDeepLinkHelper {
     }
 
     private void invokeDeepLinkHandler(Context context, DeepLinkResolution resolution, URL url, @Nullable DeepLink data) {
-        OptimobileConfig config = Kumulos.getConfig();
+        OptimobileConfig config = Optimobile.getConfig();
         DeferredDeepLinkHandlerInterface handler = config.getDeferredDeepLinkHandler();
         if (handler == null) {
             return;
         }
 
-        Kumulos.handler.post(() -> handler.handle(context, resolution, url.toString(), data));
+        Optimobile.handler.post(() -> handler.handle(context, resolution, url.toString(), data));
     }
 
     //********************************* FINGERPRINTING *********************************
@@ -323,7 +323,7 @@ public class DeferredDeepLinkHelper {
     private void checkForWebToAppBannerTap(Context context) {
         fingerprinter = new DeepLinkFingerprinter(context);
 
-        fingerprinter.getFingerprintComponents(new Kumulos.ResultCallback<JSONObject>() {
+        fingerprinter.getFingerprintComponents(new Optimobile.ResultCallback<JSONObject>() {
             @Override
             public void onSuccess(JSONObject components) {
                 DeferredDeepLinkHelper.this.handleFingerprintComponents(context, components);
@@ -333,17 +333,17 @@ public class DeferredDeepLinkHelper {
 
     private void handleFingerprintComponents(Context context, JSONObject components) {
         String encodedComponents = Base64.encodeToString(components.toString().getBytes(), Base64.NO_WRAP);
-        String requestUrl = Kumulos.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
+        String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
 
         final Request request = new Request.Builder()
                 .url(requestUrl)
-                .addHeader(Kumulos.KEY_AUTH_HEADER, Kumulos.authHeader)
+                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
                 .get()
                 .build();
 
-        Kumulos.getHttpClient().newCall(request).enqueue(new Callback() {
+        Optimobile.getHttpClient().newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 e.printStackTrace();

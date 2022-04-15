@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * FirebaseMessageHandler provides helpers for handling FirebaseMessagingService events
  *
- * This can allow interoperating Kumulos push with your own FCM service
+ * This can allow interoperating Optimobile push with your own FCM service
  */
 public class FirebaseMessageHandler {
 
@@ -26,7 +26,7 @@ public class FirebaseMessageHandler {
 
     /**
      * Handles the received notification from FCM, creating a PushMessage model and broadcasting
-     * the appropriate com.kumulos.push Intent
+     * the appropriate com.optimobile.push Intent
      *
      * @param context
      * @param remoteMessage
@@ -36,7 +36,7 @@ public class FirebaseMessageHandler {
             return;
         }
 
-        Kumulos.log(TAG, "Received a push message");
+        Optimobile.log(TAG, "Received a push message");
 
         Map<String, String> bundle = remoteMessage.getData();
 
@@ -63,7 +63,7 @@ public class FirebaseMessageHandler {
             buttons = data.optJSONArray("k.buttons");
 
         } catch (JSONException e) {
-            Kumulos.log(TAG, "Push received had no ID/data/uri or was incorrectly formatted, ignoring...");
+            Optimobile.log(TAG, "Push received had no ID/data/uri or was incorrectly formatted, ignoring...");
             return;
         }
 

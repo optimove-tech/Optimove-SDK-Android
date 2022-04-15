@@ -31,7 +31,7 @@ class Deferred<R> {
     }
 
     private State state = State.PENDING;
-    private final List<Kumulos.ResultCallback<R>> pendingWatchers = new ArrayList<>();
+    private final List<Optimobile.ResultCallback<R>> pendingWatchers = new ArrayList<>();
     private R components;
 
     void resolve(R result) {
@@ -42,8 +42,8 @@ class Deferred<R> {
         state = State.RESOLVED;
         components = result;
 
-        Kumulos.handler.post(() -> {
-            for (Kumulos.ResultCallback<R> watcher : pendingWatchers) {
+        Optimobile.handler.post(() -> {
+            for (Optimobile.ResultCallback<R> watcher : pendingWatchers) {
                 watcher.onSuccess(result);
             }
 
@@ -51,8 +51,8 @@ class Deferred<R> {
         });
     }
 
-    void then(Kumulos.ResultCallback<R> onResult) {
-        Kumulos.handler.post(() -> {
+    void then(Optimobile.ResultCallback<R> onResult) {
+        Optimobile.handler.post(() -> {
             if (state == State.PENDING) {
                 pendingWatchers.add(onResult);
                 return;
@@ -100,7 +100,7 @@ class DeepLinkFingerprinter {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 pageFinished = false;
-                Kumulos.handler.postDelayed(() -> {
+                Optimobile.handler.postDelayed(() -> {
                     if (!pageFinished) {
                         cleanUpWebView();
                     }
@@ -114,7 +114,7 @@ class DeepLinkFingerprinter {
 
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Kumulos.log(TAG, "Error code: " + errorCode + ". " + description + " " + failingUrl);
+                Optimobile.log(TAG, "Error code: " + errorCode + ". " + description + " " + failingUrl);
 
                 cleanUpWebView();
             }
@@ -129,7 +129,7 @@ class DeepLinkFingerprinter {
         wv.loadUrl(PRINT_DUST_RUNTIME_URL);
     }
 
-    public void getFingerprintComponents(Kumulos.ResultCallback<JSONObject> onGenerated) {
+    public void getFingerprintComponents(Optimobile.ResultCallback<JSONObject> onGenerated) {
         fingerprint.then(onGenerated);
     }
 
@@ -160,7 +160,7 @@ class DeepLinkFingerprinter {
 
         switch (messageType) {
             case CLIENT_READY:
-                Kumulos.handler.post(() -> {
+                Optimobile.handler.post(() -> {
                     this.sendToClient(REQUEST_FINGERPRINT, null);
                 });
                 return;
@@ -176,7 +176,7 @@ class DeepLinkFingerprinter {
 
                 fingerprint.resolve(components);
 
-                Kumulos.handler.post(this::cleanUpWebView);
+                Optimobile.handler.post(this::cleanUpWebView);
 
                 return;
             default:

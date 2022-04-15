@@ -20,7 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
- * Represents the configuration for the Kumulos client
+ * Represents the configuration for the Optimobile client
  */
 public final class OptimobileConfig {
 
@@ -168,7 +168,7 @@ public final class OptimobileConfig {
     }
 
     /**
-     * Config builder for the Kumulos client
+     * Config builder for the Optimobile client
      */
     public static class Builder {
         private @Nullable
@@ -284,7 +284,7 @@ public final class OptimobileConfig {
          * event is seen. If no resume event is observed and the idle period elapses, the app is considered
          * to be in the background and the session ends.
          * <p>
-         * This defaults to KumulosConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS if unspecified.
+         * This defaults to OptimobileConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS if unspecified.
          *
          * @param idleTimeSeconds
          * @return

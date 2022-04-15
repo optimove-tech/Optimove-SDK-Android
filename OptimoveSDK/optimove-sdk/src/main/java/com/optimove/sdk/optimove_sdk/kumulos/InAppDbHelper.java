@@ -35,7 +35,7 @@ class InAppDbHelper extends SQLiteOpenHelper {
         try {
             db.execSQL(SQL_CREATE_IN_APP_MESSAGES);
         } catch (SQLException e) {
-            Kumulos.log("Failed to create in app table");
+            Optimobile.log("Failed to create in app table");
             e.printStackTrace();
         }
     }

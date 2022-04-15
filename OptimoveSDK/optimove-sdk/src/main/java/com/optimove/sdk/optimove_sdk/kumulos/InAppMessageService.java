@@ -33,7 +33,7 @@ class InAppMessageService {
 
     static void clearAllMessages(Context context) {
         Runnable task = new InAppContract.ClearDbRunnable(context);
-        Kumulos.executorService.submit(task);
+        Optimobile.executorService.submit(task);
     }
 
     static boolean fetch(Context context, boolean includeNextOpen) {
@@ -82,7 +82,7 @@ class InAppMessageService {
             clearNotification(context, inAppId);
         }
 
-        KumulosInApp.maybeRunInboxUpdatedHandler(inboxUpdated);
+        OptimobileInApp.maybeRunInboxUpdatedHandler(inboxUpdated);
 
         InAppMessageService.storeLastSyncTime(context, inAppMessages);
 
@@ -104,7 +104,7 @@ class InAppMessageService {
             }
         }
 
-        KumulosInApp.presenter.presentMessages(itemsToPresent, new ArrayList<>(pendingTickleIds));
+        OptimobileInApp.presenter.presentMessages(itemsToPresent, new ArrayList<>(pendingTickleIds));
 
         pendingTickleIds.clear();
     }
@@ -118,7 +118,7 @@ class InAppMessageService {
                 params.put("type", AnalyticsContract.MESSAGE_TYPE_IN_APP);
                 params.put("id", deliveredId);
 
-                Kumulos.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_DELIVERED, params);
+                Optimobile.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_DELIVERED, params);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -127,7 +127,7 @@ class InAppMessageService {
 
     static void readAndPresentMessages(Context context, boolean fromBackground, Integer tickleId) {
         Runnable task = new ReadAndPresentMessagesRunnable(context, fromBackground, tickleId);
-        Kumulos.executorService.submit(task);
+        Optimobile.executorService.submit(task);
     }
 
     private static void maybeDoExtraFetch(Context context, boolean fromBackground) {
@@ -146,7 +146,7 @@ class InAppMessageService {
         }
 
         if (shouldFetch) {
-            Kumulos.executorService.submit(() -> {
+            Optimobile.executorService.submit(() -> {
                 InAppMessageService.fetch(context, fromBackground);
             });
         }
@@ -161,7 +161,7 @@ class InAppMessageService {
     private static void updateDismissedAt(Context context, InAppMessage message) {
         message.setDismissedAt(new Date());
         Runnable task = new InAppContract.TrackMessageDismissedRunnable(context, message);
-        Kumulos.executorService.submit(task);
+        Optimobile.executorService.submit(task);
     }
 
     private static void trackDismissedEvent(Context context, int id) {
@@ -170,7 +170,7 @@ class InAppMessageService {
             params.put("type", AnalyticsContract.MESSAGE_TYPE_IN_APP);
             params.put("id", id);
 
-            Kumulos.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_DISMISSED, params);
+            Optimobile.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_DISMISSED, params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -184,7 +184,7 @@ class InAppMessageService {
             markedRead = markInboxItemRead(context, id, false);
         }
         if (message.getInbox() != null) {
-            KumulosInApp.maybeRunInboxUpdatedHandler(markedRead);
+            OptimobileInApp.maybeRunInboxUpdatedHandler(markedRead);
         }
 
         JSONObject params = new JSONObject();
@@ -192,7 +192,7 @@ class InAppMessageService {
             params.put("type", AnalyticsContract.MESSAGE_TYPE_IN_APP);
             params.put("id", id);
 
-            Kumulos.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_OPENED, params);
+            Optimobile.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_OPENED, params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -221,7 +221,7 @@ class InAppMessageService {
 
     static List<InAppInboxItem> readInboxItems(Context context) {
         Callable<List<InAppInboxItem>> task = new InAppContract.ReadInAppInboxCallable(context);
-        final Future<List<InAppInboxItem>> future = Kumulos.executorService.submit(task);
+        final Future<List<InAppInboxItem>> future = Optimobile.executorService.submit(task);
 
         List<InAppInboxItem> inboxItems;
         try {
@@ -234,31 +234,31 @@ class InAppMessageService {
         return inboxItems;
     }
 
-    static KumulosInApp.InboxMessagePresentationResult presentMessage(Context context, InAppInboxItem item) {
+    static OptimobileInApp.InboxMessagePresentationResult presentMessage(Context context, InAppInboxItem item) {
         Callable<InAppMessage> task = new InAppContract.ReadInAppInboxMessageCallable(context, item.getId());
-        final Future<InAppMessage> future = Kumulos.executorService.submit(task);
+        final Future<InAppMessage> future = Optimobile.executorService.submit(task);
 
         InAppMessage inboxMessage;
         try {
             inboxMessage = future.get();
         } catch (InterruptedException | ExecutionException ex) {
-            return KumulosInApp.InboxMessagePresentationResult.FAILED;
+            return OptimobileInApp.InboxMessagePresentationResult.FAILED;
         }
 
         if (inboxMessage == null) {
-            return KumulosInApp.InboxMessagePresentationResult.FAILED;
+            return OptimobileInApp.InboxMessagePresentationResult.FAILED;
         }
 
         if (item.getAvailableTo() != null && item.getAvailableTo().getTime() < new Date().getTime()) {
-            return KumulosInApp.InboxMessagePresentationResult.FAILED_EXPIRED;
+            return OptimobileInApp.InboxMessagePresentationResult.FAILED_EXPIRED;
         }
 
         List<InAppMessage> itemsToPresent = new ArrayList<>();
         itemsToPresent.add(inboxMessage);
 
-        KumulosInApp.presenter.presentMessages(itemsToPresent, null);
+        OptimobileInApp.presenter.presentMessages(itemsToPresent, null);
 
-        return KumulosInApp.InboxMessagePresentationResult.PRESENTED;
+        return OptimobileInApp.InboxMessagePresentationResult.PRESENTED;
     }
 
     static boolean deleteMessageFromInbox(Context context, int id) {
@@ -267,7 +267,7 @@ class InAppMessageService {
             params.put("type", AnalyticsContract.MESSAGE_TYPE_IN_APP);
             params.put("id", id);
 
-            Kumulos.trackEvent(context, AnalyticsContract.MESSAGE_DELETED_FROM_INBOX, params);
+            Optimobile.trackEvent(context, AnalyticsContract.MESSAGE_DELETED_FROM_INBOX, params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -275,30 +275,30 @@ class InAppMessageService {
         clearNotification(context, id);
 
         Callable<Boolean> task = new InAppContract.DeleteInAppInboxMessageCallable(context, id);
-        final Future<Boolean> future = Kumulos.executorService.submit(task);
+        final Future<Boolean> future = Optimobile.executorService.submit(task);
 
         Boolean result = false;
         try {
             result = future.get();
         } catch (InterruptedException | ExecutionException ex) {
-            Kumulos.log(TAG, ex.getMessage());
+            Optimobile.log(TAG, ex.getMessage());
         }
 
-        KumulosInApp.maybeRunInboxUpdatedHandler(result);
+        OptimobileInApp.maybeRunInboxUpdatedHandler(result);
 
         return result;
     }
 
     static boolean markInboxItemRead(Context context, int id, boolean shouldWaitForResult) {
         Callable<Boolean> task = new InAppContract.MarkInAppInboxMessageAsReadCallable(context, id);
-        final Future<Boolean> future = Kumulos.executorService.submit(task);
+        final Future<Boolean> future = Optimobile.executorService.submit(task);
 
         Boolean result = true;
         if (shouldWaitForResult) {
             try {
                 result = future.get();
             } catch (InterruptedException | ExecutionException ex) {
-                Kumulos.log(TAG, ex.getMessage());
+                Optimobile.log(TAG, ex.getMessage());
             }
         }
 
@@ -311,7 +311,7 @@ class InAppMessageService {
             params.put("type", AnalyticsContract.MESSAGE_TYPE_IN_APP);
             params.put("id", id);
 
-            Kumulos.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_READ, params);
+            Optimobile.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_READ, params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -340,7 +340,7 @@ class InAppMessageService {
             }
         }
 
-        KumulosInApp.maybeRunInboxUpdatedHandler(inboxNeedsUpdate);
+        OptimobileInApp.maybeRunInboxUpdatedHandler(inboxNeedsUpdate);
 
         return result;
     }
@@ -388,7 +388,7 @@ class InAppMessageService {
                 }
             }
 
-            KumulosInApp.presenter.presentMessages(itemsToPresent, tickleIds);
+            OptimobileInApp.presenter.presentMessages(itemsToPresent, tickleIds);
 
             // TODO potential bug? logic in here doesn't take into account the pending tickles
             //      in prod builds if synced < 1hr ago, may not sync again? (although assumed sync happens on app startup so...)
@@ -433,7 +433,7 @@ class InAppMessageService {
             } catch (SQLiteException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                Kumulos.log(TAG, e.getMessage());
+                Optimobile.log(TAG, e.getMessage());
             }
 
             return itemsToPresent;

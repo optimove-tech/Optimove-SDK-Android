@@ -12,6 +12,6 @@ public class MediaHelper {
             return new URL(pictureUrl);
         }
 
-        return new URL(Kumulos.urlBuilder.urlForService(UrlBuilder.Service.MEDIA, "/" + width + "x/" + pictureUrl));
+        return new URL(Optimobile.urlBuilder.urlForService(UrlBuilder.Service.MEDIA, "/" + width + "x/" + pictureUrl));
     }
 }

@@ -23,7 +23,7 @@ public class AnalyticsBackgroundEventWorker extends Worker {
         long ts = extras.getLong(EXTRAS_KEY_TIMESTAMP, System.currentTimeMillis());
 
         Runnable trackingTask = new AnalyticsContract.TrackEventRunnable(getApplicationContext(), AnalyticsContract.EVENT_TYPE_BACKGROUND, ts, null, false);
-        Kumulos.executorService.submit(trackingTask);
+        Optimobile.executorService.submit(trackingTask);
         SessionHelper.startNewSession.set(true);
 
         return Result.success();

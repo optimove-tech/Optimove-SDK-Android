@@ -16,8 +16,8 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
             return;
         }
 
-        Kumulos.log(TAG, "Got a push token: " + token);
-        Kumulos.pushTokenStore(this, PushTokenType.FCM, token);
+        Optimobile.log(TAG, "Got a push token: " + token);
+        Optimobile.pushTokenStore(this, PushTokenType.FCM, token);
     }
 
     @Override

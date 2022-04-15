@@ -12,7 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Represents the push notification sent by Kumulos
+ * Represents the push notification sent by Optimobile
  */
 public final class PushMessage implements Parcelable {
 
@@ -137,7 +137,7 @@ public final class PushMessage implements Parcelable {
         try {
             return deepLink.getJSONObject("data").getInt("id");
         } catch (JSONException e) {
-            Kumulos.log(TAG, e.toString());
+            Optimobile.log(TAG, e.toString());
             return -1;
         }
     }

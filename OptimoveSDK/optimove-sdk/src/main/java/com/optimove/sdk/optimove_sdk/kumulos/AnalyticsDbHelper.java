@@ -29,7 +29,7 @@ import android.database.sqlite.SQLiteOpenHelper;
             onUpgrade(db, 1, DB_VERSION);
         }
         catch (SQLException e) {
-            Kumulos.log("Failed to create analytics events table");
+            Optimobile.log("Failed to create analytics events table");
             e.printStackTrace();
         }
     }

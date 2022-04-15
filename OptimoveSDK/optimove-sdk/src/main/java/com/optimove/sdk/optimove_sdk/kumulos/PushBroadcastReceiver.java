@@ -80,7 +80,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
      * @param pushMessage
      */
     protected void onPushReceived(Context context, PushMessage pushMessage) {
-        Kumulos.log(TAG, "Push received");
+        Optimobile.log(TAG, "Push received");
 
         this.pushTrackDelivered(context, pushMessage);
 
@@ -129,14 +129,14 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             params.put("type", AnalyticsContract.MESSAGE_TYPE_PUSH);
             params.put("id", pushMessage.getId());
 
-            Kumulos.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_DELIVERED, params);
+            Optimobile.trackEvent(context, AnalyticsContract.EVENT_TYPE_MESSAGE_DELIVERED, params);
         } catch (JSONException e) {
-            Kumulos.log(TAG, e.toString());
+            Optimobile.log(TAG, e.toString());
         }
     }
 
     protected void maybeTriggerInAppSync(Context context, PushMessage pushMessage) {
-        if (!KumulosInApp.isInAppEnabled()) {
+        if (!OptimobileInApp.isInAppEnabled()) {
             return;
         }
 
@@ -145,7 +145,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        Kumulos.executorService.submit(new Runnable() {
+        Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
                 InAppMessageService.fetch(context, false);
@@ -204,7 +204,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             notificationBuilder = new Notification.Builder(context);
         }
 
-        OptimobileConfig config = Kumulos.getConfig();
+        OptimobileConfig config = Optimobile.getConfig();
         int icon = config != null ? config.getNotificationSmallIconId() : OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
 
         notificationBuilder
@@ -246,12 +246,12 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         //open tracking intent starts invisible activity on top of stack or in a new task if no launch intent
-        Intent kumulosPushOpenIntent = new Intent(context, PushOpenInvisibleActivity.class);
-        kumulosPushOpenIntent.putExtra(PushMessage.EXTRAS_KEY, pushMessage);
-        kumulosPushOpenIntent.setPackage(context.getPackageName());
+        Intent pushOpenIntent = new Intent(context, PushOpenInvisibleActivity.class);
+        pushOpenIntent.putExtra(PushMessage.EXTRAS_KEY, pushMessage);
+        pushOpenIntent.setPackage(context.getPackageName());
 
         if (launchIntent == null || null != pushMessage.getUrl()) {
-            kumulosPushOpenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            pushOpenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         }
 
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
@@ -260,12 +260,12 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         if (isMIUI(context)) {
-            kumulosPushOpenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            kumulosPushOpenIntent.putExtra(PushOpenInvisibleActivity.MIUI_LAUNCH_INTENT, launchIntent);
-            return PendingIntent.getActivity(context, (int) pushMessage.getTimeSent(), kumulosPushOpenIntent, flags);
+            pushOpenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            pushOpenIntent.putExtra(PushOpenInvisibleActivity.MIUI_LAUNCH_INTENT, launchIntent);
+            return PendingIntent.getActivity(context, (int) pushMessage.getTimeSent(), pushOpenIntent, flags);
         }
 
-        intentList.add(kumulosPushOpenIntent);
+        intentList.add(pushOpenIntent);
 
         Intent[] intents = new Intent[intentList.size()];
         intentList.toArray(intents);
@@ -285,7 +285,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         ComponentName component = launchIntent.getComponent();
         if (null == component) {
-            Kumulos.log(TAG, "Intent to handle push notification open does not specify a component, ignoring. Override PushBroadcastReceiver#getPushOpenActivityIntent to change this behaviour.");
+            Optimobile.log(TAG, "Intent to handle push notification open does not specify a component, ignoring. Override PushBroadcastReceiver#getPushOpenActivityIntent to change this behaviour.");
             return null;
         }
 
@@ -293,7 +293,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         try {
             cls = Class.forName(component.getClassName()).asSubclass(Activity.class);
         } catch (ClassNotFoundException e) {
-            Kumulos.log(TAG, "Activity intent to handle a content push open was provided, but it is not for an Activity, check: " + component.getClassName());
+            Optimobile.log(TAG, "Activity intent to handle a content push open was provided, but it is not for an Activity, check: " + component.getClassName());
         }
 
         // Ensure we're trying to launch an Activity
@@ -476,7 +476,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
                     notificationBuilder.addAction(action);
                 }
             } catch (JSONException e) {
-                Kumulos.log(e.toString());
+                Optimobile.log(e.toString());
             }
 
         }
@@ -505,7 +505,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         private URL getPictureUrl() throws MalformedURLException {
             String pictureUrl = this.pushMessage.getPictureUrl();
             if (pictureUrl == null) {
-                throw new RuntimeException("Kumulos: pictureUrl cannot be null at this point");
+                throw new RuntimeException("Optimobile: pictureUrl cannot be null at this point");
             }
 
             DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
@@ -562,13 +562,13 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Used to add Kumulos extras when using custom notification builder
+     * Used to add Optimobile extras when using custom notification builder
      *
      * @param pushMessage
      * @param launchIntent
      */
     protected static void addDeepLinkExtras(PushMessage pushMessage, Intent launchIntent) {
-        if (!KumulosInApp.isInAppEnabled()) {
+        if (!OptimobileInApp.isInAppEnabled()) {
             return;
         }
 
@@ -593,34 +593,34 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Handles Kumulos push open tracking. Call parent if override.
+     * Handles Optimobile push open tracking. Call parent if override.
      *
      * @param context
      * @param pushMessage
      */
     protected void onPushOpened(Context context, PushMessage pushMessage) {
-        Kumulos.log(TAG, "Push opened");
+        Optimobile.log(TAG, "Push opened");
 
         try {
-            Kumulos.pushTrackOpen(context, pushMessage.getId());
-        } catch (Kumulos.UninitializedException e) {
-            Kumulos.log(TAG, "Failed to track the push opening -- Kumulos is not initialised.");
+            Optimobile.pushTrackOpen(context, pushMessage.getId());
+        } catch (Optimobile.UninitializedException e) {
+            Optimobile.log(TAG, "Failed to track the push opening -- Optimobile is not initialised.");
         }
     }
 
     /**
-     * Handles Kumulos push dismissed tracking. Call parent if override.
+     * Handles Optimobile push dismissed tracking. Call parent if override.
      *
      * @param context
      * @param pushMessage
      */
     protected void onPushDismissed(Context context, PushMessage pushMessage) {
-        Kumulos.log(TAG, "Push dismissed");
+        Optimobile.log(TAG, "Push dismissed");
 
         try {
-            Kumulos.pushTrackDismissed(context, pushMessage.getId());
-        } catch (Kumulos.UninitializedException e) {
-            Kumulos.log(TAG, "Failed to track the push dismissal -- Kumulos is not initialised.");
+            Optimobile.pushTrackDismissed(context, pushMessage.getId());
+        } catch (Optimobile.UninitializedException e) {
+            Optimobile.log(TAG, "Failed to track the push dismissal -- Optimobile is not initialised.");
         }
     }
 
@@ -632,13 +632,13 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
      */
     private void handleButtonClick(Context context, PushMessage pushMessage, String buttonIdentifier) {
         try {
-            Kumulos.pushTrackOpen(context, pushMessage.getId());
-        } catch (Kumulos.UninitializedException e) {
-            Kumulos.log(TAG, "Failed to track the push opening won button click -- Kumulos is not initialised.");
+            Optimobile.pushTrackOpen(context, pushMessage.getId());
+        } catch (Optimobile.UninitializedException e) {
+            Optimobile.log(TAG, "Failed to track the push opening won button click -- Optimobile is not initialised.");
         }
 
-        if (Kumulos.pushActionHandler != null) {
-            Kumulos.pushActionHandler.handle(context, pushMessage, buttonIdentifier);
+        if (Optimobile.pushActionHandler != null) {
+            Optimobile.pushActionHandler.handle(context, pushMessage, buttonIdentifier);
         }
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

@@ -9,7 +9,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class KumulosInitProvider extends ContentProvider {
+public class OptimobileInitProvider extends ContentProvider {
     private static final AppStateWatcher appStateWatcher = new AppStateWatcher();
 
     @NonNull

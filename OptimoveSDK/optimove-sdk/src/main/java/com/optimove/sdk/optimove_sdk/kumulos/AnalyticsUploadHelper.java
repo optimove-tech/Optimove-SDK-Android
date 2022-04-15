@@ -65,11 +65,11 @@ class AnalyticsUploadHelper {
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), dataStr);
 
         final OkHttpClient httpClient = new OkHttpClient();
-        final String url = Kumulos.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Installation.id(context) + "/events");
+        final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Installation.id(context) + "/events");
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader(Kumulos.KEY_AUTH_HEADER, Kumulos.authHeader)
+                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
                 .post(body)
                 .build();
 
@@ -89,7 +89,7 @@ class AnalyticsUploadHelper {
         // Clean up batch from DB
         if (result) {
             Runnable trimTask = new AnalyticsContract.TrimEventsRunnable(context, maxEventId);
-            Kumulos.executorService.submit(trimTask);
+            Optimobile.executorService.submit(trimTask);
         }
 
         return result;

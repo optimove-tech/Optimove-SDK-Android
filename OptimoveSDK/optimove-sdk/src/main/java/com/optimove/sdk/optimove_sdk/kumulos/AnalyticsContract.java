@@ -98,7 +98,7 @@ final class AnalyticsContract {
             values.put(AnalyticsEvent.COL_EVENT_TYPE, this.eventType);
             values.put(AnalyticsEvent.COL_UUID, uuidStr);
             values.put(AnalyticsEvent.COL_HAPPENED_AT_MILLIS, this.happenedAt);
-            values.put(AnalyticsEvent.COL_USER_IDENTIFIER, Kumulos.getCurrentUserIdentifier(mContext));
+            values.put(AnalyticsEvent.COL_USER_IDENTIFIER, Optimobile.getCurrentUserIdentifier(mContext));
 
             String propsStr = (null == this.properties) ? null : properties.toString();
             values.put(AnalyticsEvent.COL_PROPERTIES, propsStr);
@@ -106,7 +106,7 @@ final class AnalyticsContract {
             try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(mContext)) {
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 db.insertOrThrow(AnalyticsEvent.TABLE_NAME, null, values);
-                Kumulos.log(TAG, "Tracked event " + eventType + " with UUID " + uuidStr);
+                Optimobile.log(TAG, "Tracked event " + eventType + " with UUID " + uuidStr);
             } catch (SQLiteException e) {
                 e.printStackTrace();
                 return;
@@ -169,9 +169,9 @@ final class AnalyticsContract {
                         AnalyticsEvent.COL_ID + " <= ?",
                         new String[]{String.valueOf(mUpToEventId)});
 
-                Kumulos.log(TAG, "Trimmed events up to " + mUpToEventId + " (inclusive)");
+                Optimobile.log(TAG, "Trimmed events up to " + mUpToEventId + " (inclusive)");
             } catch (SQLiteException e) {
-                Kumulos.log(TAG, "Failed to trim events up to " + mUpToEventId + " (inclusive)");
+                Optimobile.log(TAG, "Failed to trim events up to " + mUpToEventId + " (inclusive)");
                 e.printStackTrace();
             }
         }
@@ -205,7 +205,7 @@ final class AnalyticsContract {
                 return;
             }
 
-            OptimobileConfig config = Kumulos.getConfig();
+            OptimobileConfig config = Optimobile.getConfig();
             final JSONObject finalObj;
             try {
                 JSONObject app = new JSONObject()
@@ -247,7 +247,7 @@ final class AnalyticsContract {
                 return;
             }
 
-            Kumulos.trackEvent(mContext, AnalyticsContract.EVENT_TYPE_CALL_HOME, finalObj);
+            Optimobile.trackEvent(mContext, AnalyticsContract.EVENT_TYPE_CALL_HOME, finalObj);
         }
 
         // https://stackoverflow.com/a/33970189

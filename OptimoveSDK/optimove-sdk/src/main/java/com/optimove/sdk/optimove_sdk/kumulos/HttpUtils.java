@@ -17,7 +17,7 @@ class HttpUtils {
     static Request.Builder authedJsonRequest(String url) {
         return new Request.Builder()
                 .url(url)
-                .addHeader(Kumulos.KEY_AUTH_HEADER, Kumulos.authHeader)
+                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
                 .addHeader("Accept", "application/json");
     }
 }

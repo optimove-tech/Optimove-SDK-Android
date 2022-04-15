@@ -30,7 +30,7 @@ public class InAppSyncWorker extends Worker {
                 .setInitialDelay(1, TimeUnit.HOURS)
                 .build();
 
-        Kumulos.executorService.submit(new Runnable() {
+        Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
                 WorkManager.getInstance(context).enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.REPLACE, workRequest);
@@ -39,7 +39,7 @@ public class InAppSyncWorker extends Worker {
     }
 
     static void cancelPeriodicFetches(Application application) {
-        Kumulos.executorService.submit(new Runnable() {
+        Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
                 WorkManager.getInstance(application).cancelUniqueWork(TAG);
