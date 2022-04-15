@@ -62,11 +62,7 @@ public final class Optimobile {
         }
     }
 
-    public static abstract class Callback extends BaseCallback {
-        public abstract void onSuccess();
-    }
-
-    public static abstract class ResultCallback<S> extends BaseCallback {
+    static abstract class ResultCallback<S> extends BaseCallback {
         public abstract void onSuccess(S result);
     }
 
@@ -141,7 +137,7 @@ public final class Optimobile {
      *
      * @return
      */
-    public static OptimobileConfig getConfig() {
+    static OptimobileConfig getConfig() {
         return currentConfig;
     }
 
