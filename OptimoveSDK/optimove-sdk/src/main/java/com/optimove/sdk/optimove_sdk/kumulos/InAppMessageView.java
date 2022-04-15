@@ -252,7 +252,7 @@ class InAppMessageView extends WebViewClient {
             }
 
             LayoutInflater inflater = (LayoutInflater) currentActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            dialog.setContentView(inflater.inflate(R.layout.kumulos_dialog_view, null), paramsWebView);
+            dialog.setContentView(inflater.inflate(R.layout.optimobile_dialog_view, null), paramsWebView);
             dialog.setOnKeyListener((dialog, keyCode, event) -> {
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() != KeyEvent.ACTION_DOWN) {
                     closeCurrentMessage();
@@ -260,8 +260,8 @@ class InAppMessageView extends WebViewClient {
                 return true;
             });
 
-            wv = dialog.findViewById(R.id.kumulos_webview);
-            spinner = dialog.findViewById(R.id.kumulos_progressBar);
+            wv = dialog.findViewById(R.id.optimobile_webview);
+            spinner = dialog.findViewById(R.id.optimobile_progressBar);
 
             if (null == wv || null == spinner) {
                 dispose();

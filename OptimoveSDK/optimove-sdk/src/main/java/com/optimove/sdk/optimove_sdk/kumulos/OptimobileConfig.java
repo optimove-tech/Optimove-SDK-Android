@@ -25,7 +25,7 @@ import org.json.JSONException;
 public final class OptimobileConfig {
 
     @DrawableRes
-    static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.kumulos_ic_stat_notifications;
+    static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.optimobile_ic_stat_notifications;
     static final int DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS = 23;
 
     private @Nullable
