@@ -1,6 +1,7 @@
 package com.optimove.sdk.optimove_sdk.kumulos;
 
 import android.text.TextUtils;
+import android.util.Base64;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -12,7 +13,11 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * Represents the configuration for the Kumulos client
@@ -23,11 +28,15 @@ public final class OptimobileConfig {
     static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.kumulos_ic_stat_notifications;
     static final int DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS = 23;
 
-    private String apiKey;
-    private String secretKey;
+    private @Nullable
+    String apiKey;
+    private @Nullable
+    String secretKey;
 
-    private String optimoveToken;
-    private String optimoveConfigFile;
+    private @Nullable
+    String optimoveToken;
+    private @Nullable
+    String optimoveConfigFile;
 
     @DrawableRes
     private int notificationSmallIconId;
@@ -41,27 +50,28 @@ public final class OptimobileConfig {
     private URL deepLinkCname;
     private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
-    public enum InAppConsentStrategy{
+    public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
     }
 
     // Private constructor to discourage not using the Builder.
-    private OptimobileConfig() {}
+    private OptimobileConfig() {
+    }
 
-    private void setApiKey(String apiKey) {
+    private void setApiKey(@Nullable String apiKey) {
         this.apiKey = apiKey;
     }
 
-    private void setSecretKey(String secretKey) {
+    private void setSecretKey(@Nullable String secretKey) {
         this.secretKey = secretKey;
     }
 
-    private void setOptimoveToken(String optimoveToken) {
+    private void setOptimoveToken(@Nullable String optimoveToken) {
         this.optimoveToken = optimoveToken;
     }
 
-    private void setOptimoveConfigFile(String optimoveConfigFile) {
+    private void setOptimoveConfigFile(@Nullable String optimoveConfigFile) {
         this.optimoveConfigFile = optimoveConfigFile;
     }
 
@@ -92,15 +102,18 @@ public final class OptimobileConfig {
     private void setCname(@Nullable URL deepLinkCname) {
         this.deepLinkCname = deepLinkCname;
     }
+
     private void setDeferredDeepLinkHandler(DeferredDeepLinkHandlerInterface deferredHandler) {
         this.deferredDeepLinkHandler = deferredHandler;
     }
 
-    public String getApiKey() {
+    @Nullable
+    String getApiKey() {
         return apiKey;
     }
 
-    public String getSecretKey() {
+    @Nullable
+    String getSecretKey() {
         return secretKey;
     }
 
@@ -112,7 +125,8 @@ public final class OptimobileConfig {
         return optimoveConfigFile;
     }
 
-    public @DrawableRes int getNotificationSmallIconId() {
+    public @DrawableRes
+    int getNotificationSmallIconId() {
         return notificationSmallIconId;
     }
 
@@ -136,7 +150,8 @@ public final class OptimobileConfig {
         return inAppConsentStrategy;
     }
 
-    public @Nullable URL getDeepLinkCname() {
+    public @Nullable
+    URL getDeepLinkCname() {
         return this.deepLinkCname;
     }
 
@@ -144,14 +159,26 @@ public final class OptimobileConfig {
         return this.deferredDeepLinkHandler;
     }
 
+    public boolean isOptimoveConfigured(){
+        return this.optimoveToken != null && this.optimoveConfigFile != null ;
+    }
+
+    public boolean isOptimobileConfigured(){
+        return this.apiKey != null && this.secretKey != null;
+    }
+
     /**
      * Config builder for the Kumulos client
      */
     public static class Builder {
-        private final String apiKey;
-        private final String secretKey;
-        private final String optimoveToken;
-        private final String optimoveConfigFile;
+        private @Nullable
+        String apiKey = null;
+        private @Nullable
+        String secretKey = null;
+        private @Nullable
+        String optimoveToken = null;
+        private @Nullable
+        String optimoveConfigFile = null;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -162,16 +189,57 @@ public final class OptimobileConfig {
         private JSONObject sdkInfo;
         private Map<UrlBuilder.Service, String> baseUrlMap;
 
-        private @Nullable URL deepLinkCname;
+        private @Nullable
+        URL deepLinkCname;
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
-        public Builder(@NonNull String apiKey, @NonNull String secretKey, @NonNull String optimoveToken,
-                       @NonNull String optimoveConfigFile) {
-            this.apiKey = apiKey;
-            this.secretKey = secretKey;
-            this.optimoveToken = optimoveToken;
-            this.optimoveConfigFile = optimoveConfigFile;
+        public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
+            if (optimoveCredentials == null && optimobileCredentials == null) {
+                throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
+            }
+
+            this.setOptimoveCredentials(optimoveCredentials);
+            this.setOptimobileCredentials(optimobileCredentials);
+
             this.baseUrlMap = UrlBuilder.defaultMapping();
+        }
+
+        private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
+            if (optimoveCredentials == null) {
+                return;
+            }
+
+            try {
+                JSONArray result = this.parseCredentials(optimoveCredentials);
+
+                this.optimoveToken = result.getString(1);
+                this.optimoveConfigFile = result.getString(2);
+            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+                throw new IllegalArgumentException("Optimove credentials are not correct");
+            }
+        }
+
+        private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
+            if (optimobileCredentials == null) {
+                return;
+            }
+
+            try {
+                JSONArray result = this.parseCredentials(optimobileCredentials);
+
+                String region = result.getString(1);
+                this.apiKey = result.getString(2);
+                this.secretKey = result.getString(3);
+            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+                throw new IllegalArgumentException("Optimobile credentials are not correct");
+            }
+
+        }
+
+        private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {
+            byte[] data = Base64.decode(credentials, Base64.DEFAULT);
+
+            return new JSONArray(new String(data, StandardCharsets.UTF_8));
         }
 
         /**
@@ -192,10 +260,9 @@ public final class OptimobileConfig {
 
         public Builder enableDeepLinking(@NonNull String cname, DeferredDeepLinkHandlerInterface handler) {
             this.deferredDeepLinkHandler = handler;
-            try{
+            try {
                 this.deepLinkCname = new URL(cname);
-            }
-            catch(MalformedURLException e){
+            } catch (MalformedURLException e) {
                 e.printStackTrace();
                 this.deepLinkCname = null;
             }
@@ -212,11 +279,11 @@ public final class OptimobileConfig {
         /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
-         *
+         * <p>
          * The idle period starts when a pause lifecycle event is observed, and is reset when any resume
          * event is seen. If no resume event is observed and the idle period elapses, the app is considered
          * to be in the background and the session ends.
-         *
+         * <p>
          * This defaults to KumulosConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS if unspecified.
          *
          * @param idleTimeSeconds
@@ -227,21 +294,27 @@ public final class OptimobileConfig {
             return this;
         }
 
-        /** Private API */
+        /**
+         * Private API
+         */
         @InternalSdkEmbeddingApi(purpose = "Allow override of stats data in x-plat SDKs")
         public Builder setRuntimeInfo(JSONObject info) {
             this.runtimeInfo = info;
             return this;
         }
 
-        /** Private API */
+        /**
+         * Private API
+         */
         @InternalSdkEmbeddingApi(purpose = "Allow override of stats data in x-plat SDKs")
         public Builder setSdkInfo(JSONObject info) {
             this.sdkInfo = info;
             return this;
         }
 
-        /** Private API */
+        /**
+         * Private API
+         */
         @InternalSdkEmbeddingApi(purpose = "Allow sending traffic to different domains")
         public Builder setBaseUrlMapping(Map<UrlBuilder.Service, String> baseUrlMap) {
             this.baseUrlMap = baseUrlMap;
@@ -249,14 +322,10 @@ public final class OptimobileConfig {
         }
 
         public OptimobileConfig build() {
-            if (TextUtils.isEmpty(apiKey) || TextUtils.isEmpty(secretKey)) {
-                throw new IllegalStateException("You need to provide apiKey and secretKey before you can build KumulosConfig.");
-            }
-
             OptimobileConfig newConfig = new OptimobileConfig();
             newConfig.setApiKey(apiKey);
             newConfig.setSecretKey(secretKey);
-            newConfig.setOptimoveConfigFile(optimoveConfigFile);
+            newConfig.setOptimoveToken(optimoveToken);
             newConfig.setOptimoveConfigFile(optimoveConfigFile);
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);

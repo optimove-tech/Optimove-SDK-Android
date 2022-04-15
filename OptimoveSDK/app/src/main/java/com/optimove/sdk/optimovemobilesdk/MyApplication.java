@@ -29,8 +29,15 @@ public class MyApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    Optimove.initialize(this, new OptimobileConfig.Builder("internal-token", "dev", "dfg", "fhggfgh").build());
+
+    Optimove.initialize(this, new OptimobileConfig.Builder(
+            null,
+            "WzEsImV1LWNlbnRyYWwtMSIsIjNiNTRhMWZmLTg5YTItNDRlZS05MzRlLWNlMzI1ZWFkM2YxNiIsInNrT0cvTWZWdU91ZkRiWlViRStNVHc5a2YxbThzZXNxZ0FkbCJd")
+            .enableInAppMessaging(OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL)
+            .build());
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();
+
+    Optimove.pushRegister(this);
   }
 }

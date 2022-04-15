@@ -111,28 +111,33 @@ final public class Optimove {
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
      * @param application    The instance of the current {@code Application} object.
-     * @param optimobileConfig The {@link OptimobileConfig} as provided by <i>Optimove</i>
+     * @param config The {@link OptimobileConfig} as provided by <i>Optimove</i>
      */
-    public static void initialize(@NonNull Application application, OptimobileConfig optimobileConfig) {
-        OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
-        Kumulos.initialize(application, optimobileConfig);
+    public static void initialize(@NonNull Application application, OptimobileConfig config) {
+        if (config.isOptimobileConfigured()){
+            Kumulos.initialize(application, config);
+        }
 
-        Runnable initCommand = () -> {
-            boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
-                    new TenantInfo(optimobileConfig.getOptimoveToken(), optimobileConfig.getOptimoveConfigFile()));
-            if (initializedSuccessfully) {
-                OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
-                shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
-                shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
-                application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
-                shared.fetchConfigs();
+        if (config.isOptimoveConfigured()){
+            OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
+
+            Runnable initCommand = () -> {
+                boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
+                        new TenantInfo(config.getOptimoveToken(), config.getOptimoveConfigFile()));
+                if (initializedSuccessfully) {
+                    OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
+                    shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
+                    shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
+                    application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+                    shared.fetchConfigs();
+                }
+            };
+            if (!OptiUtils.isRunningOnMainThread()) {
+                OptiLoggerStreamsContainer.debug("Optimove.configure() was called from a worker thread, moving call to main thread");
+                OptiUtils.runOnMainThread(initCommand);
+            } else {
+                initCommand.run();
             }
-        };
-        if (!OptiUtils.isRunningOnMainThread()) {
-            OptiLoggerStreamsContainer.debug("Optimove.configure() was called from a worker thread, moving call to main thread");
-            OptiUtils.runOnMainThread(initCommand);
-        } else {
-            initCommand.run();
         }
     }
 
