@@ -139,9 +139,6 @@ public class ConfigsFetcher {
 
     private boolean verifyConfigValidity(Configs configs) {
         return configs.getTenantId() != 0
-                && configs.getOptipushRegistrationServiceEndpoint() != null
-                && !configs.getOptipushRegistrationServiceEndpoint()
-                .isEmpty()
                 && configs.getLogsConfigs() != null
                 && configs.getEventsConfigs() != null
                 && configs.getOptitrackConfigs() != null

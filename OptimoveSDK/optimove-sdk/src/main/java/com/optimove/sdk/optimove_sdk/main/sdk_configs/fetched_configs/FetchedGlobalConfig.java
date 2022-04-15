@@ -11,8 +11,6 @@ public class FetchedGlobalConfig {
     public FetchedGeneralConfigs fetchedGeneralConfigs;
     @SerializedName("optitrack")
     public FetchedOptitrackConfigs fetchedOptitrackConfigs;
-    @SerializedName("optipush")
-    public FetchedOptipushConfigs fetchedOptipushConfigs;
     @SerializedName("core_events")
     public Map<String , EventConfigs> coreEventsConfigs;
 
@@ -20,12 +18,6 @@ public class FetchedGlobalConfig {
     public class FetchedGeneralConfigs {
         @SerializedName("logs_service_endpoint")
         public String logsServiceEndpoint;
-
-    }
-    public class FetchedOptipushConfigs {
-
-        @SerializedName("mbaas_endpoint")
-        public String mbaasEndpoint;
     }
 
     public class FetchedOptitrackConfigs {

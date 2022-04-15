@@ -202,35 +202,6 @@ public class ConfigsFetcherTests {
         verify(writer, timeout(1000)).now();
     }
 
-    @Test(timeout = 1000)
-    public void shouldFailConfigIfRemoteGlobalConfigMissesMBaaSEndpoint() {
-        FetchedTenantConfigs fetchedTenantConfigs = gson.fromJson(ConfigProvider.getTenantConfigJsonString(),
-                FetchedTenantConfigs.class);
-        FetchedGlobalConfig fetchedGlobalConfig = gson.fromJson(ConfigProvider.getGlobalConfigJsonString(),
-                FetchedGlobalConfig.class);
-        fetchedGlobalConfig.fetchedOptipushConfigs.mbaasEndpoint = null;
-        applyCustomConfigFetch(fetchedTenantConfigs, fetchedGlobalConfig);
-
-        regularConfigFetcher.fetchConfigs(configs -> fail(), Assert::assertNotNull);
-    }
-
-    @Test
-    public void shouldFailConfigIfLocalFileMissesMBaaSEndpoint() {
-        int randomTenantId = 56757;
-        Gson gson = new Gson();
-        ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
-        applyParseErrorOnGlobalBuilder();
-
-        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs();
-        storedInFileConfig.setOptipushConfigs(null);
-        storedInFileConfig.setTenantId(randomTenantId);
-        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
-
-        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
-        verify(configsErrorListener, timeout(1000)).error(anyString());
-    }
-
     @Test
     public void shouldFailConfigIfLocalFileMissesOptitrackConfigs() {
         int randomTenantId = 56757;

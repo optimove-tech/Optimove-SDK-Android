@@ -15,7 +15,6 @@ public class Configs {
     private LogsConfigs logsConfigs;
     private RealtimeConfigs realtimeConfigs;
     private OptitrackConfigs optitrackConfigs;
-    private String optipushRegistrationServiceEndpoint;
     private Map<String, EventConfigs> eventsConfigs;
 
     public Configs(int tenantId, boolean enableRealtime,
@@ -24,7 +23,6 @@ public class Configs {
                    @NonNull LogsConfigs logsConfigs,
                    @NonNull RealtimeConfigs realtimeConfigs,
                    @NonNull OptitrackConfigs optitrackConfigs,
-                   @NonNull String optipushRegistrationServiceEndpoint,
                    @NonNull Map<String, EventConfigs> eventsConfigs) {
         this.tenantId = tenantId;
         this.enableRealtime = enableRealtime;
@@ -33,7 +31,6 @@ public class Configs {
         this.logsConfigs = logsConfigs;
         this.realtimeConfigs = realtimeConfigs;
         this.optitrackConfigs = optitrackConfigs;
-        this.optipushRegistrationServiceEndpoint = optipushRegistrationServiceEndpoint;
         this.eventsConfigs = eventsConfigs;
     }
 
@@ -59,14 +56,6 @@ public class Configs {
 
     public void setOptitrackConfigs(@NonNull OptitrackConfigs optitrackConfigs) {
         this.optitrackConfigs = optitrackConfigs;
-    }
-
-    public String getOptipushRegistrationServiceEndpoint() {
-        return optipushRegistrationServiceEndpoint;
-    }
-
-    public void setOptipushConfigs(@NonNull String optipushRegistrationServiceEndpoint) {
-        this.optipushRegistrationServiceEndpoint = optipushRegistrationServiceEndpoint;
     }
 
     public Map<String, EventConfigs> getEventsConfigs() {
