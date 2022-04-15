@@ -145,44 +145,6 @@ public final class Optimobile {
         return currentConfig;
     }
 
-    //==============================================================================================
-    //-- Analytics APIs
-
-    /** package */ static void trackEvent(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties, final long timestamp, boolean immediateFlush) {
-        if (TextUtils.isEmpty(eventType)) {
-            throw new IllegalArgumentException("Optimobile.trackEvent expects a non-empty event type");
-        }
-
-        Runnable trackingTask = new AnalyticsContract.TrackEventRunnable(context, eventType, timestamp, properties, immediateFlush);
-        executorService.submit(trackingTask);
-    }
-
-    /**
-     * Tracks a custom analytics event with Optimobile.
-     *
-     * Events are persisted locally and synced to the server in the background in batches.
-     *
-     * @param context
-     * @param eventType Identifier for the event category
-     * @param properties Additional information about the event
-     */
-    public static void trackEvent(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties) {
-        trackEvent(context, eventType, properties, System.currentTimeMillis(), false);
-    }
-
-    /**
-     * Tracks a custom analytics event with Optimobile.
-     *
-     * After being recorded locally, all stored events will be flushed to the server.
-     *
-     * @param context
-     * @param eventType Identifier for the event category
-     * @param properties Additional information about the event
-     */
-    public static void trackEventImmediately(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties) {
-        trackEvent(context, eventType, properties, System.currentTimeMillis(), true);
-    }
-
     /**
      * Associates a user identifier with the current Optimobile installation record.
      * @param context
@@ -469,5 +431,22 @@ public final class Optimobile {
 
     /** package */ static boolean isInitialized() {
         return initialized;
+    }
+
+    static void trackEvent(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties, final long timestamp, boolean immediateFlush) {
+        if (TextUtils.isEmpty(eventType)) {
+            throw new IllegalArgumentException("Optimobile.trackEvent expects a non-empty event type");
+        }
+
+        Runnable trackingTask = new AnalyticsContract.TrackEventRunnable(context, eventType, timestamp, properties, immediateFlush);
+        executorService.submit(trackingTask);
+    }
+
+    static void trackEvent(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties) {
+        trackEvent(context, eventType, properties, System.currentTimeMillis(), false);
+    }
+
+    static void trackEventImmediately(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties) {
+        trackEvent(context, eventType, properties, System.currentTimeMillis(), true);
     }
 }
