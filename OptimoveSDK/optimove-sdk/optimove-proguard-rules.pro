@@ -21,8 +21,8 @@
 -dontwarn android.support.v7.widget.
 -keep class android.support.v4.widget.Space { *; }
 -dontwarn android.support.v4.widget.Space
--keep class com.kumulos.** { *; }
--dontwarn com.kumulos.**
+-keep class com.optimove.sdk.optimove_sdk.optimobile.** { *; }
+-dontwarn com.optimove.sdk.optimove_sdk.optimobile.**
 -keep class okhttp3.** { *;}
 -dontwarn okhttp3.**
 -keep class oikio.** { *;}

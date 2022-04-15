@@ -33,10 +33,10 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStre
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
 import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
-import com.optimove.sdk.optimove_sdk.kumulos.Optimobile;
-import com.optimove.sdk.optimove_sdk.kumulos.OptimobileConfig;
-import com.optimove.sdk.optimove_sdk.kumulos.PushActionHandlerInterface;
-import com.optimove.sdk.optimove_sdk.kumulos.PushTokenType;
+import com.optimove.sdk.optimove_sdk.optimobile.Optimobile;
+import com.optimove.sdk.optimove_sdk.optimobile.OptimobileConfig;
+import com.optimove.sdk.optimove_sdk.optimobile.PushActionHandlerInterface;
+import com.optimove.sdk.optimove_sdk.optimobile.PushTokenType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -443,7 +443,7 @@ final public class Optimove {
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
      * @see Optimobile#associateUserWithInstall(Context, String)
-     * @see com.optimove.sdk.optimove_sdk.kumulos.Installation#id(Context)
+     * @see com.optimove.sdk.optimove_sdk.optimobile.Installation#id(Context)
      *
      * @param context
      * @return The current user identifier (if available), otherwise the Optimobile installation ID
