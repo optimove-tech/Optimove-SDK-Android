@@ -88,8 +88,7 @@ final public class Optimove {
                 .context(context)
                 .build());
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                context.getPackageName(),
-                context.getSharedPreferences(OPTITRACK_SP_NAME, Context.MODE_PRIVATE), deviceInfoProvider);
+                context.getPackageName());
         this.configSet = new AtomicBoolean(false);
     }
 

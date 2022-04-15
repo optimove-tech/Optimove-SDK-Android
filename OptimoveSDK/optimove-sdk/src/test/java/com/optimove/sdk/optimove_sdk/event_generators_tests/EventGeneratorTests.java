@@ -22,18 +22,14 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
-import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_OPT_REPORTED_KEY;
-import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.LAST_REPORTED_OPT_IN;
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class EventGeneratorTests {
@@ -71,7 +67,6 @@ public class EventGeneratorTests {
 
         //shared prefs
         when(optitrackPreferences.edit()).thenReturn(editor);
-        when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(-1);
         when(editor.putLong(anyString(), anyLong())).thenReturn(editor);
         when(editor.putString(anyString(), any())).thenReturn(editor);
         when(editor.putInt(anyString(), anyInt())).thenReturn(editor);
@@ -113,13 +108,5 @@ public class EventGeneratorTests {
         eventGenerator.generateStartEvents();
         verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
                 .getName(), SdkMetadataEvent.EVENT_NAME)));
-    }
-
-    @Test
-    public void neitherOptInNorOptOutShouldBeSentWhenWasOptinAndCurrentlyOptIn() {
-        when(optitrackPreferences.getInt(eq(LAST_OPT_REPORTED_KEY), anyInt())).thenReturn(LAST_REPORTED_OPT_IN);
-        when(deviceInfoProvider.notificaionsAreEnabled()).thenReturn(true);
-        eventGenerator.generateStartEvents();
-        verifyZeroInteractions(editor);
     }
 }
