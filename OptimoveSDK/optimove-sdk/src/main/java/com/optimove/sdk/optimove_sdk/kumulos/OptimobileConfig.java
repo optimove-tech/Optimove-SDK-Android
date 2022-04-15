@@ -45,7 +45,7 @@ public final class OptimobileConfig {
 
     private JSONObject runtimeInfo;
     private JSONObject sdkInfo;
-    private Map<UrlBuilder.Service, String> baseUrlMap;
+    private @Nullable Map<UrlBuilder.Service, String> baseUrlMap;
 
     private URL deepLinkCname;
     private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
@@ -91,7 +91,7 @@ public final class OptimobileConfig {
         this.sdkInfo = info;
     }
 
-    private void setBaseUrlMap(Map<UrlBuilder.Service, String> baseUrlMap) {
+    private void setBaseUrlMap(@Nullable Map<UrlBuilder.Service, String> baseUrlMap) {
         this.baseUrlMap = baseUrlMap;
     }
 
@@ -142,7 +142,7 @@ public final class OptimobileConfig {
         return this.sdkInfo;
     }
 
-    Map<UrlBuilder.Service, String> getBaseUrlMap() {
+    @Nullable Map<UrlBuilder.Service, String> getBaseUrlMap() {
         return baseUrlMap;
     }
 
@@ -172,13 +172,13 @@ public final class OptimobileConfig {
      */
     public static class Builder {
         private @Nullable
-        String apiKey = null;
+        String apiKey;
         private @Nullable
-        String secretKey = null;
+        String secretKey;
         private @Nullable
-        String optimoveToken = null;
+        String optimoveToken;
         private @Nullable
-        String optimoveConfigFile = null;
+        String optimoveConfigFile;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -187,7 +187,7 @@ public final class OptimobileConfig {
 
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
-        private Map<UrlBuilder.Service, String> baseUrlMap;
+        private @Nullable Map<UrlBuilder.Service, String> baseUrlMap;
 
         private @Nullable
         URL deepLinkCname;
@@ -200,8 +200,6 @@ public final class OptimobileConfig {
 
             this.setOptimoveCredentials(optimoveCredentials);
             this.setOptimobileCredentials(optimobileCredentials);
-
-            this.baseUrlMap = UrlBuilder.defaultMapping();
         }
 
         private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
@@ -230,10 +228,12 @@ public final class OptimobileConfig {
                 String region = result.getString(1);
                 this.apiKey = result.getString(2);
                 this.secretKey = result.getString(3);
+
+                this.baseUrlMap = UrlBuilder.defaultMapping(region);
+
             } catch (NullPointerException | JSONException | IllegalArgumentException e) {
                 throw new IllegalArgumentException("Optimobile credentials are not correct");
             }
-
         }
 
         private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {

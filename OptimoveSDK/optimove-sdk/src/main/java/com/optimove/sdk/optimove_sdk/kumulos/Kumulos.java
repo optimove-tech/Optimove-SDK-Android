@@ -83,6 +83,10 @@ public final class Kumulos {
      * @param config
      */
     public static synchronized void initialize(final Application application, OptimobileConfig config) {
+        if (!config.isOptimobileConfigured()){
+            throw new UninitializedException();
+        }
+
         if (initialized) {
             log("Kumulos is already initialized, aborting...");
             return;
