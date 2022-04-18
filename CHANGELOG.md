@@ -4,7 +4,7 @@
 
 Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-4.x-to-5.x)
 
-- Deprecated OptiPush and implemented OptiMobile integration
+- Deprecated OptiPush and implemented new messaging platform
 - Added In-App Messaging, Message Inbox and Deferred Deep Linking features
 
 ## 4.2.0
