@@ -19,11 +19,11 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 6. [Tracking custom events](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Tracking-custom-events)
 
 ### Mobile Messaging
-1. [Push Setup](wiki/push-setup)
-2. [In-App Setup](wiki/in-app-setup)
-3. [Deeplinks](wiki/deeplinks)
-4. [Deferred Deeplinks](wiki/deferred-deeplinks)
-5. [Testing](wiki/push-testing)
+1. [Push Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-setup)
+2. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app-setup)
+3. [Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deeplinks)
+4. [Deferred Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deferred-deeplinks)
+5. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-testing)
 
 ### Migrations
 1. [Migration from 4.x to 5.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-4.x-to-5.x)
