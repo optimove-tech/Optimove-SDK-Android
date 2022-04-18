@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.optimove.sdk.optimove_sdk.R;
+import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 
 import org.json.JSONObject;
 
@@ -48,6 +49,8 @@ public final class OptimobileConfig {
 
     private URL deepLinkCname;
     private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
+
+    private @Nullable LogLevel minLogLevel;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -104,6 +107,10 @@ public final class OptimobileConfig {
 
     private void setDeferredDeepLinkHandler(DeferredDeepLinkHandlerInterface deferredHandler) {
         this.deferredDeepLinkHandler = deferredHandler;
+    }
+
+    private void setMinLogLevel(@Nullable LogLevel minLogLevel){
+        this.minLogLevel = minLogLevel;
     }
 
     @Nullable
@@ -166,6 +173,10 @@ public final class OptimobileConfig {
         return this.apiKey != null && this.secretKey != null;
     }
 
+    public @Nullable LogLevel getCustomMinLogLevel(){
+        return this.minLogLevel;
+    }
+
     /**
      * Config builder for the Optimobile client
      */
@@ -191,6 +202,8 @@ public final class OptimobileConfig {
         private @Nullable
         URL deepLinkCname;
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
+
+        private @Nullable LogLevel minLogLevel;
 
         public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
             if (optimoveCredentials == null && optimobileCredentials == null) {
@@ -294,6 +307,14 @@ public final class OptimobileConfig {
         }
 
         /**
+         * @param minLogLevel Logcat minimum log level to show.
+         */
+        public Builder setMinLogLevel(LogLevel minLogLevel){
+            this.minLogLevel = minLogLevel;
+            return this;
+        }
+
+        /**
          * Private API
          */
         @InternalSdkEmbeddingApi(purpose = "Allow override of stats data in x-plat SDKs")
@@ -336,6 +357,8 @@ public final class OptimobileConfig {
 
             newConfig.setCname(this.deepLinkCname);
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
+
+            newConfig.setMinLogLevel(this.minLogLevel);
 
             return newConfig;
         }

@@ -118,6 +118,10 @@ final public class Optimove {
         }
 
         if (config.isOptimoveConfigured()){
+            if (config.getCustomMinLogLevel() != null){
+                OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
+            }
+
             OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
 
             Runnable initCommand = () -> {
@@ -138,19 +142,6 @@ final public class Optimove {
                 initCommand.run();
             }
         }
-    }
-
-    /**
-     * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
-     * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
-     *
-     * @param application           The instance of the current {@code Application} object.
-     * @param optimobileConfig        The {@link OptimobileConfig} as provided by <i>Optimove</i>.
-     * @param logcatMinLogLevel Logcat minimum log level to show.
-     */
-    public static void initialize(Application application, OptimobileConfig optimobileConfig, LogLevel logcatMinLogLevel) {
-        OptiLoggerStreamsContainer.setMinLogLevelToShow(logcatMinLogLevel);
-        initialize(application, optimobileConfig);
     }
 
     /**
