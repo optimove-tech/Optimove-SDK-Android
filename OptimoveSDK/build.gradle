@@ -17,8 +17,7 @@ allprojects {
         mavenCentral()
         google()
         maven {
-            url 'http://developer.huawei.com/repo/'
-            allowInsecureProtocol = true
+            url 'https://developer.huawei.com/repo/'
         }
     }
 }
