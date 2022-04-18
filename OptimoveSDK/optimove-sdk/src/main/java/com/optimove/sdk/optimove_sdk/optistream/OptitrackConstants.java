@@ -17,10 +17,6 @@ public interface OptitrackConstants {
    * Event's Parameters
    * *********************************/
 
-  String PARAMETER_STRING_TYPE = "String";
-  String PARAMETER_NUMBER_TYPE = "Number";
-  String PARAMETER_BOOLEAN_TYPE = "Boolean";
-  int PARAMETER_VALUE_MAX_LENGTH = 4000;
   int USER_ID_MAX_LENGTH = 200;
 
   String EVENT_PLATFORM_PARAM_KEY = "event_platform";
