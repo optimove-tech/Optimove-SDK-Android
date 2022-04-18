@@ -32,7 +32,7 @@ public class MyApplication extends Application {
 
     Optimove.initialize(this, new OptimobileConfig.Builder(
             null,
-            "WzEsImV1LWNlbnRyYWwtMSIsIjNiNTRhMWZmLTg5YTItNDRlZS05MzRlLWNlMzI1ZWFkM2YxNiIsInNrT0cvTWZWdU91ZkRiWlViRStNVHc5a2YxbThzZXNxZ0FkbCJd")
+            "creds")
             .enableInAppMessaging(OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL)
             .build());
     // Shouldn't be called unless explicitly told to
