@@ -16,46 +16,29 @@
         <activity
             android:name=".MainActivity"
             android:launchMode="singleInstance"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <intent-filter>
-                <action android:name="com.optimove.sdk.optimove_sdk.DEEPLINK"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-
-                <data
-                    android:host="com.optimove.sdk.optimovemobilesdk"
-                    android:pathPrefix="/main_screen"
-                    android:scheme="http"/>
-            </intent-filter>
         </activity>
 
-        <activity android:name=".PromoActivity"
-            android:exported="true">
+        <!-- Optimobile FCM handler -->
+        <service android:name="com.optimove.sdk.optimove_sdk.optimobile.FirebaseMessagingService" android:exported="false">
             <intent-filter>
-                <action android:name="com.optimove.sdk.optimove_sdk.DEEPLINK"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-
-                <data
-                    android:host="com.optimove.sdk.optimovemobilesdk"
-                    android:pathPrefix="/promo_screen"
-                    android:scheme="https"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </activity>
+        </service>
 
-        <meta-data
-            android:name="com.optimove.sdk.custom-notification-icon"
-            android:resource="@drawable/notification_tray_trans"/>
-        <meta-data
-            android:name="com.optimove.sdk.custom-notification-color"
-            android:resource="@android:color/holo_red_light"/>
-
+        <!-- Optimobile Push receiver -->
+        <receiver android:name="com.optimove.sdk.optimove_sdk.optimobile.PushBroadcastReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.optimobile.push.RECEIVED" />
+                <action android:name="com.optimobile.push.OPENED" />
+                <action android:name="com.optimobile.push.DISMISSED" />
+                <action android:name="com.optimobile.push.BUTTON_CLICKED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
