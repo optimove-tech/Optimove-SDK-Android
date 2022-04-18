@@ -41,8 +41,6 @@ final class AnalyticsContract {
     static final String EVENT_TYPE_MESSAGE_OPENED = "k.message.opened";
     static final String EVENT_TYPE_MESSAGE_DELIVERED = "k.message.delivered";
     static final String EVENT_TYPE_MESSAGE_READ = "k.message.read";
-    static final String EVENT_TYPE_ENTERED_BEACON_PROXIMITY = "k.engage.beaconEnteredProximity";
-    static final String EVENT_TYPE_LOCATION_UPDATED = "k.engage.locationUpdated";
     static final String MESSAGE_DELETED_FROM_INBOX = "k.message.inbox.deleted";
     static final String EVENT_TYPE_DEEP_LINK_MATCHED = "k.deepLink.matched";
     static final int MESSAGE_TYPE_PUSH = 1;
@@ -182,7 +180,7 @@ final class AnalyticsContract {
      */
     static class StatsCallHomeRunnable implements Runnable {
 
-        private static final int SDK_TYPE = 2;
+        private static final int SDK_TYPE = 102;
         private static final int RUNTIME_TYPE = 1;
         private static final int OS_TYPE = 3;
 
