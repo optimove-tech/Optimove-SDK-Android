@@ -112,7 +112,7 @@ final public class Optimove {
      * @param application    The instance of the current {@code Application} object.
      * @param config The {@link OptimobileConfig} as provided by <i>Optimove</i>
      */
-    public static void initialize(@NonNull Application application, OptimobileConfig config) {
+    public static void initialize(@NonNull Application application, @NonNull OptimobileConfig config) {
         if (config.isOptimobileConfigured()){
             Optimobile.initialize(application, config);
         }
@@ -132,7 +132,7 @@ final public class Optimove {
                 }
             };
             if (!OptiUtils.isRunningOnMainThread()) {
-                OptiLoggerStreamsContainer.debug("Optimove.configure() was called from a worker thread, moving call to main thread");
+                OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
                 OptiUtils.runOnMainThread(initCommand);
             } else {
                 initCommand.run();
