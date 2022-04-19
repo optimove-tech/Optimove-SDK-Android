@@ -18,18 +18,17 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 ### Advanced Setup
 6. [Tracking custom events](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Tracking-custom-events)
 
-### Optipush
-1. [Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Optipush-setup)
-2. [Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Optipush-deeplinks)
-3. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Optipush-testing)
-4. [Disable push campaigns](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Disable-push-campaigns)
+### Mobile Messaging
+1. [Push Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-setup)
+2. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app-setup)
+3. [Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deeplinks)
+4. [Deferred Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deferred-deeplinks)
+5. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-testing)
 
 ### Migrations
-1. [Migration from 3.x to 4.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x-to-4.x)
-2. [Migration from 2.x to 3.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-2.x-to-3.x)
-
-### Executing campaigns using your Optimove instance
-Stay tuned for our how-to guides
+1. [Migration from 4.x to 5.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-4.x-to-5.x)
+2. [Migration from 3.x to 4.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x-to-4.x)
+3. [Migration from 2.x to 3.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-2.x-to-3.x)
 
 ## License
 
