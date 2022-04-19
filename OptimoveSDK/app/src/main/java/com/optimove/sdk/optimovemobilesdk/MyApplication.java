@@ -8,7 +8,8 @@ import android.os.Build;
 import android.provider.Settings;
 
 import com.optimove.sdk.optimove_sdk.Optimove;
-import com.optimove.sdk.optimove_sdk.optimobile.OptimobileConfig;
+import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 public class MyApplication extends Application {
 
@@ -30,10 +31,10 @@ public class MyApplication extends Application {
   public void onCreate() {
     super.onCreate();
 
-    Optimove.initialize(this, new OptimobileConfig.Builder(
+    Optimove.initialize(this, new OptimoveConfig.Builder(
             null,
-            "creds")
-            .enableInAppMessaging(OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL)
+            "base64creds")
+            .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
             .build());
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();
