@@ -40,7 +40,7 @@ public final class Optimobile {
 
     private static String installId;
 
-    private static OptimobileConfig currentConfig;
+    private static OptimoveConfig currentConfig;
 
     static UrlBuilder urlBuilder;
 
@@ -77,7 +77,7 @@ public final class Optimobile {
      * @param application
      * @param config
      */
-    public static synchronized void initialize(final Application application, OptimobileConfig config) {
+    public static synchronized void initialize(final Application application, OptimoveConfig config) {
         if (!config.isOptimobileConfigured()){
             throw new UninitializedException();
         }
@@ -137,7 +137,7 @@ public final class Optimobile {
      *
      * @return
      */
-    static OptimobileConfig getConfig() {
+    static OptimoveConfig getConfig() {
         return currentConfig;
     }
 

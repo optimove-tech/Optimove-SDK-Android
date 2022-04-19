@@ -203,8 +203,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             notificationBuilder = new Notification.Builder(context);
         }
 
-        OptimobileConfig config = Optimobile.getConfig();
-        int icon = config != null ? config.getNotificationSmallIconId() : OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        OptimoveConfig config = Optimobile.getConfig();
+        int icon = config != null ? config.getNotificationSmallIconId() : OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
 
         notificationBuilder
                 .setSmallIcon(icon)

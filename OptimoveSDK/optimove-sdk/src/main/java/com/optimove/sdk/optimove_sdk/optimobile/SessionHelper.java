@@ -87,7 +87,7 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
                 .build();
 
         Optimobile.executorService.submit(() -> {
-            OptimobileConfig config = Optimobile.getConfig();
+            OptimoveConfig config = Optimobile.getConfig();
 
             OneTimeWorkRequest.Builder taskBuilder = new OneTimeWorkRequest.Builder(AnalyticsBackgroundEventWorker.class)
                     .setInitialDelay(config.getSessionIdleTimeoutSeconds(), TimeUnit.SECONDS)

@@ -203,7 +203,7 @@ final class AnalyticsContract {
                 return;
             }
 
-            OptimobileConfig config = Optimobile.getConfig();
+            OptimoveConfig config = Optimobile.getConfig();
             final JSONObject finalObj;
             try {
                 JSONObject app = new JSONObject()

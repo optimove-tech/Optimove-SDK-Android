@@ -20,9 +20,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
- * Represents the configuration for the Optimobile client
+ * Represents the configuration for the Optimove client
  */
-public final class OptimobileConfig {
+public final class OptimoveConfig {
 
     @DrawableRes
     static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.optimobile_ic_stat_notifications;
@@ -58,7 +58,7 @@ public final class OptimobileConfig {
     }
 
     // Private constructor to discourage not using the Builder.
-    private OptimobileConfig() {
+    private OptimoveConfig() {
     }
 
     private void setApiKey(@Nullable String apiKey) {
@@ -191,9 +191,9 @@ public final class OptimobileConfig {
         String configFileName;
 
         @DrawableRes
-        private int notificationSmallIconDrawableId = OptimobileConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
         private InAppConsentStrategy consentStrategy = null;
-        private int sessionIdleTimeoutSeconds = OptimobileConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
+        private int sessionIdleTimeoutSeconds = OptimoveConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
 
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
@@ -296,7 +296,7 @@ public final class OptimobileConfig {
          * event is seen. If no resume event is observed and the idle period elapses, the app is considered
          * to be in the background and the session ends.
          * <p>
-         * This defaults to OptimobileConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS if unspecified.
+         * This defaults to OptimoveConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS if unspecified.
          *
          * @param idleTimeSeconds
          * @return
@@ -341,8 +341,8 @@ public final class OptimobileConfig {
             return this;
         }
 
-        public OptimobileConfig build() {
-            OptimobileConfig newConfig = new OptimobileConfig();
+        public OptimoveConfig build() {
+            OptimoveConfig newConfig = new OptimoveConfig();
             newConfig.setApiKey(apiKey);
             newConfig.setSecretKey(secretKey);
             newConfig.setOptimoveToken(optimoveToken);

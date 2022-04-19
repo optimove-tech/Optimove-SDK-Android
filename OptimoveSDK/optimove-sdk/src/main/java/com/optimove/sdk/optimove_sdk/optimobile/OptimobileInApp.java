@@ -131,7 +131,7 @@ public class OptimobileInApp {
      */
 
     public static void updateConsentForUser(boolean consentGiven) {
-        if (Optimobile.getConfig().getInAppConsentStrategy() != OptimobileConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
+        if (Optimobile.getConfig().getInAppConsentStrategy() != OptimoveConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
             throw new RuntimeException("Optimobile: It is only possible to update In App consent for user if consent strategy is set to EXPLICIT_BY_USER");
         }
 
@@ -155,13 +155,13 @@ public class OptimobileInApp {
     //==============================================================================================
     //-- Internal Helpers
 
-    static void initialize(Application application, OptimobileConfig currentConfig) {
+    static void initialize(Application application, OptimoveConfig currentConfig) {
         OptimobileInApp.application = application;
 
-        OptimobileConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
+        OptimoveConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
         boolean inAppEnabled = isInAppEnabled();
 
-        if (strategy == OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL && !inAppEnabled) {
+        if (strategy == OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL && !inAppEnabled) {
             inAppEnabled = true;
             updateInAppEnablementFlags(true);
         } else if (strategy == null && inAppEnabled) {
@@ -211,15 +211,15 @@ public class OptimobileInApp {
         editor.apply();
     }
 
-    static void handleInAppUserChange(Context context, OptimobileConfig currentConfig) {
+    static void handleInAppUserChange(Context context, OptimoveConfig currentConfig) {
         InAppMessageService.clearAllMessages(context);
         clearLastSyncTime(context);
 
-        OptimobileConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
-        if (strategy == OptimobileConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
+        OptimoveConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
+        if (strategy == OptimoveConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
             updateLocalInAppEnablementFlag(false);
             toggleInAppMessageMonitoring(false);
-        } else if (strategy == OptimobileConfig.InAppConsentStrategy.AUTO_ENROLL) {
+        } else if (strategy == OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL) {
             updateRemoteInAppEnablementFlag(true);
 
             fetchMessages();

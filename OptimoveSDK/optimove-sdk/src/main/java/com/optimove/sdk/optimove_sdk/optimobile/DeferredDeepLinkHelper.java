@@ -213,7 +213,7 @@ public class DeferredDeepLinkHelper {
 
     private boolean urlShouldBeHandled(URL url) {
         String host = url.getHost();
-        OptimobileConfig config = Optimobile.getConfig();
+        OptimoveConfig config = Optimobile.getConfig();
         URL cname = config.getDeepLinkCname();
 
         return host.endsWith("lnk.click") || (cname != null && host.equals(cname.getHost()));
@@ -309,7 +309,7 @@ public class DeferredDeepLinkHelper {
     }
 
     private void invokeDeepLinkHandler(Context context, DeepLinkResolution resolution, URL url, @Nullable DeepLink data) {
-        OptimobileConfig config = Optimobile.getConfig();
+        OptimoveConfig config = Optimobile.getConfig();
         DeferredDeepLinkHandlerInterface handler = config.getDeferredDeepLinkHandler();
         if (handler == null) {
             return;

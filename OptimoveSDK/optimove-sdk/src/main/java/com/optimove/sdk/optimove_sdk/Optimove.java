@@ -32,9 +32,9 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
+import com.optimove.sdk.optimove_sdk.optimobile.OptimoveConfig;
 import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
 import com.optimove.sdk.optimove_sdk.optimobile.Optimobile;
-import com.optimove.sdk.optimove_sdk.optimobile.OptimobileConfig;
 import com.optimove.sdk.optimove_sdk.optimobile.PushActionHandlerInterface;
 import com.optimove.sdk.optimove_sdk.optimobile.PushTokenType;
 
@@ -93,7 +93,7 @@ final public class Optimove {
     }
 
     /**
-     * Gets the {@link Optimove} {@code singleton}. {@link Optimove#initialize(Application, OptimobileConfig)} must be called
+     * Gets the {@link Optimove} {@code singleton}. {@link Optimove#initialize(Application, OptimoveConfig)} must be called
      * before trying to access {@code Optimove}.
      *
      * @return the {@code Optimove singleton}
@@ -110,9 +110,9 @@ final public class Optimove {
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
      * @param application    The instance of the current {@code Application} object.
-     * @param config The {@link OptimobileConfig} as provided by <i>Optimove</i>
+     * @param config The {@link OptimoveConfig} as provided by <i>Optimove</i>
      */
-    public static void initialize(@NonNull Application application, @NonNull OptimobileConfig config) {
+    public static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
         if (config.isOptimobileConfigured()){
             Optimobile.initialize(application, config);
         }
