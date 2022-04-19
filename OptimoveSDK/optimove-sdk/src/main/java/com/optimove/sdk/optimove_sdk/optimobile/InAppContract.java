@@ -567,9 +567,9 @@ class InAppContract {
 
         private static final String TAG = ReadInboxSummaryRunnable.class.getName();
         private final Context mContext;
-        private final OptimobileInApp.InAppInboxSummaryHandler callback;
+        private final OptimoveInApp.InAppInboxSummaryHandler callback;
 
-        ReadInboxSummaryRunnable(Context context, OptimobileInApp.InAppInboxSummaryHandler callback) {
+        ReadInboxSummaryRunnable(Context context, OptimoveInApp.InAppInboxSummaryHandler callback) {
             mContext = context.getApplicationContext();
             this.callback = callback;
         }

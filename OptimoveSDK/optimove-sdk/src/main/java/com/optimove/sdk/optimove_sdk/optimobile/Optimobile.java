@@ -100,7 +100,7 @@ public final class Optimobile {
 
         initialized = true;
 
-        OptimobileInApp.initialize(application, currentConfig);
+        OptimoveInApp.initialize(application, currentConfig);
 
         if (currentConfig.getDeferredDeepLinkHandler() != null){
             deepLinkHelper = new DeferredDeepLinkHelper();
@@ -190,7 +190,7 @@ public final class Optimobile {
             editor.apply();
         }
 
-        OptimobileInApp.handleInAppUserChange(context, currentConfig);
+        OptimoveInApp.handleInAppUserChange(context, currentConfig);
     }
 
     /**
@@ -240,7 +240,7 @@ public final class Optimobile {
         trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_ASSOCIATE_USER, props);
 
         if (isNewUserIdentifier){
-            OptimobileInApp.handleInAppUserChange(context, currentConfig);
+            OptimoveInApp.handleInAppUserChange(context, currentConfig);
         }
     }
 

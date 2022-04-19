@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class OptimobileInApp {
+public class OptimoveInApp {
     static InAppDeepLinkHandlerInterface inAppDeepLinkHandler = null;
     static Application application;
     static InAppMessagePresenter presenter;
@@ -109,7 +109,7 @@ public class OptimobileInApp {
      * @param inboxUpdatedHandler handler
      */
     public static void setOnInboxUpdated(@Nullable InAppInboxUpdatedHandler inboxUpdatedHandler) {
-        OptimobileInApp.inboxUpdatedHandler = inboxUpdatedHandler;
+        OptimoveInApp.inboxUpdatedHandler = inboxUpdatedHandler;
     }
 
     /**
@@ -156,7 +156,7 @@ public class OptimobileInApp {
     //-- Internal Helpers
 
     static void initialize(Application application, OptimoveConfig currentConfig) {
-        OptimobileInApp.application = application;
+        OptimoveInApp.application = application;
 
         OptimoveConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
         boolean inAppEnabled = isInAppEnabled();
@@ -240,7 +240,7 @@ public class OptimobileInApp {
 
     private static void fetchMessages() {
         Optimobile.executorService.submit(() -> {
-            InAppMessageService.fetch(OptimobileInApp.application, true);
+            InAppMessageService.fetch(OptimoveInApp.application, true);
         });
     }
 

@@ -82,7 +82,7 @@ class InAppMessageService {
             clearNotification(context, inAppId);
         }
 
-        OptimobileInApp.maybeRunInboxUpdatedHandler(inboxUpdated);
+        OptimoveInApp.maybeRunInboxUpdatedHandler(inboxUpdated);
 
         InAppMessageService.storeLastSyncTime(context, inAppMessages);
 
@@ -104,7 +104,7 @@ class InAppMessageService {
             }
         }
 
-        OptimobileInApp.presenter.presentMessages(itemsToPresent, new ArrayList<>(pendingTickleIds));
+        OptimoveInApp.presenter.presentMessages(itemsToPresent, new ArrayList<>(pendingTickleIds));
 
         pendingTickleIds.clear();
     }
@@ -184,7 +184,7 @@ class InAppMessageService {
             markedRead = markInboxItemRead(context, id, false);
         }
         if (message.getInbox() != null) {
-            OptimobileInApp.maybeRunInboxUpdatedHandler(markedRead);
+            OptimoveInApp.maybeRunInboxUpdatedHandler(markedRead);
         }
 
         JSONObject params = new JSONObject();
@@ -234,7 +234,7 @@ class InAppMessageService {
         return inboxItems;
     }
 
-    static OptimobileInApp.InboxMessagePresentationResult presentMessage(Context context, InAppInboxItem item) {
+    static OptimoveInApp.InboxMessagePresentationResult presentMessage(Context context, InAppInboxItem item) {
         Callable<InAppMessage> task = new InAppContract.ReadInAppInboxMessageCallable(context, item.getId());
         final Future<InAppMessage> future = Optimobile.executorService.submit(task);
 
@@ -242,23 +242,23 @@ class InAppMessageService {
         try {
             inboxMessage = future.get();
         } catch (InterruptedException | ExecutionException ex) {
-            return OptimobileInApp.InboxMessagePresentationResult.FAILED;
+            return OptimoveInApp.InboxMessagePresentationResult.FAILED;
         }
 
         if (inboxMessage == null) {
-            return OptimobileInApp.InboxMessagePresentationResult.FAILED;
+            return OptimoveInApp.InboxMessagePresentationResult.FAILED;
         }
 
         if (item.getAvailableTo() != null && item.getAvailableTo().getTime() < new Date().getTime()) {
-            return OptimobileInApp.InboxMessagePresentationResult.FAILED_EXPIRED;
+            return OptimoveInApp.InboxMessagePresentationResult.FAILED_EXPIRED;
         }
 
         List<InAppMessage> itemsToPresent = new ArrayList<>();
         itemsToPresent.add(inboxMessage);
 
-        OptimobileInApp.presenter.presentMessages(itemsToPresent, null);
+        OptimoveInApp.presenter.presentMessages(itemsToPresent, null);
 
-        return OptimobileInApp.InboxMessagePresentationResult.PRESENTED;
+        return OptimoveInApp.InboxMessagePresentationResult.PRESENTED;
     }
 
     static boolean deleteMessageFromInbox(Context context, int id) {
@@ -284,7 +284,7 @@ class InAppMessageService {
             Optimobile.log(TAG, ex.getMessage());
         }
 
-        OptimobileInApp.maybeRunInboxUpdatedHandler(result);
+        OptimoveInApp.maybeRunInboxUpdatedHandler(result);
 
         return result;
     }
@@ -340,7 +340,7 @@ class InAppMessageService {
             }
         }
 
-        OptimobileInApp.maybeRunInboxUpdatedHandler(inboxNeedsUpdate);
+        OptimoveInApp.maybeRunInboxUpdatedHandler(inboxNeedsUpdate);
 
         return result;
     }
@@ -388,7 +388,7 @@ class InAppMessageService {
                 }
             }
 
-            OptimobileInApp.presenter.presentMessages(itemsToPresent, tickleIds);
+            OptimoveInApp.presenter.presentMessages(itemsToPresent, tickleIds);
 
             // TODO potential bug? logic in here doesn't take into account the pending tickles
             //      in prod builds if synced < 1hr ago, may not sync again? (although assumed sync happens on app startup so...)
