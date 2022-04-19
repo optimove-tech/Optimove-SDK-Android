@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.optimove.sdk.optimove_sdk">
+    package="com.optimove.android">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,11 +12,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <provider
-            android:name=".optimobile.OptimobileInitProvider"
+            android:name="com.optimove.android.optimobile.OptimobileInitProvider"
             android:authorities="${applicationId}.optimobileinitprovider"
             android:exported="false" />
         <activity
-            android:name=".optimobile.PushOpenInvisibleActivity"
+            android:name="com.optimove.android.optimobile.PushOpenInvisibleActivity"
             android:noHistory="true"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent"
