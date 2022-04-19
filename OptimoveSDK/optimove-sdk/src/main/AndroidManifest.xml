@@ -21,9 +21,5 @@
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent"
             android:exported="false" />
-        <service
-            android:name=".main.app_update_listener.AppUpdateService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 </manifest>
