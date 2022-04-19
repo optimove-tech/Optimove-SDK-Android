@@ -24,7 +24,6 @@ Integration tests:
 - [ ] Init SDK with only optimove tenant / config
 - [ ] Track events
 
-
 ## Push Only
 
 - [ ] Init SDK with all credentials
@@ -53,7 +52,3 @@ Release:
 
 - [ ] Squash and merge `dev`to `master`
 - [ ] Delete branch once merged
-
-
-
-
