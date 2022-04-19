@@ -11,6 +11,7 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 import java.lang.ref.WeakReference;
@@ -89,7 +90,7 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
                 .build();
 
         Optimobile.executorService.submit(() -> {
-            OptimoveConfig config = Optimobile.getConfig();
+            OptimoveConfig config = Optimove.getConfig();
 
             OneTimeWorkRequest.Builder taskBuilder = new OneTimeWorkRequest.Builder(AnalyticsBackgroundEventWorker.class)
                     .setInitialDelay(config.getSessionIdleTimeoutSeconds(), TimeUnit.SECONDS)

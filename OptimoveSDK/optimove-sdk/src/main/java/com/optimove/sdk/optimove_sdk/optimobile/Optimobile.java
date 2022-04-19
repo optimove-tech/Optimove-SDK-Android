@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import com.optimove.sdk.optimove_sdk.BuildConfig;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 /**
@@ -40,8 +41,6 @@ public final class Optimobile {
     private static boolean initialized;
 
     private static String installId;
-
-    private static OptimoveConfig currentConfig;
 
     static UrlBuilder urlBuilder;
 
@@ -88,8 +87,6 @@ public final class Optimobile {
             return;
         }
 
-        currentConfig = config;
-
         installId = Installation.id(application);
 
         authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
@@ -101,9 +98,9 @@ public final class Optimobile {
 
         initialized = true;
 
-        OptimoveInApp.initialize(application, currentConfig);
+        OptimoveInApp.initialize(application, config);
 
-        if (currentConfig.getDeferredDeepLinkHandler() != null){
+        if (config.getDeferredDeepLinkHandler() != null){
             deepLinkHelper = new DeferredDeepLinkHelper();
         }
 
@@ -132,15 +129,6 @@ public final class Optimobile {
 
     //==============================================================================================
     //-- Getters/setters
-
-    /**
-     * Gets the current config
-     *
-     * @return
-     */
-    static OptimoveConfig getConfig() {
-        return currentConfig;
-    }
 
     /**
      * Associates a user identifier with the current Optimobile installation record.
@@ -191,7 +179,7 @@ public final class Optimobile {
             editor.apply();
         }
 
-        OptimoveInApp.handleInAppUserChange(context, currentConfig);
+        OptimoveInApp.handleInAppUserChange(context, Optimove.getConfig());
     }
 
     /**
@@ -241,7 +229,7 @@ public final class Optimobile {
         trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_ASSOCIATE_USER, props);
 
         if (isNewUserIdentifier){
-            OptimoveInApp.handleInAppUserChange(context, currentConfig);
+            OptimoveInApp.handleInAppUserChange(context, Optimove.getConfig());
         }
     }
 
@@ -361,7 +349,7 @@ public final class Optimobile {
             return;
         }
 
-        if (currentConfig.getDeferredDeepLinkHandler() == null){
+        if (Optimove.getConfig().getDeferredDeepLinkHandler() == null){
             return;
         }
 
@@ -373,7 +361,7 @@ public final class Optimobile {
             return;
         }
 
-        if (currentConfig.getDeferredDeepLinkHandler() == null){
+        if (Optimove.getConfig().getDeferredDeepLinkHandler() == null){
             return;
         }
 

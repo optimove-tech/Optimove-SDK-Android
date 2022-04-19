@@ -18,6 +18,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 import org.json.JSONException;
@@ -204,7 +205,7 @@ final class AnalyticsContract {
                 return;
             }
 
-            OptimoveConfig config = Optimobile.getConfig();
+            OptimoveConfig config = Optimove.getConfig();
             final JSONObject finalObj;
             try {
                 JSONObject app = new JSONObject()

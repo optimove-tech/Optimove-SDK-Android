@@ -67,6 +67,8 @@ final public class Optimove {
     private final AtomicBoolean configSet;
     private final LifecycleObserver lifecycleObserver;
 
+    private static OptimoveConfig currentConfig;
+
     private Optimove(@NonNull Context context) {
         this.context = context;
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
@@ -111,6 +113,8 @@ final public class Optimove {
      * @param config The {@link OptimoveConfig} as provided by <i>Optimove</i>
      */
     public static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
+        currentConfig = config;
+
         if (config.isOptimobileConfigured()){
             Optimobile.initialize(application, config);
         }
@@ -140,6 +144,15 @@ final public class Optimove {
                 initCommand.run();
             }
         }
+    }
+
+    /**
+     * Gets the current config
+     *
+     * @return
+     */
+    public static OptimoveConfig getConfig() {
+        return currentConfig;
     }
 
     /**

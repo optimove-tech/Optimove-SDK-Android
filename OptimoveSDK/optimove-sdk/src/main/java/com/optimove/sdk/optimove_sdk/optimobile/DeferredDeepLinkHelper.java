@@ -15,6 +15,7 @@ import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 import org.json.JSONException;
@@ -215,7 +216,7 @@ public class DeferredDeepLinkHelper {
 
     private boolean urlShouldBeHandled(URL url) {
         String host = url.getHost();
-        OptimoveConfig config = Optimobile.getConfig();
+        OptimoveConfig config = Optimove.getConfig();
         URL cname = config.getDeepLinkCname();
 
         return host.endsWith("lnk.click") || (cname != null && host.equals(cname.getHost()));
@@ -311,7 +312,7 @@ public class DeferredDeepLinkHelper {
     }
 
     private void invokeDeepLinkHandler(Context context, DeepLinkResolution resolution, URL url, @Nullable DeepLink data) {
-        OptimoveConfig config = Optimobile.getConfig();
+        OptimoveConfig config = Optimove.getConfig();
         DeferredDeepLinkHandlerInterface handler = config.getDeferredDeepLinkHandler();
         if (handler == null) {
             return;

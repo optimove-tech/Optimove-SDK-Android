@@ -22,6 +22,7 @@ import android.util.DisplayMetrics;
 
 import androidx.annotation.Nullable;
 
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 import org.json.JSONArray;
@@ -206,7 +207,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             notificationBuilder = new Notification.Builder(context);
         }
 
-        OptimoveConfig config = Optimobile.getConfig();
+        OptimoveConfig config = Optimove.getConfig();
         int icon = config != null ? config.getNotificationSmallIconId() : OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
 
         notificationBuilder
