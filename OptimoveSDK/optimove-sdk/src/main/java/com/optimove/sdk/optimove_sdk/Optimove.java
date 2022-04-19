@@ -324,11 +324,16 @@ final public class Optimove {
      * @param userId The new userId to set
      */
     public void setUserId(String userId) {
-        Optimobile.associateUserWithInstall(context, userId);
-        SetUserIdEvent setUserIdEvent = processUserId(userId);
-        if (setUserIdEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Collections.singletonList(setUserIdEvent));
+        if (currentConfig.isOptimobileConfigured()){
+            Optimobile.associateUserWithInstall(context, userId);
+        }
+
+        if (currentConfig.isOptimoveConfigured()){
+            SetUserIdEvent setUserIdEvent = processUserId(userId);
+            if (setUserIdEvent != null) {
+                eventHandlerProvider.getEventHandler()
+                        .reportEvent(Collections.singletonList(setUserIdEvent));
+            }
         }
     }
 
