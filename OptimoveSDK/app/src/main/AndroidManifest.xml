@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.optimove.sdk.optimovemobilesdk">
+          package="com.optimove.android.optimovemobilesdk">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
-        android:name=".MyApplication"
+        android:name="com.optimove.android.optimovemobilesdk.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.optimove.android.optimovemobilesdk.MainActivity"
             android:launchMode="singleInstance"
             android:exported="true">
             <intent-filter>
@@ -24,14 +24,14 @@
         </activity>
 
         <!-- Optimobile FCM handler -->
-        <service android:name="com.optimove.sdk.optimove_sdk.optimobile.FirebaseMessagingService" android:exported="false">
+        <service android:name="com.optimove.android.optimobile.FirebaseMessagingService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <!-- Optimobile Push receiver -->
-        <receiver android:name="com.optimove.sdk.optimove_sdk.optimobile.PushBroadcastReceiver" android:exported="false">
+        <receiver android:name="com.optimove.android.optimobile.PushBroadcastReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="com.optimobile.push.RECEIVED" />
                 <action android:name="com.optimobile.push.OPENED" />

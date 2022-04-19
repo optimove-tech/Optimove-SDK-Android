@@ -1,5 +1,5 @@
--keep class com.optimove.sdk.optimove_sdk.main.sdk_configs.** { <fields>; }
--keep class com.optimove.sdk.optimove_sdk.optistream.OptistreamEvent { <fields>; }
+-keep class com.optimove.android.main.sdk_configs.** { <fields>; }
+-keep class com.optimove.android.optistream.OptistreamEvent { <fields>; }
 
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonDeserializer
@@ -19,8 +19,8 @@
 -dontwarn android.support.v7.widget.
 -keep class android.support.v4.widget.Space { *; }
 -dontwarn android.support.v4.widget.Space
--keep class com.optimove.sdk.optimove_sdk.optimobile.** { *; }
--dontwarn com.optimove.sdk.optimove_sdk.optimobile.**
+-keep class com.optimove.android.optimobile.** { *; }
+-dontwarn com.optimove.android.optimobile.**
 -keep class okhttp3.** { *;}
 -dontwarn okhttp3.**
 -keep class oikio.** { *;}
