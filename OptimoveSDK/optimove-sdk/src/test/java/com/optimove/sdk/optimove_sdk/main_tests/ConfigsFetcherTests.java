@@ -102,36 +102,11 @@ public class ConfigsFetcherTests {
                 .httpClient(httpClient)
                 .tenantToken(tenantToken)
                 .configName(configName)
-                .urgent(false)
                 .sharedPrefs(localConfigKeysPreferences)
                 .fileProvider(fileUtils)
                 .context(context)
                 .build();
         configs = ConfigProvider.getConfigs();
-
-    }
-
-    @Test(timeout = 1000)
-    public void shouldReadFromFileIfUrgent() {
-        applyPositiveConfigFetch();
-        ConfigsFetcher urgentConfigFetcher = ConfigsFetcher.builder()
-                .httpClient(httpClient)
-                .tenantToken(tenantToken)
-                .configName(configName)
-                .urgent(true)
-                .sharedPrefs(localConfigKeysPreferences)
-                .fileProvider(fileUtils)
-                .context(context)
-                .build();
-        int randomTenantId = 56757;
-        Gson gson = new Gson();
-        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs();
-        storedInFileConfig.setTenantId(randomTenantId);
-        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
-
-        urgentConfigFetcher.fetchConfigs(configs -> Assert.assertEquals(configs.getTenantId(), randomTenantId)
-                , Assert::fail);
 
     }
 
@@ -225,35 +200,6 @@ public class ConfigsFetcherTests {
         inOrder.verify(editor, timeout(1000))
                 .apply();
         verify(writer, timeout(1000)).now();
-    }
-
-    @Test(timeout = 1000)
-    public void shouldFailConfigIfRemoteGlobalConfigMissesMBaaSEndpoint() {
-        FetchedTenantConfigs fetchedTenantConfigs = gson.fromJson(ConfigProvider.getTenantConfigJsonString(),
-                FetchedTenantConfigs.class);
-        FetchedGlobalConfig fetchedGlobalConfig = gson.fromJson(ConfigProvider.getGlobalConfigJsonString(),
-                FetchedGlobalConfig.class);
-        fetchedGlobalConfig.fetchedOptipushConfigs.mbaasEndpoint = null;
-        applyCustomConfigFetch(fetchedTenantConfigs, fetchedGlobalConfig);
-
-        regularConfigFetcher.fetchConfigs(configs -> fail(), Assert::assertNotNull);
-    }
-
-    @Test
-    public void shouldFailConfigIfLocalFileMissesMBaaSEndpoint() {
-        int randomTenantId = 56757;
-        Gson gson = new Gson();
-        ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
-        applyParseErrorOnGlobalBuilder();
-
-        when(localConfigKeysPreferences.getBoolean(eq(configName), anyBoolean())).thenReturn(true);
-        Configs storedInFileConfig = ConfigProvider.getConfigs();
-        storedInFileConfig.setOptipushConfigs(null);
-        storedInFileConfig.setTenantId(randomTenantId);
-        when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
-
-        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
-        verify(configsErrorListener, timeout(1000)).error(anyString());
     }
 
     @Test

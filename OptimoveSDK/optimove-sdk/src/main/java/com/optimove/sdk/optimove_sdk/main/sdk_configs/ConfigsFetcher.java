@@ -26,7 +26,6 @@ public class ConfigsFetcher {
     public static final String TENANT_CONFIG_FILE_BASE_URL = "https://sdk-cdn.optimove.net/mobilesdkconfig/";
     public static final String GLOBAL_CONFIG_FILE_BASE_URL = "https://sdk-cdn.optimove.net/configs/mobile/global/";
 
-    private final boolean isUrgent;
     @NonNull
     private final String configName;
     @NonNull
@@ -55,11 +54,9 @@ public class ConfigsFetcher {
     }
 
     private ConfigsFetcher(@NonNull String tenantToken, @NonNull String configName,
-                           boolean isUrgent,
                            @NonNull SharedPreferences localConfigKeysPreferences,
                            @NonNull HttpClient httpClient, @NonNull FileUtils fileUtils,
                            @NonNull Context context) {
-        this.isUrgent = isUrgent;
         this.configName = configName;
         this.localConfigKeysPreferences = localConfigKeysPreferences;
         this.tenantToken = tenantToken;
@@ -70,11 +67,7 @@ public class ConfigsFetcher {
 
 
     public void fetchConfigs(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
-        if (isUrgent) {
-            getLocalConfig(configsListener, configsErrorListener);
-        } else {
-            fetchRemoteConfig(configsListener, configsErrorListener);
-        }
+        fetchRemoteConfig(configsListener, configsErrorListener);
     }
 
     private void fetchRemoteConfig(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
@@ -146,9 +139,6 @@ public class ConfigsFetcher {
 
     private boolean verifyConfigValidity(Configs configs) {
         return configs.getTenantId() != 0
-                && configs.getOptipushRegistrationServiceEndpoint() != null
-                && !configs.getOptipushRegistrationServiceEndpoint()
-                .isEmpty()
                 && configs.getLogsConfigs() != null
                 && configs.getEventsConfigs() != null
                 && configs.getOptitrackConfigs() != null
@@ -245,11 +235,7 @@ public class ConfigsFetcher {
     }
 
     public interface ConfigNameStep {
-        IsUrgentStep configName(String configName);
-    }
-
-    public interface IsUrgentStep {
-        SharedPrefsStep urgent(boolean isUrgent);
+        SharedPrefsStep configName(String configName);
     }
 
     public interface SharedPrefsStep {
@@ -268,7 +254,7 @@ public class ConfigsFetcher {
         ConfigsFetcher build();
     }
 
-    public static class Builder implements ContextStep, SharedPrefsStep, IsUrgentStep,
+    public static class Builder implements ContextStep, SharedPrefsStep,
             ConfigNameStep, TenantTokenStep, HttpClientStep, FileProviderStep, Build {
 
         private boolean isUrgent;
@@ -292,17 +278,11 @@ public class ConfigsFetcher {
         }
 
         @Override
-        public IsUrgentStep configName(@NonNull String configName) {
+        public SharedPrefsStep configName(@NonNull String configName) {
             this.configName = configName;
             return this;
         }
 
-
-        @Override
-        public SharedPrefsStep urgent(boolean isUrgent) {
-            this.isUrgent = isUrgent;
-            return this;
-        }
 
         @Override
         public FileProviderStep sharedPrefs(@NonNull SharedPreferences localConfigKeysPreferences) {
@@ -324,7 +304,7 @@ public class ConfigsFetcher {
 
         @Override
         public ConfigsFetcher build() {
-            return new ConfigsFetcher(tenantToken, configName, isUrgent,
+            return new ConfigsFetcher(tenantToken, configName,
                     localConfigKeysPreferences, httpClient, fileUtils, context);
 
         }

@@ -10,10 +10,7 @@ import android.net.wifi.WifiManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationManagerCompat;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailabilityLight;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
 import java.io.IOException;
@@ -33,21 +30,6 @@ public class DeviceInfoProvider {
 
     public DeviceInfoProvider(Context context) {
         this.context = context;
-    }
-
-    public boolean notificaionsAreEnabled() {
-        return NotificationManagerCompat.from(context)
-                .areNotificationsEnabled();
-    }
-
-    public boolean isGooglePlayServicesAvailable() {
-        try {
-            int servicesAvailable = GoogleApiAvailabilityLight.getInstance()
-                    .isGooglePlayServicesAvailable(context);
-            return servicesAvailable == ConnectionResult.SUCCESS;
-        } catch (Throwable throwable) {
-            return false;
-        }
     }
 
     public String getDeviceLanguage() {

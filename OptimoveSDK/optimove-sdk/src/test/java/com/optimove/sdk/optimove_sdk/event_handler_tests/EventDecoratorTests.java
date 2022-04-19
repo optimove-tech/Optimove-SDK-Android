@@ -16,10 +16,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_DEVICE_TYPE_PARAM_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_NATIVE_MOBILE_PARAM_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_OS_PARAM_KEY;
-import static com.optimove.sdk.optimove_sdk.optitrack.OptitrackConstants.EVENT_PLATFORM_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_DEVICE_TYPE_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_NATIVE_MOBILE_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_OS_PARAM_KEY;
+import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.EVENT_PLATFORM_PARAM_KEY;
 import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

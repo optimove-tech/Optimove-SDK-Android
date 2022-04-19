@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.main.tools.OptiUtils;
 
 import java.util.UUID;
@@ -19,8 +19,6 @@ import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstan
 import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.USER_IDS_SP;
 import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.USER_ID_KEY;
 import static com.optimove.sdk.optimove_sdk.main.common.UserInfo.UserInfoConstants.VISITOR_ID_KEY;
-import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.DEVICE_ID_KEY;
-import static com.optimove.sdk.optimove_sdk.optipush.OptipushConstants.Registration.REGISTRATION_PREFERENCES_NAME;
 import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.FIRST_VISIT_TIMESTAMP_KEY;
 import static com.optimove.sdk.optimove_sdk.realtime.RealtimeConstants.REALTIME_SP_NAME;
 
@@ -75,9 +73,10 @@ public class UserInfo {
     } else {
       //get installationId as generated in registration sp
       //todo - remove this in few months after 02.20
-      SharedPreferences registrationPreferences = context.getSharedPreferences(REGISTRATION_PREFERENCES_NAME,
+      SharedPreferences registrationPreferences =
+              context.getSharedPreferences(Registration.REGISTRATION_PREFERENCES_NAME,
               MODE_PRIVATE);
-      String installationIdAsAlreadyStoredInRegistration = registrationPreferences.getString(DEVICE_ID_KEY, null);
+      String installationIdAsAlreadyStoredInRegistration = registrationPreferences.getString(Registration.DEVICE_ID_KEY, null);
       if(installationIdAsAlreadyStoredInRegistration != null) {
         userInfo.userIdsSp.edit().putString(INSTALLATION_ID_KEY, installationIdAsAlreadyStoredInRegistration).apply();
         userInfo.installationId = installationIdAsAlreadyStoredInRegistration;
@@ -104,6 +103,8 @@ public class UserInfo {
 
     return userInfo;
   }
+
+
 
   public String getInstallationId(){
     return installationId;
@@ -196,4 +197,10 @@ public class UserInfo {
     String USER_EMAIL_KEY = "userEmail";
     String INSTALLATION_ID_KEY = "installationIdKey";
   }
+
+  interface Registration {
+    String REGISTRATION_PREFERENCES_NAME = "com.optimove.sdk.registration_preferences";
+    String DEVICE_ID_KEY = "deviceIdKey";
+  }
+
 }

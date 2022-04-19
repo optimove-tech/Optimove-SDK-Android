@@ -11,8 +11,8 @@ import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.configs.RealtimeConfigs;
 import com.optimove.sdk.optimove_sdk.main.sdk_configs.reused_configs.EventConfigs;
 import com.optimove.sdk.optimove_sdk.main.tools.networking.HttpClient;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamDbHelper;
-import com.optimove.sdk.optimove_sdk.optitrack.OptistreamHandler;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
+import com.optimove.sdk.optimove_sdk.optistream.OptistreamHandler;
 import com.optimove.sdk.optimove_sdk.realtime.RealtimeManager;
 
 import java.util.Map;

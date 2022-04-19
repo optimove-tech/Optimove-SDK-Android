@@ -45,9 +45,6 @@ public class EventMemoryBuffer extends EventHandler {
     public void processQueue() {
         reportEventNext(new ArrayList<>(optimoveEventsBuffer));
         optimoveEventsBuffer.clear();
-//        while (!optimoveEventsBuffer.isEmpty()) {
-//            reportEventNext(new ArrayList<OptimoveEvent>(optimoveEventsBuffer.re()));
-//        }
     }
 
 

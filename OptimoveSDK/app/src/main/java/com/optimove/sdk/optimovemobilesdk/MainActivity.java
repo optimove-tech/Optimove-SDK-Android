@@ -8,19 +8,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.main.events.OptimoveEvent;
-import com.optimove.sdk.optimove_sdk.optipush.deep_link.DeepLinkHandler;
-import com.optimove.sdk.optimove_sdk.optipush.deep_link.LinkDataError;
-import com.optimove.sdk.optimove_sdk.optipush.deep_link.LinkDataExtractedListener;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,18 +40,18 @@ public class MainActivity extends AppCompatActivity {
   @Override
   protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
-    runFromWorker(() -> new DeepLinkHandler(intent).extractLinkData(new LinkDataExtractedListener() {
-      @Override
-      public void onDataExtracted(String screenName, Map<String, String> parameters) {
-        Toast.makeText(MainActivity.this, String.format("New Intent called with screed %s, and data: %s",
-            screenName, Arrays.deepToString(parameters.values().toArray(new String[0]))), Toast.LENGTH_SHORT).show();
-      }
-
-      @Override
-      public void onErrorOccurred(LinkDataError error) {
-        Toast.makeText(MainActivity.this, "New Intent called without deep link", Toast.LENGTH_SHORT).show();
-      }
-    }));
+//    runFromWorker(() -> new DeepLinkHandler(intent).extractLinkData(new LinkDataExtractedListener() {
+//      @Override
+//      public void onDataExtracted(String screenName, Map<String, String> parameters) {
+//        Toast.makeText(MainActivity.this, String.format("New Intent called with screed %s, and data: %s",
+//            screenName, Arrays.deepToString(parameters.values().toArray(new String[0]))), Toast.LENGTH_SHORT).show();
+//      }
+//
+//      @Override
+//      public void onErrorOccurred(LinkDataError error) {
+//        Toast.makeText(MainActivity.this, "New Intent called without deep link", Toast.LENGTH_SHORT).show();
+//      }
+//    }));
   }
 
   public void reportEvent(View view) {

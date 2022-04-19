@@ -7,8 +7,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 
-import com.optimove.sdk.optimove_sdk.main.Optimove;
+import com.optimove.sdk.optimove_sdk.Optimove;
 import com.optimove.sdk.optimove_sdk.main.common.TenantInfo;
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 public class MyApplication extends Application {
 
@@ -29,8 +30,15 @@ public class MyApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    Optimove.configure(this, new TenantInfo("internal-token", "dev"));
+
+    Optimove.initialize(this, new OptimoveConfig.Builder(
+            null,
+            "base64creds")
+            .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
+            .build());
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();
+
+    Optimove.pushRegister(this);
   }
 }
