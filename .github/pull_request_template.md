@@ -11,21 +11,20 @@
 Prepare:
 
 - [ ] Detail any breaking changes. Breaking changes require a new major version number, and a migration guide in wiki / README.md
-- [ ] Check `./gradlew assemble` passes w/ no errors
 
 Bump versions in:
 
 - [ ] CHANGELOG.md
 
-Integration tests:
+### Integration tests
 
-## T&T Only
+*T&T Only*
 
 - [ ] Init SDK with only optimove tenant / config
+- [ ] Associate customer with Optimove
 - [ ] Track events
 
-
-## Push Only
+*Push Only*
 
 - [ ] Init SDK with all credentials
 - [ ] Track events
@@ -38,22 +37,18 @@ Integration tests:
 - [ ] Receive / trigger the content extension, render image and action buttons for push
 - [ ] Verify push opened handler
 
-## Deferred Deep Links
+*Deferred Deep Links*
 
 - [ ] With app installed, trigger deep link handler
 - [ ] With app uninstalled, follow deep link, install test bundle, verify deep link read from Clipboard, trigger deep link handler
 
-## Combined
+*Combined*
 
 - [ ] Track event for T&T, verify push received
 - [ ] Trigger scheduled campaign, verify push received
 - [ ] Trigger scheduled campaign, verify In-App received
 
-Release:
+### Release Procedure
 
-- [ ] Squash and merge `dev`to `master`
+- [ ] Squash and merge `dev` to `master`
 - [ ] Delete branch once merged
-
-
-
-
