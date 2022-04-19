@@ -34,7 +34,7 @@ public class UrlBuilder {
         return baseUrl + path;
     }
 
-    static Map<Service, String> defaultMapping(@NonNull String region) {
+    public static Map<Service, String> defaultMapping(@NonNull String region) {
         Map<Service, String> baseUrlMap = new HashMap<>(Service.values().length);
 
         baseUrlMap.put(Service.IAR, "https://iar.app.delivery");

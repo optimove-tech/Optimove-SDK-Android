@@ -32,7 +32,6 @@ import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerOutputStream;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.RemoteLogsServiceOutputStream;
-import com.optimove.sdk.optimove_sdk.optimobile.OptimoveConfig;
 import com.optimove.sdk.optimove_sdk.optistream.OptistreamDbHelper;
 import com.optimove.sdk.optimove_sdk.optimobile.Optimobile;
 import com.optimove.sdk.optimove_sdk.optimobile.PushActionHandlerInterface;
@@ -47,7 +46,6 @@ import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.Ten
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TENANT_ID;
 import static com.optimove.sdk.optimove_sdk.main.constants.TenantConfigsKeys.TenantInfoKeys.TOKEN;
 import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.OPTITRACK_BUFFER_SIZE;
-import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.OPTITRACK_SP_NAME;
 import static com.optimove.sdk.optimove_sdk.optistream.OptitrackConstants.USER_ID_MAX_LENGTH;
 
 /**

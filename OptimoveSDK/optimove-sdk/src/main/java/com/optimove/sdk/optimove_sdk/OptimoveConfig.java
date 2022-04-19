@@ -1,4 +1,4 @@
-package com.optimove.sdk.optimove_sdk.optimobile;
+package com.optimove.sdk.optimove_sdk;
 
 import android.util.Base64;
 
@@ -6,8 +6,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.optimove.sdk.optimove_sdk.R;
 import com.optimove.sdk.optimove_sdk.main.tools.opti_logger.LogLevel;
+import com.optimove.sdk.optimove_sdk.optimobile.DeferredDeepLinkHandlerInterface;
+import com.optimove.sdk.optimove_sdk.optimobile.InternalSdkEmbeddingApi;
+import com.optimove.sdk.optimove_sdk.optimobile.UrlBuilder;
 
 import org.json.JSONObject;
 
@@ -25,7 +27,7 @@ import org.json.JSONException;
 public final class OptimoveConfig {
 
     @DrawableRes
-    static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.optimobile_ic_stat_notifications;
+    public static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.optimobile_ic_stat_notifications;
     static final int DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS = 23;
 
     private @Nullable
@@ -114,12 +116,12 @@ public final class OptimoveConfig {
     }
 
     @Nullable
-    String getApiKey() {
+    public String getApiKey() {
         return apiKey;
     }
 
     @Nullable
-    String getSecretKey() {
+    public String getSecretKey() {
         return secretKey;
     }
 
@@ -140,19 +142,19 @@ public final class OptimoveConfig {
         return sessionIdleTimeoutSeconds;
     }
 
-    JSONObject getRuntimeInfo() {
+    public JSONObject getRuntimeInfo() {
         return this.runtimeInfo;
     }
 
-    JSONObject getSdkInfo() {
+    public JSONObject getSdkInfo() {
         return this.sdkInfo;
     }
 
-    @Nullable Map<UrlBuilder.Service, String> getBaseUrlMap() {
+    public @Nullable Map<UrlBuilder.Service, String> getBaseUrlMap() {
         return baseUrlMap;
     }
 
-    InAppConsentStrategy getInAppConsentStrategy() {
+    public InAppConsentStrategy getInAppConsentStrategy() {
         return inAppConsentStrategy;
     }
 

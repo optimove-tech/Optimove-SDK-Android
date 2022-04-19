@@ -15,6 +15,8 @@ import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

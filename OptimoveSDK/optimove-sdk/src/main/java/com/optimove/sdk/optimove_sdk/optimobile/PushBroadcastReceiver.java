@@ -21,6 +21,9 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 
 import androidx.annotation.Nullable;
+
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

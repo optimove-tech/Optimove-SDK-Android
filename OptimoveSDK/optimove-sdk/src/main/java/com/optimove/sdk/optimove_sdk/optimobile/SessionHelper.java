@@ -11,6 +11,8 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
+
 import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;

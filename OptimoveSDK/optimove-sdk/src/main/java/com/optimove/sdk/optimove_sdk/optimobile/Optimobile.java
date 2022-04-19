@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import com.optimove.sdk.optimove_sdk.BuildConfig;
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 /**
  * The Optimobile class is the main public API for calling Optimobile RPC methods and handling push registration

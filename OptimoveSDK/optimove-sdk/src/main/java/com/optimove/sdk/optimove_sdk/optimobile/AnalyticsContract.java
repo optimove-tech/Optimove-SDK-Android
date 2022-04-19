@@ -18,6 +18,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.optimove.sdk.optimove_sdk.BuildConfig;
+import com.optimove.sdk.optimove_sdk.OptimoveConfig;
 
 import org.json.JSONException;
 import org.json.JSONObject;
