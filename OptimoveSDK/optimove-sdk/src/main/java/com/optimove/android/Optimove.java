@@ -424,9 +424,8 @@ final public class Optimove {
      * Clears any existing association between this install record and a user identifier
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see Optimobile#getCurrentUserIdentifier(Context)
-     * @param context
      */
-    public static void clearUserAssociation(@NonNull Context context) {
+    public void clearUserAssociation() {
         Optimobile.clearUserAssociation(context);
     }
 
@@ -436,10 +435,9 @@ final public class Optimove {
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see com.optimove.android.optimobile.Installation#id(Context)
      *
-     * @param context
      * @return The current user identifier (if available), otherwise the Optimobile installation ID
      */
-    public static String getCurrentUserIdentifier(@NonNull Context context) {
+    public String getCurrentUserIdentifier() {
         return Optimobile.getCurrentUserIdentifier(context);
     }
 
@@ -448,49 +446,41 @@ final public class Optimove {
 
     /**
      * Used to register the device installation with FCM to receive push notifications
-     *
-     * @param context
      */
-    public static void pushRegister(Context context) {
+    public void pushRegister() {
         Optimobile.pushRegister(context);
     }
 
     /**
      * Used to unregister the current installation from receiving push notifications
-     *
-     * @param context
      */
-    public static void pushUnregister(Context context) {
+    public void pushUnregister() {
         Optimobile.pushUnregister(context);
     }
 
     /**
      * Used to track a conversion from a push notification
      *
-     * @param context
      * @param id
      */
-    public static void pushTrackOpen(Context context, final int id) throws Optimobile.UninitializedException {
+    public void pushTrackOpen(final int id) throws Optimobile.UninitializedException {
         Optimobile.pushTrackOpen(context, id);
     }
 
     /**
      * Used to track a dismissal of a push notification
      *
-     * @param context
      * @param id
      */
-    public static void pushTrackDismissed(Context context, final int id) throws Optimobile.UninitializedException {
+    public void pushTrackDismissed(final int id) throws Optimobile.UninitializedException {
         Optimobile.pushTrackDismissed(context, id);
     }
 
     /**
      * Registers the push token with Optimobile to allow sending push notifications to this install
-     * @param context
      * @param token
      */
-    public static void pushTokenStore(@NonNull Context context, @NonNull final PushTokenType type,
-                                      @NonNull final String token) {
+    public void pushTokenStore(@NonNull final PushTokenType type, @NonNull final String token) {
        Optimobile.pushTokenStore(context, type, token);
     }
 
@@ -498,22 +488,22 @@ final public class Optimove {
      * Allows setting the handler you want to use for push action buttons
      * @param handler
      */
-    public static void setPushActionHandler(PushActionHandlerInterface handler) {
+    public void setPushActionHandler(PushActionHandlerInterface handler) {
         Optimobile.setPushActionHandler(handler);
     }
 
     //==============================================================================================
     //-- DEFERRED DEEP LINKING
 
-    public static void seeIntent(Context context, Intent intent, @Nullable Bundle savedInstanceState) {
+    public void seeIntent(Intent intent, @Nullable Bundle savedInstanceState) {
         Optimobile.seeIntent(context, intent, savedInstanceState);
     }
 
-    public static void seeIntent(Context context, Intent intent) {
+    public void seeIntent(Intent intent) {
         Optimobile.seeIntent(context, intent);
     }
 
-    public static void seeInputFocus(Context context, boolean hasFocus) {
+    public void seeInputFocus(boolean hasFocus) {
         Optimobile.seeInputFocus(context, hasFocus);
     }
 
