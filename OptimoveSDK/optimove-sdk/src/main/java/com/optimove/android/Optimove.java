@@ -38,7 +38,6 @@ import com.optimove.android.optimobile.PushActionHandlerInterface;
 import com.optimove.android.optimobile.PushTokenType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -111,20 +110,20 @@ final public class Optimove {
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
-     * @param application    The instance of the current {@code Application} object.
-     * @param config The {@link OptimoveConfig} as provided by <i>Optimove</i>
+     * @param application The instance of the current {@code Application} object.
+     * @param config      The {@link OptimoveConfig} as provided by <i>Optimove</i>
      */
     public static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
         currentConfig = config;
 
         performSingletonInitialization(application.getApplicationContext(), config);
 
-        if (config.isOptimobileConfigured()){
+        if (config.isOptimobileConfigured()) {
             Optimobile.initialize(application, config);
         }
 
-        if (config.isOptimoveConfigured()){
-            if (config.getCustomMinLogLevel() != null){
+        if (config.isOptimoveConfigured()) {
+            if (config.getCustomMinLogLevel() != null) {
                 OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
             }
 
@@ -200,7 +199,7 @@ final public class Optimove {
         sendInitialEvents();
     }
 
-    private void sendInitialEvents(){
+    private void sendInitialEvents() {
         EventGenerator eventGenerator =
                 EventGenerator.builder()
                         .withPackageName(context.getPackageName())
@@ -241,7 +240,7 @@ final public class Optimove {
         }
         shared = new Optimove(context);
 
-        if (!config.isOptimoveConfigured()){
+        if (!config.isOptimoveConfigured()) {
             return;
         }
 
@@ -264,7 +263,7 @@ final public class Optimove {
      * Method that performs both the {@code setUserId} and the {@code setUserEmail} flows from a single call.
      *
      * @param userId The new userId
-     * @param email the <i>email address</i> to attach
+     * @param email  the <i>email address</i> to attach
      * @see Optimove#setUserId(String)
      * @see Optimove#setUserEmail(String)
      */
@@ -274,15 +273,15 @@ final public class Optimove {
         SetUserIdEvent setUserIdEvent = processUserId(userId);
         SetEmailEvent setEmailEvent = processUserEmail(email);
         List<OptimoveEvent> list = new ArrayList<>();
-        if (setUserIdEvent != null){
+        if (setUserIdEvent != null) {
             list.add(setUserIdEvent);
         }
 
-        if (setEmailEvent != null){
+        if (setEmailEvent != null) {
             list.add(setEmailEvent);
         }
 
-        if (!list.isEmpty()){
+        if (!list.isEmpty()) {
             eventHandlerProvider.getEventHandler().reportEvent(list);
         }
     }
@@ -309,11 +308,11 @@ final public class Optimove {
      * @param userId The new userId to set
      */
     public void setUserId(String userId) {
-        if (currentConfig.isOptimobileConfigured()){
+        if (currentConfig.isOptimobileConfigured()) {
             Optimobile.associateUserWithInstall(context, userId);
         }
 
-        if (currentConfig.isOptimoveConfigured()){
+        if (currentConfig.isOptimoveConfigured()) {
             SetUserIdEvent setUserIdEvent = processUserId(userId);
             if (setUserIdEvent != null) {
                 eventHandlerProvider.getEventHandler()
@@ -343,15 +342,17 @@ final public class Optimove {
 
     private @Nullable
     SetUserIdEvent processUserId(String userId) {
+        String originalVisitorId = this.userInfo.getInitialVisitorId();
+
         if (OptiUtils.isNullNoneOrUndefined(userId)) {
-            return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), null, this.userInfo.getVisitorId());
+            return new SetUserIdEvent(originalVisitorId, null, this.userInfo.getVisitorId());
         }
 
         if (userId.length() > USER_ID_MAX_LENGTH) {
-            return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), userId, this.userInfo.getVisitorId());
+            return new SetUserIdEvent(originalVisitorId, userId, this.userInfo.getVisitorId());
         }
 
-        String newUserId = userId.trim(); // Safe to trim now as it could never be null
+        String newUserId = userId.trim();
 
         if (this.userInfo.getUserId() != null && this.userInfo.getUserId()
                 .equals(newUserId)) {
@@ -359,7 +360,6 @@ final public class Optimove {
             return null;
         }
 
-        String originalVisitorId = this.userInfo.getInitialVisitorId();
         String updatedVisitorId = OptiUtils.SHA1(newUserId)
                 .substring(0, 16);
 
@@ -368,10 +368,14 @@ final public class Optimove {
 
         return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
-    /** get visitor id of Optimove SDK  */
-    public String getVisitorId(){
+
+    /**
+     * get visitor id of Optimove SDK
+     */
+    public String getVisitorId() {
         return this.userInfo.getVisitorId();
     }
+
     /**
      * Convenience method for reporting a <b>custom</b> {@link OptimoveEvent} without parameters
      *
@@ -422,6 +426,7 @@ final public class Optimove {
 
     /**
      * Clears any existing association between this install record and a user identifier
+     *
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see Optimobile#getCurrentUserIdentifier(Context)
      */
@@ -432,10 +437,9 @@ final public class Optimove {
     /**
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
+     * @return The current user identifier (if available), otherwise the Optimobile installation ID
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see com.optimove.android.optimobile.Installation#id(Context)
-     *
-     * @return The current user identifier (if available), otherwise the Optimobile installation ID
      */
     public String getCurrentUserIdentifier() {
         return Optimobile.getCurrentUserIdentifier(context);
@@ -478,14 +482,16 @@ final public class Optimove {
 
     /**
      * Registers the push token with Optimobile to allow sending push notifications to this install
+     *
      * @param token
      */
     public void pushTokenStore(@NonNull final PushTokenType type, @NonNull final String token) {
-       Optimobile.pushTokenStore(context, type, token);
+        Optimobile.pushTokenStore(context, type, token);
     }
 
     /**
      * Allows setting the handler you want to use for push action buttons
+     *
      * @param handler
      */
     public void setPushActionHandler(PushActionHandlerInterface handler) {
