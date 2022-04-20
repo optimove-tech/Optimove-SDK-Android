@@ -77,7 +77,7 @@ public final class Optimobile {
      * @param application
      * @param config
      */
-    public static synchronized void initialize(final Application application, OptimoveConfig config, String installationId) {
+    public static synchronized void initialize(final Application application, OptimoveConfig config, String initialVisitorId) {
         if (!config.isOptimobileConfigured()){
             throw new UninitializedException();
         }
@@ -87,7 +87,7 @@ public final class Optimobile {
             return;
         }
 
-        installId = installationId;
+        installId = initialVisitorId;
 
         authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
