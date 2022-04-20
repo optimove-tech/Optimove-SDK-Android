@@ -438,21 +438,10 @@ final public class Optimove {
     }
 
     /**
-     * Clears any existing association between this install record and a user identifier
-     *
-     * @see Optimobile#associateUserWithInstall(Context, String)
-     * @see Optimobile#getCurrentUserIdentifier(Context)
-     */
-    public void clearUserAssociation() {
-        Optimobile.clearUserAssociation(context);
-    }
-
-    /**
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
      * @return The current user identifier (if available), otherwise the Optimobile installation ID
      * @see Optimobile#associateUserWithInstall(Context, String)
-     * @see com.optimove.android.optimobile.Installation#id(Context)
      */
     public String getCurrentUserIdentifier() {
         return Optimobile.getCurrentUserIdentifier(context);
