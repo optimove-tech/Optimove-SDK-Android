@@ -53,7 +53,6 @@ import static com.optimove.android.optistream.OptitrackConstants.USER_ID_MAX_LEN
  */
 final public class Optimove {
 
-    private static final Object LOCK = new Object();
     private static Optimove shared;
     @NonNull
     private final Context context;
@@ -71,6 +70,7 @@ final public class Optimove {
 
     private Optimove(@NonNull Context context) {
         this.context = context;
+
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
                 Context.MODE_PRIVATE);
         this.deviceInfoProvider = new DeviceInfoProvider(context);
@@ -100,7 +100,7 @@ final public class Optimove {
      */
     public static Optimove getInstance() {
         if (shared == null) {
-            throw new IllegalStateException("Optimove.configure() must be called");
+            throw new IllegalStateException("Optimove.initialize() must be called");
         }
         return shared;
     }
@@ -115,6 +115,8 @@ final public class Optimove {
     public static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
         currentConfig = config;
 
+        performSingletonInitialization(application.getApplicationContext(), config);
+
         if (config.isOptimobileConfigured()){
             Optimobile.initialize(application, config);
         }
@@ -127,15 +129,11 @@ final public class Optimove {
             OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
 
             Runnable initCommand = () -> {
-                boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
-                        new TenantInfo(config.getOptimoveToken(), config.getConfigFileName()));
-                if (initializedSuccessfully) {
-                    OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
-                    shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
-                    shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
-                    application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
-                    shared.fetchConfigs();
-                }
+                OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
+                shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
+                shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
+                application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+                shared.fetchConfigs();
             };
             if (!OptiUtils.isRunningOnMainThread()) {
                 OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
@@ -234,45 +232,27 @@ final public class Optimove {
      * <li>The singleton's instance {@link Optimove}</li>
      * <li>The singleton's logger {@link OptiLoggerStreamsContainer}</li>
      * </ul>
-     * <b>Note</b>: To initialize properly, the Optimove instance MUST have a {@link TenantInfo} property, either remote or local.
-     *
-     * @param context The Context.
-     * @param newTenantInfo      The {@code TenantInfo} that was sent by the client.
-     * @throws IllegalArgumentException if <b>both</b> the new and the local {@code TenantInfo}s passed are null.
      */
-    private static boolean performSingletonInitialization(Context context, TenantInfo newTenantInfo) {
+    private static synchronized void performSingletonInitialization(Context context, OptimoveConfig config) {
         if (shared != null) {
-            boolean tenantInfoExists = (shared.retrieveLocalTenantInfo() != null || newTenantInfo != null);
-            if (!tenantInfoExists) {
-                OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
-            }
-            return tenantInfoExists;
+            return;
+        }
+        shared = new Optimove(context);
+
+        if (!config.isOptimoveConfigured()){
+            return;
         }
 
-        synchronized (LOCK) {
-            shared = new Optimove(context);
-
-            TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
-            if (newTenantInfo == null && localTenantInfo == null) {
-                OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
-                return false;
-            }
-            // Merge the local and the new TenantInfo objects
-            if (localTenantInfo != null && newTenantInfo == null) {
-                shared.tenantInfo =
-                        localTenantInfo; // No point in storing the tenant info as it was already fetched from local storage
-            } else if (localTenantInfo != null) {
-                // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
-                localTenantInfo.setTenantToken(newTenantInfo.getTenantToken());
-                localTenantInfo.setConfigName(newTenantInfo.getConfigName());
-                shared.setAndStoreTenantInfo(localTenantInfo);
-            } else {
-                shared.tenantInfo =
-                        newTenantInfo; // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
-            }
+        TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
+        TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
+        if (localTenantInfo != null) {
+            // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
+            newTenantInfo.setTenantId(localTenantInfo.getTenantId());
+            shared.setAndStoreTenantInfo(newTenantInfo);
+        } else {
+            // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
+            shared.tenantInfo = newTenantInfo;
         }
-
-        return true;
     }
 
     //==============================================================================================
