@@ -32,7 +32,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void appEnteredForeground() {
-        if (!OptimoveInApp.isInAppEnabled()) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
 
@@ -41,7 +41,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void activityAvailable(@NonNull Activity activity) {
-        if (!OptimoveInApp.isInAppEnabled()) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
 
@@ -62,7 +62,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void activityUnavailable(@NonNull Activity activity) {
-        if (!OptimoveInApp.isInAppEnabled()) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
 

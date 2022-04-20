@@ -179,7 +179,7 @@ public final class Optimobile {
             editor.apply();
         }
 
-        OptimoveInApp.handleInAppUserChange(context, Optimove.getConfig());
+        OptimoveInApp.getInstance().handleInAppUserChange(context, Optimove.getConfig());
     }
 
     /**
@@ -229,7 +229,7 @@ public final class Optimobile {
         trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_ASSOCIATE_USER, props);
 
         if (isNewUserIdentifier){
-            OptimoveInApp.handleInAppUserChange(context, Optimove.getConfig());
+            OptimoveInApp.getInstance().handleInAppUserChange(context, Optimove.getConfig());
         }
     }
 

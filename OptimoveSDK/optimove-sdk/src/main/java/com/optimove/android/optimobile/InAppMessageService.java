@@ -82,7 +82,7 @@ class InAppMessageService {
             clearNotification(context, inAppId);
         }
 
-        OptimoveInApp.maybeRunInboxUpdatedHandler(inboxUpdated);
+        OptimoveInApp.getInstance().maybeRunInboxUpdatedHandler(inboxUpdated);
 
         InAppMessageService.storeLastSyncTime(context, inAppMessages);
 
@@ -184,7 +184,7 @@ class InAppMessageService {
             markedRead = markInboxItemRead(context, id, false);
         }
         if (message.getInbox() != null) {
-            OptimoveInApp.maybeRunInboxUpdatedHandler(markedRead);
+            OptimoveInApp.getInstance().maybeRunInboxUpdatedHandler(markedRead);
         }
 
         JSONObject params = new JSONObject();
@@ -284,7 +284,7 @@ class InAppMessageService {
             Optimobile.log(TAG, ex.getMessage());
         }
 
-        OptimoveInApp.maybeRunInboxUpdatedHandler(result);
+        OptimoveInApp.getInstance().maybeRunInboxUpdatedHandler(result);
 
         return result;
     }
@@ -340,7 +340,7 @@ class InAppMessageService {
             }
         }
 
-        OptimoveInApp.maybeRunInboxUpdatedHandler(inboxNeedsUpdate);
+        OptimoveInApp.getInstance().maybeRunInboxUpdatedHandler(inboxNeedsUpdate);
 
         return result;
     }

@@ -521,10 +521,10 @@ class InAppMessageView extends WebViewClient {
                     this.openUrl(currentActivity, action.getUrl());
                     return;
                 case BUTTON_ACTION_DEEP_LINK:
-                    if (null != OptimoveInApp.inAppDeepLinkHandler) {
+                    if (null != OptimoveInApp.getInstance().inAppDeepLinkHandler) {
                         presenter.cancelCurrentPresentationQueue();
 
-                        OptimoveInApp.inAppDeepLinkHandler.handle(currentActivity.getApplicationContext(),
+                        OptimoveInApp.getInstance().inAppDeepLinkHandler.handle(currentActivity.getApplicationContext(),
                                 new InAppDeepLinkHandlerInterface.InAppButtonPress(
                                         action.getDeepLink(),
                                         currentMessage.getInAppId(),

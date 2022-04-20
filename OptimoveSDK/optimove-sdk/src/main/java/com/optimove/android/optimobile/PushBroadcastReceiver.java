@@ -139,7 +139,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     }
 
     protected void maybeTriggerInAppSync(Context context, PushMessage pushMessage) {
-        if (!OptimoveInApp.isInAppEnabled()) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
 
@@ -553,7 +553,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
      * @param launchIntent
      */
     protected static void addDeepLinkExtras(PushMessage pushMessage, Intent launchIntent) {
-        if (!OptimoveInApp.isInAppEnabled()) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
 
