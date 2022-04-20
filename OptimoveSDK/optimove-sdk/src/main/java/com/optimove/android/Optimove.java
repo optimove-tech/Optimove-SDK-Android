@@ -37,8 +37,10 @@ import com.optimove.android.optimobile.Optimobile;
 import com.optimove.android.optimobile.PushActionHandlerInterface;
 import com.optimove.android.optimobile.PushTokenType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -268,17 +270,20 @@ final public class Optimove {
      */
     public void registerUser(String userId, String email) {
         Optimobile.associateUserWithInstall(context, userId);
+
         SetUserIdEvent setUserIdEvent = processUserId(userId);
         SetEmailEvent setEmailEvent = processUserEmail(email);
-        if (setUserIdEvent != null && setEmailEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Arrays.asList(setUserIdEvent, setEmailEvent));
-        } else if (setUserIdEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Collections.singletonList(setUserIdEvent));
-        } else if (setEmailEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Collections.singletonList(setEmailEvent));
+        List<OptimoveEvent> list = new ArrayList<>();
+        if (setUserIdEvent != null){
+            list.add(setUserIdEvent);
+        }
+
+        if (setEmailEvent != null){
+            list.add(setEmailEvent);
+        }
+
+        if (!list.isEmpty()){
+            eventHandlerProvider.getEventHandler().reportEvent(list);
         }
     }
 
