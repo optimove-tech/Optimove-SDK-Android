@@ -71,10 +71,10 @@ final public class Optimove {
 
     private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
+        this.userInfo = UserInfo.newInstance(context);
 
         if (!config.isOptimoveConfigured()) {
             //if optimove credentials not set, optimove API should fail early
-            userInfo = null;
             coreSharedPreferences = null;
             localConfigKeysPreferences = null;
             eventHandlerProvider = null;
@@ -90,7 +90,6 @@ final public class Optimove {
                 Context.MODE_PRIVATE);
         this.deviceInfoProvider = new DeviceInfoProvider(context);
         this.tenantInfo = null;
-        this.userInfo = UserInfo.newInstance(context);
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
         this.lifecycleObserver = new LifecycleObserver();
@@ -133,7 +132,7 @@ final public class Optimove {
         performSingletonInitialization(application.getApplicationContext(), config);
 
         if (config.isOptimobileConfigured()) {
-            Optimobile.initialize(application, config);
+            Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId());
         }
 
         if (config.isOptimoveConfigured()) {

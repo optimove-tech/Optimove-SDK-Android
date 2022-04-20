@@ -77,7 +77,7 @@ public final class Optimobile {
      * @param application
      * @param config
      */
-    public static synchronized void initialize(final Application application, OptimoveConfig config) {
+    public static synchronized void initialize(final Application application, OptimoveConfig config, String installationId) {
         if (!config.isOptimobileConfigured()){
             throw new UninitializedException();
         }
@@ -87,7 +87,7 @@ public final class Optimobile {
             return;
         }
 
-        installId = Installation.id(application);
+        installId = installationId;
 
         authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
@@ -186,7 +186,6 @@ public final class Optimobile {
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
      * @see Optimobile#associateUserWithInstall(Context, String)
-     * @see Installation#id(Context)
      *
      * @param context
      * @return The current user identifier (if available), otherwise the Optimobile installation ID
@@ -194,7 +193,7 @@ public final class Optimobile {
     public static String getCurrentUserIdentifier(@NonNull Context context) {
         synchronized (userIdLocker) {
             SharedPreferences preferences = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
-            return preferences.getString(SharedPrefs.KEY_USER_IDENTIFIER, Installation.id(context));
+            return preferences.getString(SharedPrefs.KEY_USER_IDENTIFIER, getInstallId());
         }
     }
 

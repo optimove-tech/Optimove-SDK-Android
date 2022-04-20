@@ -65,7 +65,7 @@ class AnalyticsUploadHelper {
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), dataStr);
 
         final OkHttpClient httpClient = new OkHttpClient();
-        final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Installation.id(context) + "/events");
+        final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
         Request request = new Request.Builder()
                 .url(url)
