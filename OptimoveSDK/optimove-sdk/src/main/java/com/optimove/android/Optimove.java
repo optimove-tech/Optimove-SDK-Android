@@ -69,8 +69,22 @@ final public class Optimove {
 
     private static OptimoveConfig currentConfig;
 
-    private Optimove(@NonNull Context context) {
+    private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
+
+        if (!config.isOptimoveConfigured()) {
+            //if optimove credentials not set, optimove API should fail early
+            userInfo = null;
+            coreSharedPreferences = null;
+            localConfigKeysPreferences = null;
+            eventHandlerProvider = null;
+            optimoveLifecycleEventGenerator = null;
+            deviceInfoProvider = null;
+            configSet = null;
+            lifecycleObserver = null;
+
+            return;
+        }
 
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
                 Context.MODE_PRIVATE);
@@ -238,7 +252,7 @@ final public class Optimove {
         if (shared != null) {
             return;
         }
-        shared = new Optimove(context);
+        shared = new Optimove(context, config);
 
         if (!config.isOptimoveConfigured()) {
             return;
