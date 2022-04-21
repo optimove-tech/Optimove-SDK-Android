@@ -26,7 +26,7 @@ public class FirebaseMessageHandler {
 
     /**
      * Handles the received notification from FCM, creating a PushMessage model and broadcasting
-     * the appropriate com.optimobile.push Intent
+     * the appropriate com.optimove.push Intent
      *
      * @param context
      * @param remoteMessage
