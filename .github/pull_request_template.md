@@ -20,11 +20,12 @@ Bump versions in:
 
 *T&T Only*
 
-- [ ] Init SDK with only optimove tenant / config
-- [ ] Associate customer with Optimove
+- [ ] Init SDK with only optimove credentials
+- [ ] Associate customer
+- [ ] Associate email
 - [ ] Track events
 
-*Push Only*
+*Mobile Only*
 
 - [ ] Init SDK with all credentials
 - [ ] Track events
