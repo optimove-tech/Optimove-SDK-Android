@@ -209,7 +209,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        public Builder(@Nullable TenantInfo optimoveCredentials, @Nullable String optimobileCredentials) {
+        public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
             if (optimoveCredentials == null && optimobileCredentials == null) {
                 throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
             }
@@ -218,13 +218,19 @@ public final class OptimoveConfig {
             this.setOptimobileCredentials(optimobileCredentials);
         }
 
-        private void setOptimoveCredentials(@Nullable TenantInfo optimoveCredentials) {
+        private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
             if (optimoveCredentials == null) {
                 return;
             }
 
-            this.optimoveToken = optimoveCredentials.getTenantToken();
-            this.configFileName = optimoveCredentials.getConfigName();
+            try {
+                JSONArray result = this.parseCredentials(optimoveCredentials);
+
+                this.optimoveToken = result.getString(1);
+                this.configFileName = result.getString(2);
+            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+                throw new IllegalArgumentException("Optimove credentials are not correct");
+            }
         }
 
         private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
@@ -233,8 +239,7 @@ public final class OptimoveConfig {
             }
 
             try {
-                byte[] data = Base64.decode(optimobileCredentials, Base64.DEFAULT);
-                JSONArray result = new JSONArray(new String(data, StandardCharsets.UTF_8));
+                JSONArray result = this.parseCredentials(optimobileCredentials);
 
                 String region = result.getString(1);
                 this.apiKey = result.getString(2);
@@ -245,6 +250,12 @@ public final class OptimoveConfig {
             } catch (NullPointerException | JSONException | IllegalArgumentException e) {
                 throw new IllegalArgumentException("Optimobile credentials are not correct");
             }
+        }
+
+        private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {
+            byte[] data = Base64.decode(credentials, Base64.DEFAULT);
+
+            return new JSONArray(new String(data, StandardCharsets.UTF_8));
         }
 
         /**
