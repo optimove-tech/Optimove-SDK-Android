@@ -281,21 +281,25 @@ final public class Optimove {
      * @see Optimove#setUserEmail(String)
      */
     public void registerUser(String userId, String email) {
-        Optimobile.associateUserWithInstall(context, userId);
-
-        SetUserIdEvent setUserIdEvent = processUserId(userId);
-        SetEmailEvent setEmailEvent = processUserEmail(email);
-        List<OptimoveEvent> list = new ArrayList<>();
-        if (setUserIdEvent != null) {
-            list.add(setUserIdEvent);
+        if (currentConfig.isOptimobileConfigured()){
+            Optimobile.associateUserWithInstall(context, userId);
         }
 
-        if (setEmailEvent != null) {
-            list.add(setEmailEvent);
-        }
+        if (currentConfig.isOptimoveConfigured()){
+            SetUserIdEvent setUserIdEvent = processUserId(userId);
+            SetEmailEvent setEmailEvent = processUserEmail(email);
+            List<OptimoveEvent> list = new ArrayList<>();
+            if (setUserIdEvent != null) {
+                list.add(setUserIdEvent);
+            }
 
-        if (!list.isEmpty()) {
-            eventHandlerProvider.getEventHandler().reportEvent(list);
+            if (setEmailEvent != null) {
+                list.add(setEmailEvent);
+            }
+
+            if (!list.isEmpty()) {
+                eventHandlerProvider.getEventHandler().reportEvent(list);
+            }
         }
     }
 
