@@ -33,6 +33,8 @@ public final class OptimoveConfig {
     static final int DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS = 23;
 
     private @Nullable
+    String region;
+    private @Nullable
     String apiKey;
     private @Nullable
     String secretKey;
@@ -63,6 +65,10 @@ public final class OptimoveConfig {
 
     // Private constructor to discourage not using the Builder.
     private OptimoveConfig() {
+    }
+
+    private void setRegion(@Nullable String region) {
+        this.region = region;
     }
 
     private void setApiKey(@Nullable String apiKey) {
@@ -115,6 +121,11 @@ public final class OptimoveConfig {
 
     private void setMinLogLevel(@Nullable LogLevel minLogLevel){
         this.minLogLevel = minLogLevel;
+    }
+
+    @Nullable
+    public String getRegion() {
+        return region;
     }
 
     @Nullable
@@ -186,6 +197,8 @@ public final class OptimoveConfig {
      */
     public static class Builder {
         private @Nullable
+        String region;
+        private @Nullable
         String apiKey;
         private @Nullable
         String secretKey;
@@ -242,6 +255,7 @@ public final class OptimoveConfig {
                 JSONArray result = this.parseCredentials(optimobileCredentials);
 
                 String region = result.getString(1);
+                this.region = region;
                 this.apiKey = result.getString(2);
                 this.secretKey = result.getString(3);
 
@@ -347,6 +361,7 @@ public final class OptimoveConfig {
 
         public OptimoveConfig build() {
             OptimoveConfig newConfig = new OptimoveConfig();
+            newConfig.setRegion(region);
             newConfig.setApiKey(apiKey);
             newConfig.setSecretKey(secretKey);
             newConfig.setOptimoveToken(optimoveToken);

@@ -38,12 +38,12 @@ public class UrlBuilder {
         Map<Service, String> baseUrlMap = new HashMap<>(Service.values().length);
 
         baseUrlMap.put(Service.IAR, "https://iar.app.delivery");
-        baseUrlMap.put(Service.MEDIA, "https://i.app.delivery");
 
         baseUrlMap.put(Service.PUSH, "https://push-" + region + ".kumulos.com");
         baseUrlMap.put(Service.CRM, "https://crm-" + region + ".kumulos.com");
         baseUrlMap.put(Service.EVENTS, "https://events-" + region + ".kumulos.com");
         baseUrlMap.put(Service.DDL, "https://links-" + region + ".kumulos.com");
+        baseUrlMap.put(Service.MEDIA, "https://i-" + region + ".app.delivery");
 
         return baseUrlMap;
     }
