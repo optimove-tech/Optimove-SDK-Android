@@ -37,8 +37,9 @@ import com.optimove.android.optimobile.Optimobile;
 import com.optimove.android.optimobile.PushActionHandlerInterface;
 import com.optimove.android.optimobile.PushTokenType;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,7 +54,6 @@ import static com.optimove.android.optistream.OptitrackConstants.USER_ID_MAX_LEN
  */
 final public class Optimove {
 
-    private static final Object LOCK = new Object();
     private static Optimove shared;
     @NonNull
     private final Context context;
@@ -69,8 +69,23 @@ final public class Optimove {
 
     private static OptimoveConfig currentConfig;
 
-    private Optimove(@NonNull Context context) {
+    private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
+
+        if (!config.isOptimoveConfigured()) {
+            //if optimove credentials not set, optimove API should fail early
+            userInfo = null;
+            coreSharedPreferences = null;
+            localConfigKeysPreferences = null;
+            eventHandlerProvider = null;
+            optimoveLifecycleEventGenerator = null;
+            deviceInfoProvider = null;
+            configSet = null;
+            lifecycleObserver = null;
+
+            return;
+        }
+
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
                 Context.MODE_PRIVATE);
         this.deviceInfoProvider = new DeviceInfoProvider(context);
@@ -100,7 +115,7 @@ final public class Optimove {
      */
     public static Optimove getInstance() {
         if (shared == null) {
-            throw new IllegalStateException("Optimove.configure() must be called");
+            throw new IllegalStateException("Optimove.initialize() must be called");
         }
         return shared;
     }
@@ -109,33 +124,31 @@ final public class Optimove {
      * Initializes the {@code Optimove SDK}. <b>Must</b> be called from the <b>Main</b> thread.<br>
      * Must be called as soon as possible ({@link Application#onCreate()} is the ideal place), and before any call to {@link Optimove#getInstance()}.
      *
-     * @param application    The instance of the current {@code Application} object.
-     * @param config The {@link OptimoveConfig} as provided by <i>Optimove</i>
+     * @param application The instance of the current {@code Application} object.
+     * @param config      The {@link OptimoveConfig} as provided by <i>Optimove</i>
      */
     public static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
         currentConfig = config;
 
-        if (config.isOptimobileConfigured()){
+        performSingletonInitialization(application.getApplicationContext(), config);
+
+        if (config.isOptimobileConfigured()) {
             Optimobile.initialize(application, config);
         }
 
-        if (config.isOptimoveConfigured()){
-            if (config.getCustomMinLogLevel() != null){
+        if (config.isOptimoveConfigured()) {
+            if (config.getCustomMinLogLevel() != null) {
                 OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
             }
 
             OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
 
             Runnable initCommand = () -> {
-                boolean initializedSuccessfully = performSingletonInitialization(application.getApplicationContext(),
-                        new TenantInfo(config.getOptimoveToken(), config.getConfigFileName()));
-                if (initializedSuccessfully) {
-                    OptiLoggerStreamsContainer.debug("Optimove.configure() is starting");
-                    shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
-                    shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
-                    application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
-                    shared.fetchConfigs();
-                }
+                OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
+                shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
+                shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
+                application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+                shared.fetchConfigs();
             };
             if (!OptiUtils.isRunningOnMainThread()) {
                 OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
@@ -200,7 +213,7 @@ final public class Optimove {
         sendInitialEvents();
     }
 
-    private void sendInitialEvents(){
+    private void sendInitialEvents() {
         EventGenerator eventGenerator =
                 EventGenerator.builder()
                         .withPackageName(context.getPackageName())
@@ -234,45 +247,27 @@ final public class Optimove {
      * <li>The singleton's instance {@link Optimove}</li>
      * <li>The singleton's logger {@link OptiLoggerStreamsContainer}</li>
      * </ul>
-     * <b>Note</b>: To initialize properly, the Optimove instance MUST have a {@link TenantInfo} property, either remote or local.
-     *
-     * @param context The Context.
-     * @param newTenantInfo      The {@code TenantInfo} that was sent by the client.
-     * @throws IllegalArgumentException if <b>both</b> the new and the local {@code TenantInfo}s passed are null.
      */
-    private static boolean performSingletonInitialization(Context context, TenantInfo newTenantInfo) {
+    private static synchronized void performSingletonInitialization(Context context, OptimoveConfig config) {
         if (shared != null) {
-            boolean tenantInfoExists = (shared.retrieveLocalTenantInfo() != null || newTenantInfo != null);
-            if (!tenantInfoExists) {
-                OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
-            }
-            return tenantInfoExists;
+            return;
+        }
+        shared = new Optimove(context, config);
+
+        if (!config.isOptimoveConfigured()) {
+            return;
         }
 
-        synchronized (LOCK) {
-            shared = new Optimove(context);
-
-            TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
-            if (newTenantInfo == null && localTenantInfo == null) {
-                OptiLoggerStreamsContainer.error("Optimove initialization failed due to corrupted tenant info");
-                return false;
-            }
-            // Merge the local and the new TenantInfo objects
-            if (localTenantInfo != null && newTenantInfo == null) {
-                shared.tenantInfo =
-                        localTenantInfo; // No point in storing the tenant info as it was already fetched from local storage
-            } else if (localTenantInfo != null) {
-                // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
-                localTenantInfo.setTenantToken(newTenantInfo.getTenantToken());
-                localTenantInfo.setConfigName(newTenantInfo.getConfigName());
-                shared.setAndStoreTenantInfo(localTenantInfo);
-            } else {
-                shared.tenantInfo =
-                        newTenantInfo; // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
-            }
+        TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
+        TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
+        if (localTenantInfo != null) {
+            // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
+            newTenantInfo.setTenantId(localTenantInfo.getTenantId());
+            shared.setAndStoreTenantInfo(newTenantInfo);
+        } else {
+            // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
+            shared.tenantInfo = newTenantInfo;
         }
-
-        return true;
     }
 
     //==============================================================================================
@@ -282,23 +277,26 @@ final public class Optimove {
      * Method that performs both the {@code setUserId} and the {@code setUserEmail} flows from a single call.
      *
      * @param userId The new userId
-     * @param email the <i>email address</i> to attach
+     * @param email  the <i>email address</i> to attach
      * @see Optimove#setUserId(String)
      * @see Optimove#setUserEmail(String)
      */
     public void registerUser(String userId, String email) {
         Optimobile.associateUserWithInstall(context, userId);
+
         SetUserIdEvent setUserIdEvent = processUserId(userId);
         SetEmailEvent setEmailEvent = processUserEmail(email);
-        if (setUserIdEvent != null && setEmailEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Arrays.asList(setUserIdEvent, setEmailEvent));
-        } else if (setUserIdEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Collections.singletonList(setUserIdEvent));
-        } else if (setEmailEvent != null) {
-            eventHandlerProvider.getEventHandler()
-                    .reportEvent(Collections.singletonList(setEmailEvent));
+        List<OptimoveEvent> list = new ArrayList<>();
+        if (setUserIdEvent != null) {
+            list.add(setUserIdEvent);
+        }
+
+        if (setEmailEvent != null) {
+            list.add(setEmailEvent);
+        }
+
+        if (!list.isEmpty()) {
+            eventHandlerProvider.getEventHandler().reportEvent(list);
         }
     }
 
@@ -324,11 +322,11 @@ final public class Optimove {
      * @param userId The new userId to set
      */
     public void setUserId(String userId) {
-        if (currentConfig.isOptimobileConfigured()){
+        if (currentConfig.isOptimobileConfigured()) {
             Optimobile.associateUserWithInstall(context, userId);
         }
 
-        if (currentConfig.isOptimoveConfigured()){
+        if (currentConfig.isOptimoveConfigured()) {
             SetUserIdEvent setUserIdEvent = processUserId(userId);
             if (setUserIdEvent != null) {
                 eventHandlerProvider.getEventHandler()
@@ -358,15 +356,17 @@ final public class Optimove {
 
     private @Nullable
     SetUserIdEvent processUserId(String userId) {
+        String originalVisitorId = this.userInfo.getInitialVisitorId();
+
         if (OptiUtils.isNullNoneOrUndefined(userId)) {
-            return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), null, this.userInfo.getVisitorId());
+            return new SetUserIdEvent(originalVisitorId, null, this.userInfo.getVisitorId());
         }
 
         if (userId.length() > USER_ID_MAX_LENGTH) {
-            return new SetUserIdEvent(this.userInfo.getInitialVisitorId(), userId, this.userInfo.getVisitorId());
+            return new SetUserIdEvent(originalVisitorId, userId, this.userInfo.getVisitorId());
         }
 
-        String newUserId = userId.trim(); // Safe to trim now as it could never be null
+        String newUserId = userId.trim();
 
         if (this.userInfo.getUserId() != null && this.userInfo.getUserId()
                 .equals(newUserId)) {
@@ -374,7 +374,6 @@ final public class Optimove {
             return null;
         }
 
-        String originalVisitorId = this.userInfo.getInitialVisitorId();
         String updatedVisitorId = OptiUtils.SHA1(newUserId)
                 .substring(0, 16);
 
@@ -383,10 +382,14 @@ final public class Optimove {
 
         return new SetUserIdEvent(originalVisitorId, newUserId, updatedVisitorId);
     }
-    /** get visitor id of Optimove SDK  */
-    public String getVisitorId(){
+
+    /**
+     * get visitor id of Optimove SDK
+     */
+    public String getVisitorId() {
         return this.userInfo.getVisitorId();
     }
+
     /**
      * Convenience method for reporting a <b>custom</b> {@link OptimoveEvent} without parameters
      *
@@ -437,24 +440,22 @@ final public class Optimove {
 
     /**
      * Clears any existing association between this install record and a user identifier
+     *
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see Optimobile#getCurrentUserIdentifier(Context)
-     * @param context
      */
-    public static void clearUserAssociation(@NonNull Context context) {
+    public void clearUserAssociation() {
         Optimobile.clearUserAssociation(context);
     }
 
     /**
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
+     * @return The current user identifier (if available), otherwise the Optimobile installation ID
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see com.optimove.android.optimobile.Installation#id(Context)
-     *
-     * @param context
-     * @return The current user identifier (if available), otherwise the Optimobile installation ID
      */
-    public static String getCurrentUserIdentifier(@NonNull Context context) {
+    public String getCurrentUserIdentifier() {
         return Optimobile.getCurrentUserIdentifier(context);
     }
 
@@ -463,72 +464,66 @@ final public class Optimove {
 
     /**
      * Used to register the device installation with FCM to receive push notifications
-     *
-     * @param context
      */
-    public static void pushRegister(Context context) {
+    public void pushRegister() {
         Optimobile.pushRegister(context);
     }
 
     /**
      * Used to unregister the current installation from receiving push notifications
-     *
-     * @param context
      */
-    public static void pushUnregister(Context context) {
+    public void pushUnregister() {
         Optimobile.pushUnregister(context);
     }
 
     /**
      * Used to track a conversion from a push notification
      *
-     * @param context
      * @param id
      */
-    public static void pushTrackOpen(Context context, final int id) throws Optimobile.UninitializedException {
+    public void pushTrackOpen(final int id) throws Optimobile.UninitializedException {
         Optimobile.pushTrackOpen(context, id);
     }
 
     /**
      * Used to track a dismissal of a push notification
      *
-     * @param context
      * @param id
      */
-    public static void pushTrackDismissed(Context context, final int id) throws Optimobile.UninitializedException {
+    public void pushTrackDismissed(final int id) throws Optimobile.UninitializedException {
         Optimobile.pushTrackDismissed(context, id);
     }
 
     /**
      * Registers the push token with Optimobile to allow sending push notifications to this install
-     * @param context
+     *
      * @param token
      */
-    public static void pushTokenStore(@NonNull Context context, @NonNull final PushTokenType type,
-                                      @NonNull final String token) {
-       Optimobile.pushTokenStore(context, type, token);
+    public void pushTokenStore(@NonNull final PushTokenType type, @NonNull final String token) {
+        Optimobile.pushTokenStore(context, type, token);
     }
 
     /**
      * Allows setting the handler you want to use for push action buttons
+     *
      * @param handler
      */
-    public static void setPushActionHandler(PushActionHandlerInterface handler) {
+    public void setPushActionHandler(PushActionHandlerInterface handler) {
         Optimobile.setPushActionHandler(handler);
     }
 
     //==============================================================================================
     //-- DEFERRED DEEP LINKING
 
-    public static void seeIntent(Context context, Intent intent, @Nullable Bundle savedInstanceState) {
+    public void seeIntent(Intent intent, @Nullable Bundle savedInstanceState) {
         Optimobile.seeIntent(context, intent, savedInstanceState);
     }
 
-    public static void seeIntent(Context context, Intent intent) {
+    public void seeIntent(Intent intent) {
         Optimobile.seeIntent(context, intent);
     }
 
-    public static void seeInputFocus(Context context, boolean hasFocus) {
+    public void seeInputFocus(boolean hasFocus) {
         Optimobile.seeInputFocus(context, hasFocus);
     }
 

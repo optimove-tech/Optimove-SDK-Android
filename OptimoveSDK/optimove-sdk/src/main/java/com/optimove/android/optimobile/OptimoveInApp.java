@@ -16,9 +16,11 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class OptimoveInApp {
-    static InAppDeepLinkHandlerInterface inAppDeepLinkHandler = null;
-    static Application application;
+    InAppDeepLinkHandlerInterface inAppDeepLinkHandler = null;
     static InAppMessagePresenter presenter;
+    private static OptimoveInApp shared;
+    @NonNull
+    private final Application application;
 
     public enum InboxMessagePresentationResult {
         FAILED,
@@ -30,66 +32,72 @@ public class OptimoveInApp {
         void run();
     }
 
-    private static InAppInboxUpdatedHandler inboxUpdatedHandler;
+    private InAppInboxUpdatedHandler inboxUpdatedHandler;
 
     public interface InAppInboxSummaryHandler {
         void run(@Nullable InAppInboxSummary summary);
     }
 
+    private OptimoveInApp(@NonNull Application application) {
+        this.application = application;
+    }
+
     //==============================================================================================
     //-- Public APIs
 
+    public static OptimoveInApp getInstance() {
+        if (shared == null) {
+            throw new IllegalStateException("OptimoveInApp is not initialized");
+        }
+        return shared;
+    }
+
     /**
      * Returns up to 50 non-expired in-app messages stored in inbox
-     *
-     * @param context
      */
-    public static List<InAppInboxItem> getInboxItems(@NonNull Context context) {
+    public List<InAppInboxItem> getInboxItems() {
         boolean inAppEnabled = isInAppEnabled();
         if (!inAppEnabled) {
             throw new RuntimeException("Optimobile: It is only possible to read In App inbox if In App messaging is enabled");
         }
 
-        return InAppMessageService.readInboxItems(context);
+        return InAppMessageService.readInboxItems(application);
     }
 
     /**
      * Presents selected inbox item
      *
-     * @param context
      * @param item inbox item to present
      */
-    public static InboxMessagePresentationResult presentInboxMessage(@NonNull Context context, @NonNull InAppInboxItem item) {
+    public InboxMessagePresentationResult presentInboxMessage(@NonNull InAppInboxItem item) {
         boolean inAppEnabled = isInAppEnabled();
         if (!inAppEnabled) {
             throw new RuntimeException("Optimobile: It is only possible to present In App inbox if In App messaging is enabled");
         }
 
-        return InAppMessageService.presentMessage(context, item);
+        return InAppMessageService.presentMessage(application, item);
     }
 
     /**
      * Deletes selected inbox item
      *
-     * @param context
      * @param item inbox item to delete
      */
-    public static boolean deleteMessageFromInbox(@NonNull Context context, @NonNull InAppInboxItem item) {
-        return InAppMessageService.deleteMessageFromInbox(context, item.getId());
+    public boolean deleteMessageFromInbox(@NonNull InAppInboxItem item) {
+        return InAppMessageService.deleteMessageFromInbox(application, item.getId());
     }
 
     /**
      * Marks selected inbox item as read
      *
-     * @param context
      * @param item inbox item to mark as read
      */
-    public static boolean markAsRead(@NonNull Context context, @NonNull InAppInboxItem item) {
+    public boolean markAsRead(@NonNull InAppInboxItem item) {
         if (item.isRead()) {
             return false;
         }
 
-        boolean res = InAppMessageService.markInboxItemRead(context, item.getId(), true);
+        boolean res = InAppMessageService.markInboxItemRead(application, item.getId(), true);
         maybeRunInboxUpdatedHandler(res);
 
         return res;
@@ -98,10 +106,9 @@ public class OptimoveInApp {
     /**
      * Marks all inbox items as read.
      *
-     * @param context
      */
-    public static boolean markAllInboxItemsAsRead(@NonNull Context context) {
-        return InAppMessageService.markAllInboxItemsAsRead(context);
+    public boolean markAllInboxItemsAsRead() {
+        return InAppMessageService.markAllInboxItemsAsRead(application);
     }
 
     /**
@@ -111,18 +118,17 @@ public class OptimoveInApp {
      *
      * @param inboxUpdatedHandler handler
      */
-    public static void setOnInboxUpdated(@Nullable InAppInboxUpdatedHandler inboxUpdatedHandler) {
-        OptimoveInApp.inboxUpdatedHandler = inboxUpdatedHandler;
+    public void setOnInboxUpdated(@Nullable InAppInboxUpdatedHandler inboxUpdatedHandler) {
+        this.inboxUpdatedHandler = inboxUpdatedHandler;
     }
 
     /**
      * Asynchronously runs inbox summary handler on UI thread. Handler receives a single argument InAppInboxSummary
      *
-     * @param context
      * @param inboxSummaryHandler handler
      */
-    public static void getInboxSummaryAsync(@NonNull Context context, @NonNull InAppInboxSummaryHandler inboxSummaryHandler) {
-        Runnable task = new InAppContract.ReadInboxSummaryRunnable(context, inboxSummaryHandler);
+    public void getInboxSummaryAsync(@NonNull InAppInboxSummaryHandler inboxSummaryHandler) {
+        Runnable task = new InAppContract.ReadInboxSummaryRunnable(application, inboxSummaryHandler);
         Optimobile.executorService.submit(task);
     }
 
@@ -133,7 +139,7 @@ public class OptimoveInApp {
      * @param consentGiven
      */
 
-    public static void updateConsentForUser(boolean consentGiven) {
+    public void updateConsentForUser(boolean consentGiven) {
         if (Optimove.getConfig().getInAppConsentStrategy() != OptimoveConfig.InAppConsentStrategy.EXPLICIT_BY_USER) {
             throw new RuntimeException("Optimobile: It is only possible to update In App consent for user if consent strategy is set to EXPLICIT_BY_USER");
         }
@@ -150,8 +156,8 @@ public class OptimoveInApp {
      *
      * @param handler
      */
-    public static void setDeepLinkHandler(InAppDeepLinkHandlerInterface handler) {
-        inAppDeepLinkHandler = handler;
+    public void setDeepLinkHandler(InAppDeepLinkHandlerInterface handler) {
+        this.inAppDeepLinkHandler = handler;
     }
 
 
@@ -159,37 +165,37 @@ public class OptimoveInApp {
     //-- Internal Helpers
 
     static void initialize(Application application, OptimoveConfig currentConfig) {
-        OptimoveInApp.application = application;
+        shared = new OptimoveInApp(application);
 
         OptimoveConfig.InAppConsentStrategy strategy = currentConfig.getInAppConsentStrategy();
-        boolean inAppEnabled = isInAppEnabled();
+        boolean inAppEnabled = shared.isInAppEnabled();
 
         if (strategy == OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL && !inAppEnabled) {
             inAppEnabled = true;
-            updateInAppEnablementFlags(true);
+            shared.updateInAppEnablementFlags(true);
         } else if (strategy == null && inAppEnabled) {
             inAppEnabled = false;
-            updateInAppEnablementFlags(false);
+            shared.updateInAppEnablementFlags(false);
             InAppMessageService.clearAllMessages(application);
-            clearLastSyncTime(application);
+            shared.clearLastSyncTime(application);
         }
 
         presenter = new InAppMessagePresenter(application);
 
-        toggleInAppMessageMonitoring(inAppEnabled);
+        shared.toggleInAppMessageMonitoring(inAppEnabled);
     }
 
-    private static void updateInAppEnablementFlags(boolean enabled) {
+    private void updateInAppEnablementFlags(boolean enabled) {
         updateRemoteInAppEnablementFlag(enabled);
         updateLocalInAppEnablementFlag(enabled);
     }
 
-    static boolean isInAppEnabled() {
+    boolean isInAppEnabled() {
         SharedPreferences prefs = application.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
         return prefs.getBoolean(SharedPrefs.IN_APP_ENABLED, false);
     }
 
-    private static void updateRemoteInAppEnablementFlag(boolean enabled) {
+    private void updateRemoteInAppEnablementFlag(boolean enabled) {
         try {
             JSONObject params = new JSONObject().put("consented", enabled);
 
@@ -199,7 +205,7 @@ public class OptimoveInApp {
         }
     }
 
-    private static void updateLocalInAppEnablementFlag(boolean enabled) {
+    private void updateLocalInAppEnablementFlag(boolean enabled) {
         SharedPreferences prefs = application.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = prefs.edit();
@@ -207,14 +213,14 @@ public class OptimoveInApp {
         editor.apply();
     }
 
-    private static void clearLastSyncTime(Context context) {
+    private void clearLastSyncTime(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.remove(SharedPrefs.IN_APP_LAST_SYNC_TIME);
         editor.apply();
     }
 
-    static void handleInAppUserChange(Context context, OptimoveConfig currentConfig) {
+    void handleInAppUserChange(Context context, OptimoveConfig currentConfig) {
         InAppMessageService.clearAllMessages(context);
         clearLastSyncTime(context);
 
@@ -231,7 +237,7 @@ public class OptimoveInApp {
         }
     }
 
-    private static void toggleInAppMessageMonitoring(boolean enabled) {
+    private void toggleInAppMessageMonitoring(boolean enabled) {
         if (enabled) {
             InAppSyncWorker.startPeriodicFetches(application);
 
@@ -241,13 +247,13 @@ public class OptimoveInApp {
         }
     }
 
-    private static void fetchMessages() {
+    private void fetchMessages() {
         Optimobile.executorService.submit(() -> {
-            InAppMessageService.fetch(OptimoveInApp.application, true);
+            InAppMessageService.fetch(application, true);
         });
     }
 
-    static void maybeRunInboxUpdatedHandler(boolean inboxNeedsUpdate) {
+    void maybeRunInboxUpdatedHandler(boolean inboxNeedsUpdate) {
         if (!inboxNeedsUpdate || inboxUpdatedHandler == null) {
             return;
         }
