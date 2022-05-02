@@ -71,10 +71,10 @@ final public class Optimove {
 
     private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
+        this.userInfo = UserInfo.newInstance(context);
 
         if (!config.isOptimoveConfigured()) {
             //if optimove credentials not set, optimove API should fail early
-            userInfo = null;
             coreSharedPreferences = null;
             localConfigKeysPreferences = null;
             eventHandlerProvider = null;
@@ -90,7 +90,6 @@ final public class Optimove {
                 Context.MODE_PRIVATE);
         this.deviceInfoProvider = new DeviceInfoProvider(context);
         this.tenantInfo = null;
-        this.userInfo = UserInfo.newInstance(context);
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
         this.lifecycleObserver = new LifecycleObserver();
@@ -133,7 +132,7 @@ final public class Optimove {
         performSingletonInitialization(application.getApplicationContext(), config);
 
         if (config.isOptimobileConfigured()) {
-            Optimobile.initialize(application, config);
+            Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId());
         }
 
         if (config.isOptimoveConfigured()) {
@@ -282,21 +281,25 @@ final public class Optimove {
      * @see Optimove#setUserEmail(String)
      */
     public void registerUser(String userId, String email) {
-        Optimobile.associateUserWithInstall(context, userId);
-
-        SetUserIdEvent setUserIdEvent = processUserId(userId);
-        SetEmailEvent setEmailEvent = processUserEmail(email);
-        List<OptimoveEvent> list = new ArrayList<>();
-        if (setUserIdEvent != null) {
-            list.add(setUserIdEvent);
+        if (currentConfig.isOptimobileConfigured()){
+            Optimobile.associateUserWithInstall(context, userId);
         }
 
-        if (setEmailEvent != null) {
-            list.add(setEmailEvent);
-        }
+        if (currentConfig.isOptimoveConfigured()){
+            SetUserIdEvent setUserIdEvent = processUserId(userId);
+            SetEmailEvent setEmailEvent = processUserEmail(email);
+            List<OptimoveEvent> list = new ArrayList<>();
+            if (setUserIdEvent != null) {
+                list.add(setUserIdEvent);
+            }
 
-        if (!list.isEmpty()) {
-            eventHandlerProvider.getEventHandler().reportEvent(list);
+            if (setEmailEvent != null) {
+                list.add(setEmailEvent);
+            }
+
+            if (!list.isEmpty()) {
+                eventHandlerProvider.getEventHandler().reportEvent(list);
+            }
         }
     }
 
@@ -439,21 +442,10 @@ final public class Optimove {
     }
 
     /**
-     * Clears any existing association between this install record and a user identifier
-     *
-     * @see Optimobile#associateUserWithInstall(Context, String)
-     * @see Optimobile#getCurrentUserIdentifier(Context)
-     */
-    public void clearUserAssociation() {
-        Optimobile.clearUserAssociation(context);
-    }
-
-    /**
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
      * @return The current user identifier (if available), otherwise the Optimobile installation ID
      * @see Optimobile#associateUserWithInstall(Context, String)
-     * @see com.optimove.android.optimobile.Installation#id(Context)
      */
     public String getCurrentUserIdentifier() {
         return Optimobile.getCurrentUserIdentifier(context);

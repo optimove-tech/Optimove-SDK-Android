@@ -62,9 +62,9 @@ dependencies {
 }
 
 ext {
-    PUBLISH_GROUP_ID = 'com.optimove.sdk'
+    PUBLISH_GROUP_ID = 'com.optimove.android'
     PUBLISH_VERSION = "$sdk_version"
-    PUBLISH_ARTIFACT_ID = 'optimove-sdk'
+    PUBLISH_ARTIFACT_ID = 'optimove-android'
 }
 
 apply from: "${rootProject.projectDir}/scripts/publish-module.gradle"

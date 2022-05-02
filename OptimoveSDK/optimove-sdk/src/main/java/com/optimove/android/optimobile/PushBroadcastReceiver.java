@@ -41,13 +41,13 @@ import java.util.List;
 public class PushBroadcastReceiver extends BroadcastReceiver {
     public static final String TAG = PushBroadcastReceiver.class.getName();
 
-    public static String ACTION_PUSH_RECEIVED = "com.optimobile.push.RECEIVED";
-    public static String ACTION_PUSH_OPENED = "com.optimobile.push.OPENED";
-    public static String ACTION_PUSH_DISMISSED = "com.optimobile.push.DISMISSED";
-    public static String ACTION_BUTTON_CLICKED = "com.optimobile.push.BUTTON_CLICKED";
+    public static String ACTION_PUSH_RECEIVED = "com.optimove.push.RECEIVED";
+    public static String ACTION_PUSH_OPENED = "com.optimove.push.OPENED";
+    public static String ACTION_PUSH_DISMISSED = "com.optimove.push.DISMISSED";
+    public static String ACTION_BUTTON_CLICKED = "com.optimove.push.BUTTON_CLICKED";
 
-    static final String EXTRAS_KEY_TICKLE_ID = "com.optimobile.inapp.tickle.id";
-    static final String EXTRAS_KEY_BUTTON_ID = "com.optimobile.push.message.button.id";
+    static final String EXTRAS_KEY_TICKLE_ID = "com.optimove.inapp.tickle.id";
+    static final String EXTRAS_KEY_BUTTON_ID = "com.optimove.push.message.button.id";
 
     static final String DEFAULT_CHANNEL_ID = "optimobile_ch_general";
     static final String IMPORTANT_CHANNEL_ID = "optimobile_ch_important";

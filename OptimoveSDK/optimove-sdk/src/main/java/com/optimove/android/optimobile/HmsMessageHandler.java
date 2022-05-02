@@ -24,7 +24,7 @@ public class HmsMessageHandler {
 
     /**
      * Handles the received notification from HCM, creating a PushMessage model and broadcasting
-     * the appropriate com.optimobile.push Intent
+     * the appropriate com.optimove.push Intent
      * @param context
      * @param remoteMessage
      */

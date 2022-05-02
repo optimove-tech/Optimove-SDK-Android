@@ -40,6 +40,7 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.UiThread;
 
 import com.optimove.android.BuildConfig;
+import com.optimove.android.Optimove;
 import com.optimove.android.R;
 
 import org.json.JSONArray;
@@ -125,7 +126,14 @@ class InAppMessageView extends WebViewClient {
     @UiThread
     private void sendCurrentMessageToClient() {
         if (state == State.READY && pageFinished) {
-            sendToClient(HOST_MESSAGE_TYPE_PRESENT_MESSAGE, currentMessage.getContent());
+            JSONObject content = currentMessage.getContent();
+            try {
+                content.put("region", Optimove.getConfig().getRegion());
+            } catch (JSONException e) {
+                Log.w(TAG, "Could not pass region to In-App renderer");
+            }
+
+            sendToClient(HOST_MESSAGE_TYPE_PRESENT_MESSAGE, content);
         }
     }
 
@@ -441,7 +449,7 @@ class InAppMessageView extends WebViewClient {
         }
 
         WindowInsets insets = window.getDecorView().getRootWindowInsets();
-        if (insets == null){
+        if (insets == null) {
             return;
         }
 
@@ -584,7 +592,7 @@ class InAppMessageView extends WebViewClient {
             action.setType(actionType);
 
             switch (actionType) {
-                 case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
+                case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
                     if (null == rawActionData) {
                         continue;
                     }
