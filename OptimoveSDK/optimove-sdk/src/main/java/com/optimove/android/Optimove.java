@@ -461,12 +461,13 @@ final public class Optimove {
         Optimobile.pushRegister(context);
     }
 
-    /**
-     * Used to unregister the current installation from receiving push notifications
-     */
-    public void pushUnregister() {
-        Optimobile.pushUnregister(context);
-    }
+    //TODO: confirm
+//    /**
+//     * Used to unregister the current installation from receiving push notifications
+//     */
+//    public void pushUnregister() {
+//        Optimobile.pushUnregister(context);
+//    }
 
     /**
      * Used to track a conversion from a push notification
