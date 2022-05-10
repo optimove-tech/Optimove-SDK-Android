@@ -238,9 +238,6 @@ public class OptistreamEvent {
         @SerializedName("firstVisitorDate")
         @NonNull
         private long firstVisitorDate;
-        @SerializedName("airship")
-        @Nullable
-        private AirshipMetadata airship;
         @SerializedName("eventId")
         @Nullable
         private String eventId;
@@ -260,44 +257,12 @@ public class OptistreamEvent {
             this.requestId = requestId;
         }
 
-        public void setAirship(@NonNull AirshipMetadata airship){
-            this.airship = airship;
-        }
-
         public boolean isRealtime() {
             return realtime;
         }
 
         public void setRealtime(boolean realtime) {
             this.realtime = realtime;
-        }
-    }
-
-    public static final class AirshipMetadata {
-        @SerializedName("channelId")
-        private String channelId;
-        @SerializedName("appKey")
-        private String appKey;
-
-        public AirshipMetadata(String channelId, String appKey) {
-            this.channelId = channelId;
-            this.appKey = appKey;
-        }
-
-        public String getChannelId() {
-            return channelId;
-        }
-
-        public void setChannelId(String channelId) {
-            this.channelId = channelId;
-        }
-
-        public String getAppKey() {
-            return appKey;
-        }
-
-        public void setAppKey(String appKey) {
-            this.appKey = appKey;
         }
     }
 }
