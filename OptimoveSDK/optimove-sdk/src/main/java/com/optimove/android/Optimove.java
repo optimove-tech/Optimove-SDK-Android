@@ -173,11 +173,7 @@ final public class Optimove {
     public static void enableStagingRemoteLogs() {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
     }
-
-    public EventHandlerProvider getEventHandlerProvider() {
-        return eventHandlerProvider;
-    }
-
+    
     private void fetchConfigs() {
         ConfigsFetcher configsFetcher = ConfigsFetcher.builder()
                 .httpClient(HttpClient.getInstance(context))

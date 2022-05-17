@@ -257,7 +257,6 @@ public class ConfigsFetcher {
     public static class Builder implements ContextStep, SharedPrefsStep,
             ConfigNameStep, TenantTokenStep, HttpClientStep, FileProviderStep, Build {
 
-        private boolean isUrgent;
         private String configName;
         private String tenantToken;
         private SharedPreferences localConfigKeysPreferences;
