@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
     <exclude domain="sharedpref" path="com.optimove.android.user_ids.xml"/>
-    <exclude domain="sharedpref" path="com.optimove.android.optitrack_shared_pref.xml"/>
     <exclude domain="sharedpref" path="com.optimove.android.local_init.xml"/>
     <exclude domain="sharedpref" path="com.optimove.android.registration_preferences.xml"/>
 </full-backup-content>

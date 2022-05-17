@@ -32,9 +32,7 @@ public interface OptitrackConstants {
   /* *********************************
    * Shared Preferences
    * *********************************/
-
-  String OPTITRACK_SP_NAME = "com.optimove.sdk.optitrack_shared_pref";
-
+  
   int OPTITRACK_BUFFER_SIZE = 100;
 
 }

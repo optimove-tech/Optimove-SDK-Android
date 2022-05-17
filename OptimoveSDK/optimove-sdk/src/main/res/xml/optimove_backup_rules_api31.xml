@@ -2,13 +2,11 @@
 <data-extraction-rules>
     <device-transfer>
         <exclude domain="sharedpref" path="com.optimove.android.user_ids.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.optitrack_shared_pref.xml"/>
         <exclude domain="sharedpref" path="com.optimove.android.local_init.xml"/>
         <exclude domain="sharedpref" path="com.optimove.android.registration_preferences.xml"/>
     </device-transfer>
     <cloud-backup>
         <exclude domain="sharedpref" path="com.optimove.android.user_ids.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.optitrack_shared_pref.xml"/>
         <exclude domain="sharedpref" path="com.optimove.android.local_init.xml"/>
         <exclude domain="sharedpref" path="com.optimove.android.registration_preferences.xml"/>
     </cloud-backup>
