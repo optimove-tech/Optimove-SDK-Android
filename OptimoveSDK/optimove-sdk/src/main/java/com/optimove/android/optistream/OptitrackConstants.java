@@ -32,7 +32,7 @@ public interface OptitrackConstants {
   /* *********************************
    * Shared Preferences
    * *********************************/
-  
+
   int OPTITRACK_BUFFER_SIZE = 100;
 
 }
