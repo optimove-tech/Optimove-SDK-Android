@@ -5,11 +5,13 @@
         <exclude domain="sharedpref" path="com.optimove.sdk.user_ids.xml"/>
         <exclude domain="sharedpref" path="com.optimove.sdk.local_init.xml"/>
         <exclude domain="sharedpref" path="com.optimove.sdk.registration_preferences.xml"/>
+        <exclude domain="sharedpref" path="optimobile_prefs.xml"/>
     </device-transfer>
     <cloud-backup>
         <exclude domain="sharedpref" path="com.optimove.sdk.core.xml"/>
         <exclude domain="sharedpref" path="com.optimove.sdk.user_ids.xml"/>
         <exclude domain="sharedpref" path="com.optimove.sdk.local_init.xml"/>
         <exclude domain="sharedpref" path="com.optimove.sdk.registration_preferences.xml"/>
+        <exclude domain="sharedpref" path="optimobile_prefs.xml"/>
     </cloud-backup>
 </data-extraction-rules>
