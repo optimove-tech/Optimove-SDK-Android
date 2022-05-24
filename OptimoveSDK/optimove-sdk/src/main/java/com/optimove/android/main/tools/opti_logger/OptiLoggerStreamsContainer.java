@@ -9,6 +9,8 @@ import com.optimove.android.main.constants.TenantConfigsKeys;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+
 import static com.optimove.android.main.constants.TenantConfigsKeys.TenantInfoKeys.TENANT_ID;
 
 /**
@@ -33,7 +35,7 @@ public final class OptiLoggerStreamsContainer {
     public static void initializeLogger(Context context) {
         SharedPreferences coreSharedPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE, Context.MODE_PRIVATE);
-        OptiLoggerStreamsContainer.addOutputStream(new RemoteLogsServiceOutputStream(context,
+        OptiLoggerStreamsContainer.addOutputStream(new RemoteLogsServiceOutputStream(new OkHttpClient(), context.getPackageName(),
                 coreSharedPreferences.getInt(TENANT_ID, -1)));
         OptiLoggerStreamsContainer.addOutputStream(new LogcatOptiLoggerOutputStream());
     }

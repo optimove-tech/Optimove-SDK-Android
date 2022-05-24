@@ -1,24 +1,34 @@
 package com.optimove.android.main.tools.opti_logger;
 
-import android.content.Context;
+import androidx.annotation.NonNull;
 
 import com.optimove.android.BuildConfig;
-import com.optimove.android.main.tools.networking.HttpClient;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class RemoteLogsServiceOutputStream implements OptiLoggerOutputStream {
 
     private static final String LOG_SERVICE_BASE_URL = "https://mbaas-qa.optimove.net/";
 
-    private Context context;
+    private final String packageName;
+    private final OkHttpClient httpClient;
     private int tenantId;
 
-    public RemoteLogsServiceOutputStream(Context context, int tenantId) {
-        this.context = context;
+    public RemoteLogsServiceOutputStream(OkHttpClient httpClient, String packageName, int tenantId) {
+        this.httpClient = httpClient;
+        this.packageName = packageName;
         this.tenantId = tenantId;
     }
 
@@ -34,10 +44,13 @@ public class RemoteLogsServiceOutputStream implements OptiLoggerOutputStream {
 
     @Override
     public void reportLog(LogLevel logLevel, String logClass, String logMethod, String message) {
-        HttpClient.getInstance(context)
-                .postJson(LOG_SERVICE_BASE_URL, getRequestBody(logClass, logMethod, parseLogLevelJsonValue(logLevel), message))
-                .destination("%s/%s","report","log")
-                .send();
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
+                getRequestBody(logClass, logMethod, parseLogLevelJsonValue(logLevel), message).toString());
+
+        Request logRequest = new Request.Builder().url(LOG_SERVICE_BASE_URL + String.format(
+                "%s/%s", "report","log")).post(body).build();
+
+        httpClient.newCall(logRequest).enqueue(new BlankCallback());
     }
 
     private String parseLogLevelJsonValue(LogLevel logLevel) {
@@ -59,7 +72,7 @@ public class RemoteLogsServiceOutputStream implements OptiLoggerOutputStream {
     private JSONObject getRequestBody(String logClass, String logMethod, String logLevel, String message) {
         Map<String, Object> json = new HashMap<>(8);
         json.put(BodyKeys.TENANT_ID, tenantId);
-        json.put(BodyKeys.APP_NS, context.getPackageName());
+        json.put(BodyKeys.APP_NS, packageName);
         //BuildConfig here instead of Optiutils.getSdkEnv to prevent infinity loop
         json.put(BodyKeys.SDK_ENV, BuildConfig.OPTIMOVE_SDK_RUNTIME_ENV);
         json.put(BodyKeys.SDK_PLATFORM, "android");
@@ -88,5 +101,17 @@ public class RemoteLogsServiceOutputStream implements OptiLoggerOutputStream {
         String WARN = "warn";
         String ERROR = "error";
         String FATAL = "fatal";
+    }
+
+    static class BlankCallback implements Callback {
+
+        @Override
+        public void onFailure(@NonNull Call call, @NonNull IOException e) {
+
+        }
+        @Override
+        public void onResponse(@NonNull Call call,@NonNull Response response) throws IOException {
+
+        }
     }
 }
