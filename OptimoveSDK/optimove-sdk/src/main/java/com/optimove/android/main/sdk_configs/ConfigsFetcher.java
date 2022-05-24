@@ -13,11 +13,20 @@ import com.optimove.android.main.sdk_configs.fetched_configs.FetchedGlobalConfig
 import com.optimove.android.main.sdk_configs.fetched_configs.FetchedTenantConfigs;
 import com.optimove.android.main.tools.FileUtils;
 import com.optimove.android.main.tools.OptiUtils;
-import com.optimove.android.main.tools.networking.HttpClient;
 import com.optimove.android.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.Executors;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ConfigsFetcher {
 
@@ -33,7 +42,7 @@ public class ConfigsFetcher {
     @NonNull
     private final SharedPreferences localConfigKeysPreferences;
     @NonNull
-    private final HttpClient httpClient;
+    private final OkHttpClient httpClient;
     @NonNull
     private final FileUtils fileUtils;
     @NonNull
@@ -55,7 +64,7 @@ public class ConfigsFetcher {
 
     private ConfigsFetcher(@NonNull String tenantToken, @NonNull String configName,
                            @NonNull SharedPreferences localConfigKeysPreferences,
-                           @NonNull HttpClient httpClient, @NonNull FileUtils fileUtils,
+                           @NonNull OkHttpClient httpClient, @NonNull FileUtils fileUtils,
                            @NonNull Context context) {
         this.configName = configName;
         this.localConfigKeysPreferences = localConfigKeysPreferences;
@@ -67,23 +76,62 @@ public class ConfigsFetcher {
 
 
     public void fetchConfigs(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
-        fetchRemoteConfig(configsListener, configsErrorListener);
+        fetchGlobalConfigFromRemote(configsListener, configsErrorListener);
+        fetchTenantConfigFromRemote(configsListener, configsErrorListener);
     }
 
-    private void fetchRemoteConfig(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
-        httpClient.getObject(GLOBAL_CONFIG_FILE_BASE_URL, FetchedGlobalConfig.class)
-                .destination("%s/%s/%s.json", GLOBAL_CONFIG_VERSION,
-                        OptiUtils.getSdkEnv(context.getPackageName()), "configs")
-                .successListener(fetchedGlobalConfig -> setFetchedGlobalConfigs(fetchedGlobalConfig, configsListener,
-                        configsErrorListener))
-                .errorListener(e -> configFetchFailed(e, configsListener, configsErrorListener))
-                .send();
-        httpClient.getObject(TENANT_CONFIG_FILE_BASE_URL, FetchedTenantConfigs.class)
-                .destination("%s/%s.json", tenantToken, configName)
-                .successListener(fetchedTenantConfigs -> setFetchedTenantConfigs(fetchedTenantConfigs, configsListener,
-                        configsErrorListener))
-                .errorListener(e -> configFetchFailed(e, configsListener, configsErrorListener))
-                .send();
+    private void fetchGlobalConfigFromRemote(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener){
+        Request globalConfigRequest = new Request.Builder().url(GLOBAL_CONFIG_FILE_BASE_URL + String.format(
+                "%s/%s/%s.json", GLOBAL_CONFIG_VERSION,
+                OptiUtils.getSdkEnv(context.getPackageName()), "configs")).get().build();
+
+        httpClient.newCall(globalConfigRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                configFetchFailed(e.getMessage(), configsListener, configsErrorListener);
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    configFetchFailed("Global config fetch failed", configsListener, configsErrorListener);
+                    return;
+                }
+                try {
+                    setFetchedGlobalConfigs(new FetchedGlobalConfig(new JSONObject(response.body().string())),
+                            configsListener, configsErrorListener);
+                } catch (JSONException e) {
+                    configFetchFailed(e.getMessage(), configsListener, configsErrorListener);
+                }
+            }
+        });
+    }
+
+    private void fetchTenantConfigFromRemote(ConfigsListener configsListener,
+                                             ConfigsErrorListener configsErrorListener){
+        Request tenantConfigRequest = new Request.Builder().url(TENANT_CONFIG_FILE_BASE_URL + String.format(
+                "%s/%s.json", tenantToken, configName)).get().build();
+
+        httpClient.newCall(tenantConfigRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                configFetchFailed(e.getMessage(), configsListener, configsErrorListener);
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    configFetchFailed("Local config fetch failed", configsListener, configsErrorListener);
+                    return;
+                }
+                try {
+                    setFetchedTenantConfigs(new FetchedTenantConfigs(new JSONObject(response.body().string())),
+                            configsListener, configsErrorListener);
+                } catch (JSONException e) {
+                    configFetchFailed(e.getMessage(), configsListener, configsErrorListener);
+                }
+            }
+        });
     }
 
 
@@ -109,10 +157,10 @@ public class ConfigsFetcher {
         }
     }
 
-    private void configFetchFailed(Throwable throwable, ConfigsListener configsListener,
+    private void configFetchFailed(String errorMessage, ConfigsListener configsListener,
                                          ConfigsErrorListener configsErrorListener) {
         OptiLoggerStreamsContainer.error("Failed to get remote configuration file due to - %s",
-                throwable.getMessage());
+                errorMessage);
         getLocalConfig(configsListener, configsErrorListener);
     }
 
@@ -227,7 +275,7 @@ public class ConfigsFetcher {
     }
 
     public interface HttpClientStep {
-        TenantTokenStep httpClient(HttpClient httpClient);
+        TenantTokenStep httpClient(OkHttpClient httpClient);
     }
 
     public interface TenantTokenStep {
@@ -260,12 +308,12 @@ public class ConfigsFetcher {
         private String configName;
         private String tenantToken;
         private SharedPreferences localConfigKeysPreferences;
-        private HttpClient httpClient;
+        private OkHttpClient httpClient;
         private FileUtils fileUtils;
         private Context context;
 
         @Override
-        public TenantTokenStep httpClient(@NonNull HttpClient httpClient) {
+        public TenantTokenStep httpClient(@NonNull OkHttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
         }
