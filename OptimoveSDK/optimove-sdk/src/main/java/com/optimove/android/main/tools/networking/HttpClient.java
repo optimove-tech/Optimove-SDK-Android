@@ -23,6 +23,7 @@ public class HttpClient {
 
     private static final Object lock = new Object();
     private static HttpClient instance;
+    private OkHttpClient okHttpClient;
 
     public static HttpClient getInstance() {
         if (instance != null) {
@@ -30,10 +31,14 @@ public class HttpClient {
         }
         synchronized (lock) {
             if (instance == null) {
-                instance = new HttpClient();
+                instance = new HttpClient(new OkHttpClient());
             }
         }
         return instance;
+    }
+
+    public HttpClient(OkHttpClient okHttpClient) {
+        this.okHttpClient = okHttpClient;
     }
 
     public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
@@ -105,7 +110,7 @@ public class HttpClient {
 
             Request request = new Request.Builder().url(url).post(body).build();
 
-            new OkHttpClient().newCall(request).enqueue(new Callback() {
+            okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     errorListener.sendError(new Exception());
@@ -148,7 +153,7 @@ public class HttpClient {
 
             Request request = new Request.Builder().url(url).post(body).build();
 
-            new OkHttpClient().newCall(request).enqueue(new Callback() {
+            okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     errorListener.sendError(new Exception());
@@ -188,7 +193,7 @@ public class HttpClient {
 
             Request request = new Request.Builder().url(url).get().build();
 
-            new OkHttpClient().newCall(request).enqueue(new Callback() {
+            okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                    //trigger failure
