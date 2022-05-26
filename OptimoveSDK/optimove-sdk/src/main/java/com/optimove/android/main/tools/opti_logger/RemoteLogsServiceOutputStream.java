@@ -34,7 +34,7 @@ public class RemoteLogsServiceOutputStream implements OptiLoggerOutputStream {
 
     @Override
     public void reportLog(LogLevel logLevel, String logClass, String logMethod, String message) {
-        HttpClient.getInstance(context)
+        HttpClient.getInstance()
                 .postJson(LOG_SERVICE_BASE_URL, getRequestBody(logClass, logMethod, parseLogLevelJsonValue(logLevel), message))
                 .destination("%s/%s","report","log")
                 .send();

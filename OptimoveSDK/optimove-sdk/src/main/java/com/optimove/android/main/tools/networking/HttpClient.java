@@ -36,9 +36,9 @@ public class HttpClient {
         return instance;
     }
 
-//    public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
-//        return new JsonRequestBuilder(baseUrl, data, Request.Method.POST);
-//    }
+    public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
+        return new JsonRequestBuilder(baseUrl, data, 3);
+    }
     public RequestBuilder<JSONObject> postJsonArray(String baseUrl, JSONArray data) {
         return new JsonArrayRequestBuilder(baseUrl, data, 5);
     }
@@ -94,25 +94,48 @@ public class HttpClient {
         public abstract void send();
     }
 
-//    public class JsonRequestBuilder extends RequestBuilder<JSONObject> {
-//
-//        protected JSONObject data;
-//
-//        protected JsonRequestBuilder(String baseUrl, JSONObject data, int method) {
-//            super(baseUrl, method);
-//            this.data = data;
-//        }
-//
-//        @Override
-//        public void send() {
-//            if (url == null) {
-//                url = baseUrl;
-//            }
-//            JsonObjectRequest request = new JsonObjectRequest(method, url, data, successListener, errorListener);
-//            request.setRetryPolicy(new DefaultRetryPolicy(60000, 2, 2));
-//            mainRequestQueue.add(request);
-//        }
-//    }
+    public class JsonRequestBuilder extends RequestBuilder<JSONObject> {
+
+        protected JSONObject data;
+
+        protected JsonRequestBuilder(String baseUrl, JSONObject data, int method) {
+            super(baseUrl, method);
+            this.data = data;
+        }
+
+        @Override
+        public void send() {
+            if (url == null) {
+                url = baseUrl;
+            }
+
+            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
+                    data.toString());
+
+            Request request = new Request.Builder().url(url).post(body).build();
+
+            new OkHttpClient().newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    errorListener.sendError(new Exception());
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    if (!response.isSuccessful()) {
+                        errorListener.sendError(new Exception());
+                        return;
+                    }
+                    try {
+                        successListener.sendResponse(new JSONObject(response.body()
+                                .toString()));
+                    } catch (JSONException jsonException) {
+                        errorListener.sendError(new Exception());
+                    }
+                }
+            });
+        }
+    }
 
     public class JsonArrayRequestBuilder extends RequestBuilder<JSONObject> {
 

@@ -115,7 +115,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                             dispatchRequestWaitsForResponse = false;
                             scheduleTheNextDispatch();
                         })
-                        .withSuccessListener(response -> {
+                        .successListener(response -> {
                             try {
                                 singleThreadScheduledExecutor.submit(() -> {
                                     optistreamPersistanceAdapter.removeEvents(eventsBulk.getLastId());
