@@ -76,20 +76,16 @@ public final class RealtimeManager {
     }
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
-        try {
-            httpClient.postData(realtimeConfigs.getRealtimeGateway(), new JSONArray(new Gson().toJson(optistreamEvents)))
-                    .successListener(jsonResponse ->
+        httpClient.postData(realtimeConfigs.getRealtimeGateway(), new Gson().toJson(optistreamEvents))
+                .successListener(jsonResponse ->
                         realtimePreferences.edit()
                                 .remove(FAILED_SET_USER_EVENT_KEY)
                                 .remove(FAILED_SET_EMAIL_EVENT_KEY)
                                 .apply()
-                    )
-                    .errorListener(e -> dispatchingFailed(e, optistreamEvents))
-                    .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
-                    .send();
-        } catch (JSONException e) {
-            dispatchingFailed(e, optistreamEvents);
-        }
+                )
+                .errorListener(e -> dispatchingFailed(e, optistreamEvents))
+                .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
+                .send();
     }
 
     private void dispatchingFailed(Exception e, List<OptistreamEvent> optistreamEvents) {

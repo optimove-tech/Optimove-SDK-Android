@@ -36,7 +36,7 @@ public class HttpClient {
         this.okHttpClient = okHttpClient;
     }
 
-    public RequestBuilder<Object> postData(String baseUrl, Object data) {
+    public RequestBuilder<String> postData(String baseUrl, String data) {
         return new JsonRequestBuilder(baseUrl, data);
     }
 
@@ -82,7 +82,7 @@ public class HttpClient {
         public abstract void send();
     }
 
-    public class JsonRequestBuilder extends RequestBuilder<Object> {
+    public class JsonRequestBuilder extends RequestBuilder<String> {
 
         protected Object data;
 
@@ -118,8 +118,14 @@ public class HttpClient {
                         }
                         return;
                     }
-                    if (successListener !=null) {
-                        successListener.sendResponse(response.body());
+                    if (successListener == null) {
+                        return;
+                    }
+                    try {
+                        successListener.sendResponse(response.body() != null ? response.body()
+                                .string() : null);
+                    } catch (IOException e) {
+                        successListener.sendResponse(null);
                     }
                 }
             });
@@ -169,7 +175,7 @@ public class HttpClient {
     }
 
     public interface SuccessListener<T> {
-        void sendResponse(T response);
+        void sendResponse(@Nullable T response);
     }
 
     public interface ErrorListener {
