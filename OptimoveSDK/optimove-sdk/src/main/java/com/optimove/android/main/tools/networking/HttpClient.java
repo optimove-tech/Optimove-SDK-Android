@@ -121,12 +121,14 @@ public class HttpClient {
                     if (successListener == null) {
                         return;
                     }
-                    try {
-                        successListener.sendResponse(response.body() != null ? response.body()
-                                .string() : null);
-                    } catch (IOException e) {
-                        successListener.sendResponse(null);
-                    }
+
+                    successListener.sendResponse(null);
+//                    try {
+//                        successListener.sendResponse(response.body() != null ? response.body()
+//                                .string() : null);
+//                    } catch (IOException e) {
+//                        successListener.sendResponse(null);
+//                    }
                 }
             });
         }

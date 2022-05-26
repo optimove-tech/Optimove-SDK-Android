@@ -3,8 +3,6 @@ package com.optimove.android;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.android.volley.ParseError;
-import com.android.volley.Response;
 import com.google.gson.Gson;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.events.core_events.SetEmailEvent;
@@ -55,7 +53,7 @@ public class RealtimeTest {
     @Mock
     HttpClient httpClient;
     @Mock
-    HttpClient.RequestBuilder<JSONObject> builder;
+    HttpClient.RequestBuilder<String> builder;
     @Mock
     RealtimeConfigs realtimeConfigs;
 
@@ -77,10 +75,10 @@ public class RealtimeTest {
         when(realtimeConfigs.getRealtimeGateway()).thenReturn(realtimeGetawayUrl);
         when(realtimeConfigs.getRealtimeToken()).thenReturn(realtimeToken);
 
-        when(httpClient.postJsonArray(anyString(), any())).thenReturn(builder);
+        when(httpClient.postData(anyString(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
-        when(builder.withSuccessListener(any())).thenReturn(builder);
+        when(builder.successListener(any())).thenReturn(builder);
 
         when(userInfo.getUserId()).thenReturn(userId);
         when(userInfo.getEmail()).thenReturn(userEmail);
@@ -90,14 +88,14 @@ public class RealtimeTest {
 
     @Test
     public void singleEventShouldBeDispatched() throws JSONException {
-        when(builder.withSuccessListener(any())).thenReturn(builder);
+        when(builder.successListener(any())).thenReturn(builder);
 
         realtimeManager.reportEvents(Collections.singletonList(getRegularEvent()));
 
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
+        ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postJsonArray(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
+        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), "some_name");
     }
@@ -110,10 +108,10 @@ public class RealtimeTest {
 
         realtimeManager.reportEvents(Collections.singletonList(getRegularEvent()));
 
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
+        ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postJsonArray(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
+        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetUserIdEvent.EVENT_NAME);
         Assert.assertEquals(jsonArray.getJSONObject(1)
@@ -127,10 +125,10 @@ public class RealtimeTest {
 
         realtimeManager.reportEvents(Collections.singletonList(getRegularEvent()));
 
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
+        ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postJsonArray(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
+        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetEmailEvent.EVENT_NAME);
         Assert.assertEquals(jsonArray.getJSONObject(1)
@@ -145,10 +143,10 @@ public class RealtimeTest {
 
         realtimeManager.reportEvents(Collections.singletonList(getSetEmailEvent()));
 
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
+        ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postJsonArray(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
+        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetEmailEvent.EVENT_NAME);
         Assert.assertEquals(jsonArray.length(), 1);
@@ -161,10 +159,10 @@ public class RealtimeTest {
 
         realtimeManager.reportEvents(Collections.singletonList(getSetUserIdEvent()));
 
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
+        ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postJsonArray(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
+        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetUserIdEvent.EVENT_NAME);
         Assert.assertEquals(jsonArray.length(), 1);
@@ -187,9 +185,9 @@ public class RealtimeTest {
     @Test
     public void failedSetUserIdShouldEndUpInSharedPrefs() {
         doAnswer(invocation -> {
-            Response.ErrorListener errorListener =
-                    (Response.ErrorListener) invocation.getArguments()[0];
-            errorListener.onErrorResponse(mock(ParseError.class));
+            HttpClient.ErrorListener  errorListener =
+                    ( HttpClient.ErrorListener) invocation.getArguments()[0];
+            errorListener.sendError(mock(Exception.class));
             return builder;
         }).when(builder)
                 .errorListener(any());
@@ -207,9 +205,9 @@ public class RealtimeTest {
     @Test
     public void failedSetEmailShouldEndUpInSharedPrefs() {
         doAnswer(invocation -> {
-            Response.ErrorListener errorListener =
-                    (Response.ErrorListener) invocation.getArguments()[0];
-            errorListener.onErrorResponse(mock(ParseError.class));
+            HttpClient.ErrorListener  errorListener =
+                    ( HttpClient.ErrorListener) invocation.getArguments()[0];
+            errorListener.sendError(mock(Exception.class));
             return builder;
         }).when(builder)
                 .errorListener(any());
@@ -267,15 +265,13 @@ public class RealtimeTest {
     private void applyHttpSuccessInvocation() {
         doAnswer(invocation -> {
             new Thread(() -> {
-                Response.Listener<JSONObject> successListener =
-                        (Response.Listener<JSONObject>) invocation.getArguments()[0];
-                JSONObject jsonObject = new JSONObject();
-
-                successListener.onResponse(jsonObject);
+                HttpClient.SuccessListener successListener =
+                        (HttpClient.SuccessListener) invocation.getArguments()[0];
+                successListener.sendResponse("");
             }).start();
 
             return builder;
         }).when(builder)
-                .withSuccessListener(any());
+                .successListener(any());
     }
 }
