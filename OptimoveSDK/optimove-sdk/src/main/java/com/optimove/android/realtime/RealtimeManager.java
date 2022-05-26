@@ -77,7 +77,7 @@ public final class RealtimeManager {
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
         try {
-            httpClient.postJsonArray(realtimeConfigs.getRealtimeGateway(), new JSONArray(new Gson().toJson(optistreamEvents)))
+            httpClient.postData(realtimeConfigs.getRealtimeGateway(), new JSONArray(new Gson().toJson(optistreamEvents)))
                     .successListener(jsonResponse ->
                         realtimePreferences.edit()
                                 .remove(FAILED_SET_USER_EVENT_KEY)

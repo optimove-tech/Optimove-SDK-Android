@@ -4,11 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -23,7 +18,7 @@ public class HttpClient {
 
     private static final Object lock = new Object();
     private static HttpClient instance;
-    private OkHttpClient okHttpClient;
+    private final OkHttpClient okHttpClient;
 
     public static HttpClient getInstance() {
         if (instance != null) {
@@ -41,18 +36,15 @@ public class HttpClient {
         this.okHttpClient = okHttpClient;
     }
 
-    public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
+    public RequestBuilder<Object> postData(String baseUrl, Object data) {
         return new JsonRequestBuilder(baseUrl, data);
-    }
-    public RequestBuilder<JSONObject> postJsonArray(String baseUrl, JSONArray data) {
-        return new JsonArrayRequestBuilder(baseUrl, data);
     }
 
     public <T> RequestBuilder<T> getObject(String baseUrl, Class<T> objectType) {
         return new CustomRequestBuilder<>(baseUrl, objectType);
     }
 
-    public abstract class RequestBuilder<T> {
+    public abstract static class RequestBuilder<T> {
 
         protected String baseUrl;
         protected String url;
@@ -90,11 +82,11 @@ public class HttpClient {
         public abstract void send();
     }
 
-    public class JsonRequestBuilder extends RequestBuilder<JSONObject> {
+    public class JsonRequestBuilder extends RequestBuilder<Object> {
 
-        protected JSONObject data;
+        protected Object data;
 
-        protected JsonRequestBuilder(String baseUrl, JSONObject data) {
+        protected JsonRequestBuilder(String baseUrl, Object data) {
             super(baseUrl);
             this.data = data;
         }
@@ -113,63 +105,21 @@ public class HttpClient {
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    errorListener.sendError(new Exception());
+                    if (errorListener !=null) {
+                        errorListener.sendError(e);
+                    }
                 }
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) {
                     if (!response.isSuccessful()) {
-                        errorListener.sendError(new Exception());
+                        if (errorListener !=null) {
+                            errorListener.sendError(new Exception("Response wasn't successful - " + response.message()));
+                        }
                         return;
                     }
-                    try {
-                        successListener.sendResponse(new JSONObject(response.body()
-                                .toString()));
-                    } catch (JSONException jsonException) {
-                        errorListener.sendError(new Exception());
-                    }
-                }
-            });
-        }
-    }
-
-    public class JsonArrayRequestBuilder extends RequestBuilder<JSONObject> {
-
-        protected JSONArray data;
-
-        protected JsonArrayRequestBuilder(String baseUrl, JSONArray data) {
-            super(baseUrl);
-            this.data = data;
-        }
-
-        @Override
-        public void send() {
-            if (url == null) {
-                url = baseUrl;
-            }
-
-            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
-                    data.toString());
-
-            Request request = new Request.Builder().url(url).post(body).build();
-
-            okHttpClient.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    errorListener.sendError(new Exception());
-                }
-
-                @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    if (!response.isSuccessful()) {
-                        errorListener.sendError(new Exception());
-                        return;
-                    }
-                    try {
-                        successListener.sendResponse(new JSONObject(response.body()
-                                .toString()));
-                    } catch (JSONException jsonException) {
-                        errorListener.sendError(new Exception());
+                    if (successListener !=null) {
+                        successListener.sendResponse(response.body());
                     }
                 }
             });
@@ -196,18 +146,22 @@ public class HttpClient {
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                   //trigger failure
+                    if (errorListener !=null) {
+                        errorListener.sendError(e);
+                    }
                 }
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                    // trigger success listener
                     if (!response.isSuccessful() || response.body() == null) {
-                        //fail
+                        if (errorListener !=null) {
+                            errorListener.sendError(new Exception("Response wasn't successful - " + response.message()));
+                        }
                         return;
                     }
-                    //success with
-                    successListener.sendResponse(new Gson().fromJson(response.body().string(), typeToParse));
+                    if (successListener != null) {
+                        successListener.sendResponse(new Gson().fromJson(response.body().string(), typeToParse));
+                    }
                 }
             });
         }
