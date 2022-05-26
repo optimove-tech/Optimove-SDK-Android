@@ -37,36 +37,27 @@ public class HttpClient {
     }
 
     public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
-        return new JsonRequestBuilder(baseUrl, data, 3);
+        return new JsonRequestBuilder(baseUrl, data);
     }
     public RequestBuilder<JSONObject> postJsonArray(String baseUrl, JSONArray data) {
-        return new JsonArrayRequestBuilder(baseUrl, data, 5);
+        return new JsonArrayRequestBuilder(baseUrl, data);
     }
-//
-//    public RequestBuilder<JSONObject> postJsonWithoutJsonResponse(String baseUrl, JSONObject data) {
-//        return new JsonRequestBuilderWOJsonResponse(baseUrl, data, Request.Method.POST);
-//    }
-//    public <T> RequestBuilder<T> postObject(String baseUrl, Class<T> objectType) {
-//        return new CustomRequestBuilder<>(baseUrl, objectType, Request.Method.POST);
-//    }
 
     public <T> RequestBuilder<T> getObject(String baseUrl, Class<T> objectType) {
-        return new CustomRequestBuilder<>(baseUrl, objectType, 3);
+        return new CustomRequestBuilder<>(baseUrl, objectType);
     }
 
     public abstract class RequestBuilder<T> {
 
         protected String baseUrl;
-        protected int method;
         protected String url;
         @Nullable
         protected SuccessListener<T> successListener;
         @Nullable
         protected ErrorListener errorListener;
 
-        protected RequestBuilder(String baseUrl, int method) {
+        protected RequestBuilder(String baseUrl) {
             this.baseUrl = baseUrl;
-            this.method = method;
             this.url = null;
             this.successListener = null;
             this.errorListener = null;
@@ -98,8 +89,8 @@ public class HttpClient {
 
         protected JSONObject data;
 
-        protected JsonRequestBuilder(String baseUrl, JSONObject data, int method) {
-            super(baseUrl, method);
+        protected JsonRequestBuilder(String baseUrl, JSONObject data) {
+            super(baseUrl);
             this.data = data;
         }
 
@@ -141,8 +132,8 @@ public class HttpClient {
 
         protected JSONArray data;
 
-        protected JsonArrayRequestBuilder(String baseUrl, JSONArray data, int method) {
-            super(baseUrl, method);
+        protected JsonArrayRequestBuilder(String baseUrl, JSONArray data) {
+            super(baseUrl);
             this.data = data;
         }
 
@@ -179,43 +170,13 @@ public class HttpClient {
             });
         }
     }
-//    public class JsonRequestBuilderWOJsonResponse extends RequestBuilder<JSONObject> {
-//
-//        protected JSONObject data;
-//
-//        protected JsonRequestBuilderWOJsonResponse(String baseUrl, JSONObject data, int method) {
-//            super(baseUrl, method);
-//            this.data = data;
-//        }
-//        @Override
-//        public void send() {
-//            if (url == null) {
-//                url = baseUrl;
-//            }
-//            JsonObjectRequest request = new JsonObjectRequest(method, url, data, successListener, errorListener) {
-//                @Override
-//                protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-//
-//                    String json = new String(response.data, StandardCharsets.UTF_8);
-//
-//                    if (json.length() == 0) {
-//                        return Response.success(null, HttpHeaderParser.parseCacheHeaders(response));
-//                    } else {
-//                        return super.parseNetworkResponse(response);
-//                    }
-//                }
-//            };
-//            request.setRetryPolicy(new DefaultRetryPolicy(60000, 2, 2));
-//            mainRequestQueue.add(request);
-//        }
-//    }
-//
+
     public class CustomRequestBuilder<T> extends RequestBuilder<T> {
 
         Class<T> typeToParse;
 
-        protected CustomRequestBuilder(String baseUrl, Class<T> typeToParse, int method) {
-            super(baseUrl, method);
+        protected CustomRequestBuilder(String baseUrl, Class<T> typeToParse) {
+            super(baseUrl);
             this.typeToParse = typeToParse;
         }
 
@@ -255,36 +216,4 @@ public class HttpClient {
     public interface ErrorListener {
         void sendError(Exception e);
     }
-
-//    public class CustomJsonArrayRequest extends JsonRequest<JSONObject> {
-//
-//        /**
-//         * Creates a new request.
-//         * @param method the HTTP method to use
-//         * @param url URL to fetch the JSON from
-//         * @param jsonRequest A {@link JSONObject} to post with the request. Null is allowed and
-//         *   indicates no parameters will be posted along with request.
-//         * @param listener Listener to receive the JSON response
-//         * @param errorListener Error listener, or null to ignore errors.
-//         */
-//        public CustomJsonArrayRequest(int method, String url, JSONArray jsonRequest,
-//                                      Response.Listener<JSONObject> listener, Response.ErrorListener errorListener) {
-//            super(method, url, (jsonRequest == null) ? null : jsonRequest.toString(), listener,
-//                    errorListener);
-//        }
-//
-//        @Override
-//        protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-//            try {
-//                String jsonString = new String(response.data,
-//                        HttpHeaderParser.parseCharset(response.headers, PROTOCOL_CHARSET));
-//                return Response.success(new JSONObject(jsonString),
-//                        HttpHeaderParser.parseCacheHeaders(response));
-//            } catch (UnsupportedEncodingException e) {
-//                return Response.error(new ParseError(e));
-//            } catch (JSONException je) {
-//                return Response.error(new ParseError(je));
-//            }
-//        }
-//    }
 }
