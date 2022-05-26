@@ -80,7 +80,7 @@ public class RealtimeTest {
         when(httpClient.postJsonArray(anyString(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
-        when(builder.successListener(any())).thenReturn(builder);
+        when(builder.withSuccessListener(any())).thenReturn(builder);
 
         when(userInfo.getUserId()).thenReturn(userId);
         when(userInfo.getEmail()).thenReturn(userEmail);
@@ -90,7 +90,7 @@ public class RealtimeTest {
 
     @Test
     public void singleEventShouldBeDispatched() throws JSONException {
-        when(builder.successListener(any())).thenReturn(builder);
+        when(builder.withSuccessListener(any())).thenReturn(builder);
 
         realtimeManager.reportEvents(Collections.singletonList(getRegularEvent()));
 
@@ -276,6 +276,6 @@ public class RealtimeTest {
 
             return builder;
         }).when(builder)
-                .successListener(any());
+                .withSuccessListener(any());
     }
 }

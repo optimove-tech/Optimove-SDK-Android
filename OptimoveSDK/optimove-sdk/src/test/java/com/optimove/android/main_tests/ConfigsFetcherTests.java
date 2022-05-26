@@ -89,8 +89,8 @@ public class ConfigsFetcherTests {
 
         when(localConfigKeysPreferences.edit()).thenReturn(editor);
         when(editor.putBoolean(anyString(), anyBoolean())).thenReturn(editor);
-        when(tenantBuilder.successListener(any())).thenReturn(tenantBuilder);
-        when(globalBuilder.successListener(any())).thenReturn(globalBuilder);
+        when(tenantBuilder.withSuccessListener(any())).thenReturn(tenantBuilder);
+        when(globalBuilder.withSuccessListener(any())).thenReturn(globalBuilder);
         when(fileUtils.readFile(eq(context))).thenReturn(reader);
         when(reader.from(FileUtils.SourceDir.INTERNAL)).thenReturn(reader);
         when(reader.named(configName)).thenReturn(reader);
@@ -268,14 +268,14 @@ public class ConfigsFetcherTests {
             successListener.onResponse(fetchedTenantConfigs);
             return tenantBuilder;
         }).when(tenantBuilder)
-                .successListener(any());
+                .withSuccessListener(any());
         doAnswer(invocation -> {
             Response.Listener<FetchedGlobalConfig> successListener =
                     (Response.Listener<FetchedGlobalConfig>) invocation.getArguments()[0];
             successListener.onResponse(fetchedGlobalConfig);
             return globalBuilder;
         }).when(globalBuilder)
-                .successListener(any());
+                .withSuccessListener(any());
     }
 
     private boolean configsAreTheSame(Configs configsFirst, Configs configsSecond) {

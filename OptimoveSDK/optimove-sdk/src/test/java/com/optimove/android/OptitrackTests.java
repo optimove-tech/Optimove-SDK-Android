@@ -63,7 +63,7 @@ public class OptitrackTests {
         when(httpClient.postJsonArray(any(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
-        when(builder.successListener(any())).thenReturn(builder);
+        when(builder.withSuccessListener(any())).thenReturn(builder);
     }
 
     @Test
@@ -234,7 +234,7 @@ public class OptitrackTests {
 
             return builder;
         }).when(builder)
-                .successListener(any());
+                .withSuccessListener(any());
     }
 
     private void applyHttpRandomDelaySuccessInvocation(long maximumDelay) {
@@ -254,7 +254,7 @@ public class OptitrackTests {
 
             return delayedResponseBuilder;
         }).when(delayedResponseBuilder)
-                .successListener(any());
+                .withSuccessListener(any());
     }
 
     private class MockedOptistreamPersistency implements OptistreamPersistanceAdapter {

@@ -5,12 +5,18 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HttpClient {
@@ -33,9 +39,9 @@ public class HttpClient {
 //    public RequestBuilder<JSONObject> postJson(String baseUrl, JSONObject data) {
 //        return new JsonRequestBuilder(baseUrl, data, Request.Method.POST);
 //    }
-//    public RequestBuilder<JSONObject> postJsonArray(String baseUrl, JSONArray data) {
-//        return new JsonArrayRequestBuilder(baseUrl, data, Request.Method.POST);
-//    }
+    public RequestBuilder<JSONObject> postJsonArray(String baseUrl, JSONArray data) {
+        return new JsonArrayRequestBuilder(baseUrl, data, 5);
+    }
 //
 //    public RequestBuilder<JSONObject> postJsonWithoutJsonResponse(String baseUrl, JSONObject data) {
 //        return new JsonRequestBuilderWOJsonResponse(baseUrl, data, Request.Method.POST);
@@ -107,25 +113,49 @@ public class HttpClient {
 //            mainRequestQueue.add(request);
 //        }
 //    }
-//    public class JsonArrayRequestBuilder extends RequestBuilder<JSONObject> {
-//
-//        protected JSONArray data;
-//
-//        protected JsonArrayRequestBuilder(String baseUrl, JSONArray data, int method) {
-//            super(baseUrl, method);
-//            this.data = data;
-//        }
-//
-//        @Override
-//        public void send() {
-//            if (url == null) {
-//                url = baseUrl;
-//            }
-//            CustomJsonArrayRequest request = new CustomJsonArrayRequest(method, url, data, successListener, errorListener);
-//            request.setRetryPolicy(new DefaultRetryPolicy(60000, 2, 2));
-//            mainRequestQueue.add(request);
-//        }
-//    }
+
+    public class JsonArrayRequestBuilder extends RequestBuilder<JSONObject> {
+
+        protected JSONArray data;
+
+        protected JsonArrayRequestBuilder(String baseUrl, JSONArray data, int method) {
+            super(baseUrl, method);
+            this.data = data;
+        }
+
+        @Override
+        public void send() {
+            if (url == null) {
+                url = baseUrl;
+            }
+
+            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
+                    data.toString());
+
+            Request request = new Request.Builder().url(url).post(body).build();
+
+            new OkHttpClient().newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    errorListener.sendError(new Exception());
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    if (!response.isSuccessful()) {
+                        errorListener.sendError(new Exception());
+                        return;
+                    }
+                    try {
+                        successListener.sendResponse(new JSONObject(response.body()
+                                .toString()));
+                    } catch (JSONException jsonException) {
+                        errorListener.sendError(new Exception());
+                    }
+                }
+            });
+        }
+    }
 //    public class JsonRequestBuilderWOJsonResponse extends RequestBuilder<JSONObject> {
 //
 //        protected JSONObject data;
@@ -200,7 +230,7 @@ public class HttpClient {
     }
 
     public interface ErrorListener {
-        void sendError(Throwable throwable);
+        void sendError(Exception e);
     }
 
 //    public class CustomJsonArrayRequest extends JsonRequest<JSONObject> {
