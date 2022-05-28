@@ -13,9 +13,6 @@ import com.optimove.android.main.tools.networking.HttpClient;
 import com.optimove.android.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.android.optistream.OptistreamEvent;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,13 +23,13 @@ import static com.optimove.android.realtime.RealtimeConstants.REALTIME_SP_NAME;
 public final class RealtimeManager {
 
     @NonNull
-    private SharedPreferences realtimePreferences;
+    private final SharedPreferences realtimePreferences;
     @NonNull
-    private HttpClient httpClient;
+    private final HttpClient httpClient;
     @NonNull
-    private RealtimeConfigs realtimeConfigs;
+    private final RealtimeConfigs realtimeConfigs;
 
-    private Gson realtimeGson;
+    private final Gson realtimeGson;
 
     public RealtimeManager(@NonNull HttpClient httpClient, @NonNull RealtimeConfigs realtimeConfigs,
                            @NonNull Context context) {
