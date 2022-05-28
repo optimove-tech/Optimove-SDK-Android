@@ -122,13 +122,12 @@ public class HttpClient {
                         return;
                     }
 
-                    successListener.sendResponse(null);
-//                    try {
-//                        successListener.sendResponse(response.body() != null ? response.body()
-//                                .string() : null);
-//                    } catch (IOException e) {
-//                        successListener.sendResponse(null);
-//                    }
+                    try {
+                        successListener.sendResponse(response.body() != null ? response.body()
+                                .string() : null);
+                    } catch (IOException e) {
+                        successListener.sendResponse(null);
+                    }
                 }
             });
         }
