@@ -74,8 +74,8 @@ public class EventHandlerFactory {
                 realtimeEnabled, realtimeEnabledThroughOptistream);
     }
 
-    public OptistreamEventBuilder getOptistreamEventBuilder(int tenantId, boolean airshipEnabled) {
-        return new OptistreamEventBuilder(tenantId, userInfo, airshipEnabled);
+    public OptistreamEventBuilder getOptistreamEventBuilder(int tenantId) {
+        return new OptistreamEventBuilder(tenantId, userInfo);
     }
 
     public static UserInfoStep builder() {
