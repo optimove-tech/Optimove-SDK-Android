@@ -58,7 +58,7 @@ public class OptitrackTests {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        when(httpClient.postData(any(), any())).thenReturn(builder);
+        when(httpClient.postJson(any(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
@@ -138,7 +138,7 @@ public class OptitrackTests {
             public VerificationMode description(String description) {
                 return null;
             }
-        }).postData(any(), any());
+        }).postJson(any(), any());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class OptitrackTests {
 
         ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postData(any(), httpSentJsonArray.capture());
+        verify(httpClient, timeout(1000)).postJson(any(), httpSentJsonArray.capture());
         JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), "some_name");

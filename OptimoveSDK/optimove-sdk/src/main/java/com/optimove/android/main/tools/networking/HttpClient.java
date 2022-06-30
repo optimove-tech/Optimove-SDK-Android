@@ -36,8 +36,8 @@ public class HttpClient {
         this.okHttpClient = okHttpClient;
     }
 
-    public RequestBuilder<String> postData(String baseUrl, String data) {
-        return new JsonRequestBuilder(baseUrl, data);
+    public RequestBuilder<String> postJson(String baseUrl, String json) {
+        return new JsonRequestBuilder(baseUrl, json);
     }
 
     public <T> RequestBuilder<T> getObject(String baseUrl, Class<T> objectType) {
@@ -84,9 +84,9 @@ public class HttpClient {
 
     public class JsonRequestBuilder extends RequestBuilder<String> {
 
-        protected Object data;
+        protected String data;
 
-        protected JsonRequestBuilder(String baseUrl, Object data) {
+        protected JsonRequestBuilder(String baseUrl, String data) {
             super(baseUrl);
             this.data = data;
         }
@@ -98,7 +98,7 @@ public class HttpClient {
             }
 
             RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
-                    data.toString());
+                    data);
 
             Request request = new Request.Builder().url(url).post(body).build();
 

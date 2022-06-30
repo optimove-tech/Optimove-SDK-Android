@@ -14,7 +14,6 @@ import com.optimove.android.realtime.RealtimeManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public class RealtimeTest {
         when(realtimeConfigs.getRealtimeGateway()).thenReturn(realtimeGetawayUrl);
         when(realtimeConfigs.getRealtimeToken()).thenReturn(realtimeToken);
 
-        when(httpClient.postData(anyString(), any())).thenReturn(builder);
+        when(httpClient.postJson(anyString(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
@@ -94,7 +93,7 @@ public class RealtimeTest {
 
         ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        verify(httpClient, timeout(1000)).postJson(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
         JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), "some_name");
@@ -110,7 +109,7 @@ public class RealtimeTest {
 
         ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        verify(httpClient, timeout(1000)).postJson(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
         JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetUserIdEvent.EVENT_NAME);
@@ -127,7 +126,7 @@ public class RealtimeTest {
 
         ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        verify(httpClient, timeout(1000)).postJson(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
         JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetEmailEvent.EVENT_NAME);
@@ -145,7 +144,7 @@ public class RealtimeTest {
 
         ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        verify(httpClient, timeout(1000)).postJson(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
         JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetEmailEvent.EVENT_NAME);
@@ -161,7 +160,7 @@ public class RealtimeTest {
 
         ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postData(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
+        verify(httpClient, timeout(1000)).postJson(eq(realtimeGetawayUrl), httpSentJsonArray.capture());
         JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), SetUserIdEvent.EVENT_NAME);

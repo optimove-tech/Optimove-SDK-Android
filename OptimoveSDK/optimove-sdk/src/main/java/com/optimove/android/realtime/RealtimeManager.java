@@ -73,7 +73,7 @@ public final class RealtimeManager {
     }
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
-        httpClient.postData(realtimeConfigs.getRealtimeGateway(), new Gson().toJson(optistreamEvents))
+        httpClient.postJson(realtimeConfigs.getRealtimeGateway(), new Gson().toJson(optistreamEvents))
                 .successListener(jsonResponse ->
                         realtimePreferences.edit()
                                 .remove(FAILED_SET_USER_EVENT_KEY)
