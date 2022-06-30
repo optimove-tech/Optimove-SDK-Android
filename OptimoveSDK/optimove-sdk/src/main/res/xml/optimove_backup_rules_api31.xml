@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <device-transfer>
-        <exclude domain="sharedpref" path="com.optimove.android.user_ids.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.optitrack_shared_pref.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.local_init.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.registration_preferences.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.core.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.user_ids.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.local_init.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.registration_preferences.xml"/>
+        <exclude domain="sharedpref" path="optimobile_prefs.xml"/>
     </device-transfer>
     <cloud-backup>
-        <exclude domain="sharedpref" path="com.optimove.android.user_ids.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.optitrack_shared_pref.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.local_init.xml"/>
-        <exclude domain="sharedpref" path="com.optimove.android.registration_preferences.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.core.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.user_ids.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.local_init.xml"/>
+        <exclude domain="sharedpref" path="com.optimove.sdk.registration_preferences.xml"/>
+        <exclude domain="sharedpref" path="optimobile_prefs.xml"/>
     </cloud-backup>
 </data-extraction-rules>

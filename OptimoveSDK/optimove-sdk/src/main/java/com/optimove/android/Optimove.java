@@ -176,10 +176,6 @@ final public class Optimove {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
     }
 
-    public EventHandlerProvider getEventHandlerProvider() {
-        return eventHandlerProvider;
-    }
-
     private static void maybeMigrateUserAssociation(Context context) {
         String optipushUserId = shared.userInfo.getUserId();
         if (optipushUserId == null) {
@@ -474,7 +470,7 @@ final public class Optimove {
     public void pushRegister() {
         Optimobile.pushRegister(context);
     }
-    
+
     /**
      * Used to track a conversion from a push notification
      *
