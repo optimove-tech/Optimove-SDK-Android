@@ -32,7 +32,7 @@ public class HttpClient {
         return instance;
     }
 
-    public HttpClient(OkHttpClient okHttpClient) {
+    private HttpClient(OkHttpClient okHttpClient) {
         this.okHttpClient = okHttpClient;
     }
 
