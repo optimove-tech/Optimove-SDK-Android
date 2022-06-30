@@ -133,6 +133,8 @@ final public class Optimove {
 
         if (config.isOptimobileConfigured()) {
             Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId());
+
+            maybeMigrateUserAssociation(application);
         }
 
         if (config.isOptimoveConfigured()) {
@@ -173,7 +175,19 @@ final public class Optimove {
     public static void enableStagingRemoteLogs() {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
     }
-    
+
+    private static void maybeMigrateUserAssociation(Context context) {
+        String optipushUserId = shared.userInfo.getUserId();
+        if (optipushUserId == null) {
+            return;
+        }
+
+        String optimobileUserId = Optimobile.getCurrentUserIdentifier(context);
+        if (!optipushUserId.equals(optimobileUserId)) {
+            Optimobile.associateUserWithInstall(context, optipushUserId);
+        }
+    }
+
     private void fetchConfigs() {
         ConfigsFetcher configsFetcher = ConfigsFetcher.builder()
                 .httpClient(HttpClient.getInstance())
@@ -456,7 +470,7 @@ final public class Optimove {
     public void pushRegister() {
         Optimobile.pushRegister(context);
     }
-    
+
     /**
      * Used to track a conversion from a push notification
      *
