@@ -84,11 +84,11 @@ public class HttpClient {
 
     public class JsonRequestBuilder extends RequestBuilder<String> {
 
-        protected String data;
+        protected String json;
 
-        protected JsonRequestBuilder(String baseUrl, String data) {
+        protected JsonRequestBuilder(String baseUrl, String json) {
             super(baseUrl);
-            this.data = data;
+            this.json = json;
         }
 
         @Override
@@ -98,7 +98,7 @@ public class HttpClient {
             }
 
             RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
-                    data);
+                    json);
 
             Request request = new Request.Builder().url(url).post(body).build();
 
