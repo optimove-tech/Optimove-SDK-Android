@@ -77,7 +77,7 @@ public final class Optimobile {
      * @param application
      * @param config
      */
-    public static synchronized void initialize(final Application application, OptimoveConfig config, String initialVisitorId, @Nullable String customerId) {
+    public static synchronized void initialize(final Application application, OptimoveConfig config, String initialVisitorId) {
         if (!config.isOptimobileConfigured()){
             throw new UninitializedException();
         }
@@ -109,19 +109,6 @@ public final class Optimobile {
         // Stats ping
         AnalyticsContract.StatsCallHomeRunnable statsTask = new AnalyticsContract.StatsCallHomeRunnable(application);
         executorService.submit(statsTask);
-
-        maybeMigrateUserAssociation(application, customerId);
-    }
-
-    private static void maybeMigrateUserAssociation(Application application, @Nullable String customerId) {
-        if (customerId == null){
-            return;
-        }
-
-        String optimobileUserId = getCurrentUserIdentifier(application);
-        if (!customerId.equals(optimobileUserId)) {
-            Optimobile.associateUserWithInstall(application, customerId);
-        }
     }
 
     private static OkHttpClient buildOkHttpClient(){
