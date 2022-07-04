@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.0.0
+
+- Update OkHttp networking library to v4.
+
 ## 5.0.1
 
 - Notify Optimobile about existing user associations
