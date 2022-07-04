@@ -132,9 +132,7 @@ final public class Optimove {
         performSingletonInitialization(application.getApplicationContext(), config);
 
         if (config.isOptimobileConfigured()) {
-            Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId());
-
-            maybeMigrateUserAssociation(application);
+            Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId(), shared.userInfo.getUserId());
         }
 
         if (config.isOptimoveConfigured()) {
@@ -174,18 +172,6 @@ final public class Optimove {
      */
     public static void enableStagingRemoteLogs() {
         OptiLoggerStreamsContainer.setMinLogLevelRemote(LogLevel.DEBUG);
-    }
-
-    private static void maybeMigrateUserAssociation(Context context) {
-        String optipushUserId = shared.userInfo.getUserId();
-        if (optipushUserId == null) {
-            return;
-        }
-
-        String optimobileUserId = Optimobile.getCurrentUserIdentifier(context);
-        if (!optipushUserId.equals(optimobileUserId)) {
-            Optimobile.associateUserWithInstall(context, optipushUserId);
-        }
     }
 
     private void fetchConfigs() {
