@@ -4,10 +4,6 @@
 
 - Update OkHttp networking library to v4.
 
-## 5.0.1
-
-- Notify Optimobile about existing user associations
-
 ## 5.0.0
 
 Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-4.x-to-5.x)
