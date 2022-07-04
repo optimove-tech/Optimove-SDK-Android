@@ -1,6 +1,5 @@
 package com.optimove.android;
 
-import com.android.volley.Response;
 import com.google.gson.Gson;
 import com.optimove.android.main.common.LifecycleObserver;
 import com.optimove.android.main.common.UserInfo;
@@ -12,7 +11,6 @@ import com.optimove.android.optistream.OptistreamHandler;
 import com.optimove.android.optistream.OptistreamPersistanceAdapter;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +40,9 @@ import static org.mockito.Mockito.when;
 public class OptitrackTests {
 
     @Mock
-    HttpClient.RequestBuilder<JSONObject> builder;
+    HttpClient.RequestBuilder<String> builder;
     @Mock
-    HttpClient.RequestBuilder<JSONObject> delayedResponseBuilder;
+    HttpClient.RequestBuilder<String> delayedResponseBuilder;
     @Mock
     UserInfo userInfo;
     @Mock
@@ -60,7 +58,7 @@ public class OptitrackTests {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        when(httpClient.postJsonArray(any(), any())).thenReturn(builder);
+        when(httpClient.postJson(any(), any())).thenReturn(builder);
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
@@ -122,14 +120,16 @@ public class OptitrackTests {
             public void verify(VerificationData data) {
                 int i = 0;
                 for (Invocation invocation : data.getAllInvocations()) {
-                    for (int jsonObjectIndex = 0; jsonObjectIndex < ((JSONArray)invocation.getRawArguments()[1]).length(); jsonObjectIndex++) {
-                        try {
-                            Assert.assertEquals(((JSONArray) invocation.getRawArguments()[1]).getJSONObject(jsonObjectIndex)
-                                    .getString("event"), "some_name_" + i);
-                        } catch (Exception e) {
-                            fail(e.getMessage());
+                    try {
+                        for (int jsonObjectIndex = 0; jsonObjectIndex < (new JSONArray((String)invocation.getRawArguments()[1])).length(); jsonObjectIndex++) {
+
+                                Assert.assertEquals((new JSONArray((String) invocation.getRawArguments()[1])).getJSONObject(jsonObjectIndex)
+                                        .getString("event"), "some_name_" + i);
+
+                            i++;
                         }
-                        i++;
+                    } catch (Exception e) {
+                        fail(e.getMessage());
                     }
                 }
             }
@@ -138,7 +138,7 @@ public class OptitrackTests {
             public VerificationMode description(String description) {
                 return null;
             }
-        }).postJsonArray(any(), any());
+        }).postJson(any(), any());
     }
 
     @Test
@@ -181,10 +181,10 @@ public class OptitrackTests {
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
 
 
-        ArgumentCaptor<JSONArray> httpSentJsonArray = ArgumentCaptor.forClass(JSONArray.class);
+        ArgumentCaptor<String> httpSentJsonArray = ArgumentCaptor.forClass(String.class);
 
-        verify(httpClient, timeout(1000)).postJsonArray(any(), httpSentJsonArray.capture());
-        JSONArray jsonArray = httpSentJsonArray.getValue();
+        verify(httpClient, timeout(1000)).postJson(any(), httpSentJsonArray.capture());
+        JSONArray jsonArray = new JSONArray(httpSentJsonArray.getValue());
         Assert.assertEquals(jsonArray.getJSONObject(0)
                 .getString("event"), "some_name");
     }
@@ -225,11 +225,9 @@ public class OptitrackTests {
     private void applyHttpSuccessInvocation() {
         doAnswer(invocation -> {
             new Thread(() -> {
-                Response.Listener<JSONObject> successListener =
-                        (Response.Listener<JSONObject>) invocation.getArguments()[0];
-                JSONObject jsonObject = new JSONObject();
-
-                successListener.onResponse(jsonObject);
+                HttpClient.SuccessListener successListener =
+                        (HttpClient.SuccessListener) invocation.getArguments()[0];
+                successListener.sendResponse("");
             }).start();
 
             return builder;
@@ -245,11 +243,9 @@ public class OptitrackTests {
                 } catch (InterruptedException in) {
 
                 }
-                Response.Listener<JSONObject> successListener =
-                        (Response.Listener<JSONObject>) invocation.getArguments()[0];
-                JSONObject jsonObject = new JSONObject();
-
-                successListener.onResponse(jsonObject);
+                HttpClient.SuccessListener successListener =
+                        (HttpClient.SuccessListener) invocation.getArguments()[0];
+                successListener.sendResponse("");
             }).start();
 
             return delayedResponseBuilder;

@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 
 import androidx.collection.ArraySet;
 
-import com.android.volley.ParseError;
-import com.android.volley.Response;
 import com.google.gson.Gson;
 import com.optimove.android.fixtures.ConfigProvider;
 import com.optimove.android.main.sdk_configs.ConfigsFetcher;
@@ -113,9 +111,9 @@ public class ConfigsFetcherTests {
     @Test(timeout = 1000)
     public void shouldReadFromFileIfNetworkErrorFromTenantConfigsFetch() {
         doAnswer(invocation -> {
-            Response.ErrorListener errorListener =
-                    (Response.ErrorListener) invocation.getArguments()[0];
-            errorListener.onErrorResponse(mock(ParseError.class));
+            HttpClient.ErrorListener errorListener =
+                    (HttpClient.ErrorListener) invocation.getArguments()[0];
+            errorListener.sendError(mock(Exception.class));
             return tenantBuilder;
         }).when(tenantBuilder)
                 .errorListener(any());
@@ -134,9 +132,9 @@ public class ConfigsFetcherTests {
     @Test(timeout = 1000)
     public void shouldReadFromFileIfNetworkErrorFromGlobalConfigsFetch() {
         doAnswer(invocation -> {
-            Response.ErrorListener errorListener =
-                    (Response.ErrorListener) invocation.getArguments()[0];
-            errorListener.onErrorResponse(mock(ParseError.class));
+            HttpClient.ErrorListener errorListener =
+                    (HttpClient.ErrorListener) invocation.getArguments()[0];
+            errorListener.sendError(mock(Exception.class));
             return globalBuilder;
         }).when(globalBuilder)
                 .errorListener(any());
@@ -238,9 +236,9 @@ public class ConfigsFetcherTests {
 
     private void applyParseErrorOnGlobalBuilder() {
         doAnswer(invocation -> {
-            Response.ErrorListener errorListener =
-                    (Response.ErrorListener) invocation.getArguments()[0];
-            errorListener.onErrorResponse(mock(ParseError.class));
+            HttpClient.ErrorListener errorListener =
+                    (HttpClient.ErrorListener) invocation.getArguments()[0];
+            errorListener.sendError(mock(Exception.class));
             return globalBuilder;
         }).when(globalBuilder)
                 .errorListener(any());
@@ -263,16 +261,17 @@ public class ConfigsFetcherTests {
     private void applyCustomConfigFetch(FetchedTenantConfigs fetchedTenantConfigs,
                                         FetchedGlobalConfig fetchedGlobalConfig) {
         doAnswer(invocation -> {
-            Response.Listener<FetchedTenantConfigs> successListener =
-                    (Response.Listener<FetchedTenantConfigs>) invocation.getArguments()[0];
-            successListener.onResponse(fetchedTenantConfigs);
+            HttpClient.SuccessListener successListener =
+                    (HttpClient.SuccessListener) invocation.getArguments()[0];
+            successListener.sendResponse(fetchedTenantConfigs);
             return tenantBuilder;
         }).when(tenantBuilder)
                 .successListener(any());
         doAnswer(invocation -> {
-            Response.Listener<FetchedGlobalConfig> successListener =
-                    (Response.Listener<FetchedGlobalConfig>) invocation.getArguments()[0];
-            successListener.onResponse(fetchedGlobalConfig);
+
+            HttpClient.SuccessListener successListener =
+                    (HttpClient.SuccessListener) invocation.getArguments()[0];
+            successListener.sendResponse(fetchedGlobalConfig);
             return globalBuilder;
         }).when(globalBuilder)
                 .successListener(any());

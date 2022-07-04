@@ -95,7 +95,7 @@ final public class Optimove {
         this.lifecycleObserver = new LifecycleObserver();
         this.eventHandlerProvider = new EventHandlerProvider(EventHandlerFactory.builder()
                 .userInfo(userInfo)
-                .httpClient(HttpClient.getInstance(context))
+                .httpClient(HttpClient.getInstance())
                 .maximumBufferSize(OPTITRACK_BUFFER_SIZE)
                 .optistreamDbHelper(new OptistreamDbHelper(context))
                 .lifecycleObserver(lifecycleObserver)
@@ -190,7 +190,7 @@ final public class Optimove {
 
     private void fetchConfigs() {
         ConfigsFetcher configsFetcher = ConfigsFetcher.builder()
-                .httpClient(HttpClient.getInstance(context))
+                .httpClient(HttpClient.getInstance())
                 .tenantToken(tenantInfo.getTenantToken())
                 .configName(tenantInfo.getConfigName())
                 .sharedPrefs(localConfigKeysPreferences)
