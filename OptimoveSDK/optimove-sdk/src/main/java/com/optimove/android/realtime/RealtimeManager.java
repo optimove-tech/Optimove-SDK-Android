@@ -13,9 +13,6 @@ import com.optimove.android.main.tools.networking.HttpClient;
 import com.optimove.android.main.tools.opti_logger.OptiLoggerStreamsContainer;
 import com.optimove.android.optistream.OptistreamEvent;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,13 +23,13 @@ import static com.optimove.android.realtime.RealtimeConstants.REALTIME_SP_NAME;
 public final class RealtimeManager {
 
     @NonNull
-    private SharedPreferences realtimePreferences;
+    private final SharedPreferences realtimePreferences;
     @NonNull
-    private HttpClient httpClient;
+    private final HttpClient httpClient;
     @NonNull
-    private RealtimeConfigs realtimeConfigs;
+    private final RealtimeConfigs realtimeConfigs;
 
-    private Gson realtimeGson;
+    private final Gson realtimeGson;
 
     public RealtimeManager(@NonNull HttpClient httpClient, @NonNull RealtimeConfigs realtimeConfigs,
                            @NonNull Context context) {
@@ -76,20 +73,16 @@ public final class RealtimeManager {
     }
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
-        try {
-            httpClient.postJsonArray(realtimeConfigs.getRealtimeGateway(), new JSONArray(new Gson().toJson(optistreamEvents)))
-                    .successListener(jsonResponse ->
+        httpClient.postJson(realtimeConfigs.getRealtimeGateway(), new Gson().toJson(optistreamEvents))
+                .successListener(jsonResponse ->
                         realtimePreferences.edit()
                                 .remove(FAILED_SET_USER_EVENT_KEY)
                                 .remove(FAILED_SET_EMAIL_EVENT_KEY)
                                 .apply()
-                    )
-                    .errorListener(e -> dispatchingFailed(e, optistreamEvents))
-                    .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
-                    .send();
-        } catch (JSONException e) {
-            dispatchingFailed(e, optistreamEvents);
-        }
+                )
+                .errorListener(e -> dispatchingFailed(e, optistreamEvents))
+                .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
+                .send();
     }
 
     private void dispatchingFailed(Exception e, List<OptistreamEvent> optistreamEvents) {

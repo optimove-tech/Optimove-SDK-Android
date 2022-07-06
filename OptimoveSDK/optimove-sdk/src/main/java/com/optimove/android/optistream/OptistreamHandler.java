@@ -107,7 +107,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                     jsonArrayToDispatch.put(new JSONObject(eventJson));
                 }
                 dispatchRequestWaitsForResponse = true;
-                httpClient.postJsonArray(optitrackConfigs.getOptitrackEndpoint(), jsonArrayToDispatch)
+                httpClient.postJson(optitrackConfigs.getOptitrackEndpoint(), jsonArrayToDispatch.toString())
                         .errorListener(error -> {
                             OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                                     error.getMessage());

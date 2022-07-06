@@ -56,7 +56,7 @@ public class EventHandlerProvider {
             OptistreamHandler optistreamHandler =
                     eventHandlerFactory.getOptistreamHandler(configs.getOptitrackConfigs());
             OptistreamEventBuilder optistreamEventBuilder =
-                    eventHandlerFactory.getOptistreamEventBuilder(configs.getTenantId(), configs.isAirship());
+                    eventHandlerFactory.getOptistreamEventBuilder(configs.getTenantId());
             DestinationDecider destinationDecider =
                     eventHandlerFactory.getDestinationDecider(configs.getEventsConfigs(), optistreamHandler,
                             realtimeManager, optistreamEventBuilder, configs.isEnableRealtime(), configs.isEnableRealtimeThroughOptistream());

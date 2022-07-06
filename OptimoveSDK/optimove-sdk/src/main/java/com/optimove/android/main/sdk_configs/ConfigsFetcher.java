@@ -67,10 +67,11 @@ public class ConfigsFetcher {
 
 
     public void fetchConfigs(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
-        fetchRemoteConfig(configsListener, configsErrorListener);
+        fetchGlobalConfigs(configsListener, configsErrorListener);
+        fetchTenantConfigs(configsListener, configsErrorListener);
     }
 
-    private void fetchRemoteConfig(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
+    private void fetchGlobalConfigs(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener) {
         httpClient.getObject(GLOBAL_CONFIG_FILE_BASE_URL, FetchedGlobalConfig.class)
                 .destination("%s/%s/%s.json", GLOBAL_CONFIG_VERSION,
                         OptiUtils.getSdkEnv(context.getPackageName()), "configs")
@@ -78,6 +79,9 @@ public class ConfigsFetcher {
                         configsErrorListener))
                 .errorListener(e -> configFetchFailed(e, configsListener, configsErrorListener))
                 .send();
+    }
+
+    private void fetchTenantConfigs(ConfigsListener configsListener, ConfigsErrorListener configsErrorListener){
         httpClient.getObject(TENANT_CONFIG_FILE_BASE_URL, FetchedTenantConfigs.class)
                 .destination("%s/%s.json", tenantToken, configName)
                 .successListener(fetchedTenantConfigs -> setFetchedTenantConfigs(fetchedTenantConfigs, configsListener,
@@ -257,7 +261,6 @@ public class ConfigsFetcher {
     public static class Builder implements ContextStep, SharedPrefsStep,
             ConfigNameStep, TenantTokenStep, HttpClientStep, FileProviderStep, Build {
 
-        private boolean isUrgent;
         private String configName;
         private String tenantToken;
         private SharedPreferences localConfigKeysPreferences;
