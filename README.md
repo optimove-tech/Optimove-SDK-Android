@@ -24,7 +24,7 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 
 1. [Push Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-setup)
 2. [Push Advanced Features](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-advanced)
-3. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app-setup)
+3. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app)
 4. [Deferred Deep Linking](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deferred-deep-linking)
 5. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-testing)
 
