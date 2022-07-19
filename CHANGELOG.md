@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.1.0
+
+- Added signOutUser API.
+- Added pushUnregister API.
+
 ## 6.0.0
 
 - Update OkHttp networking library to v4.
