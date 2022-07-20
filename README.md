@@ -23,10 +23,10 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 ### Mobile Messaging
 
 1. [Push Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-setup)
-2. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app-setup)
-3. [Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deeplinks)
-4. [Deferred Deeplinks](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deferred-deeplinks)
-5. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-testing)
+2. [Push Advanced Features](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/push-advanced)
+3. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app)
+4. [Deferred Deep Linking](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deferred-deep-linking)
+5. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/testing-troubleshooting)
 
 ### Migrations
 
