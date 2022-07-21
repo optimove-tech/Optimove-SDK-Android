@@ -133,7 +133,7 @@ public class UserInfo {
    *
    * @param userId the user ID to set
    */
-  public void setUserId(@NonNull String userId) {
+  public void setUserId(@Nullable String userId) {
     writeLock.lock();
     try {
       this.userId = userId;

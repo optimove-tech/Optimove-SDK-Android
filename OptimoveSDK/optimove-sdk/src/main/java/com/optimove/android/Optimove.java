@@ -334,6 +334,27 @@ final public class Optimove {
         }
     }
 
+    /**
+     * Clears the user id, undoing the last setUserId call
+     */
+    public void signOutUser() {
+        if (currentConfig.isOptimobileConfigured()) {
+            Optimobile.clearUserAssociation(context);
+        }
+
+        if (currentConfig.isOptimoveConfigured()) {
+            this.userInfo.setUserId(null);
+            this.userInfo.setVisitorId(this.userInfo.getInitialVisitorId());
+        }
+    }
+
+    /**
+     * Used to unregister the current installation from receiving push notifications
+     */
+    public void pushUnregister() {
+        Optimobile.pushUnregister(context);
+    }
+
     private @Nullable
     SetEmailEvent processUserEmail(String email) {
         if (OptiUtils.isNullNoneOrUndefined(email)) {
