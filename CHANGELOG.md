@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.1.1
+
+- Fixed an error when links are not opening on Android versions higher than 11
+
 ## 6.1.0
 
 - Added signOutUser API.
