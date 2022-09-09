@@ -1,10 +1,14 @@
 package com.optimove.android.optimobile;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.PermissionChecker;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -46,6 +50,7 @@ final class PushRegistration {
 
             switch (api) {
                 case FCM:
+                    RequestNotificationPermissionActivity.request(context);
                     this.registerFcm(context, instance);
                     break;
                 case HMS:

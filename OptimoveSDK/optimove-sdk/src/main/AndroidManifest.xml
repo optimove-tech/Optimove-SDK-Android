@@ -22,6 +22,12 @@
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Translucent"
             android:exported="false" />
+        <activity
+            android:name="com.optimove.android.optimobile.RequestNotificationPermissionActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Optimove.Optipush.Transparent"
+            android:exported="false" />
     </application>
 
     <!-- https://developer.android.com/training/package-visibility/use-cases#check-browser-available -->
