@@ -1,7 +1,9 @@
 
 package com.optimove.android.optimobile;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -323,12 +325,31 @@ public final class Optimobile {
             props.put("token", token);
             props.put("type", type.getValue());
             props.put("package", context.getPackageName());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                props.put("areNotificationsEnabled",
+                        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).areNotificationsEnabled());
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
 
         trackEvent(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_REGISTERED, props, System.currentTimeMillis(), true);
+    }
+
+
+    public static void notificationEnablementStatusChanged(@NonNull Context context, boolean notificationsEnabled) {
+        JSONObject props = new JSONObject();
+
+        try {
+            props.put("notificationsEnabled", notificationsEnabled);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        trackEvent(context, AnalyticsContract.EVENT_TYPE_PUSH_NOTIFICATION_ENABLEMENT_CHANGED, props, System.currentTimeMillis(), true);
     }
 
     /**
