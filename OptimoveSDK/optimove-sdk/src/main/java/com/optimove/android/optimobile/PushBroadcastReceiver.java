@@ -93,8 +93,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             this.onBackgroundPush(context, pushMessage);
         }
 
-        if (!pushMessage.hasTitleAndMessage()) {
-            // Always show Notification if has title + message
+        if (!pushMessage.hasTitleAndMessage() || (!notificationsEnabled(context))) {
             return;
         }
 
@@ -112,6 +111,14 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         this.showNotification(context, pushMessage, builder.build());
+    }
+
+    private boolean notificationsEnabled(Context context){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return true;
+        }
+
+        return ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).areNotificationsEnabled();
     }
 
     private void showNotification(Context context, PushMessage pushMessage, Notification notification) {
