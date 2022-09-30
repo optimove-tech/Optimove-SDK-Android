@@ -93,10 +93,12 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             this.onBackgroundPush(context, pushMessage);
         }
 
-        if (!pushMessage.hasTitleAndMessage() || (!notificationsEnabled(context))) {
-            return;
+        if (pushMessage.hasTitleAndMessage() && notificationsEnabled(context)) {
+            processPushMessage(context, pushMessage);
         }
+    }
 
+    private void processPushMessage(Context context, PushMessage pushMessage) {
         Notification.Builder builder = getNotificationBuilder(context, pushMessage);
         if (null == builder) {
             return;
