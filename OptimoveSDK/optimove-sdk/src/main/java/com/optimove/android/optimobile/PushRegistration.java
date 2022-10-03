@@ -1,12 +1,16 @@
 package com.optimove.android.optimobile;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.PermissionChecker;
 
@@ -50,7 +54,7 @@ final class PushRegistration {
 
             switch (api) {
                 case FCM:
-                    RequestNotificationPermissionActivity.request(context);
+                    this.requestPermissionIfNeeded(context);
                     this.registerFcm(context, instance);
                     break;
                 case HMS:
@@ -60,6 +64,41 @@ final class PushRegistration {
                     Log.e(TAG, "No messaging implementation found, please ensure FCM or HMS libraries are loaded and available");
                     break;
             }
+        }
+
+        private void requestPermissionIfNeeded(Context context){
+            // TODO: handle multiple requests / app lifecycle changes
+
+            if (Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+
+            Optimobile.handler.post(() -> OptimobileInitProvider.getAppStateWatcher()
+                    .registerListener(new AppStateWatcher.AppStateChangedListener() {
+                        @Override
+                        public void appEnteredForeground() {
+
+                        }
+
+                        @Override
+                        public void activityAvailable(@NonNull Activity activity) {
+                            Intent intent = new Intent(activity, RequestNotificationPermissionActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            activity.startActivity(intent);
+                            OptimobileInitProvider.getAppStateWatcher()
+                                    .unregisterListener(this);
+                        }
+
+                        @Override
+                        public void activityUnavailable(@NonNull Activity activity) {
+
+                        }
+
+                        @Override
+                        public void appEnteredBackground() {
+
+                        }
+                    }));
         }
 
         private void registerFcm(Context context, ImplementationUtil instance) {
