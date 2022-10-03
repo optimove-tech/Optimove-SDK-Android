@@ -39,15 +39,6 @@ public class RequestNotificationPermissionActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        boolean shouldShow = false;
-        if (android.os.Build.VERSION.SDK_INT >= 33) {
-            shouldShow = shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS);
-        }
-
-        Optimobile.log(TAG, String.format(Locale.getDefault(), "%d %s %d %b", requestCode, permissions[0],
-                grantResults[0],
-                shouldShow));
         finish();
     }
 }
