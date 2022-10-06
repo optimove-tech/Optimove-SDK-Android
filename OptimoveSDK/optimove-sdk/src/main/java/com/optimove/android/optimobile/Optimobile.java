@@ -18,6 +18,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -325,11 +326,7 @@ public final class Optimobile {
             props.put("token", token);
             props.put("type", type.getValue());
             props.put("package", context.getPackageName());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                props.put("areNotificationsEnabled",
-                        ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).areNotificationsEnabled());
-            }
-
+            props.put("areNotificationsEnabled", NotificationManagerCompat.from(context).areNotificationsEnabled());
         } catch (JSONException e) {
             e.printStackTrace();
             return;

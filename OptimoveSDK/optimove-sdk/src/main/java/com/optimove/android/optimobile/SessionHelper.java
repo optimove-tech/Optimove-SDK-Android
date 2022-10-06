@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -62,10 +63,6 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
     }
 
     private void checkNotificationEnablementForStatusChange(){
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return;
-        }
-
         final Context context = mContextRef.get();
         if (null == context) {
             return;
@@ -75,8 +72,7 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
 
         boolean persistedNotificationsEnabled = prefs.getBoolean(SharedPrefs.KEY_NOTIFICATIONS_ENABLEMENT_STATUS,
                 false);
-        boolean currentNotificationsEnabled =
-                ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).areNotificationsEnabled();
+        boolean currentNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled();
 
         if (persistedNotificationsEnabled == currentNotificationsEnabled) {
             return;

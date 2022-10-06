@@ -21,6 +21,7 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
@@ -93,7 +94,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             this.onBackgroundPush(context, pushMessage);
         }
 
-        if (pushMessage.hasTitleAndMessage() && notificationsEnabled(context)) {
+        if (pushMessage.hasTitleAndMessage() && NotificationManagerCompat.from(context).areNotificationsEnabled()) {
             processPushMessage(context, pushMessage);
         }
     }
@@ -113,14 +114,6 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         this.showNotification(context, pushMessage, builder.build());
-    }
-
-    private boolean notificationsEnabled(Context context){
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return true;
-        }
-
-        return ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE)).areNotificationsEnabled();
     }
 
     private void showNotification(Context context, PushMessage pushMessage, Notification notification) {
