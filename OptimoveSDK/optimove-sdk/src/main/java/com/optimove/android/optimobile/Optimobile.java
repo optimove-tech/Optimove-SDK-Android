@@ -252,11 +252,11 @@ public final class Optimobile {
     //-- Push APIs
 
     /**
-     * Used to register the device installation with FCM to receive push notifications
+     * Used to register the device installation to receive push notifications. Prompts a notification permission request
      *
      * @param context
      */
-    public static void pushRegister(Context context) {
+    public static void pushRequestDeviceToken(Context context) {
         PushRegistration.RegisterTask task = new PushRegistration.RegisterTask(context);
         executorService.submit(task);
     }
