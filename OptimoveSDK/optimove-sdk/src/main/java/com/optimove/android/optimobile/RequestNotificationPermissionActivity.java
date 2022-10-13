@@ -24,7 +24,7 @@ public class RequestNotificationPermissionActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
-        if (Build.VERSION.SDK_INT < 33) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             finish();
             return;
         }
