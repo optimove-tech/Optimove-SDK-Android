@@ -2,6 +2,8 @@ package com.optimove.android.optimobile;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,6 +14,7 @@ import android.util.Log;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.PermissionChecker;
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,6 +28,8 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
+
+import static com.optimove.android.optimobile.PushBroadcastReceiver.DEFAULT_CHANNEL_ID;
 
 final class PushRegistration {
 
@@ -58,6 +63,7 @@ final class PushRegistration {
                     this.registerFcm(context, instance);
                     break;
                 case HMS:
+                    this.requestPermissionIfNeeded(context);
                     this.registerHms(context);
                     break;
                 default:
@@ -66,13 +72,38 @@ final class PushRegistration {
             }
         }
 
-        private void requestPermissionIfNeeded(Context context){
-            // TODO: handle multiple requests / app lifecycle changes
-
-            if (Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+        private void requestPermissionIfNeeded(Context context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 return;
             }
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && context.getApplicationContext()
+                    .getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermission();
+                return;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                createChannelToRequestPermission(context);
+            }
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private void createChannelToRequestPermission(Context context) {
+            NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
+
+            if (null == channel) {
+                channel =
+                        new NotificationChannel(DEFAULT_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_DEFAULT);
+                channel.setSound(null, null);
+                channel.setVibrationPattern(new long[]{0, 250, 250, 250});
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        private void requestPermission() {
             Optimobile.handler.post(() -> OptimobileInitProvider.getAppStateWatcher()
                     .registerListener(new AppStateWatcher.AppStateChangedListener() {
                         @Override
@@ -123,7 +154,8 @@ final class PushRegistration {
 
             Exception exception = null;
             try {
-                Method getToken = instance.getClass().getMethod("getToken");
+                Method getToken = instance.getClass()
+                        .getMethod("getToken");
                 Task<String> result = (Task<String>) getToken.invoke(instance);
 
                 result.addOnCompleteListener(Optimobile.executorService, task -> {
@@ -163,12 +195,14 @@ final class PushRegistration {
                 Method getInstanceMethod = FirebaseInstanceIdClass.getMethod("getInstance");
                 Object instance = getInstanceMethod.invoke(null);
 
-                Method getInstanceIdMethod = instance.getClass().getMethod("getInstanceId");
+                Method getInstanceIdMethod = instance.getClass()
+                        .getMethod("getInstanceId");
                 Object task = getInstanceIdMethod.invoke(instance);
 
                 OnSuccessListener<?> callback = instanceIdResult -> {
                     try {
-                        Method getTokenMethod = instanceIdResult.getClass().getMethod("getToken");
+                        Method getTokenMethod = instanceIdResult.getClass()
+                                .getMethod("getToken");
                         String token = (String) getTokenMethod.invoke(instanceIdResult);
 
                         Optimobile.pushTokenStore(context, PushTokenType.FCM, token);
@@ -177,7 +211,8 @@ final class PushRegistration {
                     }
                 };
 
-                Method addOnSuccessListenerMethod = task.getClass().getMethod("addOnSuccessListener", Executor.class, OnSuccessListener.class);
+                Method addOnSuccessListenerMethod = task.getClass()
+                        .getMethod("addOnSuccessListener", Executor.class, OnSuccessListener.class);
                 addOnSuccessListenerMethod.invoke(task, Optimobile.executorService, callback);
             } catch (ClassNotFoundException e) {
                 exception = e;
@@ -204,7 +239,8 @@ final class PushRegistration {
                     return;
                 }
 
-                String token = HmsInstanceId.getInstance(context).getToken(appId, HCM_SCOPE);
+                String token = HmsInstanceId.getInstance(context)
+                        .getToken(appId, HCM_SCOPE);
 
                 if (!TextUtils.isEmpty(token)) {
                     Optimobile.pushTokenStore(context, PushTokenType.HCM, token);
@@ -272,7 +308,8 @@ final class PushRegistration {
 
             Exception exception = null;
             try {
-                Method deleteToken = instance.getClass().getMethod("deleteToken");
+                Method deleteToken = instance.getClass()
+                        .getMethod("deleteToken");
                 Task<Void> result = (Task<Void>) deleteToken.invoke(instance);
 
                 result.addOnCompleteListener(Optimobile.executorService, task -> {
@@ -304,15 +341,18 @@ final class PushRegistration {
                 Method getInstanceMethod = FirebaseInstanceIdClass.getMethod("getInstance");
                 Object instance = getInstanceMethod.invoke(null);
 
-                Method getInstanceIdMethod = instance.getClass().getMethod("getInstanceId");
+                Method getInstanceIdMethod = instance.getClass()
+                        .getMethod("getInstanceId");
                 Object task = getInstanceIdMethod.invoke(instance);
 
                 OnSuccessListener<?> callback = instanceIdResult -> {
                     try {
-                        Method getTokenMethod = instanceIdResult.getClass().getMethod("getToken");
+                        Method getTokenMethod = instanceIdResult.getClass()
+                                .getMethod("getToken");
                         String token = (String) getTokenMethod.invoke(instanceIdResult);
 
-                        Method getDeleteTokenMethod = instance.getClass().getMethod("deleteToken", String.class, String.class);
+                        Method getDeleteTokenMethod = instance.getClass()
+                                .getMethod("deleteToken", String.class, String.class);
                         getDeleteTokenMethod.invoke(instance, token, FirebaseMessaging.INSTANCE_ID_SCOPE);
                         Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
                     } catch (Exception e) {
@@ -320,7 +360,8 @@ final class PushRegistration {
                     }
                 };
 
-                Method addOnSuccessListenerMethod = task.getClass().getMethod("addOnSuccessListener", Executor.class, OnSuccessListener.class);
+                Method addOnSuccessListenerMethod = task.getClass()
+                        .getMethod("addOnSuccessListener", Executor.class, OnSuccessListener.class);
                 addOnSuccessListenerMethod.invoke(task, Optimobile.executorService, callback);
             } catch (ClassNotFoundException e) {
                 exception = e;
@@ -346,7 +387,8 @@ final class PushRegistration {
                     return;
                 }
 
-                HmsInstanceId.getInstance(context).deleteToken(appId, HCM_SCOPE);
+                HmsInstanceId.getInstance(context)
+                        .deleteToken(appId, HCM_SCOPE);
                 Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_UNSUBSCRIBED, null);
             } catch (ApiException e) {
                 e.printStackTrace();
@@ -356,6 +398,7 @@ final class PushRegistration {
 
     private static @Nullable
     String getHmsAppId(Context context) {
-        return AGConnectServicesConfig.fromContext(context).getString("client/app_id");
+        return AGConnectServicesConfig.fromContext(context)
+                .getString("client/app_id");
     }
 }
