@@ -336,7 +336,7 @@ public final class Optimobile {
     }
 
 
-    public static void notificationEnablementStatusChanged(@NonNull Context context, boolean notificationsEnabled) {
+    static void notificationEnablementStatusChanged(@NonNull Context context, boolean notificationsEnabled) {
         JSONObject props = new JSONObject();
 
         try {
