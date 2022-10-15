@@ -332,7 +332,7 @@ public final class Optimobile {
             return;
         }
 
-        trackEvent(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_REGISTERED, props, System.currentTimeMillis(), true);
+        trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_REGISTERED, props);
     }
 
 
@@ -346,7 +346,7 @@ public final class Optimobile {
             return;
         }
 
-        trackEvent(context, AnalyticsContract.EVENT_TYPE_PUSH_NOTIFICATION_ENABLEMENT_CHANGED, props, System.currentTimeMillis(), true);
+        trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_NOTIFICATION_ENABLEMENT_CHANGED, props);
     }
 
     /**
