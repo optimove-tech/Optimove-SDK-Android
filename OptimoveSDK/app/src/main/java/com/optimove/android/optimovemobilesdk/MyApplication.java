@@ -38,6 +38,6 @@ public class MyApplication extends Application {
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();
 
-    Optimove.getInstance().pushRegister();
+    Optimove.getInstance().pushRequestDeviceToken();
   }
 }

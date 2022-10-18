@@ -1,7 +1,9 @@
 
 package com.optimove.android.optimobile;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,6 +18,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -249,11 +252,11 @@ public final class Optimobile {
     //-- Push APIs
 
     /**
-     * Used to register the device installation with FCM to receive push notifications
+     * Used to register the device installation to receive push notifications. Prompts a notification permission request
      *
      * @param context
      */
-    public static void pushRegister(Context context) {
+    public static void pushRequestDeviceToken(Context context) {
         PushRegistration.RegisterTask task = new PushRegistration.RegisterTask(context);
         executorService.submit(task);
     }
@@ -323,12 +326,27 @@ public final class Optimobile {
             props.put("token", token);
             props.put("type", type.getValue());
             props.put("package", context.getPackageName());
+            props.put("areNotificationsEnabled", NotificationManagerCompat.from(context).areNotificationsEnabled());
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
 
-        trackEvent(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_REGISTERED, props, System.currentTimeMillis(), true);
+        trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_DEVICE_REGISTERED, props);
+    }
+
+
+    static void notificationEnablementStatusChanged(@NonNull Context context, boolean notificationsEnabled) {
+        JSONObject props = new JSONObject();
+
+        try {
+            props.put("notificationsEnabled", notificationsEnabled);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_PUSH_NOTIFICATION_ENABLEMENT_CHANGED, props);
     }
 
     /**
