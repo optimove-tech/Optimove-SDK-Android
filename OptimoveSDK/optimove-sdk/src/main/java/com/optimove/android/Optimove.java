@@ -472,10 +472,10 @@ final public class Optimove {
     //-- Push APIs
 
     /**
-     * Used to register the device installation with FCM to receive push notifications
+     * Used to register the device installation to receive push notifications. Prompts a notification permission request
      */
-    public void pushRegister() {
-        Optimobile.pushRegister(context);
+    public void pushRequestDeviceToken() {
+        Optimobile.pushRequestDeviceToken(context);
     }
 
     /**

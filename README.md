@@ -30,10 +30,11 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 
 ### Migrations
 
-1. [Migration from 5.x to 6.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-5.x-to-6.x)
-2. [Migration from 4.x to 5.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-4.x-to-5.x)
-3. [Migration from 3.x to 4.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x-to-4.x)
-4. [Migration from 2.x to 3.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-2.x-to-3.x)
+1. [Migration from 6.x to 7.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-6.x-to-7.x)
+2. [Migration from 5.x to 6.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-5.x-to-6.x)
+3. [Migration from 4.x to 5.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-4.x-to-5.x)
+4. [Migration from 3.x to 4.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-3.x-to-4.x)
+5. [Migration from 2.x to 3.x](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-2.x-to-3.x)
 
 ## License
 

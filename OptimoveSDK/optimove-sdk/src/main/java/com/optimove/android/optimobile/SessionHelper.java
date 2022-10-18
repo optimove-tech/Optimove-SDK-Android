@@ -1,11 +1,15 @@
 package com.optimove.android.optimobile;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -34,7 +38,7 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void appEnteredForeground() {
-        //noop
+        checkNotificationEnablementForStatusChange();
     }
 
     @Override
@@ -56,6 +60,28 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
                 WorkManager.getInstance(context).cancelUniqueWork(AnalyticsBackgroundEventWorker.TAG);
             });
         }
+    }
+
+    private void checkNotificationEnablementForStatusChange(){
+        final Context context = mContextRef.get();
+        if (null == context) {
+            return;
+        }
+
+        SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
+
+        boolean persistedNotificationsEnabled = prefs.getBoolean(SharedPrefs.KEY_NOTIFICATIONS_ENABLEMENT_STATUS,
+                false);
+        boolean currentNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled();
+
+        if (persistedNotificationsEnabled == currentNotificationsEnabled) {
+            return;
+        }
+
+        Optimobile.notificationEnablementStatusChanged(context, currentNotificationsEnabled);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(SharedPrefs.KEY_NOTIFICATIONS_ENABLEMENT_STATUS, currentNotificationsEnabled);
+        editor.apply();
     }
 
     private boolean isLaunchActivity(Context context, Activity activity) {

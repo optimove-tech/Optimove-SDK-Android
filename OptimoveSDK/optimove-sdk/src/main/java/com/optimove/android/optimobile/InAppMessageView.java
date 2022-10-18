@@ -549,7 +549,7 @@ class InAppMessageView extends WebViewClient {
                 case BUTTON_ACTION_PUSH_REGISTER:
                     presenter.cancelCurrentPresentationQueue();
 
-                    Optimobile.pushRegister(currentActivity);
+                    Optimobile.pushRequestDeviceToken(currentActivity);
                     return;
             }
         }

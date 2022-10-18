@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.0.0
+
+Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-6.x-to-7.x)
+
+- Updated the target sdk version to 33
+- Updated and renamed the pushRegister API to pushRequestDeviceToken which tries to request a notification permission on devices running Android version >= 13
+- Updated the push message handlers to return a boolean, indicating whether the message was handled by Optimove
+
 ## 6.1.1
 
 - Fixed an error when links are not opening on Android versions higher than 11
