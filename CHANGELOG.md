@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.0.1
+
+- Updated the in app web client to explicitly call ```SslErrorHandler.cancel```
+
 ## 7.0.0
 
 Major breaking update - [Migration guide](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Migration-guide-from-6.x-to-7.x)
