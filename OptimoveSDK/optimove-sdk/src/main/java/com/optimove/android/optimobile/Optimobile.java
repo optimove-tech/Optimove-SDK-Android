@@ -32,6 +32,7 @@ import okhttp3.OkHttpClient;
 import com.optimove.android.BuildConfig;
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+import android.location.Location;
 
 /**
  * The Optimobile class is the main public API for calling Optimobile RPC methods and handling push registration
@@ -400,6 +401,32 @@ public final class Optimobile {
         }
 
         deepLinkHelper.checkForNonContinuationLinkMatch(context);
+    }
+
+    //==============================================================================================
+    //-- Location APIs
+
+    /**
+     * Updates the location of the current installation in Optimove
+     * Accurate locaiton information is used for geofencing
+     * @param context
+     * @param location
+     */
+    public static void sendLocationUpdate(Context context, @Nullable Location location) {
+        if (null == location) {
+            return;
+        }
+
+        JSONObject props = new JSONObject();
+        try {
+            props.put("lat", location.getLatitude());
+            props.put("lng", location.getLongitude());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        trackEvent(context, AnalyticsContract.EVENT_TYPE_LOCATION_UPDATED, props, location.getTime(), true);
     }
 
     //==============================================================================================
