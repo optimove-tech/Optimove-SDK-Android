@@ -429,6 +429,31 @@ public final class Optimobile {
         trackEvent(context, AnalyticsContract.EVENT_TYPE_LOCATION_UPDATED, props, location.getTime(), true);
     }
 
+    /**
+     * Records a proximity event for an Eddystone beacon. Proximity events can be used in automation rules.
+     * @param context
+     * @param hexNamespace
+     * @param hexInstance
+     * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
+     */
+    public static void trackEddystoneBeaconProximity(@NonNull Context context, @NonNull String hexNamespace, @NonNull String hexInstance, @Nullable Double distanceMetres) {
+        JSONObject properties = new JSONObject();
+        try {
+            properties.put("type", 2);
+            properties.put("namespace", hexNamespace);
+            properties.put("instance", hexInstance);
+
+            if (null != distanceMetres) {
+                properties.put("distance", distanceMetres);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        trackEvent(context, AnalyticsContract.EVENT_TYPE_ENTERED_BEACON_PROXIMITY, properties, System.currentTimeMillis(), true);
+    }
+
     //==============================================================================================
     //-- OTHER
 

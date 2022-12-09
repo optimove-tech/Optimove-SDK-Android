@@ -542,6 +542,16 @@ final public class Optimove {
         Optimobile.sendLocationUpdate(context, location);
     }
 
+    /**
+     * Records a proximity event for an Eddystone beacon. Proximity events can be used in automation rules.
+     * @param hexNamespace
+     * @param hexInstance
+     * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
+     */
+    public void trackEddystoneBeaconProximity(@NonNull String hexNamespace, @NonNull String hexInstance, @Nullable Double distanceMetres) {
+        Optimobile.trackEddystoneBeaconProximity(context, hexNamespace, hexInstance, distanceMetres);
+    }
+
     /* *******************
      * Public Only to SDK Getters
      ******************* */
