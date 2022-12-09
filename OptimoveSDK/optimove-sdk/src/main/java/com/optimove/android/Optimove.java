@@ -543,7 +543,7 @@ final public class Optimove {
     }
 
     /**
-     * Records a proximity event for an Eddystone beacon. Proximity events can be used in automation rules.
+     * Records a proximity event for an Eddystone beacon.
      * @param hexNamespace
      * @param hexInstance
      * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded

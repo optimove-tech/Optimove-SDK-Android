@@ -430,7 +430,7 @@ public final class Optimobile {
     }
 
     /**
-     * Records a proximity event for an Eddystone beacon. Proximity events can be used in automation rules.
+     * Records a proximity event for an Eddystone beacon.
      * @param context
      * @param hexNamespace
      * @param hexInstance
