@@ -1,8 +1,12 @@
 # Changelog
 
+## 7.1.0
+
+- In order to support geofencing and beacons, add public API methods to track location and beacon proximity.
+
 ## 7.0.1
 
-- Updated the in app web client to explicitly call ```SslErrorHandler.cancel```
+- Updated the in app web client to explicitly call `SslErrorHandler.cancel`
 
 ## 7.0.0
 
