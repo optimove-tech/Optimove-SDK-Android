@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -529,6 +530,27 @@ final public class Optimove {
         Optimobile.seeInputFocus(context, hasFocus);
     }
 
+    //==============================================================================================
+    //-- Location APIs
+
+    /**
+     * Updates the location of the current installation in Optimove
+     * Accurate locaiton information is used for geofencing
+     * @param location
+     */
+    public void sendLocationUpdate(@Nullable Location location) {
+        Optimobile.sendLocationUpdate(context, location);
+    }
+
+    /**
+     * Records a proximity event for an Eddystone beacon.
+     * @param hexNamespace
+     * @param hexInstance
+     * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
+     */
+    public void trackEddystoneBeaconProximity(@NonNull String hexNamespace, @NonNull String hexInstance, @Nullable Double distanceMetres) {
+        Optimobile.trackEddystoneBeaconProximity(context, hexNamespace, hexInstance, distanceMetres);
+    }
 
     /* *******************
      * Public Only to SDK Getters
