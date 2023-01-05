@@ -76,6 +76,7 @@ public final class Optimobile {
         }
     }
 
+
     /**
      * Used to configure the Optimobile class. Only needs to be called once per process
      * @param application
@@ -445,6 +446,33 @@ public final class Optimobile {
 
             if (null != distanceMetres) {
                 properties.put("distance", distanceMetres);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        trackEvent(context, AnalyticsContract.EVENT_TYPE_ENTERED_BEACON_PROXIMITY, properties, System.currentTimeMillis(), true);
+    }
+
+    /**
+     * Records a proximity event for an iBeacon
+     * @param context
+     * @param uuid
+     * @param majorId
+     * @param minorId
+     * @param iBeaconProximity - Constant that reflects the relative distance to a beacon.
+     */
+    public static void trackIBeaconProximity(@NonNull Context context, @NonNull String uuid, int majorId, int minorId, @Nullable Optimove.IBeaconProximity iBeaconProximity) {
+        JSONObject properties = new JSONObject();
+        try {
+            properties.put("type", 1);
+            properties.put("uuid", uuid);
+            properties.put("major", majorId);
+            properties.put("minor", minorId);
+
+            if (null != iBeaconProximity) {
+                properties.put("proximity", iBeaconProximity.ordinal());
             }
         } catch (JSONException e) {
             e.printStackTrace();
