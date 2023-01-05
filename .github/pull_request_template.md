@@ -15,17 +15,18 @@ Prepare:
 Bump versions in:
 
 - [ ] CHANGELOG.md
+- [ ] gradle.properties
 
 ### Integration tests
 
-*T&T Only*
+_T&T Only_
 
 - [ ] Init SDK with only optimove credentials
 - [ ] Associate customer
 - [ ] Associate email
 - [ ] Track events
 
-*Mobile Only*
+_Mobile Only_
 
 - [ ] Init SDK with all credentials
 - [ ] Track events
@@ -38,12 +39,12 @@ Bump versions in:
 - [ ] Receive / trigger the content extension, render image and action buttons for push
 - [ ] Verify push opened handler
 
-*Deferred Deep Links*
+_Deferred Deep Links_
 
 - [ ] With app installed, trigger deep link handler
 - [ ] With app uninstalled, follow deep link, install test bundle, verify deep link read from Clipboard, trigger deep link handler
 
-*Combined*
+_Combined_
 
 - [ ] Track event for T&T, verify push received
 - [ ] Trigger scheduled campaign, verify push received
