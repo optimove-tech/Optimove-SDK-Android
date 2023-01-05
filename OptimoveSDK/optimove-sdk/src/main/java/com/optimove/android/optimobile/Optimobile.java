@@ -463,7 +463,7 @@ public final class Optimobile {
      * @param minorId
      * @param iBeaconProximity - Constant that reflects the relative distance to a beacon.
      */
-    public static void trackIBeaconProximity(@NonNull Context context, @NonNull String uuid, @NonNull String majorId, @NonNull String minorId, @Nullable Optimove.IBeaconProximity iBeaconProximity) {
+    public static void trackIBeaconProximity(@NonNull Context context, @NonNull String uuid, int majorId, int minorId, @Nullable Optimove.IBeaconProximity iBeaconProximity) {
         JSONObject properties = new JSONObject();
         try {
             properties.put("type", 1);

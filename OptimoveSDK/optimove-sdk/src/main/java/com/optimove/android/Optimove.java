@@ -566,7 +566,7 @@ final public class Optimove {
      * @param minorId
      * @param proximity - Constant that reflects the relative distance to a beacon.
      */
-    public void trackIBeaconProximity(@NonNull String uuid, @NonNull String majorId, @NonNull String minorId, @Nullable IBeaconProximity proximity) {
+    public void trackIBeaconProximity(@NonNull String uuid, int majorId, int minorId, @Nullable IBeaconProximity proximity) {
         Optimobile.trackIBeaconProximity(context, uuid, majorId, minorId, proximity);
     }
 
