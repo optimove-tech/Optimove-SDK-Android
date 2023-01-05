@@ -70,6 +70,13 @@ final public class Optimove {
 
     private static OptimoveConfig currentConfig;
 
+    public enum IBeaconProximity {
+        UNKNOWN,
+        IMMEDIATE,
+        NEAR,
+        FAR
+    }
+
     private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
         this.userInfo = UserInfo.newInstance(context);
@@ -550,6 +557,10 @@ final public class Optimove {
      */
     public void trackEddystoneBeaconProximity(@NonNull String hexNamespace, @NonNull String hexInstance, @Nullable Double distanceMetres) {
         Optimobile.trackEddystoneBeaconProximity(context, hexNamespace, hexInstance, distanceMetres);
+    }
+
+    public void trackIBeaconProximity(@NonNull String uuid, @NonNull String majorId, @NonNull String minorId, @Nullable IBeaconProximity proximity) {
+        Optimobile.trackIBeaconProximity(context, uuid, majorId, minorId, proximity);
     }
 
     /* *******************
