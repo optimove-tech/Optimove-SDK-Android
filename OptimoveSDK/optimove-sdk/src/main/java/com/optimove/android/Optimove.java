@@ -559,6 +559,13 @@ final public class Optimove {
         Optimobile.trackEddystoneBeaconProximity(context, hexNamespace, hexInstance, distanceMetres);
     }
 
+    /**
+     * Records a proximity event for an iBeacon
+     * @param uuid
+     * @param majorId
+     * @param minorId
+     * @param proximity - Constant that reflects the relative distance to a beacon.
+     */
     public void trackIBeaconProximity(@NonNull String uuid, @NonNull String majorId, @NonNull String minorId, @Nullable IBeaconProximity proximity) {
         Optimobile.trackIBeaconProximity(context, uuid, majorId, minorId, proximity);
     }
