@@ -16,6 +16,7 @@ Bump versions in:
 
 - [ ] CHANGELOG.md
 - [ ] gradle.properties
+- [ ] add links to newly created wiki pages to readme
 
 ### Integration tests
 
