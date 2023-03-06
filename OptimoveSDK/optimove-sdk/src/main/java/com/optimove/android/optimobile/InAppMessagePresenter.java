@@ -50,8 +50,12 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             currentActivity = activity;
         }
 
+        int tickleId = -1;
+
         Intent i = currentActivity.getIntent();
-        int tickleId = i.getIntExtra(PushBroadcastReceiver.EXTRAS_KEY_TICKLE_ID, -1);
+        if (null != i) {
+            tickleId = i.getIntExtra(PushBroadcastReceiver.EXTRAS_KEY_TICKLE_ID, -1);
+        }
 
         if (-1 != tickleId) {
             InAppMessageService.readAndPresentMessages(context, false, tickleId);
