@@ -286,8 +286,6 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return null;
         }
 
-        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
         ComponentName component = launchIntent.getComponent();
         if (null == component) {
             Optimobile.log(TAG, "Intent to handle push notification open does not specify a component, ignoring. Override PushBroadcastReceiver#getPushOpenActivityIntent to change this behaviour.");
@@ -334,6 +332,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         launchIntent.putExtra(PushMessage.EXTRAS_KEY, pushMessage);
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
         return launchIntent;
     }
 
