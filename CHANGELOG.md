@@ -1,12 +1,10 @@
 # Changelog
 
-## 7.1.2
-
-- Fix In-App Message null Intent handling
-
 ## 7.1.1
 
+- Fixed In-App Message null Intent handling
 - Fixed the Optistream event to keep the original timestamp
+- Updated the push open intent flags assignment to be overridable
 
 ## 7.1.0
 
