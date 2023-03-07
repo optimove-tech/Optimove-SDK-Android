@@ -44,7 +44,7 @@ public class OptistreamEventBuilder {
                 .withOrigin(OptistreamEventBuilder.Constants.ORIGIN)
                 .withUserId(userInfo.getUserId())
                 .withVisitorId(userInfo.getVisitorId())
-                .withTimestamp(simpleDateFormat.format(new Date()))
+                .withTimestamp(simpleDateFormat.format(new Date(optimoveEvent.getTimestamp())))
                 .withContext(optimoveEvent.getParameters());
 
         OptistreamEvent.Metadata metadata = new OptistreamEvent.Metadata(isRealtime, userInfo.getFirstVisitorDate(),

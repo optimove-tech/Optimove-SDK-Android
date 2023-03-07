@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.1.2
+
+- Fix In-App Message null Intent handling
+
+## 7.1.1
+
+- Fixed the Optistream event to keep the original timestamp
+
 ## 7.1.0
 
 - In order to support geofencing and beacons, add public API methods to track location and beacon proximity.
