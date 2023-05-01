@@ -6,13 +6,13 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.optimove.android.main.common.TenantInfo;
 import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InternalSdkEmbeddingApi;
 import com.optimove.android.optimobile.UrlBuilder;
-import com.optimove.android.R;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
@@ -20,16 +20,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 /**
  * Represents the configuration for the Optimove client
  */
 public final class OptimoveConfig {
 
-    @DrawableRes
-    public static final int DEFAULT_NOTIFICATION_ICON_ID = R.drawable.optimobile_ic_stat_notifications;
     static final int DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS = 23;
 
     private @Nullable
@@ -45,7 +40,8 @@ public final class OptimoveConfig {
     String configFileName;
 
     @DrawableRes
-    private int notificationSmallIconId;
+    @Nullable
+    private Integer notificationSmallIconId;
     private InAppConsentStrategy inAppConsentStrategy;
     private int sessionIdleTimeoutSeconds;
 
@@ -146,8 +142,9 @@ public final class OptimoveConfig {
         return configFileName;
     }
 
+    @Nullable
     public @DrawableRes
-    int getNotificationSmallIconId() {
+    Integer getNotificationSmallIconId() {
         return notificationSmallIconId;
     }
 
@@ -208,7 +205,8 @@ public final class OptimoveConfig {
         String configFileName;
 
         @DrawableRes
-        private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        @Nullable
+        private Integer notificationSmallIconDrawableId;
         private InAppConsentStrategy consentStrategy = null;
         private int sessionIdleTimeoutSeconds = OptimoveConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
 
@@ -278,7 +276,7 @@ public final class OptimoveConfig {
          * @param drawableIconId
          * @return
          */
-        public Builder setPushSmallIconId(@DrawableRes int drawableIconId) {
+        public Builder setPushSmallIconId(@DrawableRes Integer drawableIconId) {
             this.notificationSmallIconDrawableId = drawableIconId;
             return this;
         }

@@ -210,7 +210,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         OptimoveConfig config = Optimove.getConfig();
-        int icon = config != null ? config.getNotificationSmallIconId() : OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        int icon = (config != null && config.getNotificationSmallIconId() != null) ? config.getNotificationSmallIconId() : context.getApplicationInfo().icon;
 
         notificationBuilder
                 .setSmallIcon(icon)
