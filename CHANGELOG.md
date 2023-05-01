@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.2.0
+
+- Changed the default notification icon to be the app icon
+
 ## 7.1.1
 
 - Fixed In-App Message null Intent handling
