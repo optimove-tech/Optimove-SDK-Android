@@ -83,7 +83,7 @@ public final class OptimoveConfig {
         this.configFileName = configFileName;
     }
 
-    private void setNotificationSmallIconId(@DrawableRes int notificationSmallIconId) {
+    private void setNotificationSmallIconId(@Nullable @DrawableRes Integer notificationSmallIconId) {
         this.notificationSmallIconId = notificationSmallIconId;
     }
 
