@@ -17,6 +17,7 @@ Bump versions in:
 - [ ] CHANGELOG.md
 - [ ] gradle.properties
 - [ ] add links to newly created wiki pages to readme
+- [ ] Update major version numbers in wiki (basic integration + push guides)
 
 ### Integration tests
 
