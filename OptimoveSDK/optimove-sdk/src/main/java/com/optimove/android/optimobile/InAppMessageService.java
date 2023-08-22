@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import  com.optimove.android.BuildConfig;
+import com.optimove.android.OptimoveConfig;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -235,6 +236,10 @@ class InAppMessageService {
     }
 
     static OptimoveInApp.InboxMessagePresentationResult presentMessage(Context context, InAppInboxItem item) {
+        if (OptimoveInApp.presenter.getDisplayMode() == OptimoveConfig.InAppDisplayMode.PAUSED) {
+            return OptimoveInApp.InboxMessagePresentationResult.PAUSED;
+        }
+
         Callable<InAppMessage> task = new InAppContract.ReadInAppInboxMessageCallable(context, item.getId());
         final Future<InAppMessage> future = Optimobile.executorService.submit(task);
 

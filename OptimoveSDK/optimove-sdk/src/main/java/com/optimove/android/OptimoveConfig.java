@@ -6,12 +6,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.optimove.android.main.common.TenantInfo;
 import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InternalSdkEmbeddingApi;
 import com.optimove.android.optimobile.UrlBuilder;
-import com.optimove.android.R;
 
 import org.json.JSONObject;
 
@@ -46,8 +44,10 @@ public final class OptimoveConfig {
 
     @DrawableRes
     private int notificationSmallIconId;
-    private InAppConsentStrategy inAppConsentStrategy;
     private int sessionIdleTimeoutSeconds;
+
+    private InAppConsentStrategy inAppConsentStrategy;
+    private InAppDisplayMode inAppDisplayMode;
 
     private JSONObject runtimeInfo;
     private JSONObject sdkInfo;
@@ -61,6 +61,11 @@ public final class OptimoveConfig {
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
+    }
+
+    public enum InAppDisplayMode {
+        AUTOMATIC,
+        PAUSED
     }
 
     // Private constructor to discourage not using the Builder.
@@ -109,6 +114,10 @@ public final class OptimoveConfig {
 
     private void setInAppConsentStrategy(InAppConsentStrategy strategy) {
         this.inAppConsentStrategy = strategy;
+    }
+
+    private void setInAppDisplayMode(@NonNull InAppDisplayMode mode) {
+        this.inAppDisplayMode = mode;
     }
 
     private void setCname(@Nullable URL deepLinkCname) {
@@ -171,6 +180,9 @@ public final class OptimoveConfig {
         return inAppConsentStrategy;
     }
 
+    public @NonNull
+    InAppDisplayMode getInAppDisplayMode() { return inAppDisplayMode; }
+
     public @Nullable
     URL getDeepLinkCname() {
         return this.deepLinkCname;
@@ -209,8 +221,10 @@ public final class OptimoveConfig {
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
-        private InAppConsentStrategy consentStrategy = null;
         private int sessionIdleTimeoutSeconds = OptimoveConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
+
+        private InAppConsentStrategy consentStrategy = null;
+        private InAppDisplayMode inAppDisplayMode = null;
 
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
@@ -283,9 +297,14 @@ public final class OptimoveConfig {
             return this;
         }
 
-        public Builder enableInAppMessaging(InAppConsentStrategy strategy) {
+        public Builder enableInAppMessaging(@NonNull InAppConsentStrategy strategy, @NonNull InAppDisplayMode defaultDisplayMode) {
             this.consentStrategy = strategy;
+            this.inAppDisplayMode = defaultDisplayMode;
             return this;
+        }
+
+        public Builder enableInAppMessaging(InAppConsentStrategy strategy) {
+            return enableInAppMessaging(strategy, InAppDisplayMode.AUTOMATIC);
         }
 
         public Builder enableDeepLinking(@NonNull String cname, DeferredDeepLinkHandlerInterface handler) {
@@ -373,6 +392,7 @@ public final class OptimoveConfig {
             newConfig.setBaseUrlMap(this.baseUrlMap);
 
             newConfig.setInAppConsentStrategy(consentStrategy);
+            newConfig.setInAppDisplayMode(inAppDisplayMode);
 
             newConfig.setCname(this.deepLinkCname);
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);

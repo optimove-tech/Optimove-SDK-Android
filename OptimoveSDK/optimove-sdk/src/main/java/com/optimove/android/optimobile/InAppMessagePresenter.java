@@ -3,11 +3,14 @@ package com.optimove.android.optimobile;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+
+import com.optimove.android.OptimoveConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,18 +23,23 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     private final List<InAppMessage> messageQueue = new ArrayList<>();
     private final Context context;
 
+    @NonNull
+    private OptimoveConfig.InAppDisplayMode displayMode;
+
     @Nullable
     private Activity currentActivity;
     @Nullable
     private InAppMessageView view;
 
-    InAppMessagePresenter(Context context) {
+    InAppMessagePresenter(Context context, @NonNull OptimoveConfig.InAppDisplayMode defaultDisplayMode) {
         this.context = context.getApplicationContext();
+        this.displayMode = defaultDisplayMode;
         OptimobileInitProvider.getAppStateWatcher().registerListener(this);
     }
 
     @Override
     public void appEnteredForeground() {
+        Log.d("INAPP", "APP ENTERED FG");
         if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
@@ -41,6 +49,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void activityAvailable(@NonNull Activity activity) {
+        Log.d("INAPP", "ACTIVITY AVAILABLE");
         if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
@@ -83,6 +92,24 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         // noop
     }
 
+    void setDisplayMode(@NonNull OptimoveConfig.InAppDisplayMode mode) {
+        boolean resumed;
+
+        synchronized (this) {
+            resumed = displayMode != mode && mode != OptimoveConfig.InAppDisplayMode.PAUSED;
+            displayMode = mode;
+        }
+
+        if (resumed) {
+            presentMessageToClient();
+        }
+    }
+
+    @NonNull
+    synchronized OptimoveConfig.InAppDisplayMode getDisplayMode() {
+        return displayMode;
+    }
+
     @AnyThread
     synchronized void presentMessages(List<InAppMessage> itemsToPresent, List<Integer> tickleIds) {
         Optimobile.handler.post(() -> presentMessagesOnUiThread(itemsToPresent, tickleIds));
@@ -118,9 +145,10 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @UiThread
     private void presentMessageToClient() {
+        Log.d("INAPP", "INAPP PRESENT TO CLIENT");
         InAppMessage currentMessage = getCurrentMessage();
 
-        if (null == currentMessage) {
+        if (null == currentMessage || getDisplayMode() == OptimoveConfig.InAppDisplayMode.PAUSED) {
             disposeView();
             return;
         }
