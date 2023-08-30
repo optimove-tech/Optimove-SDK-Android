@@ -25,7 +25,8 @@ public class OptimoveInApp {
     public enum InboxMessagePresentationResult {
         FAILED,
         FAILED_EXPIRED,
-        PRESENTED
+        PRESENTED,
+        PAUSED
     }
 
     public interface InAppInboxUpdatedHandler extends Runnable {
@@ -160,6 +161,10 @@ public class OptimoveInApp {
         this.inAppDeepLinkHandler = handler;
     }
 
+    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode) {
+        presenter.setDisplayMode(mode);
+    }
+
 
     //==============================================================================================
     //-- Internal Helpers
@@ -180,7 +185,7 @@ public class OptimoveInApp {
             shared.clearLastSyncTime(application);
         }
 
-        presenter = new InAppMessagePresenter(application);
+        presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());
 
         shared.toggleInAppMessageMonitoring(inAppEnabled);
     }
