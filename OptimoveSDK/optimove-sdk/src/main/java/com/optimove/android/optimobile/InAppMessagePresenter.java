@@ -39,7 +39,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void appEnteredForeground() {
-        Log.d("INAPP", "APP ENTERED FG");
         if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
@@ -49,7 +48,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @Override
     public void activityAvailable(@NonNull Activity activity) {
-        Log.d("INAPP", "ACTIVITY AVAILABLE");
         if (!OptimoveInApp.getInstance().isInAppEnabled()) {
             return;
         }
@@ -145,7 +143,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @UiThread
     private void presentMessageToClient() {
-        Log.d("INAPP", "INAPP PRESENT TO CLIENT");
         InAppMessage currentMessage = getCurrentMessage();
 
         if (null == currentMessage || getDisplayMode() == OptimoveConfig.InAppDisplayMode.PAUSED) {
