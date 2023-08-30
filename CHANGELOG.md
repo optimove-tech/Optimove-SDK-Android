@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.2.0
+
+- Add ability to pause & resume in-app message display (#38)
+
 ## 7.1.1
 
 - Fixed In-App Message null Intent handling
