@@ -83,7 +83,7 @@ public final class Optimobile {
      * @param config
      */
     public static synchronized void initialize(final Application application, OptimoveConfig config, String initialVisitorId, @Nullable String customerId) {
-        if (!config.isOptimobileConfigured()){
+        if (!config.isOptimobileConfigured() && !config.usesDelayedConfiguration()){
             throw new UninitializedException();
         }
 
@@ -94,7 +94,7 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
+        authHeader = config.usesDelayedConfiguration() ? null : buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
         urlBuilder  = new UrlBuilder(config.getBaseUrlMap());
         httpClient = buildOkHttpClient();

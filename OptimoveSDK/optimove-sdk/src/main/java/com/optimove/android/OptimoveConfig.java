@@ -58,6 +58,8 @@ public final class OptimoveConfig {
 
     private @Nullable LogLevel minLogLevel;
 
+    private boolean delayedCredentials = false;
+
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
@@ -66,6 +68,12 @@ public final class OptimoveConfig {
     public enum InAppDisplayMode {
         AUTOMATIC,
         PAUSED
+    }
+
+    public enum Region {
+        EU2,
+        US1,
+        UK1
     }
 
     // Private constructor to discourage not using the Builder.
@@ -131,6 +139,8 @@ public final class OptimoveConfig {
     private void setMinLogLevel(@Nullable LogLevel minLogLevel){
         this.minLogLevel = minLogLevel;
     }
+
+    private void setDelayedCredentials(boolean delayed){ this.delayedCredentials = delayed; }
 
     @Nullable
     public String getRegion() {
@@ -204,6 +214,10 @@ public final class OptimoveConfig {
         return this.minLogLevel;
     }
 
+    public boolean usesDelayedConfiguration(){
+        return this.delayedCredentials;
+    }
+
     /**
      * Config builder for the Optimobile client
      */
@@ -235,6 +249,26 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
+
+        private boolean delayedCredentials = false;
+
+        public Builder(Region region) {
+            switch (region) {
+                case EU2:
+                    this.region = "eu-central-2";
+                    break;
+                case US1:
+                    this.region = "us-east-1";
+                    break;
+                case UK1:
+                    this.region ="uk-1";
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown region" + region);
+            }
+            this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
+            this.delayedCredentials = true;
+        }
 
         public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
             if (optimoveCredentials == null && optimobileCredentials == null) {
@@ -398,6 +432,8 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
+
+            newConfig.setDelayedCredentials(delayedCredentials);
 
             return newConfig;
         }
