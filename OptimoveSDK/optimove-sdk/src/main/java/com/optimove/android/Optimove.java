@@ -176,13 +176,12 @@ final public class Optimove {
         }
 
         currentConfig.setCredentials(optimoveCredentials, optimobileCredentials);
-        if (optimobileCredentials != null){
+        if (optimobileCredentials != null && currentConfig.usesDelayedOptimobileConfiguration()){
             Optimobile.completeDelayedConfiguration(currentConfig);
         }
 
-        if (currentConfig.isOptimoveConfigured()){
-            Application application = (Application) shared.getApplicationContext();
-            Optimove.finishInitialization(application, currentConfig);
+        if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()){
+            Optimove.finishInitialization((Application) shared.getApplicationContext(), currentConfig);
         }
     }
 

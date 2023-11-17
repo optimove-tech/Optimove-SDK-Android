@@ -78,7 +78,8 @@ public final class OptimoveConfig {
 
     public enum PartialInitType {
         OPTIMOBILE_ONLY,
-        //TODO: support OPTIMOVE_ONLY and ALL
+        OPTIMOVE_ONLY,
+        ALL
     }
 
     // Private constructor to discourage not using the Builder.
@@ -255,12 +256,11 @@ public final class OptimoveConfig {
     }
 
     public boolean usesDelayedOptimobileConfiguration(){
-        return this.partialInitType == PartialInitType.OPTIMOBILE_ONLY;
+        return this.partialInitType == PartialInitType.OPTIMOBILE_ONLY || this.partialInitType == PartialInitType.ALL;
     }
 
     public boolean usesDelayedOptimoveConfiguration(){
-        //TODO: cache things in optimove as well
-        return false;
+        return this.partialInitType == PartialInitType.OPTIMOVE_ONLY || this.partialInitType == PartialInitType.ALL;
     }
 
     public boolean usesDelayedConfiguration(){
