@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.3.0
+
+- Support late setting of credentials with partial initialisation
+
 ## 7.2.0
 
 - Add ability to pause & resume in-app message display (#38)
