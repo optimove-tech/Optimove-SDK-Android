@@ -295,7 +295,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        public Builder(Region region, @NonNull PartialInitType partialInitType) {
+        public Builder(@NonNull Region region, @NonNull PartialInitType partialInitType) {
             switch (region) {
                 case EU2:
                     this.region = "eu-central-2";
