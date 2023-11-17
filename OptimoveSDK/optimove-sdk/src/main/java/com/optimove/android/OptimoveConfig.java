@@ -58,7 +58,7 @@ public final class OptimoveConfig {
 
     private @Nullable LogLevel minLogLevel;
 
-    private boolean delayedCredentials = false;
+    private @Nullable PartialInitType partialInitType;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -76,28 +76,17 @@ public final class OptimoveConfig {
         UK1
     }
 
+    public enum PartialInitType {
+        OPTIMOBILE_ONLY,
+        //TODO: support OPTIMOVE_ONLY and ALL
+    }
+
     // Private constructor to discourage not using the Builder.
     private OptimoveConfig() {
     }
 
     private void setRegion(@Nullable String region) {
         this.region = region;
-    }
-
-    private void setApiKey(@Nullable String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    private void setSecretKey(@Nullable String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-    private void setOptimoveToken(@Nullable String optimoveToken) {
-        this.optimoveToken = optimoveToken;
-    }
-
-    private void setConfigFileName(@Nullable String configFileName) {
-        this.configFileName = configFileName;
     }
 
     private void setNotificationSmallIconId(@DrawableRes int notificationSmallIconId) {
@@ -140,7 +129,57 @@ public final class OptimoveConfig {
         this.minLogLevel = minLogLevel;
     }
 
-    private void setDelayedCredentials(boolean delayed){ this.delayedCredentials = delayed; }
+    void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials){
+        if (optimoveCredentials == null && optimobileCredentials == null) {
+            throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
+        }
+
+        this.setOptimoveCredentials(optimoveCredentials);
+        this.setOptimobileCredentials(optimobileCredentials);
+    }
+
+    private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
+        if (optimoveCredentials == null) {
+            return;
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(optimoveCredentials);
+
+            this.optimoveToken = result.getString(1);
+            this.configFileName = result.getString(2);
+        } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Optimove credentials are not correct");
+        }
+    }
+
+    private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
+        if (optimobileCredentials == null) {
+            return;
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(optimobileCredentials);
+
+            String region = result.getString(1);
+            this.region = region;
+            this.apiKey = result.getString(2);
+            this.secretKey = result.getString(3);
+
+            this.baseUrlMap = UrlBuilder.defaultMapping(region);
+
+        } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Optimobile credentials are not correct");
+        }
+    }
+
+    private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {
+        byte[] data = Base64.decode(credentials, Base64.DEFAULT);
+
+        return new JSONArray(new String(data, StandardCharsets.UTF_8));
+    }
+
+    private void setPartialInitType(@Nullable PartialInitType partialInitType){ this.partialInitType = partialInitType; }
 
     @Nullable
     public String getRegion() {
@@ -203,19 +242,29 @@ public final class OptimoveConfig {
     }
 
     public boolean isOptimoveConfigured(){
-        return this.optimoveToken != null && this.configFileName != null ;
+        return this.optimoveToken != null && this.configFileName != null;
     }
 
     public boolean isOptimobileConfigured(){
-        return this.apiKey != null && this.secretKey != null;
+        // if delayed init we cache events, in-app syncs, deep links
+        return (this.apiKey != null && this.secretKey != null) || this.usesDelayedOptimobileConfiguration();
     }
 
     public @Nullable LogLevel getCustomMinLogLevel(){
         return this.minLogLevel;
     }
 
+    public boolean usesDelayedOptimobileConfiguration(){
+        return this.partialInitType == PartialInitType.OPTIMOBILE_ONLY;
+    }
+
+    public boolean usesDelayedOptimoveConfiguration(){
+        //TODO: cache things in optimove as well
+        return false;
+    }
+
     public boolean usesDelayedConfiguration(){
-        return this.delayedCredentials;
+        return this.usesDelayedOptimobileConfiguration() || this.usesDelayedOptimoveConfiguration();
     }
 
     /**
@@ -224,14 +273,9 @@ public final class OptimoveConfig {
     public static class Builder {
         private @Nullable
         String region;
-        private @Nullable
-        String apiKey;
-        private @Nullable
-        String secretKey;
-        private @Nullable
-        String optimoveToken;
-        private @Nullable
-        String configFileName;
+        private @Nullable String optimoveCredentials;
+        private @Nullable String optimobileCredentials;
+        private  @Nullable PartialInitType partialInitType = null;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -243,6 +287,7 @@ public final class OptimoveConfig {
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
         private @Nullable Map<UrlBuilder.Service, String> baseUrlMap;
+        private @Nullable Map<UrlBuilder.Service, String> overridingBaseUrlMap;
 
         private @Nullable
         URL deepLinkCname;
@@ -250,9 +295,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        private boolean delayedCredentials = false;
-
-        public Builder(Region region) {
+        public Builder(Region region, @NonNull PartialInitType partialInitType) {
             switch (region) {
                 case EU2:
                     this.region = "eu-central-2";
@@ -264,60 +307,15 @@ public final class OptimoveConfig {
                     this.region ="uk-1";
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown region" + region);
+                    throw new IllegalArgumentException("Unknown region " + region);
             }
             this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
-            this.delayedCredentials = true;
+            this.partialInitType = partialInitType;
         }
 
         public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
-            if (optimoveCredentials == null && optimobileCredentials == null) {
-                throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
-            }
-
-            this.setOptimoveCredentials(optimoveCredentials);
-            this.setOptimobileCredentials(optimobileCredentials);
-        }
-
-        private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
-            if (optimoveCredentials == null) {
-                return;
-            }
-
-            try {
-                JSONArray result = this.parseCredentials(optimoveCredentials);
-
-                this.optimoveToken = result.getString(1);
-                this.configFileName = result.getString(2);
-            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
-                throw new IllegalArgumentException("Optimove credentials are not correct");
-            }
-        }
-
-        private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
-            if (optimobileCredentials == null) {
-                return;
-            }
-
-            try {
-                JSONArray result = this.parseCredentials(optimobileCredentials);
-
-                String region = result.getString(1);
-                this.region = region;
-                this.apiKey = result.getString(2);
-                this.secretKey = result.getString(3);
-
-                this.baseUrlMap = UrlBuilder.defaultMapping(region);
-
-            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
-                throw new IllegalArgumentException("Optimobile credentials are not correct");
-            }
-        }
-
-        private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {
-            byte[] data = Base64.decode(credentials, Base64.DEFAULT);
-
-            return new JSONArray(new String(data, StandardCharsets.UTF_8));
+            this.optimoveCredentials = optimoveCredentials;
+            this.optimobileCredentials = optimobileCredentials;
         }
 
         /**
@@ -408,22 +406,29 @@ public final class OptimoveConfig {
          */
         @InternalSdkEmbeddingApi(purpose = "Allow sending traffic to different domains")
         public Builder setBaseUrlMapping(Map<UrlBuilder.Service, String> baseUrlMap) {
-            this.baseUrlMap = baseUrlMap;
+            this.overridingBaseUrlMap = baseUrlMap;
             return this;
         }
 
         public OptimoveConfig build() {
             OptimoveConfig newConfig = new OptimoveConfig();
-            newConfig.setRegion(region);
-            newConfig.setApiKey(apiKey);
-            newConfig.setSecretKey(secretKey);
-            newConfig.setOptimoveToken(optimoveToken);
-            newConfig.setConfigFileName(configFileName);
+            newConfig.setPartialInitType(this.partialInitType);
+            if (partialInitType == null){
+                newConfig.setCredentials(this.optimoveCredentials, this.optimobileCredentials);
+            }
+            else{
+                newConfig.setRegion(this.region);
+                newConfig.setBaseUrlMap(this.baseUrlMap);
+            }
+
+            if (this.overridingBaseUrlMap != null){
+                newConfig.setBaseUrlMap(this.overridingBaseUrlMap);
+            }
+
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);
             newConfig.setRuntimeInfo(this.runtimeInfo);
             newConfig.setSdkInfo(this.sdkInfo);
-            newConfig.setBaseUrlMap(this.baseUrlMap);
 
             newConfig.setInAppConsentStrategy(consentStrategy);
             newConfig.setInAppDisplayMode(inAppDisplayMode);
@@ -432,8 +437,6 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
-
-            newConfig.setDelayedCredentials(delayedCredentials);
 
             return newConfig;
         }

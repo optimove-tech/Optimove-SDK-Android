@@ -24,6 +24,11 @@ class InAppRequestService {
     private static final String TAG = InAppRequestService.class.getName();
 
     static List<InAppMessage> readInAppMessages(Context c, Date lastSyncTime) {
+        //TODO: create wrapper http client and move this check there?
+        if (Optimobile.authHeader == null) {
+            return null;
+        }
+
         OkHttpClient httpClient;
         String userIdentifier = Optimobile.getCurrentUserIdentifier(c);
 

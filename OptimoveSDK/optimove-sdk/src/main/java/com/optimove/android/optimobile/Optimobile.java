@@ -83,7 +83,7 @@ public final class Optimobile {
      * @param config
      */
     public static synchronized void initialize(final Application application, OptimoveConfig config, String initialVisitorId, @Nullable String customerId) {
-        if (!config.isOptimobileConfigured() && !config.usesDelayedConfiguration()){
+        if (!config.isOptimobileConfigured()){
             throw new UninitializedException();
         }
 
@@ -94,7 +94,7 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        authHeader = config.usesDelayedConfiguration() ? null : buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
+        authHeader = config.usesDelayedOptimobileConfiguration() ? null : buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
         urlBuilder  = new UrlBuilder(config.getBaseUrlMap());
         httpClient = buildOkHttpClient();
@@ -116,6 +116,18 @@ public final class Optimobile {
         executorService.submit(statsTask);
 
         maybeMigrateUserAssociation(application, customerId);
+    }
+
+    public static synchronized void completeDelayedConfiguration(OptimoveConfig config){
+        if (!config.usesDelayedOptimobileConfiguration()){
+            throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
+        }
+        authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
+
+        //TODO:
+        //1. sync in-apps
+        //2. flush events
+        //3. deep links
     }
 
     private static void maybeMigrateUserAssociation(Application application, @Nullable String customerId) {

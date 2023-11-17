@@ -223,6 +223,10 @@ public class DeferredDeepLinkHelper {
     }
 
     private void handleDeepLink(Context context, URL url, boolean wasDeferred) {
+        if (Optimobile.authHeader == null) {
+            //TODO: support for delayed credentials for deep links
+            throw new RuntimeException("Not supported");
+        }
         OkHttpClient httpClient = Optimobile.getHttpClient();
 
         String slug = Uri.encode(url.getPath().replaceAll("/$|^/", ""));
@@ -335,6 +339,10 @@ public class DeferredDeepLinkHelper {
     }
 
     private void handleFingerprintComponents(Context context, JSONObject components) {
+        if (Optimobile.authHeader == null) {
+            //TODO: support for delayed credentials for deep links
+            throw new RuntimeException("Not supported");
+        }
         String encodedComponents = Base64.encodeToString(components.toString().getBytes(), Base64.NO_WRAP);
         String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
 
