@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,10 +34,14 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
     outputTv = findViewById(R.id.userIdTextView);
 
+    this.setCredInitialisationType();
+
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_PERMISSION_REQUEST_CODE);
     }
   }
+
+
 
   @Override
   protected void onNewIntent(Intent intent) {
@@ -80,6 +86,36 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
+public void setCredentials(View view) {
+     EditText optimoveCreds  = findViewById(R.id.optimoveCredInput);
+     EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
+
+     String optimoveCredentials = optimoveCreds.getText().toString();
+     String optimobileCredentials = optimobileCreds.getText().toString();
+
+     if (optimoveCredentials.isEmpty() && optimobileCredentials.isEmpty()){
+       return;
+     }
+
+     if (optimoveCredentials.isEmpty()){
+       optimoveCredentials = null;
+     }
+
+      if (optimobileCredentials.isEmpty()){
+        optimobileCredentials = null;
+      }
+
+
+
+
+      Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
+
+      outputTv.setText("Credentials submitted");
+      Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+      setCredsBtn.setEnabled(false);
+
+  }
+
   public void runFromWorker(Runnable runnable) {
     new Thread(runnable).start();
   }
@@ -101,5 +137,24 @@ public class MainActivity extends AppCompatActivity {
       result.put("number_param", 42);
       return result;
     }
+  }
+
+  private void setCredInitialisationType() {
+    RadioButton radioBtnToEnable = null;
+    if (Optimove.getConfig().usesDelayedOptimoveConfiguration() || Optimove.getConfig().usesDelayedOptimobileConfiguration()){
+      radioBtnToEnable = (RadioButton) findViewById(R.id.partialInitRadio);
+    }
+    else{
+      radioBtnToEnable = (RadioButton) findViewById(R.id.completeInitRadio);
+      Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+      setCredsBtn.setEnabled(false);
+
+      EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
+      optimoveCredInput.setEnabled(false);
+
+      EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
+      optimobileCredInput.setEnabled(false);
+    }
+    radioBtnToEnable.setChecked(true);
   }
 }
