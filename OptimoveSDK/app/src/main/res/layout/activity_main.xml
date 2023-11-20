@@ -106,26 +106,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RadioGroup
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="false">
-
-                <RadioButton
-                    android:id="@+id/completeInitRadio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:text="Complete init (have credentials immediately)" />
-
-                <RadioButton
-                    android:id="@+id/partialInitRadio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:text="Partial init (creds decided later)" />
-            </RadioGroup>
-
             <EditText
                 android:id="@+id/optimoveCredInput"
                 android:layout_width="match_parent"

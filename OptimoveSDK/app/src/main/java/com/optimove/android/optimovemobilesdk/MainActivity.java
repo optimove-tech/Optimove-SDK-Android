@@ -140,21 +140,15 @@ public void setCredentials(View view) {
   }
 
   private void setCredInitialisationType() {
-    RadioButton radioBtnToEnable = null;
-    if (Optimove.getConfig().usesDelayedOptimoveConfiguration() || Optimove.getConfig().usesDelayedOptimobileConfiguration()){
-      radioBtnToEnable = (RadioButton) findViewById(R.id.partialInitRadio);
-    }
-    else{
-      radioBtnToEnable = (RadioButton) findViewById(R.id.completeInitRadio);
-      Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
-      setCredsBtn.setEnabled(false);
-
+    if (!Optimove.getConfig().usesDelayedOptimoveConfiguration() && !Optimove.getConfig().usesDelayedOptimobileConfiguration()){
       EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
-      optimoveCredInput.setEnabled(false);
+      optimoveCredInput.setVisibility(View.GONE);
 
       EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
-      optimobileCredInput.setEnabled(false);
+      optimobileCredInput.setVisibility(View.GONE);
+
+      Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+      setCredsBtn.setVisibility(View.GONE);
     }
-    radioBtnToEnable.setChecked(true);
   }
 }
