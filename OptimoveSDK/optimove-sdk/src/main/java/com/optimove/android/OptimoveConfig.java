@@ -58,7 +58,7 @@ public final class OptimoveConfig {
 
     private @Nullable LogLevel minLogLevel;
 
-    private @Nullable PartialInitType partialInitType;
+    private @Nullable FeatureSet featureSet;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -76,7 +76,7 @@ public final class OptimoveConfig {
         UK1
     }
 
-    public enum PartialInitType {
+    public enum FeatureSet {
         OPTIMOBILE_ONLY,
         OPTIMOVE_ONLY,
         ALL
@@ -180,7 +180,7 @@ public final class OptimoveConfig {
         return new JSONArray(new String(data, StandardCharsets.UTF_8));
     }
 
-    private void setPartialInitType(@Nullable PartialInitType partialInitType){ this.partialInitType = partialInitType; }
+    private void setFeatureSet(@Nullable FeatureSet featureSet){ this.featureSet = featureSet; }
 
     @Nullable
     public String getRegion() {
@@ -256,11 +256,11 @@ public final class OptimoveConfig {
     }
 
     public boolean usesDelayedOptimobileConfiguration(){
-        return this.partialInitType == PartialInitType.OPTIMOBILE_ONLY || this.partialInitType == PartialInitType.ALL;
+        return this.featureSet == FeatureSet.OPTIMOBILE_ONLY || this.featureSet == FeatureSet.ALL;
     }
 
     public boolean usesDelayedOptimoveConfiguration(){
-        return this.partialInitType == PartialInitType.OPTIMOVE_ONLY || this.partialInitType == PartialInitType.ALL;
+        return this.featureSet == FeatureSet.OPTIMOVE_ONLY || this.featureSet == FeatureSet.ALL;
     }
 
     public boolean usesDelayedConfiguration(){
@@ -275,7 +275,7 @@ public final class OptimoveConfig {
         String region;
         private @Nullable String optimoveCredentials;
         private @Nullable String optimobileCredentials;
-        private  @Nullable PartialInitType partialInitType = null;
+        private  @Nullable FeatureSet featureSet = null;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -295,7 +295,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        public Builder(@NonNull Region region, @NonNull PartialInitType partialInitType) {
+        public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
             switch (region) {
                 case EU2:
                     this.region = "eu-central-2";
@@ -310,7 +310,7 @@ public final class OptimoveConfig {
                     throw new IllegalArgumentException("Unknown region " + region);
             }
             this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
-            this.partialInitType = partialInitType;
+            this.featureSet = featureSet;
         }
 
         public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
@@ -412,8 +412,8 @@ public final class OptimoveConfig {
 
         public OptimoveConfig build() {
             OptimoveConfig newConfig = new OptimoveConfig();
-            newConfig.setPartialInitType(this.partialInitType);
-            if (partialInitType == null){
+            newConfig.setFeatureSet(this.featureSet);
+            if (featureSet == null){
                 newConfig.setCredentials(this.optimoveCredentials, this.optimobileCredentials);
             }
             else{
