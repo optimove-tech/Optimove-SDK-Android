@@ -73,9 +73,19 @@ public final class OptimoveConfig {
     }
 
     public enum Region {
-        EU2,
-        US1,
-        UK1
+        EU("eu-central-2"),
+        US("us-east-1"),
+        DEV("uk-1");
+        private final String region;
+
+        Region(String region) {
+            this.region = region;
+        }
+
+        @NonNull
+        public String toString() {
+            return region;
+        }
     }
 
     public enum FeatureSet {
@@ -308,19 +318,7 @@ public final class OptimoveConfig {
         private @Nullable LogLevel minLogLevel;
 
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
-            switch (region) {
-                case EU2:
-                    this.region = "eu-central-2";
-                    break;
-                case US1:
-                    this.region = "us-east-1";
-                    break;
-                case UK1:
-                    this.region ="uk-1";
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown region " + region);
-            }
+            this.region = region.toString();
             this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
             this.featureSet = featureSet;
             this.delayedInitialisation = true;
