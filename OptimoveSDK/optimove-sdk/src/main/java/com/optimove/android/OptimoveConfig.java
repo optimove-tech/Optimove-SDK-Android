@@ -58,7 +58,9 @@ public final class OptimoveConfig {
 
     private @Nullable LogLevel minLogLevel;
 
-    private @Nullable FeatureSet featureSet;
+    private @NonNull FeatureSet featureSet;
+
+    private boolean delayedInitialisation;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -180,7 +182,9 @@ public final class OptimoveConfig {
         return new JSONArray(new String(data, StandardCharsets.UTF_8));
     }
 
-    private void setFeatureSet(@Nullable FeatureSet featureSet){ this.featureSet = featureSet; }
+    private void setFeatureSet(@NonNull FeatureSet featureSet){ this.featureSet = featureSet; }
+
+    private void setDelayedInitialisation(boolean delayedInitialisation){ this.delayedInitialisation = delayedInitialisation; }
 
     @Nullable
     public String getRegion() {
@@ -243,12 +247,13 @@ public final class OptimoveConfig {
     }
 
     public boolean isOptimoveConfigured(){
+        // TODO: optimove part is not ready for this yet
+        // this.featureSet == FeatureSet.OPTIMOVE_ONLY || this.featureSet == FeatureSet.ALL
         return this.optimoveToken != null && this.configFileName != null;
     }
 
     public boolean isOptimobileConfigured(){
-        // if delayed init we cache events, in-app syncs, deep links
-        return (this.apiKey != null && this.secretKey != null) || this.usesDelayedOptimobileConfiguration();
+        return this.featureSet == FeatureSet.OPTIMOBILE_ONLY || this.featureSet == FeatureSet.ALL;
     }
 
     public @Nullable LogLevel getCustomMinLogLevel(){
@@ -256,15 +261,21 @@ public final class OptimoveConfig {
     }
 
     public boolean usesDelayedOptimobileConfiguration(){
+        if (!this.delayedInitialisation){
+            return false;
+        }
         return this.featureSet == FeatureSet.OPTIMOBILE_ONLY || this.featureSet == FeatureSet.ALL;
     }
 
     public boolean usesDelayedOptimoveConfiguration(){
+        if (!this.delayedInitialisation){
+            return false;
+        }
         return this.featureSet == FeatureSet.OPTIMOVE_ONLY || this.featureSet == FeatureSet.ALL;
     }
 
     public boolean usesDelayedConfiguration(){
-        return this.usesDelayedOptimobileConfiguration() || this.usesDelayedOptimoveConfiguration();
+        return this.delayedInitialisation;
     }
 
     /**
@@ -275,7 +286,8 @@ public final class OptimoveConfig {
         String region;
         private @Nullable String optimoveCredentials;
         private @Nullable String optimobileCredentials;
-        private  @Nullable FeatureSet featureSet = null;
+        private final @NonNull FeatureSet featureSet;
+        private final boolean delayedInitialisation;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -311,11 +323,27 @@ public final class OptimoveConfig {
             }
             this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
             this.featureSet = featureSet;
+            this.delayedInitialisation = true;
         }
 
         public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
             this.optimoveCredentials = optimoveCredentials;
             this.optimobileCredentials = optimobileCredentials;
+            this.delayedInitialisation = false;
+
+            if (optimoveCredentials == null && optimobileCredentials == null){
+                throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
+            }
+
+            if (optimoveCredentials != null && optimobileCredentials != null){
+                this.featureSet = FeatureSet.ALL;
+            }
+            else if (optimoveCredentials != null){
+                this.featureSet = FeatureSet.OPTIMOVE_ONLY;
+            }
+            else{
+                this.featureSet = FeatureSet.OPTIMOBILE_ONLY;
+            }
         }
 
         /**
@@ -413,7 +441,8 @@ public final class OptimoveConfig {
         public OptimoveConfig build() {
             OptimoveConfig newConfig = new OptimoveConfig();
             newConfig.setFeatureSet(this.featureSet);
-            if (featureSet == null){
+            newConfig.setDelayedInitialisation(delayedInitialisation);
+            if (!delayedInitialisation){
                 newConfig.setCredentials(this.optimoveCredentials, this.optimobileCredentials);
             }
             else{

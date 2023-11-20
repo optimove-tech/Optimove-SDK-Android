@@ -110,7 +110,6 @@
                 android:id="@+id/optimoveCredInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
                 android:ems="10"
                 android:hint="Optimove credentials"
                 android:inputType="textPersonName" />
@@ -119,7 +118,6 @@
                 android:id="@+id/optimobileCredInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
                 android:ems="10"
                 android:hint="Optimobile credentials"
                 android:inputType="textPersonName" />
@@ -128,7 +126,6 @@
                 android:id="@+id/submitCredentialsBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
                 android:onClick="setCredentials"
                 android:text="Submit credentials" />
 

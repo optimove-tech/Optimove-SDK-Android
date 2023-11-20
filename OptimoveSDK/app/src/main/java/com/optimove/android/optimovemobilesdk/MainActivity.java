@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
     outputTv = findViewById(R.id.userIdTextView);
 
-    this.setCredInitialisationType();
+    this.hideIrrelevantInputs();
 
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_PERMISSION_REQUEST_CODE);
@@ -139,16 +139,19 @@ public void setCredentials(View view) {
     }
   }
 
-  private void setCredInitialisationType() {
-    if (!Optimove.getConfig().usesDelayedOptimoveConfiguration() && !Optimove.getConfig().usesDelayedOptimobileConfiguration()){
-      EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
-      optimoveCredInput.setVisibility(View.GONE);
-
-      EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
-      optimobileCredInput.setVisibility(View.GONE);
-
-      Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
-      setCredsBtn.setVisibility(View.GONE);
+  private void hideIrrelevantInputs() {
+    if (Optimove.getConfig().usesDelayedConfiguration()) {
+      return;
     }
+
+    EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
+    optimoveCredInput.setVisibility(View.GONE);
+
+    EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
+    optimobileCredInput.setVisibility(View.GONE);
+
+    Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+    setCredsBtn.setVisibility(View.GONE);
+
   }
 }
