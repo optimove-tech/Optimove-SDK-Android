@@ -28,6 +28,10 @@ class AnalyticsUploadHelper {
     };
 
     /** package */ Result flushEvents(Context context) {
+        if (!Optimobile.hasFinishedInitialisation()){
+            return Result.FAILED_RETRY_LATER;
+        }
+
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 

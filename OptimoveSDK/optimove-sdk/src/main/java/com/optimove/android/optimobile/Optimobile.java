@@ -118,16 +118,33 @@ public final class Optimobile {
         maybeMigrateUserAssociation(application, customerId);
     }
 
-    public static synchronized void completeDelayedConfiguration(OptimoveConfig config){
+    public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config){
         if (!config.usesDelayedOptimobileConfiguration()){
             throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
         }
         authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
         //TODO:
-        //1. sync in-apps
-        //2. flush events
         //3. deep links
+
+        maybeTriggerInAppSync(context);
+    }
+
+    private static void maybeTriggerInAppSync(Context context) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
+            return;
+        }
+
+        Optimobile.executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                InAppMessageService.fetch(context, true);
+            }
+        });
+    }
+
+    static boolean hasFinishedInitialisation(){
+        return authHeader != null;
     }
 
     private static void maybeMigrateUserAssociation(Application application, @Nullable String customerId) {

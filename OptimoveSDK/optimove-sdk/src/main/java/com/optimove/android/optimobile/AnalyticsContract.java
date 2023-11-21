@@ -115,11 +115,6 @@ final class AnalyticsContract {
                 return;
             }
 
-            //TODO: create wrapper http client and move this check there?
-            if (Optimobile.authHeader == null) {
-                return;
-            }
-
             if (immediateFlush) {
                 AnalyticsUploadHelper helper = new AnalyticsUploadHelper();
                 AnalyticsUploadHelper.Result result = helper.flushEvents(mContext);
