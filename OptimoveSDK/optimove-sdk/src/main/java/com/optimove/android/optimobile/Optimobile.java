@@ -124,9 +124,9 @@ public final class Optimobile {
         }
         authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
+        flushEvents(context);
+        maybeTriggerInAppSync(context);
         //TODO:
-        //1. sync in-apps
-        //2. flush events
         //3. deep links
     }
 
@@ -545,5 +545,23 @@ public final class Optimobile {
 
     static void trackEventImmediately(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties) {
         trackEvent(context, eventType, properties, System.currentTimeMillis(), true);
+    }
+
+    private static void flushEvents(@NonNull final Context context) {
+        Runnable flushingTask = new AnalyticsContract.FlushEventsRunnable(context);
+        executorService.submit(flushingTask);
+    }
+
+    private static void maybeTriggerInAppSync(Context context) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
+            return;
+        }
+
+        Optimobile.executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                InAppMessageService.fetch(context, true);
+            }
+        });
     }
 }
