@@ -126,8 +126,9 @@ public final class Optimobile {
 
         flushEvents(context);
         maybeTriggerInAppSync(context);
-        //TODO:
-        //3. deep links
+        if (config.getDeferredDeepLinkHandler() != null){
+            deepLinkHelper.maybeProcessCachedLink(context);
+        }
     }
 
     static boolean hasFinishedHttpInitialisation(){

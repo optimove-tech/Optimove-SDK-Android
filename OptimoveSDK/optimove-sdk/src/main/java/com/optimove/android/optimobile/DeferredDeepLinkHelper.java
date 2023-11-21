@@ -28,14 +28,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 
 import static android.content.ClipDescription.CLASSIFICATION_COMPLETE;
 import static android.content.Context.CLIPBOARD_SERVICE;
 
 public class DeferredDeepLinkHelper {
+    private static class CachedLink {
+        private final URL url;
+        private final boolean wasDeferred;
+
+        private CachedLink(URL url, boolean wasDeferred) {
+            this.url = url;
+            this.wasDeferred = wasDeferred;
+        }
+    }
+
+    private @Nullable CachedLink cachedLink;
+    private @Nullable JSONObject cachedFingerprintComponents;
+
     private static AtomicBoolean continuationHandled;
     static AtomicBoolean nonContinuationLinkCheckedForSession = new AtomicBoolean(false);
     @SuppressWarnings("FieldCanBeLocal")
@@ -111,8 +122,7 @@ public class DeferredDeepLinkHelper {
 
         if (!wasDeferred) {
             continuationHandled.set(true);
-        }
-        else{
+        } else {
             this.clearClipboard(context);
         }
 
@@ -120,13 +130,23 @@ public class DeferredDeepLinkHelper {
         return true;
     }
 
-    private void clearClipboard(Context context){
+    /* package */ void maybeProcessCachedLink(Context context) {
+        if (this.cachedLink != null) {
+            this.handleDeepLink(context, this.cachedLink.url, this.cachedLink.wasDeferred);
+        }
+
+        if (this.cachedFingerprintComponents != null) {
+            this.handleFingerprintComponents(context, cachedFingerprintComponents);
+        }
+    }
+
+    private void clearClipboard(Context context) {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
         if (clipboard == null) {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             clipboard.clearPrimaryClip();
             return;
         }
@@ -165,18 +185,18 @@ public class DeferredDeepLinkHelper {
             return null;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ClipDescription description = clipboard.getPrimaryClipDescription();
-            if (description == null){
+            if (description == null) {
                 return null;
             }
 
-            if (description.getClassificationStatus() != CLASSIFICATION_COMPLETE){
+            if (description.getClassificationStatus() != CLASSIFICATION_COMPLETE) {
                 return null;
             }
 
             float score = description.getConfidenceScore(TextClassifier.TYPE_URL);
-            if (score != 1){
+            if (score != 1) {
                 return null;
             }
         }
@@ -241,6 +261,7 @@ public class DeferredDeepLinkHelper {
             @Override
             public void run() {
                 try (Response response = httpClient.getSync(requestUrl)) {
+                    DeferredDeepLinkHelper.this.cachedLink = null;
                     if (response.isSuccessful()) {
                         DeferredDeepLinkHelper.this.handledSuccessResponse(context, url, wasDeferred, response);
                     } else {
@@ -249,9 +270,8 @@ public class DeferredDeepLinkHelper {
                 } catch (IOException e) {
                     e.printStackTrace();
                     DeferredDeepLinkHelper.this.invokeDeepLinkHandler(context, DeepLinkResolution.LOOKUP_FAILED, url, null);
-                }
-                catch(Optimobile.PartialInitialisationException e){
-                    //TODO: not supported. For ddl we could store url here and do request again when credentials given. This way we clipboard can be cleared as usual.
+                } catch (Optimobile.PartialInitialisationException e) {
+                    DeferredDeepLinkHelper.this.cachedLink = new CachedLink(url, wasDeferred);
                 }
             }
         });
@@ -332,15 +352,17 @@ public class DeferredDeepLinkHelper {
         String encodedComponents = Base64.encodeToString(components.toString().getBytes(), Base64.NO_WRAP);
         String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
 
-        try{
+        try {
             Optimobile.getHttpClient().getAsync(requestUrl, new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     e.printStackTrace();
+                    DeferredDeepLinkHelper.this.cachedFingerprintComponents = null;
                 }
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    DeferredDeepLinkHelper.this.cachedFingerprintComponents = null;
                     if (response.isSuccessful()) {
                         DeferredDeepLinkHelper.this.handledFingerprintSuccessResponse(context, response);
                     } else {
@@ -348,10 +370,9 @@ public class DeferredDeepLinkHelper {
                     }
                 }
             });
+        } catch (Optimobile.PartialInitialisationException e) {
+            this.cachedFingerprintComponents = components;
         }
-        catch(Optimobile.PartialInitialisationException e){
-            //TODO: not supported.
-        };
     }
 
     private void handledFingerprintSuccessResponse(Context context, Response response) {
