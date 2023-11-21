@@ -14,20 +14,20 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 class AnalyticsUploadHelper {
+    private static final String TAG = AnalyticsUploadHelper.class.getName();
 
     enum Result {
         SUCCESS,
         FAILED_RETRY_LATER
-    };
+    }
 
-    /** package */ Result flushEvents(Context context) {
+    /**
+     * package
+     */
+    Result flushEvents(Context context) {
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -44,8 +44,7 @@ class AnalyticsUploadHelper {
                 events = eventsResult.first;
                 maxEventId = eventsResult.second;
             }
-        }
-        catch (SQLiteException e) {
+        } catch (SQLiteException e) {
             e.printStackTrace();
             return Result.FAILED_RETRY_LATER;
         }
@@ -61,19 +60,25 @@ class AnalyticsUploadHelper {
             return false;
         }
 
-        final OptimobileHttpClient httpClient = new OptimobileHttpClient();//TODO: get single one
+        final OptimobileHttpClient httpClient;
+        try {
+            httpClient = Optimobile.getHttpClient();
+        } catch (Optimobile.UninitializedException e) {
+            Optimobile.log(TAG, e.getMessage());
+            return false;
+        }
+
         final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
         boolean result = false;
-        try(Response response = httpClient.postSync(url, dataStr)){
+        try (Response response = httpClient.postSync(url, dataStr)) {
             if (response.isSuccessful()) {
                 result = true;
             }
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        catch(Optimobile.PartialInitialisationException e){
-            // proceed to fail
+        } catch (Optimobile.PartialInitialisationException e) {
+            // proceed to retry
         }
 
         // Clean up batch from DB
@@ -98,7 +103,7 @@ class AnalyticsUploadHelper {
         String sortBy = AnalyticsContract.AnalyticsEvent.COL_ID + " ASC";
 
         String selection = AnalyticsContract.AnalyticsEvent.COL_ID + " > ?";
-        String[] params = new String[] {String.valueOf(minEventId)};
+        String[] params = new String[]{String.valueOf(minEventId)};
 
         Cursor cursor = db.query(
                 AnalyticsContract.AnalyticsEvent.TABLE_NAME,

@@ -223,12 +223,6 @@ public class DeferredDeepLinkHelper {
     }
 
     private void handleDeepLink(Context context, URL url, boolean wasDeferred) {
-        if (Optimobile.authHeader == null) {
-            //TODO: support for delayed credentials for deep links
-            throw new RuntimeException("Not supported");
-        }
-        OkHttpClient httpClient = Optimobile.getHttpClient();
-
         String slug = Uri.encode(url.getPath().replaceAll("/$|^/", ""));
         String params = "?wasDeferred=" + (wasDeferred ? 1 : 0);
         String query = url.getQuery();
@@ -238,22 +232,15 @@ public class DeferredDeepLinkHelper {
 
         String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/" + slug + params);
 
-        final Request request = new Request.Builder()
-                .url(requestUrl)
-                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
-                .addHeader("Accept", "application/json")
-                .addHeader("Content-Type", "application/json")
-                .get()
-                .build();
-
-        this.makeNetworkRequest(context, httpClient, request, url, wasDeferred);
+        this.makeNetworkRequest(context, requestUrl, url, wasDeferred);
     }
 
-    private void makeNetworkRequest(Context context, OkHttpClient httpClient, Request request, URL url, boolean wasDeferred) {
+    private void makeNetworkRequest(Context context, String requestUrl, URL url, boolean wasDeferred) {
+        OptimobileHttpClient httpClient = Optimobile.getHttpClient();
         Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
-                try (Response response = httpClient.newCall(request).execute()) {
+                try (Response response = httpClient.getSync(requestUrl)) {
                     if (response.isSuccessful()) {
                         DeferredDeepLinkHelper.this.handledSuccessResponse(context, url, wasDeferred, response);
                     } else {
@@ -262,6 +249,10 @@ public class DeferredDeepLinkHelper {
                 } catch (IOException e) {
                     e.printStackTrace();
                     DeferredDeepLinkHelper.this.invokeDeepLinkHandler(context, DeepLinkResolution.LOOKUP_FAILED, url, null);
+                }
+                catch(Optimobile.PartialInitialisationException e){
+                    //TODO: not supported. For ddl we could store url here and do request again when credentials given. This way we clipboard can be cleared as usual.
+                    throw e;
                 }
             }
         });
@@ -339,36 +330,30 @@ public class DeferredDeepLinkHelper {
     }
 
     private void handleFingerprintComponents(Context context, JSONObject components) {
-        if (Optimobile.authHeader == null) {
-            //TODO: support for delayed credentials for deep links
-            throw new RuntimeException("Not supported");
-        }
         String encodedComponents = Base64.encodeToString(components.toString().getBytes(), Base64.NO_WRAP);
         String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
 
-        final Request request = new Request.Builder()
-                .url(requestUrl)
-                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
-                .addHeader("Accept", "application/json")
-                .addHeader("Content-Type", "application/json")
-                .get()
-                .build();
-
-        Optimobile.getHttpClient().newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) {
-                if (response.isSuccessful()) {
-                    DeferredDeepLinkHelper.this.handledFingerprintSuccessResponse(context, response);
-                } else {
-                    DeferredDeepLinkHelper.this.handledFingerprintFailedResponse(context, response);
+        try{
+            Optimobile.getHttpClient().getAsync(requestUrl, new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    e.printStackTrace();
                 }
-            }
-        });
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    if (response.isSuccessful()) {
+                        DeferredDeepLinkHelper.this.handledFingerprintSuccessResponse(context, response);
+                    } else {
+                        DeferredDeepLinkHelper.this.handledFingerprintFailedResponse(context, response);
+                    }
+                }
+            });
+        }
+        catch(Optimobile.PartialInitialisationException e){
+            //TODO: not supported.
+            throw e;
+        };
     }
 
     private void handledFingerprintSuccessResponse(Context context, Response response) {

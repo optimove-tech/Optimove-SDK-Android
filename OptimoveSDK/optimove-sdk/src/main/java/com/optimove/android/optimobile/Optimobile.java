@@ -1,14 +1,11 @@
 
 package com.optimove.android.optimobile;
 
-import android.app.Activity;
 import android.app.Application;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,12 +20,9 @@ import androidx.core.app.NotificationManagerCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import okhttp3.ConnectionSpec;
-import okhttp3.OkHttpClient;
 import com.optimove.android.BuildConfig;
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
@@ -48,7 +42,7 @@ public final class Optimobile {
 
     static UrlBuilder urlBuilder;
 
-    private static OkHttpClient httpClient;
+    private static OptimobileHttpClient httpClient;
     /** package */ static String authHeader;
     /** package */ static ExecutorService executorService;
     /** package */ static final Handler handler = new Handler(Looper.getMainLooper());
@@ -103,7 +97,7 @@ public final class Optimobile {
         authHeader = config.usesDelayedOptimobileConfiguration() ? null : buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
         urlBuilder  = new UrlBuilder(config.getBaseUrlMap());
-        httpClient = buildOkHttpClient();
+        httpClient = new OptimobileHttpClient();
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -131,22 +125,9 @@ public final class Optimobile {
         authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
         //TODO:
+        //1. sync in-apps
+        //2. flush events
         //3. deep links
-
-        maybeTriggerInAppSync(context);
-    }
-
-    private static void maybeTriggerInAppSync(Context context) {
-        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
-            return;
-        }
-
-        Optimobile.executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                InAppMessageService.fetch(context, true);
-            }
-        });
     }
 
     static boolean hasFinishedHttpInitialisation(){
@@ -164,21 +145,7 @@ public final class Optimobile {
         }
     }
 
-    private static OkHttpClient buildOkHttpClient(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            return new OkHttpClient();
-        }
 
-        //ciphers available on Android 4.4 have intersections with the approved ones in MODERN_TLS, but the intersections are on bad cipher list, so,
-        //perhaps not supported by CloudFlare. On older devices allow all ciphers
-        ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-            .allEnabledCipherSuites()
-            .build();
-
-        return new OkHttpClient.Builder()
-            .connectionSpecs(Collections.singletonList(spec))
-            .build();
-    }
 
     //==============================================================================================
     //-- Getters/setters
@@ -544,7 +511,7 @@ public final class Optimobile {
         log(TAG, message);
     }
 
-    /** package */ static OkHttpClient getHttpClient() throws UninitializedException {
+    /** package */ static OptimobileHttpClient getHttpClient() throws UninitializedException {
         if (!initialized) {
             throw new UninitializedException();
         }
