@@ -60,7 +60,7 @@ class OptimobileHttpClient {
         this.doAsyncRequest(request, callback);
     }
 
-    private Request buildRequest(Request.Builder builder, String url) {
+    private Request buildRequest(Request.Builder builder, String url) throws Optimobile.PartialInitialisationException {
         if (!Optimobile.hasFinishedHttpInitialisation()) {
             throw new Optimobile.PartialInitialisationException();
         }

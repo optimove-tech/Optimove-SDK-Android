@@ -70,7 +70,7 @@ public final class Optimobile {
         }
     }
 
-    static class PartialInitialisationException extends RuntimeException {
+    static class PartialInitialisationException extends Exception {
         PartialInitialisationException() {
             super("The Optimobile has not been fully initialised. Trying to make network requets without credntials");
         }

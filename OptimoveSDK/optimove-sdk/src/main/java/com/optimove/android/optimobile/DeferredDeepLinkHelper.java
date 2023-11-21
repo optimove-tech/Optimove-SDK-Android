@@ -252,7 +252,6 @@ public class DeferredDeepLinkHelper {
                 }
                 catch(Optimobile.PartialInitialisationException e){
                     //TODO: not supported. For ddl we could store url here and do request again when credentials given. This way we clipboard can be cleared as usual.
-                    throw e;
                 }
             }
         });
@@ -352,7 +351,6 @@ public class DeferredDeepLinkHelper {
         }
         catch(Optimobile.PartialInitialisationException e){
             //TODO: not supported.
-            throw e;
         };
     }
 
