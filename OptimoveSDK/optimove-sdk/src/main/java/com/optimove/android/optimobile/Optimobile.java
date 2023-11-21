@@ -76,6 +76,12 @@ public final class Optimobile {
         }
     }
 
+    static class PartialInitialisationException extends RuntimeException {
+        PartialInitialisationException() {
+            super("The Optimobile has not been fully initialised. Trying to make network requets without credntials");
+        }
+    }
+
 
     /**
      * Used to configure the Optimobile class. Only needs to be called once per process
@@ -143,7 +149,7 @@ public final class Optimobile {
         });
     }
 
-    static boolean hasFinishedInitialisation(){
+    static boolean hasFinishedHttpInitialisation(){
         return authHeader != null;
     }
 

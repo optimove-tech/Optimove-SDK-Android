@@ -28,10 +28,6 @@ class AnalyticsUploadHelper {
     };
 
     /** package */ Result flushEvents(Context context) {
-        if (!Optimobile.hasFinishedInitialisation()){
-            return Result.FAILED_RETRY_LATER;
-        }
-
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -65,29 +61,19 @@ class AnalyticsUploadHelper {
             return false;
         }
 
-        // Post to server
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), dataStr);
-
-        final OkHttpClient httpClient = new OkHttpClient();
+        final OptimobileHttpClient httpClient = new OptimobileHttpClient();//TODO: get single one
         final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
-                .post(body)
-                .build();
-
         boolean result = false;
-        try {
-            Response response = httpClient.newCall(request).execute();
-
+        try(Response response = httpClient.postSync(url, dataStr)){
             if (response.isSuccessful()) {
                 result = true;
             }
-
-            response.close();
-        } catch (IOException e) {
+        }catch (IOException e) {
             e.printStackTrace();
+        }
+        catch(Optimobile.PartialInitialisationException e){
+            // proceed to fail
         }
 
         // Clean up batch from DB
