@@ -125,7 +125,7 @@ final class AnalyticsContract {
                 // On failures, fall through to scheduling a background sync
             }
 
-            AnalyticsContract.sheduleEventSync(mContext);
+            AnalyticsContract.scheduleEventSync(mContext);
         }
     }
 
@@ -145,7 +145,7 @@ final class AnalyticsContract {
                 return;
             }
 
-            AnalyticsContract.sheduleEventSync(mContext);
+            AnalyticsContract.scheduleEventSync(mContext);
         }
     }
 
@@ -330,7 +330,7 @@ final class AnalyticsContract {
 
     }
 
-    private static void sheduleEventSync(Context context){
+    private static void scheduleEventSync(Context context){
         Constraints taskConstraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
