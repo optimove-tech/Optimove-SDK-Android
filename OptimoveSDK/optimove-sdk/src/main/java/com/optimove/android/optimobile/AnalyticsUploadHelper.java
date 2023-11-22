@@ -21,7 +21,8 @@ class AnalyticsUploadHelper {
 
     enum Result {
         SUCCESS,
-        FAILED_RETRY_LATER
+        FAILED_RETRY_LATER,
+        FAILED_NO_RETRY
     }
 
     /**
@@ -48,11 +49,14 @@ class AnalyticsUploadHelper {
             e.printStackTrace();
             return Result.FAILED_RETRY_LATER;
         }
+        catch (Optimobile.PartialInitialisationException e) {
+            return Result.FAILED_NO_RETRY;
+        }
 
         return Result.SUCCESS;
     }
 
-    private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) {
+    private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) throws Optimobile.PartialInitialisationException {
         // Pack into JSON
         JSONArray data = new JSONArray(events);
         String dataStr = data.toString();
@@ -77,8 +81,6 @@ class AnalyticsUploadHelper {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (Optimobile.PartialInitialisationException e) {
-            // proceed to retry
         }
 
         // Clean up batch from DB

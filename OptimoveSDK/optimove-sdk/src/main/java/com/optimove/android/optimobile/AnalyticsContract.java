@@ -119,28 +119,33 @@ final class AnalyticsContract {
                 AnalyticsUploadHelper helper = new AnalyticsUploadHelper();
                 AnalyticsUploadHelper.Result result = helper.flushEvents(mContext);
 
-                if (result == AnalyticsUploadHelper.Result.SUCCESS) {
+                if (result != AnalyticsUploadHelper.Result.FAILED_RETRY_LATER) {
                     return;
                 }
                 // On failures, fall through to scheduling a background sync
             }
 
-            // Schedule a sync
-            Constraints taskConstraints = new Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build();
+            AnalyticsContract.sheduleEventSync(mContext);
+        }
+    }
 
-            OneTimeWorkRequest.Builder taskBuilder = new OneTimeWorkRequest.Builder(AnalyticsUploadWorker.class)
-                    .setConstraints(taskConstraints);
+    static class FlushEventsRunnable implements Runnable {
+        private final Context mContext;
 
-            if (BuildConfig.DEBUG) {
-                taskBuilder.setInitialDelay(10, TimeUnit.SECONDS);
-            } else {
-                taskBuilder.setInitialDelay(1, TimeUnit.MINUTES);
+        FlushEventsRunnable(Context context) {
+            this.mContext = context.getApplicationContext();
+        }
+
+        @Override
+        public void run() {
+            AnalyticsUploadHelper helper = new AnalyticsUploadHelper();
+            AnalyticsUploadHelper.Result result = helper.flushEvents(mContext);
+
+            if (result != AnalyticsUploadHelper.Result.FAILED_RETRY_LATER) {
+                return;
             }
 
-            WorkManager.getInstance(mContext).enqueueUniqueWork(AnalyticsUploadWorker.TAG,
-                    ExistingWorkPolicy.REPLACE, taskBuilder.build());
+            AnalyticsContract.sheduleEventSync(mContext);
         }
     }
 
@@ -323,5 +328,23 @@ final class AnalyticsContract {
 
 
 
+    }
+
+    private static void sheduleEventSync(Context context){
+        Constraints taskConstraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest.Builder taskBuilder = new OneTimeWorkRequest.Builder(AnalyticsUploadWorker.class)
+                .setConstraints(taskConstraints);
+
+        if (BuildConfig.DEBUG) {
+            taskBuilder.setInitialDelay(10, TimeUnit.SECONDS);
+        } else {
+            taskBuilder.setInitialDelay(1, TimeUnit.MINUTES);
+        }
+
+        WorkManager.getInstance(context).enqueueUniqueWork(AnalyticsUploadWorker.TAG,
+                ExistingWorkPolicy.REPLACE, taskBuilder.build());
     }
 }
