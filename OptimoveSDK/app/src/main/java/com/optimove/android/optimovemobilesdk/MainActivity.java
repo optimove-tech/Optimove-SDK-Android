@@ -86,34 +86,30 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
-public void setCredentials(View view) {
-     EditText optimoveCreds  = findViewById(R.id.optimoveCredInput);
-     EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
+  public void setCredentials(View view) {
+    EditText optimoveCreds = findViewById(R.id.optimoveCredInput);
+    EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
 
-     String optimoveCredentials = optimoveCreds.getText().toString();
-     String optimobileCredentials = optimobileCreds.getText().toString();
+    String optimoveCredentials = optimoveCreds.getText().toString();
+    String optimobileCredentials = optimobileCreds.getText().toString();
 
-     if (optimoveCredentials.isEmpty() && optimobileCredentials.isEmpty()){
-       return;
-     }
+    if (optimoveCredentials.isEmpty() && optimobileCredentials.isEmpty()) {
+      return;
+    }
 
-     if (optimoveCredentials.isEmpty()){
-       optimoveCredentials = null;
-     }
+    if (optimoveCredentials.isEmpty()) {
+      optimoveCredentials = null;
+    }
 
-      if (optimobileCredentials.isEmpty()){
-        optimobileCredentials = null;
-      }
+    if (optimobileCredentials.isEmpty()) {
+      optimobileCredentials = null;
+    }
 
+    Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
 
-
-
-      Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
-
-      outputTv.setText("Credentials submitted");
-      Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
-      setCredsBtn.setEnabled(false);
-
+    outputTv.setText("Credentials submitted");
+    Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+    setCredsBtn.setEnabled(false);
   }
 
   public void runFromWorker(Runnable runnable) {
@@ -152,6 +148,5 @@ public void setCredentials(View view) {
 
     Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
     setCredsBtn.setVisibility(View.GONE);
-
   }
 }
