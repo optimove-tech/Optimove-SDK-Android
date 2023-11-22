@@ -43,7 +43,6 @@ public final class Optimobile {
     static UrlBuilder urlBuilder;
 
     private static OptimobileHttpClient httpClient;
-    /** package */ static String authHeader;
     /** package */ static ExecutorService executorService;
     /** package */ static final Handler handler = new Handler(Looper.getMainLooper());
     private static final Object userIdLocker = new Object();
@@ -94,8 +93,6 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        authHeader = config.usesDelayedOptimobileConfiguration() ? null : buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
-
         urlBuilder  = new UrlBuilder(config.getBaseUrlMap());
         httpClient = new OptimobileHttpClient();
 
@@ -122,17 +119,12 @@ public final class Optimobile {
         if (!config.usesDelayedOptimobileConfiguration()){
             throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
         }
-        authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
 
         flushEvents(context);
         maybeTriggerInAppSync(context);
         if (config.getDeferredDeepLinkHandler() != null){
             deepLinkHelper.maybeProcessCachedLink(context);
         }
-    }
-
-    static boolean hasFinishedHttpInitialisation(){
-        return authHeader != null;
     }
 
     private static void maybeMigrateUserAssociation(Application application, @Nullable String customerId) {
@@ -487,15 +479,6 @@ public final class Optimobile {
 
     //==============================================================================================
     //-- OTHER
-
-    /**
-     * Generates the correct Authorization header value for HTTP Basic auth with the API key & secret
-     * @return Authorization header value
-     */
-    private static String buildBasicAuthHeader(String apiKey, String secretKey) {
-        return "Basic "
-                + Base64.encodeToString((apiKey + ":" + secretKey).getBytes(), Base64.NO_WRAP);
-    }
 
     /**
      * Logging

@@ -1,6 +1,12 @@
 package com.optimove.android.optimobile;
 
 import android.os.Build;
+import android.util.Base64;
+
+import androidx.annotation.Nullable;
+
+import com.optimove.android.Optimove;
+import com.optimove.android.OptimoveConfig;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -15,6 +21,7 @@ import okhttp3.Response;
 
 class OptimobileHttpClient {
     private final OkHttpClient okHttpClient;
+    private @Nullable String authHeader;
 
     OptimobileHttpClient() {
         okHttpClient = this.buildOkHttpClient();
@@ -35,6 +42,7 @@ class OptimobileHttpClient {
                 .connectionSpecs(Collections.singletonList(spec))
                 .build();
     }
+
 
     Response postSync(String url, String data) throws IOException, Optimobile.PartialInitialisationException {
         RequestBody body = RequestBody.create(data, MediaType.parse("application/json; charset=utf-8"));
@@ -61,12 +69,20 @@ class OptimobileHttpClient {
     }
 
     private Request buildRequest(Request.Builder builder, String url) throws Optimobile.PartialInitialisationException {
-        if (!Optimobile.hasFinishedHttpInitialisation()) {
-            throw new Optimobile.PartialInitialisationException();
+        if (this.authHeader == null) {
+            OptimoveConfig config = Optimove.getConfig();
+
+            String apiKey = config.getApiKey();
+            String secretKey = config.getSecretKey();
+            if (apiKey == null && secretKey == null) {
+                throw new Optimobile.PartialInitialisationException();
+            }
+
+            this.authHeader = buildBasicAuthHeader(apiKey, secretKey);
         }
 
         return builder.url(url)
-                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
+                .addHeader(Optimobile.KEY_AUTH_HEADER, this.authHeader)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
                 .build();
@@ -78,5 +94,10 @@ class OptimobileHttpClient {
 
     private void doAsyncRequest(Request request, Callback callback) {
         this.okHttpClient.newCall(request).enqueue(callback);
+    }
+
+    private static String buildBasicAuthHeader(String apiKey, String secretKey) {
+        return "Basic "
+                + Base64.encodeToString((apiKey + ":" + secretKey).getBytes(), Base64.NO_WRAP);
     }
 }
