@@ -256,7 +256,7 @@ public class DeferredDeepLinkHelper {
     }
 
     private void makeNetworkRequest(Context context, String requestUrl, URL url, boolean wasDeferred) {
-        OptimobileHttpClient httpClient = Optimobile.getHttpClient();
+        OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
         Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -353,7 +353,7 @@ public class DeferredDeepLinkHelper {
         String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
 
         try {
-            Optimobile.getHttpClient().getAsync(requestUrl, new Callback() {
+            OptimobileHttpClient.getInstance().getAsync(requestUrl, new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     e.printStackTrace();

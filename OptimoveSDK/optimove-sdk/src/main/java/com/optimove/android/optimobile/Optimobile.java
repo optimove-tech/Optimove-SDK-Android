@@ -41,7 +41,6 @@ public final class Optimobile {
 
     static UrlBuilder urlBuilder;
 
-    private static OptimobileHttpClient httpClient;
     /** package */ static ExecutorService executorService;
     /** package */ static final Handler handler = new Handler(Looper.getMainLooper());
     private static final Object userIdLocker = new Object();
@@ -93,7 +92,6 @@ public final class Optimobile {
         installId = initialVisitorId;
 
         urlBuilder  = new UrlBuilder(config.getBaseUrlMap());
-        httpClient = new OptimobileHttpClient();
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -492,14 +490,6 @@ public final class Optimobile {
 
     protected static void log(String message) {
         log(TAG, message);
-    }
-
-    /** package */ static OptimobileHttpClient getHttpClient() throws UninitializedException {
-        if (!initialized) {
-            throw new UninitializedException();
-        }
-
-        return httpClient;
     }
 
     /** package */ static String getInstallId() throws UninitializedException {

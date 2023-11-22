@@ -22,15 +22,8 @@ class InAppRequestService {
     private static final String TAG = InAppRequestService.class.getName();
 
     static List<InAppMessage> readInAppMessages(Context c, Date lastSyncTime) {
-        OptimobileHttpClient httpClient;
+        OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
         String userIdentifier = Optimobile.getCurrentUserIdentifier(c);
-
-        try {
-            httpClient = Optimobile.getHttpClient();
-        } catch (Optimobile.UninitializedException e) {
-            Optimobile.log(TAG, e.getMessage());
-            return null;
-        }
 
         String params = "";
         if (lastSyncTime != null) {

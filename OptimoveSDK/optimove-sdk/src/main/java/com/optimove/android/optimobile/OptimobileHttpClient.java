@@ -20,10 +20,26 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 class OptimobileHttpClient {
+
+    private static final Object lock = new Object();
+    private static OptimobileHttpClient instance;
+
     private final OkHttpClient okHttpClient;
     private @Nullable String authHeader;
 
-    OptimobileHttpClient() {
+    static OptimobileHttpClient getInstance() {
+        if (instance != null) {
+            return instance;
+        }
+        synchronized (lock) {
+            if (instance == null) {
+                instance = new OptimobileHttpClient();
+            }
+        }
+        return instance;
+    }
+
+    private OptimobileHttpClient() {
         okHttpClient = this.buildOkHttpClient();
     }
 
@@ -42,7 +58,6 @@ class OptimobileHttpClient {
                 .connectionSpecs(Collections.singletonList(spec))
                 .build();
     }
-
 
     Response postSync(String url, String data) throws IOException, Optimobile.PartialInitialisationException {
         RequestBody body = RequestBody.create(data, MediaType.parse("application/json; charset=utf-8"));

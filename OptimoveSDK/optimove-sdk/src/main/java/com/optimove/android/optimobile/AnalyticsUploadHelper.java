@@ -64,13 +64,7 @@ class AnalyticsUploadHelper {
             return false;
         }
 
-        final OptimobileHttpClient httpClient;
-        try {
-            httpClient = Optimobile.getHttpClient();
-        } catch (Optimobile.UninitializedException e) {
-            Optimobile.log(TAG, e.getMessage());
-            return false;
-        }
+        final OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
         final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
