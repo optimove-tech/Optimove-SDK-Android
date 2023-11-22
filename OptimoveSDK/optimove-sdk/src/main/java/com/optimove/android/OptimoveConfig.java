@@ -62,6 +62,7 @@ public final class OptimoveConfig {
 
     private boolean delayedInitialisation;
 
+
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
@@ -145,6 +146,10 @@ public final class OptimoveConfig {
     void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials){
         if (optimoveCredentials == null && optimobileCredentials == null) {
             throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
+        }
+
+        if (this.hasFinishedInitialisation()){
+            throw new IllegalStateException("OptimoveConfig: credentials are already set");
         }
 
         this.setOptimoveCredentials(optimoveCredentials);
@@ -286,6 +291,20 @@ public final class OptimoveConfig {
 
     public boolean usesDelayedConfiguration(){
         return this.delayedInitialisation;
+    }
+
+    private boolean hasFinishedInitialisation(){
+        boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
+        boolean hasOptimobileCreds = apiKey != null && secretKey != null;
+        if (featureSet == FeatureSet.OPTIMOVE_ONLY){
+            return hasOptimoveCreds;
+        }
+
+        if (featureSet == FeatureSet.OPTIMOBILE_ONLY){
+            return hasOptimobileCreds;
+        }
+
+        return hasOptimoveCreds && hasOptimobileCreds;
     }
 
     /**
