@@ -16,6 +16,8 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -89,11 +91,30 @@ public final class OptimoveConfig {
         }
     }
 
-    public enum FeatureSet {
-        OPTIMOBILE_ONLY,
-        OPTIMOVE_ONLY,
-        ALL
+    public static class FeatureSet {
+        private enum Feature {
+            OPTIMOVE,
+            OPTIMOBILE
+        }
+        List<Feature> features = new ArrayList<>();
+        public FeatureSet withOptimove(){
+            features.add(Feature.OPTIMOVE);
+
+            return this;
+        }
+
+        public FeatureSet withOptimobile(){
+            features.add(Feature.OPTIMOBILE);
+
+            return this;
+        }
+
+        boolean has(Feature feature){
+            return features.contains(feature);
+        }
     }
+
+
 
     // Private constructor to discourage not using the Builder.
     private OptimoveConfig() {
@@ -262,13 +283,13 @@ public final class OptimoveConfig {
     }
 
     public boolean isOptimoveConfigured(){
-        // TODO: optimove part is not ready for this yet
-        // this.featureSet == FeatureSet.OPTIMOVE_ONLY || this.featureSet == FeatureSet.ALL
+        // TODO: optimove part is not ready for partial init yet
+        // this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
         return this.optimoveToken != null && this.configFileName != null;
     }
 
     public boolean isOptimobileConfigured(){
-        return this.featureSet == FeatureSet.OPTIMOBILE_ONLY || this.featureSet == FeatureSet.ALL;
+        return this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
 
     public @Nullable LogLevel getCustomMinLogLevel(){
@@ -279,14 +300,14 @@ public final class OptimoveConfig {
         if (!this.delayedInitialisation){
             return false;
         }
-        return this.featureSet == FeatureSet.OPTIMOBILE_ONLY || this.featureSet == FeatureSet.ALL;
+        return this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
 
     public boolean usesDelayedOptimoveConfiguration(){
         if (!this.delayedInitialisation){
             return false;
         }
-        return this.featureSet == FeatureSet.OPTIMOVE_ONLY || this.featureSet == FeatureSet.ALL;
+        return this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
     }
 
     public boolean usesDelayedConfiguration(){
@@ -296,15 +317,16 @@ public final class OptimoveConfig {
     private boolean hasFinishedInitialisation(){
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
-        if (featureSet == FeatureSet.OPTIMOVE_ONLY){
-            return hasOptimoveCreds;
+
+        if (!hasOptimoveCreds && featureSet.has(FeatureSet.Feature.OPTIMOVE)){
+            return false;
         }
 
-        if (featureSet == FeatureSet.OPTIMOBILE_ONLY){
-            return hasOptimobileCreds;
+        if (!hasOptimobileCreds && featureSet.has(FeatureSet.Feature.OPTIMOBILE)){
+            return false;
         }
 
-        return hasOptimoveCreds && hasOptimobileCreds;
+        return  true;
     }
 
     /**
@@ -352,14 +374,13 @@ public final class OptimoveConfig {
                 throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
             }
 
-            if (optimoveCredentials != null && optimobileCredentials != null){
-                this.featureSet = FeatureSet.ALL;
+            this.featureSet = new FeatureSet();
+            if (optimoveCredentials != null){
+                this.featureSet.withOptimove();
             }
-            else if (optimoveCredentials != null){
-                this.featureSet = FeatureSet.OPTIMOVE_ONLY;
-            }
-            else{
-                this.featureSet = FeatureSet.OPTIMOBILE_ONLY;
+
+            if (optimobileCredentials != null){
+                this.featureSet.withOptimobile();
             }
         }
 
