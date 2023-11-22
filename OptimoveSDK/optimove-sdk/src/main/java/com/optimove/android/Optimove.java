@@ -63,7 +63,7 @@ final public class Optimove {
     private final UserInfo userInfo;
     private final SharedPreferences localConfigKeysPreferences;
     private final EventHandlerProvider eventHandlerProvider;
-    private final OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
+    private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
     private final DeviceInfoProvider deviceInfoProvider;
     private final AtomicBoolean configSet;
     private final LifecycleObserver lifecycleObserver;
@@ -81,19 +81,6 @@ final public class Optimove {
         this.context = context;
         this.userInfo = UserInfo.newInstance(context);
 
-        if (!config.isOptimoveConfigured()) {
-            //if optimove credentials not set, optimove API should fail early
-            coreSharedPreferences = null;
-            localConfigKeysPreferences = null;
-            eventHandlerProvider = null;
-            optimoveLifecycleEventGenerator = null;
-            deviceInfoProvider = null;
-            configSet = null;
-            lifecycleObserver = null;
-
-            return;
-        }
-
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
                 Context.MODE_PRIVATE);
         this.deviceInfoProvider = new DeviceInfoProvider(context);
@@ -109,8 +96,7 @@ final public class Optimove {
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
                 .build());
-        this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
-                context.getPackageName());
+
         this.configSet = new AtomicBoolean(false);
     }
 
@@ -144,25 +130,58 @@ final public class Optimove {
         }
 
         if (config.isOptimoveConfigured()) {
-            if (config.getCustomMinLogLevel() != null) {
-                OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
-            }
+            Optimove.finishInitialization(application, config);
+        }
+    }
 
-            OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
+    private static void finishInitialization(@NonNull Application application, @NonNull OptimoveConfig config){
+        shared.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(shared.eventHandlerProvider, shared.userInfo,
+                application.getPackageName());
 
-            Runnable initCommand = () -> {
-                OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
-                shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
-                shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
-                application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
-                shared.fetchConfigs();
-            };
-            if (!OptiUtils.isRunningOnMainThread()) {
-                OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
-                OptiUtils.runOnMainThread(initCommand);
-            } else {
-                initCommand.run();
-            }
+        TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
+        TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
+        if (localTenantInfo != null) {
+            // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
+            newTenantInfo.setTenantId(localTenantInfo.getTenantId());
+            shared.setAndStoreTenantInfo(newTenantInfo);
+        } else {
+            // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
+            shared.tenantInfo = newTenantInfo;
+        }
+
+        if (config.getCustomMinLogLevel() != null) {
+            OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
+        }
+
+        OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
+
+        Runnable initCommand = () -> {
+            OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
+            shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
+            shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
+            application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+            shared.fetchConfigs();
+        };
+        if (!OptiUtils.isRunningOnMainThread()) {
+            OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
+            OptiUtils.runOnMainThread(initCommand);
+        } else {
+            initCommand.run();
+        }
+    }
+
+    public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
+        if (!currentConfig.usesDelayedConfiguration()){
+            throw new IllegalStateException("Cannot set credentials as delayed configuration is not enabled");
+        }
+
+        currentConfig.setCredentials(optimoveCredentials, optimobileCredentials);
+        if (optimobileCredentials != null && currentConfig.usesDelayedOptimobileConfiguration()){
+            Optimobile.completeDelayedConfiguration(shared.getApplicationContext(), currentConfig);
+        }
+
+        if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()){
+            Optimove.finishInitialization((Application) shared.getApplicationContext(), currentConfig);
         }
     }
 
@@ -256,21 +275,6 @@ final public class Optimove {
             return;
         }
         shared = new Optimove(context, config);
-
-        if (!config.isOptimoveConfigured()) {
-            return;
-        }
-
-        TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
-        TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
-        if (localTenantInfo != null) {
-            // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
-            newTenantInfo.setTenantId(localTenantInfo.getTenantId());
-            shared.setAndStoreTenantInfo(newTenantInfo);
-        } else {
-            // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
-            shared.tenantInfo = newTenantInfo;
-        }
     }
 
     //==============================================================================================
