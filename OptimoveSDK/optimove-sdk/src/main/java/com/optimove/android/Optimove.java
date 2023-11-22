@@ -170,6 +170,12 @@ final public class Optimove {
         }
     }
 
+    /**
+     * Late setting of credentials. Must be called only if partial initialisation constructor was used and only once.
+     *
+     * @param optimoveCredentials credentials for track and trigger
+     * @param optimobileCredentials credentials for other mobile features (push, in-app, deep links etc)
+     */
     public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
         if (!currentConfig.usesDelayedConfiguration()){
             throw new IllegalStateException("Cannot set credentials as delayed configuration is not enabled");
