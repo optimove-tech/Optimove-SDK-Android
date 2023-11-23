@@ -16,9 +16,9 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -96,7 +96,8 @@ public final class OptimoveConfig {
             OPTIMOVE,
             OPTIMOBILE
         }
-        List<Feature> features = new ArrayList<>();
+        Set<Feature> features = new HashSet<>();
+
         public FeatureSet withOptimove(){
             features.add(Feature.OPTIMOVE);
 
@@ -173,14 +174,6 @@ public final class OptimoveConfig {
             throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
         }
 
-        if (optimoveCredentials != null && !this.featureSet.has(FeatureSet.Feature.OPTIMOVE)){
-            throw new IllegalArgumentException("Cannot set credentials for optimove as it is not in the desired feature set");
-        }
-
-        if (optimobileCredentials != null && !this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)){
-            throw new IllegalArgumentException("Cannot set credentials for optimobile as it is not in the desired feature set");
-        }
-
         if (this.hasFinishedInitialisation()){
             throw new IllegalStateException("OptimoveConfig: credentials are already set");
         }
@@ -192,6 +185,10 @@ public final class OptimoveConfig {
     private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
         if (optimoveCredentials == null) {
             return;
+        }
+
+        if (!this.featureSet.has(FeatureSet.Feature.OPTIMOVE)){
+            throw new IllegalArgumentException("Cannot set credentials for optimove as it is not in the desired feature set");
         }
 
         try {
@@ -207,6 +204,10 @@ public final class OptimoveConfig {
     private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
         if (optimobileCredentials == null) {
             return;
+        }
+
+        if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)){
+            throw new IllegalArgumentException("Cannot set credentials for optimobile as it is not in the desired feature set");
         }
 
         try {
