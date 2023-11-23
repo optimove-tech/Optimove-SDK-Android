@@ -112,6 +112,10 @@ public final class OptimoveConfig {
         boolean has(Feature feature){
             return features.contains(feature);
         }
+
+        boolean isEmpty(){
+            return features.isEmpty();
+        }
     }
 
 
@@ -359,6 +363,9 @@ public final class OptimoveConfig {
         private @Nullable LogLevel minLogLevel;
 
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
+            if (featureSet.isEmpty()){
+                throw new IllegalArgumentException("Feature set cannot be empty");
+            }
             this.region = region.toString();
             this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
             this.featureSet = featureSet;
