@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 
+import org.json.JSONArray;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -59,8 +60,10 @@ class OptimobileHttpClient {
                 .build();
     }
 
-    Response postSync(String url, String data) throws IOException, Optimobile.PartialInitialisationException {
-        RequestBody body = RequestBody.create(data, MediaType.parse("application/json; charset=utf-8"));
+    Response postSync(String url, JSONArray data) throws IOException, Optimobile.PartialInitialisationException {
+        String dataStr = data.toString();
+
+        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
 
         Request.Builder builder = new Request.Builder().post(body);
         Request request = this.buildRequest(builder, url);

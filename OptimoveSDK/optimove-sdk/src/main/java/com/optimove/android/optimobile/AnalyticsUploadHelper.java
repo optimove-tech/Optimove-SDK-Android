@@ -59,17 +59,13 @@ class AnalyticsUploadHelper {
     private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) throws Optimobile.PartialInitialisationException {
         // Pack into JSON
         JSONArray data = new JSONArray(events);
-        String dataStr = data.toString();
-        if (null == dataStr) {
-            return false;
-        }
 
         final OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
         final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
         boolean result = false;
-        try (Response response = httpClient.postSync(url, dataStr)) {
+        try (Response response = httpClient.postSync(url, data)) {
             if (response.isSuccessful()) {
                 result = true;
             }
