@@ -130,11 +130,11 @@ final public class Optimove {
         }
 
         if (config.isOptimoveConfigured()) {
-            Optimove.finishInitialization(application, config);
+            Optimove.finishOptimoveInit(application, config);
         }
     }
 
-    private static void finishInitialization(@NonNull Application application, @NonNull OptimoveConfig config){
+    private static void finishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config){
         shared.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(shared.eventHandlerProvider, shared.userInfo,
                 application.getPackageName());
 
@@ -187,7 +187,7 @@ final public class Optimove {
         }
 
         if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()){
-            Optimove.finishInitialization((Application) shared.getApplicationContext(), currentConfig);
+            Optimove.finishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
         }
     }
 
