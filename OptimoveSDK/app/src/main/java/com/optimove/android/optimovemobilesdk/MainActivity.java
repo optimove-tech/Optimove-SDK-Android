@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,9 +38,18 @@ public class MainActivity extends AppCompatActivity {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_PERMISSION_REQUEST_CODE);
     }
+
+    //deferred deep links
+    Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
   }
 
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
 
+    //deferred deep links
+    Optimove.getInstance().seeInputFocus(hasFocus);
+  }
 
   @Override
   protected void onNewIntent(Intent intent) {
@@ -58,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
 //        Toast.makeText(MainActivity.this, "New Intent called without deep link", Toast.LENGTH_SHORT).show();
 //      }
 //    }));
+
+    //deferred deep links
+    Optimove.getInstance().seeIntent(intent);
   }
 
   public void reportEvent(View view) {
