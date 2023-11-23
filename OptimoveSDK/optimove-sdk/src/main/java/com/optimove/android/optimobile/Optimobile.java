@@ -112,18 +112,6 @@ public final class Optimobile {
         maybeMigrateUserAssociation(application, customerId);
     }
 
-    public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config){
-        if (!config.usesDelayedOptimobileConfiguration()){
-            throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
-        }
-
-        flushEvents(context);
-        maybeTriggerInAppSync(context);
-        if (config.getDeferredDeepLinkHandler() != null){
-            deepLinkHelper.maybeProcessCachedLink(context);
-        }
-    }
-
     private static void maybeMigrateUserAssociation(Application application, @Nullable String customerId) {
         if (customerId == null){
             return;
@@ -536,5 +524,23 @@ public final class Optimobile {
                 InAppMessageService.fetch(context, true);
             }
         });
+    }
+
+    //==============================================================================================
+    //-- Internal Helpers
+
+    /**
+     * This API is intended for internal SDK use. Do not call this API or depend on it in your app.
+     */
+    public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config){
+        if (!config.usesDelayedOptimobileConfiguration()){
+            throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
+        }
+
+        flushEvents(context);
+        maybeTriggerInAppSync(context);
+        if (config.getDeferredDeepLinkHandler() != null){
+            deepLinkHelper.maybeProcessCachedLink(context);
+        }
     }
 }
