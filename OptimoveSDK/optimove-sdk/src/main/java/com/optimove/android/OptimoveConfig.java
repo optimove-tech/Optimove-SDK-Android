@@ -173,6 +173,14 @@ public final class OptimoveConfig {
             throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
         }
 
+        if (optimoveCredentials != null && !this.featureSet.has(FeatureSet.Feature.OPTIMOVE)){
+            throw new IllegalArgumentException("Cannot set credentials for optimove as it is not in the desired feature set");
+        }
+
+        if (optimobileCredentials != null && !this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)){
+            throw new IllegalArgumentException("Cannot set credentials for optimobile as it is not in the desired feature set");
+        }
+
         if (this.hasFinishedInitialisation()){
             throw new IllegalStateException("OptimoveConfig: credentials are already set");
         }

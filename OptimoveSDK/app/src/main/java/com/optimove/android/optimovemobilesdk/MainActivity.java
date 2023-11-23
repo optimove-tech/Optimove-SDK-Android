@@ -105,7 +105,13 @@ public class MainActivity extends AppCompatActivity {
       optimobileCredentials = null;
     }
 
-    Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
+    try {
+      Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
+    }
+    catch (Exception e){
+      outputTv.setText(e.getMessage());
+      return;
+    }
 
     outputTv.setText("Credentials submitted");
     Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
