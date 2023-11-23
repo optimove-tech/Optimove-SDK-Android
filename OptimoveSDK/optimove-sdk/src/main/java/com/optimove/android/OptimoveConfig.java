@@ -296,9 +296,7 @@ public final class OptimoveConfig {
     }
 
     public boolean isOptimoveConfigured(){
-        // TODO: optimove part is not ready for partial init yet
-        // this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
-        return this.optimoveToken != null && this.configFileName != null;
+        return this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
     }
 
     public boolean isOptimobileConfigured(){

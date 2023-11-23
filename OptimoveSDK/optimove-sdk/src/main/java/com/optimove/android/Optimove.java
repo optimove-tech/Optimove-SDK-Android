@@ -63,7 +63,7 @@ final public class Optimove {
     private final UserInfo userInfo;
     private final SharedPreferences localConfigKeysPreferences;
     private final EventHandlerProvider eventHandlerProvider;
-    private OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
+    private final OptimoveLifecycleEventGenerator optimoveLifecycleEventGenerator;
     private final DeviceInfoProvider deviceInfoProvider;
     private final AtomicBoolean configSet;
     private final LifecycleObserver lifecycleObserver;
@@ -79,6 +79,20 @@ final public class Optimove {
 
     private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
+
+        if (!config.isOptimoveConfigured()) {
+            userInfo = null;
+            coreSharedPreferences = null;
+            localConfigKeysPreferences = null;
+            eventHandlerProvider = null;
+            optimoveLifecycleEventGenerator = null;
+            deviceInfoProvider = null;
+            configSet = null;
+            lifecycleObserver = null;
+
+            return;
+        }
+
         this.userInfo = UserInfo.newInstance(context);
 
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
@@ -96,6 +110,9 @@ final public class Optimove {
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
                 .build());
+
+        this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
+                context.getPackageName());
 
         this.configSet = new AtomicBoolean(false);
     }
@@ -129,15 +146,27 @@ final public class Optimove {
             Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId(), shared.userInfo.getUserId());
         }
 
-        if (config.isOptimoveConfigured()) {
-            Optimove.finishOptimoveInit(application, config);
+        if (config.isOptimoveConfigured()){
+            if (config.getCustomMinLogLevel() != null) {
+                OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
+            }
+
+            OptiLoggerStreamsContainer.initializeLogger(application);
+
+            runOnMainThread( () -> {
+                OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
+                shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
+                shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
+                application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+            });
+
+            if (!config.usesDelayedConfiguration()) {
+                Optimove.fetchConfigsAndFinishOptimoveInit(application, config);
+            }
         }
     }
 
-    private static void finishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config){
-        shared.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(shared.eventHandlerProvider, shared.userInfo,
-                application.getPackageName());
-
+    private static void fetchConfigsAndFinishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config){
         TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
         TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
         if (localTenantInfo != null) {
@@ -149,24 +178,17 @@ final public class Optimove {
             shared.tenantInfo = newTenantInfo;
         }
 
-        if (config.getCustomMinLogLevel() != null) {
-            OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
-        }
-
-        OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
-
-        Runnable initCommand = () -> {
-            OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
-            shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
-            shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
-            application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
+        runOnMainThread(() -> {
             shared.fetchConfigs();
-        };
+        });
+    }
+
+    private static void runOnMainThread(Runnable command) {
         if (!OptiUtils.isRunningOnMainThread()) {
             OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
-            OptiUtils.runOnMainThread(initCommand);
+            OptiUtils.runOnMainThread(command);
         } else {
-            initCommand.run();
+            command.run();
         }
     }
 
@@ -187,7 +209,7 @@ final public class Optimove {
         }
 
         if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()){
-            Optimove.finishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
+            Optimove.fetchConfigsAndFinishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
         }
     }
 
