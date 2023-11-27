@@ -79,9 +79,9 @@ final public class Optimove {
 
     private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
+        this.userInfo = UserInfo.newInstance(context);
 
         if (!config.isOptimoveConfigured()) {
-            userInfo = null;
             coreSharedPreferences = null;
             localConfigKeysPreferences = null;
             eventHandlerProvider = null;
@@ -92,8 +92,6 @@ final public class Optimove {
 
             return;
         }
-
-        this.userInfo = UserInfo.newInstance(context);
 
         this.coreSharedPreferences = context.getSharedPreferences(TenantConfigsKeys.CORE_SP_FILE,
                 Context.MODE_PRIVATE);
