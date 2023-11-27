@@ -314,17 +314,11 @@ public final class OptimoveConfig {
     }
 
     public boolean usesDelayedOptimobileConfiguration() {
-        if (!this.delayedInitialisation) {
-            return false;
-        }
-        return this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
+        return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
 
     public boolean usesDelayedOptimoveConfiguration() {
-        if (!this.delayedInitialisation) {
-            return false;
-        }
-        return this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
+        return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
     }
 
     public boolean usesDelayedConfiguration() {
