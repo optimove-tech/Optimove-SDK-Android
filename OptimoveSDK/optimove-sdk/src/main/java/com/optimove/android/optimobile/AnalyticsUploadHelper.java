@@ -48,8 +48,7 @@ class AnalyticsUploadHelper {
         } catch (SQLiteException e) {
             e.printStackTrace();
             return Result.FAILED_RETRY_LATER;
-        }
-        catch (Optimobile.PartialInitialisationException e) {
+        } catch (Optimobile.PartialInitialisationException e) {
             return Result.FAILED_NO_RETRY;
         }
 

@@ -327,10 +327,9 @@ final class AnalyticsContract {
         }
 
 
-
     }
 
-    private static void scheduleEventSync(Context context){
+    private static void scheduleEventSync(Context context) {
         Constraints taskConstraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();

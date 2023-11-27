@@ -9,6 +9,7 @@ import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 
 import org.json.JSONArray;
+
 import java.io.IOException;
 import java.util.Collections;
 

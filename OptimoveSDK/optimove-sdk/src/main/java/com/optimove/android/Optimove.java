@@ -146,14 +146,14 @@ final public class Optimove {
             Optimobile.initialize(application, config, shared.userInfo.getInitialVisitorId(), shared.userInfo.getUserId());
         }
 
-        if (config.isOptimoveConfigured()){
+        if (config.isOptimoveConfigured()) {
             if (config.getCustomMinLogLevel() != null) {
                 OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
             }
 
             OptiLoggerStreamsContainer.initializeLogger(application);
 
-            runOnMainThread( () -> {
+            runOnMainThread(() -> {
                 OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
                 shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
                 shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
@@ -166,7 +166,7 @@ final public class Optimove {
         }
     }
 
-    private static void fetchConfigsAndFinishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config){
+    private static void fetchConfigsAndFinishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config) {
         TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
         TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
         if (localTenantInfo != null) {
@@ -195,20 +195,20 @@ final public class Optimove {
     /**
      * Late setting of credentials. Must be called only if partial initialisation constructor was used and only once.
      *
-     * @param optimoveCredentials credentials for track and trigger
+     * @param optimoveCredentials   credentials for track and trigger
      * @param optimobileCredentials credentials for other mobile features (push, in-app, deep links etc)
      */
     public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
-        if (!currentConfig.usesDelayedConfiguration()){
+        if (!currentConfig.usesDelayedConfiguration()) {
             throw new IllegalStateException("Cannot set credentials as delayed configuration is not enabled");
         }
 
         currentConfig.setCredentials(optimoveCredentials, optimobileCredentials);
-        if (optimobileCredentials != null && currentConfig.usesDelayedOptimobileConfiguration()){
+        if (optimobileCredentials != null && currentConfig.usesDelayedOptimobileConfiguration()) {
             Optimobile.completeDelayedConfiguration(shared.getApplicationContext(), currentConfig);
         }
 
-        if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()){
+        if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()) {
             Optimove.fetchConfigsAndFinishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
         }
     }
@@ -317,11 +317,11 @@ final public class Optimove {
      * @see Optimove#setUserEmail(String)
      */
     public void registerUser(String userId, String email) {
-        if (currentConfig.isOptimobileConfigured()){
+        if (currentConfig.isOptimobileConfigured()) {
             Optimobile.associateUserWithInstall(context, userId);
         }
 
-        if (currentConfig.isOptimoveConfigured()){
+        if (currentConfig.isOptimoveConfigured()) {
             SetUserIdEvent setUserIdEvent = processUserId(userId);
             SetEmailEvent setEmailEvent = processUserEmail(email);
             List<OptimoveEvent> list = new ArrayList<>();
@@ -575,6 +575,7 @@ final public class Optimove {
     /**
      * Updates the location of the current installation in Optimove
      * Accurate locaiton information is used for geofencing
+     *
      * @param location
      */
     public void sendLocationUpdate(@Nullable Location location) {
@@ -583,6 +584,7 @@ final public class Optimove {
 
     /**
      * Records a proximity event for an Eddystone beacon.
+     *
      * @param hexNamespace
      * @param hexInstance
      * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
@@ -593,6 +595,7 @@ final public class Optimove {
 
     /**
      * Records a proximity event for an iBeacon
+     *
      * @param uuid
      * @param majorId
      * @param minorId
@@ -640,5 +643,4 @@ final public class Optimove {
         }
         return new TenantInfo(tenantId, token, configName);
     }
-
 }
