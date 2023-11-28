@@ -16,7 +16,9 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +60,11 @@ public final class OptimoveConfig {
 
     private @Nullable LogLevel minLogLevel;
 
+    private @NonNull FeatureSet featureSet;
+
+    private boolean delayedInitialisation;
+
+
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
@@ -68,28 +75,58 @@ public final class OptimoveConfig {
         PAUSED
     }
 
+    public enum Region {
+        EU("eu-central-2"),
+        US("us-east-1"),
+        DEV("uk-1");
+        private final String region;
+
+        Region(String region) {
+            this.region = region;
+        }
+
+        @NonNull
+        public String toString() {
+            return region;
+        }
+    }
+
+    public static class FeatureSet {
+        private enum Feature {
+            OPTIMOVE,
+            OPTIMOBILE
+        }
+
+        Set<Feature> features = new HashSet<>();
+
+        public FeatureSet withOptimove() {
+            features.add(Feature.OPTIMOVE);
+
+            return this;
+        }
+
+        public FeatureSet withOptimobile() {
+            features.add(Feature.OPTIMOBILE);
+
+            return this;
+        }
+
+        boolean has(Feature feature) {
+            return features.contains(feature);
+        }
+
+        boolean isEmpty() {
+            return features.isEmpty();
+        }
+    }
+
+
     // Private constructor to discourage not using the Builder.
     private OptimoveConfig() {
     }
 
     private void setRegion(@Nullable String region) {
         this.region = region;
-    }
-
-    private void setApiKey(@Nullable String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    private void setSecretKey(@Nullable String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-    private void setOptimoveToken(@Nullable String optimoveToken) {
-        this.optimoveToken = optimoveToken;
-    }
-
-    private void setConfigFileName(@Nullable String configFileName) {
-        this.configFileName = configFileName;
     }
 
     private void setNotificationSmallIconId(@DrawableRes int notificationSmallIconId) {
@@ -128,8 +165,78 @@ public final class OptimoveConfig {
         this.deferredDeepLinkHandler = deferredHandler;
     }
 
-    private void setMinLogLevel(@Nullable LogLevel minLogLevel){
+    private void setMinLogLevel(@Nullable LogLevel minLogLevel) {
         this.minLogLevel = minLogLevel;
+    }
+
+    void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
+        if (optimoveCredentials == null && optimobileCredentials == null) {
+            throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
+        }
+
+        if (this.hasFinishedInitialisation()) {
+            throw new IllegalStateException("OptimoveConfig: credentials are already set");
+        }
+
+        this.setOptimoveCredentials(optimoveCredentials);
+        this.setOptimobileCredentials(optimobileCredentials);
+    }
+
+    private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
+        if (optimoveCredentials == null) {
+            return;
+        }
+
+        if (!this.featureSet.has(FeatureSet.Feature.OPTIMOVE)) {
+            throw new IllegalArgumentException("Cannot set credentials for optimove as it is not in the desired feature set");
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(optimoveCredentials);
+
+            this.optimoveToken = result.getString(1);
+            this.configFileName = result.getString(2);
+        } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Optimove credentials are not correct");
+        }
+    }
+
+    private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
+        if (optimobileCredentials == null) {
+            return;
+        }
+
+        if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+            throw new IllegalArgumentException("Cannot set credentials for optimobile as it is not in the desired feature set");
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(optimobileCredentials);
+
+            String region = result.getString(1);
+            this.region = region;
+            this.apiKey = result.getString(2);
+            this.secretKey = result.getString(3);
+
+            this.baseUrlMap = UrlBuilder.defaultMapping(region);
+
+        } catch (NullPointerException | JSONException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Optimobile credentials are not correct");
+        }
+    }
+
+    private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {
+        byte[] data = Base64.decode(credentials, Base64.DEFAULT);
+
+        return new JSONArray(new String(data, StandardCharsets.UTF_8));
+    }
+
+    private void setFeatureSet(@NonNull FeatureSet featureSet) {
+        this.featureSet = featureSet;
+    }
+
+    private void setDelayedInitialisation(boolean delayedInitialisation) {
+        this.delayedInitialisation = delayedInitialisation;
     }
 
     @Nullable
@@ -181,7 +288,9 @@ public final class OptimoveConfig {
     }
 
     public @NonNull
-    InAppDisplayMode getInAppDisplayMode() { return inAppDisplayMode; }
+    InAppDisplayMode getInAppDisplayMode() {
+        return inAppDisplayMode;
+    }
 
     public @Nullable
     URL getDeepLinkCname() {
@@ -192,16 +301,43 @@ public final class OptimoveConfig {
         return this.deferredDeepLinkHandler;
     }
 
-    public boolean isOptimoveConfigured(){
-        return this.optimoveToken != null && this.configFileName != null ;
+    public boolean isOptimoveConfigured() {
+        return this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
     }
 
-    public boolean isOptimobileConfigured(){
-        return this.apiKey != null && this.secretKey != null;
+    public boolean isOptimobileConfigured() {
+        return this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
 
-    public @Nullable LogLevel getCustomMinLogLevel(){
+    public @Nullable LogLevel getCustomMinLogLevel() {
         return this.minLogLevel;
+    }
+
+    public boolean usesDelayedOptimobileConfiguration() {
+        return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
+    }
+
+    public boolean usesDelayedOptimoveConfiguration() {
+        return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOVE);
+    }
+
+    public boolean usesDelayedConfiguration() {
+        return this.delayedInitialisation;
+    }
+
+    private boolean hasFinishedInitialisation() {
+        boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
+        boolean hasOptimobileCreds = apiKey != null && secretKey != null;
+
+        if (!hasOptimoveCreds && featureSet.has(FeatureSet.Feature.OPTIMOVE)) {
+            return false;
+        }
+
+        if (!hasOptimobileCreds && featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -210,14 +346,10 @@ public final class OptimoveConfig {
     public static class Builder {
         private @Nullable
         String region;
-        private @Nullable
-        String apiKey;
-        private @Nullable
-        String secretKey;
-        private @Nullable
-        String optimoveToken;
-        private @Nullable
-        String configFileName;
+        private @Nullable String optimoveCredentials;
+        private @Nullable String optimobileCredentials;
+        private final @NonNull FeatureSet featureSet;
+        private final boolean delayedInitialisation;
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
@@ -229,6 +361,7 @@ public final class OptimoveConfig {
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
         private @Nullable Map<UrlBuilder.Service, String> baseUrlMap;
+        private @Nullable Map<UrlBuilder.Service, String> overridingBaseUrlMap;
 
         private @Nullable
         URL deepLinkCname;
@@ -236,54 +369,33 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
+        public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
+            if (featureSet.isEmpty()) {
+                throw new IllegalArgumentException("Feature set cannot be empty");
+            }
+            this.region = region.toString();
+            this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
+            this.featureSet = featureSet;
+            this.delayedInitialisation = true;
+        }
+
         public Builder(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
+            this.optimoveCredentials = optimoveCredentials;
+            this.optimobileCredentials = optimobileCredentials;
+            this.delayedInitialisation = false;
+
             if (optimoveCredentials == null && optimobileCredentials == null) {
                 throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
             }
 
-            this.setOptimoveCredentials(optimoveCredentials);
-            this.setOptimobileCredentials(optimobileCredentials);
-        }
-
-        private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
-            if (optimoveCredentials == null) {
-                return;
+            this.featureSet = new FeatureSet();
+            if (optimoveCredentials != null) {
+                this.featureSet.withOptimove();
             }
 
-            try {
-                JSONArray result = this.parseCredentials(optimoveCredentials);
-
-                this.optimoveToken = result.getString(1);
-                this.configFileName = result.getString(2);
-            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
-                throw new IllegalArgumentException("Optimove credentials are not correct");
+            if (optimobileCredentials != null) {
+                this.featureSet.withOptimobile();
             }
-        }
-
-        private void setOptimobileCredentials(@Nullable String optimobileCredentials) {
-            if (optimobileCredentials == null) {
-                return;
-            }
-
-            try {
-                JSONArray result = this.parseCredentials(optimobileCredentials);
-
-                String region = result.getString(1);
-                this.region = region;
-                this.apiKey = result.getString(2);
-                this.secretKey = result.getString(3);
-
-                this.baseUrlMap = UrlBuilder.defaultMapping(region);
-
-            } catch (NullPointerException | JSONException | IllegalArgumentException e) {
-                throw new IllegalArgumentException("Optimobile credentials are not correct");
-            }
-        }
-
-        private JSONArray parseCredentials(@NonNull String credentials) throws JSONException {
-            byte[] data = Base64.decode(credentials, Base64.DEFAULT);
-
-            return new JSONArray(new String(data, StandardCharsets.UTF_8));
         }
 
         /**
@@ -346,7 +458,7 @@ public final class OptimoveConfig {
         /**
          * @param minLogLevel Logcat minimum log level to show.
          */
-        public Builder setMinLogLevel(LogLevel minLogLevel){
+        public Builder setMinLogLevel(LogLevel minLogLevel) {
             this.minLogLevel = minLogLevel;
             return this;
         }
@@ -374,22 +486,29 @@ public final class OptimoveConfig {
          */
         @InternalSdkEmbeddingApi(purpose = "Allow sending traffic to different domains")
         public Builder setBaseUrlMapping(Map<UrlBuilder.Service, String> baseUrlMap) {
-            this.baseUrlMap = baseUrlMap;
+            this.overridingBaseUrlMap = baseUrlMap;
             return this;
         }
 
         public OptimoveConfig build() {
             OptimoveConfig newConfig = new OptimoveConfig();
-            newConfig.setRegion(region);
-            newConfig.setApiKey(apiKey);
-            newConfig.setSecretKey(secretKey);
-            newConfig.setOptimoveToken(optimoveToken);
-            newConfig.setConfigFileName(configFileName);
+            newConfig.setFeatureSet(this.featureSet);
+            newConfig.setDelayedInitialisation(delayedInitialisation);
+            if (!delayedInitialisation) {
+                newConfig.setCredentials(this.optimoveCredentials, this.optimobileCredentials);
+            } else {
+                newConfig.setRegion(this.region);
+                newConfig.setBaseUrlMap(this.baseUrlMap);
+            }
+
+            if (this.overridingBaseUrlMap != null) {
+                newConfig.setBaseUrlMap(this.overridingBaseUrlMap);
+            }
+
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);
             newConfig.setRuntimeInfo(this.runtimeInfo);
             newConfig.setSdkInfo(this.sdkInfo);
-            newConfig.setBaseUrlMap(this.baseUrlMap);
 
             newConfig.setInAppConsentStrategy(consentStrategy);
             newConfig.setInAppDisplayMode(inAppDisplayMode);

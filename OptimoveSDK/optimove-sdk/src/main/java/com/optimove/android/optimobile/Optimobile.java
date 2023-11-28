@@ -1,19 +1,15 @@
 
 package com.optimove.android.optimobile;
 
-import android.app.Activity;
 import android.app.Application;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -23,15 +19,13 @@ import androidx.core.app.NotificationManagerCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import okhttp3.ConnectionSpec;
-import okhttp3.OkHttpClient;
 import com.optimove.android.BuildConfig;
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+
 import android.location.Location;
 
 /**
@@ -41,17 +35,24 @@ public final class Optimobile {
 
     private static final String TAG = Optimobile.class.getName();
 
-    /** package */ static final String KEY_AUTH_HEADER = "Authorization";
+    /**
+     * package
+     */
+    static final String KEY_AUTH_HEADER = "Authorization";
     private static boolean initialized;
 
     private static String installId;
 
     static UrlBuilder urlBuilder;
 
-    private static OkHttpClient httpClient;
-    /** package */ static String authHeader;
-    /** package */ static ExecutorService executorService;
-    /** package */ static final Handler handler = new Handler(Looper.getMainLooper());
+    /**
+     * package
+     */
+    static ExecutorService executorService;
+    /**
+     * package
+     */
+    static final Handler handler = new Handler(Looper.getMainLooper());
     private static final Object userIdLocker = new Object();
 
     static PushActionHandlerInterface pushActionHandler = null;
@@ -60,7 +61,10 @@ public final class Optimobile {
 
     static SessionHelper sessionHelper;
 
-    /** package */ static class BaseCallback {
+    /**
+     * package
+     */
+    static class BaseCallback {
         public void onFailure(Exception e) {
             e.printStackTrace();
         }
@@ -76,14 +80,21 @@ public final class Optimobile {
         }
     }
 
+    static class PartialInitialisationException extends Exception {
+        PartialInitialisationException() {
+            super("The Optimobile has not been fully initialised. Trying to make network requets without credntials");
+        }
+    }
+
 
     /**
      * Used to configure the Optimobile class. Only needs to be called once per process
+     *
      * @param application
      * @param config
      */
     public static synchronized void initialize(final Application application, OptimoveConfig config, String initialVisitorId, @Nullable String customerId) {
-        if (!config.isOptimobileConfigured()){
+        if (!config.isOptimobileConfigured()) {
             throw new UninitializedException();
         }
 
@@ -94,10 +105,7 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        authHeader = buildBasicAuthHeader(config.getApiKey(), config.getSecretKey());
-
-        urlBuilder  = new UrlBuilder(config.getBaseUrlMap());
-        httpClient = buildOkHttpClient();
+        urlBuilder = new UrlBuilder(config.getBaseUrlMap());
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -105,7 +113,7 @@ public final class Optimobile {
 
         OptimoveInApp.initialize(application, config);
 
-        if (config.getDeferredDeepLinkHandler() != null){
+        if (config.getDeferredDeepLinkHandler() != null) {
             deepLinkHelper = new DeferredDeepLinkHelper();
         }
 
@@ -119,7 +127,7 @@ public final class Optimobile {
     }
 
     private static void maybeMigrateUserAssociation(Application application, @Nullable String customerId) {
-        if (customerId == null){
+        if (customerId == null) {
             return;
         }
 
@@ -129,27 +137,13 @@ public final class Optimobile {
         }
     }
 
-    private static OkHttpClient buildOkHttpClient(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            return new OkHttpClient();
-        }
-
-        //ciphers available on Android 4.4 have intersections with the approved ones in MODERN_TLS, but the intersections are on bad cipher list, so,
-        //perhaps not supported by CloudFlare. On older devices allow all ciphers
-        ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-            .allEnabledCipherSuites()
-            .build();
-
-        return new OkHttpClient.Builder()
-            .connectionSpecs(Collections.singletonList(spec))
-            .build();
-    }
 
     //==============================================================================================
     //-- Getters/setters
 
     /**
      * Associates a user identifier with the current Optimobile installation record.
+     *
      * @param context
      * @param userIdentifier
      */
@@ -159,6 +153,7 @@ public final class Optimobile {
 
     /**
      * Associates a user identifier with the current Optimobile installation record, additionally setting the attributes for the user.
+     *
      * @param context
      * @param userIdentifier
      * @param attributes
@@ -169,9 +164,10 @@ public final class Optimobile {
 
     /**
      * Clears any existing association between this install record and a user identifier
+     *
+     * @param context
      * @see Optimobile#associateUserWithInstall(Context, String)
      * @see Optimobile#getCurrentUserIdentifier(Context)
-     * @param context
      */
     public static void clearUserAssociation(@NonNull Context context) {
         String currentUserId = null;
@@ -203,10 +199,9 @@ public final class Optimobile {
     /**
      * Returns the identifier for the user currently associated with the Optimobile installation record
      *
-     * @see Optimobile#associateUserWithInstall(Context, String)
-     *
      * @param context
      * @return The current user identifier (if available), otherwise the Optimobile installation ID
+     * @see Optimobile#associateUserWithInstall(Context, String)
      */
     public static String getCurrentUserIdentifier(@NonNull Context context) {
         synchronized (userIdLocker) {
@@ -233,7 +228,7 @@ public final class Optimobile {
             return;
         }
 
-        if (isNewUserIdentifier){
+        if (isNewUserIdentifier) {
             SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
 
             synchronized (userIdLocker) {
@@ -245,7 +240,7 @@ public final class Optimobile {
 
         trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_ASSOCIATE_USER, props);
 
-        if (isNewUserIdentifier){
+        if (isNewUserIdentifier) {
             OptimoveInApp.getInstance().handleInAppUserChange(context, Optimove.getConfig());
         }
     }
@@ -317,6 +312,7 @@ public final class Optimobile {
 
     /**
      * Registers the push token with Optimobile to allow sending push notifications to this install
+     *
      * @param context
      * @param token
      */
@@ -353,6 +349,7 @@ public final class Optimobile {
 
     /**
      * Allows setting the handler you want to use for push action buttons
+     *
      * @param handler
      */
     public static void setPushActionHandler(PushActionHandlerInterface handler) {
@@ -363,7 +360,7 @@ public final class Optimobile {
     //-- DEFERRED DEEP LINKING
 
     public static void seeIntent(Context context, Intent intent, @Nullable Bundle savedInstanceState) {
-        if (savedInstanceState != null){
+        if (savedInstanceState != null) {
             return;
         }
 
@@ -372,16 +369,16 @@ public final class Optimobile {
 
     public static void seeIntent(Context context, Intent intent) {
         String action = intent.getAction();
-        if (!Intent.ACTION_VIEW.equals(action)){
+        if (!Intent.ACTION_VIEW.equals(action)) {
             return;
         }
 
         Uri uri = intent.getData();
-        if (uri == null){
+        if (uri == null) {
             return;
         }
 
-        if (Optimove.getConfig().getDeferredDeepLinkHandler() == null){
+        if (Optimove.getConfig().getDeferredDeepLinkHandler() == null) {
             return;
         }
 
@@ -389,11 +386,11 @@ public final class Optimobile {
     }
 
     public static void seeInputFocus(Context context, boolean hasFocus) {
-        if (!hasFocus){
+        if (!hasFocus) {
             return;
         }
 
-        if (Optimove.getConfig().getDeferredDeepLinkHandler() == null){
+        if (Optimove.getConfig().getDeferredDeepLinkHandler() == null) {
             return;
         }
 
@@ -410,6 +407,7 @@ public final class Optimobile {
     /**
      * Updates the location of the current installation in Optimove
      * Accurate locaiton information is used for geofencing
+     *
      * @param context
      * @param location
      */
@@ -432,6 +430,7 @@ public final class Optimobile {
 
     /**
      * Records a proximity event for an Eddystone beacon.
+     *
      * @param context
      * @param hexNamespace
      * @param hexInstance
@@ -457,6 +456,7 @@ public final class Optimobile {
 
     /**
      * Records a proximity event for an iBeacon
+     *
      * @param context
      * @param uuid
      * @param majorId
@@ -486,15 +486,6 @@ public final class Optimobile {
     //-- OTHER
 
     /**
-     * Generates the correct Authorization header value for HTTP Basic auth with the API key & secret
-     * @return Authorization header value
-     */
-    private static String buildBasicAuthHeader(String apiKey, String secretKey) {
-        return "Basic "
-                + Base64.encodeToString((apiKey + ":" + secretKey).getBytes(), Base64.NO_WRAP);
-    }
-
-    /**
      * Logging
      *
      * @param message
@@ -509,22 +500,20 @@ public final class Optimobile {
         log(TAG, message);
     }
 
-    /** package */ static OkHttpClient getHttpClient() throws UninitializedException {
-        if (!initialized) {
-            throw new UninitializedException();
-        }
-
-        return httpClient;
-    }
-
-    /** package */ static String getInstallId() throws UninitializedException {
+    /**
+     * package
+     */
+    static String getInstallId() throws UninitializedException {
         if (!initialized) {
             throw new UninitializedException();
         }
         return installId;
     }
 
-    /** package */ static boolean isInitialized() {
+    /**
+     * package
+     */
+    static boolean isInitialized() {
         return initialized;
     }
 
@@ -543,5 +532,41 @@ public final class Optimobile {
 
     static void trackEventImmediately(@NonNull final Context context, @NonNull final String eventType, @Nullable final JSONObject properties) {
         trackEvent(context, eventType, properties, System.currentTimeMillis(), true);
+    }
+
+    private static void flushEvents(@NonNull final Context context) {
+        Runnable flushingTask = new AnalyticsContract.FlushEventsRunnable(context);
+        executorService.submit(flushingTask);
+    }
+
+    private static void maybeTriggerInAppSync(Context context) {
+        if (!OptimoveInApp.getInstance().isInAppEnabled()) {
+            return;
+        }
+
+        Optimobile.executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                InAppMessageService.fetch(context, true);
+            }
+        });
+    }
+
+    //==============================================================================================
+    //-- Internal Helpers
+
+    /**
+     * This API is intended for internal SDK use. Do not call this API or depend on it in your app.
+     */
+    public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config) {
+        if (!config.usesDelayedOptimobileConfiguration()) {
+            throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
+        }
+
+        flushEvents(context);
+        maybeTriggerInAppSync(context);
+        if (config.getDeferredDeepLinkHandler() != null) {
+            deepLinkHelper.maybeProcessCachedLink(context);
+        }
     }
 }

@@ -4,7 +4,7 @@ android {
     compileSdkVersion 31
     buildToolsVersion '30.0.3'
     defaultConfig {
-        applicationId "com.optimove.sdk.optimovemobilesdk"
+        applicationId "com.optimove.android.optimovemobilesdk"
         minSdkVersion 21
         targetSdkVersion 31
         versionCode Integer.parseInt("$sdk_version_code")

@@ -14,20 +14,21 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 class AnalyticsUploadHelper {
+    private static final String TAG = AnalyticsUploadHelper.class.getName();
 
     enum Result {
         SUCCESS,
-        FAILED_RETRY_LATER
-    };
+        FAILED_RETRY_LATER,
+        FAILED_NO_RETRY
+    }
 
-    /** package */ Result flushEvents(Context context) {
+    /**
+     * package
+     */
+    Result flushEvents(Context context) {
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -44,44 +45,29 @@ class AnalyticsUploadHelper {
                 events = eventsResult.first;
                 maxEventId = eventsResult.second;
             }
-        }
-        catch (SQLiteException e) {
+        } catch (SQLiteException e) {
             e.printStackTrace();
             return Result.FAILED_RETRY_LATER;
+        } catch (Optimobile.PartialInitialisationException e) {
+            return Result.FAILED_NO_RETRY;
         }
 
         return Result.SUCCESS;
     }
 
-    private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) {
+    private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) throws Optimobile.PartialInitialisationException {
         // Pack into JSON
         JSONArray data = new JSONArray(events);
-        String dataStr = data.toString();
-        if (null == dataStr) {
-            return false;
-        }
 
-        // Post to server
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), dataStr);
+        final OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
-        final OkHttpClient httpClient = new OkHttpClient();
         final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader(Optimobile.KEY_AUTH_HEADER, Optimobile.authHeader)
-                .post(body)
-                .build();
-
         boolean result = false;
-        try {
-            Response response = httpClient.newCall(request).execute();
-
+        try (Response response = httpClient.postSync(url, data)) {
             if (response.isSuccessful()) {
                 result = true;
             }
-
-            response.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -108,7 +94,7 @@ class AnalyticsUploadHelper {
         String sortBy = AnalyticsContract.AnalyticsEvent.COL_ID + " ASC";
 
         String selection = AnalyticsContract.AnalyticsEvent.COL_ID + " > ?";
-        String[] params = new String[] {String.valueOf(minEventId)};
+        String[] params = new String[]{String.valueOf(minEventId)};
 
         Cursor cursor = db.query(
                 AnalyticsContract.AnalyticsEvent.TABLE_NAME,

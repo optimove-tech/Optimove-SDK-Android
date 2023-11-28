@@ -82,7 +82,6 @@ final public class Optimove {
         this.userInfo = UserInfo.newInstance(context);
 
         if (!config.isOptimoveConfigured()) {
-            //if optimove credentials not set, optimove API should fail early
             coreSharedPreferences = null;
             localConfigKeysPreferences = null;
             eventHandlerProvider = null;
@@ -109,8 +108,10 @@ final public class Optimove {
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
                 .build());
+
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
                 context.getPackageName());
+
         this.configSet = new AtomicBoolean(false);
     }
 
@@ -148,21 +149,65 @@ final public class Optimove {
                 OptiLoggerStreamsContainer.setMinLogLevelToShow(config.getCustomMinLogLevel());
             }
 
-            OptiLoggerStreamsContainer.initializeLogger(application.getApplicationContext());
+            OptiLoggerStreamsContainer.initializeLogger(application);
 
-            Runnable initCommand = () -> {
+            runOnMainThread(() -> {
                 OptiLoggerStreamsContainer.debug("Optimove.initialize() is starting");
                 shared.lifecycleObserver.addActivityStoppedListener(shared.optimoveLifecycleEventGenerator);
                 shared.lifecycleObserver.addActivityStartedListener(shared.optimoveLifecycleEventGenerator);
                 application.registerActivityLifecycleCallbacks(shared.lifecycleObserver);
-                shared.fetchConfigs();
-            };
-            if (!OptiUtils.isRunningOnMainThread()) {
-                OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
-                OptiUtils.runOnMainThread(initCommand);
-            } else {
-                initCommand.run();
+            });
+
+            if (!config.usesDelayedConfiguration()) {
+                Optimove.fetchConfigsAndFinishOptimoveInit(application, config);
             }
+        }
+    }
+
+    private static void fetchConfigsAndFinishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config) {
+        TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
+        TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
+        if (localTenantInfo != null) {
+            // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
+            newTenantInfo.setTenantId(localTenantInfo.getTenantId());
+            shared.setAndStoreTenantInfo(newTenantInfo);
+        } else {
+            // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
+            shared.tenantInfo = newTenantInfo;
+        }
+
+        runOnMainThread(() -> {
+            shared.fetchConfigs();
+        });
+    }
+
+    private static void runOnMainThread(Runnable command) {
+        if (!OptiUtils.isRunningOnMainThread()) {
+            OptiLoggerStreamsContainer.debug("Optimove.initialize() was called from a worker thread, moving call to main thread");
+            OptiUtils.runOnMainThread(command);
+        } else {
+            command.run();
+        }
+    }
+
+    /**
+     * Late setting of credentials. Must be called only if partial initialisation constructor was used and only once.
+     *
+     * @param optimoveCredentials   credentials for track and trigger
+     * @param optimobileCredentials credentials for other mobile features (push, in-app, deep links etc)
+     */
+    public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
+        if (!currentConfig.usesDelayedConfiguration()) {
+            throw new IllegalStateException("Cannot set credentials as delayed configuration is not enabled");
+        }
+
+        currentConfig.setCredentials(optimoveCredentials, optimobileCredentials);
+        if (optimobileCredentials != null && currentConfig.usesDelayedOptimobileConfiguration()) {
+            Optimobile.completeDelayedConfiguration(shared.getApplicationContext(), currentConfig);
+        }
+
+        if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()) {
+            Optimove.fetchConfigsAndFinishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
         }
     }
 
@@ -256,21 +301,6 @@ final public class Optimove {
             return;
         }
         shared = new Optimove(context, config);
-
-        if (!config.isOptimoveConfigured()) {
-            return;
-        }
-
-        TenantInfo newTenantInfo = new TenantInfo(config.getOptimoveToken(), config.getConfigFileName());
-        TenantInfo localTenantInfo = shared.retrieveLocalTenantInfo();
-        if (localTenantInfo != null) {
-            // Now merge the local with the new. NOTE: the new does not contain a tenant ID while the local must contain tenant ID otherwise it will be null
-            newTenantInfo.setTenantId(localTenantInfo.getTenantId());
-            shared.setAndStoreTenantInfo(newTenantInfo);
-        } else {
-            // No point in storing the tenant info as it is not yet valid (tenantId == -1). It will be stored once the configurations are fetched
-            shared.tenantInfo = newTenantInfo;
-        }
     }
 
     //==============================================================================================
@@ -285,11 +315,11 @@ final public class Optimove {
      * @see Optimove#setUserEmail(String)
      */
     public void registerUser(String userId, String email) {
-        if (currentConfig.isOptimobileConfigured()){
+        if (currentConfig.isOptimobileConfigured()) {
             Optimobile.associateUserWithInstall(context, userId);
         }
 
-        if (currentConfig.isOptimoveConfigured()){
+        if (currentConfig.isOptimoveConfigured()) {
             SetUserIdEvent setUserIdEvent = processUserId(userId);
             SetEmailEvent setEmailEvent = processUserEmail(email);
             List<OptimoveEvent> list = new ArrayList<>();
@@ -543,6 +573,7 @@ final public class Optimove {
     /**
      * Updates the location of the current installation in Optimove
      * Accurate locaiton information is used for geofencing
+     *
      * @param location
      */
     public void sendLocationUpdate(@Nullable Location location) {
@@ -551,6 +582,7 @@ final public class Optimove {
 
     /**
      * Records a proximity event for an Eddystone beacon.
+     *
      * @param hexNamespace
      * @param hexInstance
      * @param distanceMetres - Optional distance to beacon in metres. If null, will not be recorded
@@ -561,6 +593,7 @@ final public class Optimove {
 
     /**
      * Records a proximity event for an iBeacon
+     *
      * @param uuid
      * @param majorId
      * @param minorId
@@ -608,5 +641,4 @@ final public class Optimove {
         }
         return new TenantInfo(tenantId, token, configName);
     }
-
 }
