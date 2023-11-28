@@ -361,7 +361,6 @@ public final class OptimoveConfig {
         private JSONObject runtimeInfo;
         private JSONObject sdkInfo;
         private @Nullable Map<UrlBuilder.Service, String> baseUrlMap;
-        private @Nullable Map<UrlBuilder.Service, String> overridingBaseUrlMap;
 
         private @Nullable
         URL deepLinkCname;
@@ -481,15 +480,6 @@ public final class OptimoveConfig {
             return this;
         }
 
-        /**
-         * Private API
-         */
-        @InternalSdkEmbeddingApi(purpose = "Allow sending traffic to different domains")
-        public Builder setBaseUrlMapping(Map<UrlBuilder.Service, String> baseUrlMap) {
-            this.overridingBaseUrlMap = baseUrlMap;
-            return this;
-        }
-
         public OptimoveConfig build() {
             OptimoveConfig newConfig = new OptimoveConfig();
             newConfig.setFeatureSet(this.featureSet);
@@ -499,10 +489,6 @@ public final class OptimoveConfig {
             } else {
                 newConfig.setRegion(this.region);
                 newConfig.setBaseUrlMap(this.baseUrlMap);
-            }
-
-            if (this.overridingBaseUrlMap != null) {
-                newConfig.setBaseUrlMap(this.overridingBaseUrlMap);
             }
 
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
