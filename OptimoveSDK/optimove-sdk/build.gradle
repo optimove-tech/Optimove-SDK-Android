@@ -9,8 +9,6 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode Integer.parseInt("$sdk_version_code")
-        versionName "$sdk_version"
         consumerProguardFiles 'optimove-proguard-rules.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         buildConfigField "String", "OPTIMOVE_VERSION_NAME", "\"$sdk_version\""
