@@ -383,7 +383,10 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         Uri ringtoneSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         if (soundFileName != null) {
-            ringtoneSound = Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + soundFileName);
+            int resourceId = context.getResources().getIdentifier(soundFileName, "raw", context.getPackageName());
+            if (resourceId != 0) {
+                ringtoneSound = Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + soundFileName);
+            }
         }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
