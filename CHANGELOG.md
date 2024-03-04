@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.3.1
+
+- Fix: don't set custom sound if provided resource doesn't exist
+
 ## 7.3.0
 
 - Support late setting of credentials with partial initialisation
