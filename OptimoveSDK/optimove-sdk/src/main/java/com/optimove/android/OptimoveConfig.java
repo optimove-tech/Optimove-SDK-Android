@@ -64,6 +64,8 @@ public final class OptimoveConfig {
 
     private boolean delayedInitialisation;
 
+    private String brandGroupId;
+
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -167,6 +169,10 @@ public final class OptimoveConfig {
 
     private void setMinLogLevel(@Nullable LogLevel minLogLevel) {
         this.minLogLevel = minLogLevel;
+    }
+
+    private void setBrandGroupId(@Nullable String brandGroupId) {
+        this.brandGroupId = brandGroupId;
     }
 
     void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
@@ -313,6 +319,10 @@ public final class OptimoveConfig {
         return this.minLogLevel;
     }
 
+    public @Nullable String getBrandGroupId() {
+        return this.brandGroupId;
+    }
+
     public boolean usesDelayedOptimobileConfiguration() {
         return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
@@ -368,6 +378,8 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
+
+        private String brandGroupId = null;
 
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
             if (featureSet.isEmpty()) {
@@ -434,6 +446,11 @@ public final class OptimoveConfig {
         public Builder enableDeepLinking(DeferredDeepLinkHandlerInterface handler) {
             this.deferredDeepLinkHandler = handler;
             this.deepLinkCname = null;
+            return this;
+        }
+
+        public Builder enablePreferenceCenter(@NonNull String brandGroupId) {
+            this.brandGroupId = brandGroupId;
             return this;
         }
 
@@ -517,6 +534,8 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
+
+            newConfig.setBrandGroupId(this.brandGroupId);
 
             return newConfig;
         }
