@@ -32,7 +32,7 @@ public class MyApplication extends Application {
 
     Optimove.initialize(this, new OptimoveConfig.Builder(
             null,
-            "WzEsIHVrLTEsIDZiMTk5OGFhLWVmYzUtNGM4NS1iODhkLWYyNDMxMTg4MDU1MCwgSnEzMVRCenZsZlU0MW9sczF5bUFWU0lXYzV5Z2N1Zmx6Y28rXQ==")
+            "base64Creds")
             .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
             .enablePreferenceCenter("brandGroupId")
             .build());
