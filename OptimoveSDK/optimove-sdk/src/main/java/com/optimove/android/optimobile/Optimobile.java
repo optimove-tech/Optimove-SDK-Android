@@ -112,6 +112,7 @@ public final class Optimobile {
         initialized = true;
 
         OptimoveInApp.initialize(application, config);
+        OptimovePreferenceCenter.initialize(config, customerId);
 
         if (config.getDeferredDeepLinkHandler() != null) {
             deepLinkHelper = new DeferredDeepLinkHelper();
