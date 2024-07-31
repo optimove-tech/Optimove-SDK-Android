@@ -2,9 +2,9 @@ package com.optimove.android.optimobile;
 
 public class PreferenceUpdate {
     private final String id;
-    private final int[] subscribedChannels;
+    private final OptimovePreferenceCenter.Channel[] subscribedChannels;
 
-    PreferenceUpdate(String id, int[] subscribedChannels) {
+    PreferenceUpdate(String id, OptimovePreferenceCenter.Channel[] subscribedChannels) {
         this.id = id;
         this.subscribedChannels = subscribedChannels;
     }
@@ -13,7 +13,7 @@ public class PreferenceUpdate {
         return id;
     }
 
-    public int[] getSubscribedChannels() {
+    public OptimovePreferenceCenter.Channel[] getSubscribedChannels() {
         return subscribedChannels;
     }
 }

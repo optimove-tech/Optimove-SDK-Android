@@ -16,6 +16,22 @@ public class OptimovePreferenceCenter {
         void run(Boolean result);
     }
 
+    public enum Channel {
+        MOBILE_PUSH(489),
+        WEB_PUSH(490),
+        SMS(493);
+        private final int channel;
+
+        Channel(int channel) {
+            this.channel = channel;
+        }
+
+        @NonNull
+        public int getValue() {
+            return channel;
+        }
+    }
+
     //==============================================================================================
     //-- Public APIs
 
@@ -32,6 +48,8 @@ public class OptimovePreferenceCenter {
      * @param preferencesGetHandler handler
      */
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
+        // check for customer id
+
         Runnable task = new GetPreferencesRunnable(preferencesGetHandler);
         Optimobile.executorService.submit(task);
     }
@@ -43,6 +61,8 @@ public class OptimovePreferenceCenter {
      * @param updates list of preference updates to set
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
+        // check for customer id
+
         Runnable task = new SetPreferencesRunnable(preferencesSetHandler, updates);
         Optimobile.executorService.submit(task);
     }
@@ -58,14 +78,14 @@ public class OptimovePreferenceCenter {
         public void run() {
             Preferences preferences = null;
 
-            // fetch preferences
+            // fetch preferences and map to attributes like below
 
             // example preferences attributes
-            int[] configuredChannels = new int[] {489, 490, 493};
+            OptimovePreferenceCenter.Channel[] configuredChannels = new OptimovePreferenceCenter.Channel[] {Channel.MOBILE_PUSH, Channel.WEB_PUSH, Channel.SMS};
             Topic[] customerPreferences = new Topic[] {
-                    new Topic("topic-id-1", "topic-1", "topic-1-desc", new int[] {489}),
-                    new Topic("topic-id-2", "topic-2", "topic-2-desc", new int[] {490}),
-                    new Topic("topic-id-3", "topic-3", "topic-3-desc", new int[] {493})
+                    new Topic("topic-id-1", "topic-1", "topic-1-desc", new Channel[] {Channel.MOBILE_PUSH}),
+                    new Topic("topic-id-2", "topic-2", "topic-2-desc", new Channel[] {Channel.WEB_PUSH}),
+                    new Topic("topic-id-3", "topic-3", "topic-3-desc", new Channel[] {Channel.SMS})
             };
 
             preferences = new Preferences(configuredChannels, customerPreferences);
@@ -91,7 +111,7 @@ public class OptimovePreferenceCenter {
         public void run() {
             Boolean result = false;
 
-            // set customer preferences
+            // set customer preferences and return result
 
             this.fireCallback(result);
         }
