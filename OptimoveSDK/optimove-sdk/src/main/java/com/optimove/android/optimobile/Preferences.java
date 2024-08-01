@@ -1,19 +1,21 @@
 package com.optimove.android.optimobile;
 
-public class Preferences {
-    private final OptimovePreferenceCenter.Channel[] configuredChannels;
-    private final Topic[] customerPreferences;
+import java.util.List;
 
-    Preferences(OptimovePreferenceCenter.Channel[] configuredChannels, Topic[] customerPreferences) {
+public class Preferences {
+    private final List<OptimovePreferenceCenter.Channel> configuredChannels;
+    private final List<PreferenceCenterTopic> customerPreferences;
+
+    Preferences(List<OptimovePreferenceCenter.Channel> configuredChannels, List<PreferenceCenterTopic> customerPreferences) {
         this.configuredChannels = configuredChannels;
         this.customerPreferences = customerPreferences;
     }
 
-    public OptimovePreferenceCenter.Channel[] getConfiguredChannels() {
+    public List<OptimovePreferenceCenter.Channel> getConfiguredChannels() {
         return configuredChannels;
     }
 
-    public Topic[] getCustomerPreferences() {
+    public List<PreferenceCenterTopic> getCustomerPreferences() {
         return customerPreferences;
     }
 }

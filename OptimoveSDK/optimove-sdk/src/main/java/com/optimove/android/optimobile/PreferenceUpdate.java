@@ -1,10 +1,12 @@
 package com.optimove.android.optimobile;
 
+import java.util.List;
+
 public class PreferenceUpdate {
     private final String id;
-    private final OptimovePreferenceCenter.Channel[] subscribedChannels;
+    private final List<OptimovePreferenceCenter.Channel> subscribedChannels;
 
-    PreferenceUpdate(String id, OptimovePreferenceCenter.Channel[] subscribedChannels) {
+    PreferenceUpdate(String id, List<OptimovePreferenceCenter.Channel> subscribedChannels) {
         this.id = id;
         this.subscribedChannels = subscribedChannels;
     }
@@ -13,7 +15,7 @@ public class PreferenceUpdate {
         return id;
     }
 
-    public OptimovePreferenceCenter.Channel[] getSubscribedChannels() {
+    public List<OptimovePreferenceCenter.Channel> getSubscribedChannels() {
         return subscribedChannels;
     }
 }

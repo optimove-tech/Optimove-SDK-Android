@@ -29,8 +29,6 @@ public class OptimovePreferenceCenter {
         void run(Boolean result);
     }
 
-    // TODO: could get rid of this and change to List<Integer>?
-    // Mapping is messy and don't see much benefit
     public enum Channel {
         MOBILE_PUSH(489),
         WEB_PUSH(490),
@@ -154,6 +152,7 @@ public class OptimovePreferenceCenter {
             OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
             try {
+                //TODO: Need to map Channels to int for updates
                 JSONArray data = new JSONArray(updates.toArray());
                 Response response = httpClient.putSync(url, data);
 
@@ -206,44 +205,35 @@ public class OptimovePreferenceCenter {
             JSONObject data = new JSONObject(response.body().string());
 
             JSONArray channels = data.getJSONArray("channels");
-            List<Channel> channelList = new ArrayList<>();
+            List<Channel> configuredChannels = new ArrayList<>();
 
             int len = channels.length();
             for (int i = 0; i < len; i++) {
-                channelList.add(Channel.getChannelByValue(channels.getInt(i)));
+                configuredChannels.add(Channel.getChannelByValue(channels.getInt(i)));
             }
 
-            Channel[] configuredChannels = new Channel[channelList.size()];
-            channelList.toArray(configuredChannels);
-
             JSONArray topics = data.getJSONArray("topics");
-            List<Topic> topicsList = new ArrayList<>();
+            List<PreferenceCenterTopic> customerPreferences = new ArrayList<>();
 
             int topicLength = topics.length();
             for (int i = 0; i < topicLength; i++) {
                 JSONObject topicObj = topics.getJSONObject(i);
 
-                List<Channel> channelSubscription = new ArrayList<>();
+                List<Channel> subscribedChannels = new ArrayList<>();
                 JSONArray channelSubscriptionArray = topicObj.getJSONArray("channelSubscription");
                 for (int j = 0; j < channelSubscriptionArray.length(); j++) {
-                    channelSubscription.add(Channel.getChannelByValue(channelSubscriptionArray.getInt(j)));
+                    subscribedChannels.add(Channel.getChannelByValue(channelSubscriptionArray.getInt(j)));
                 }
 
-                Channel[] subscribedChannels = new Channel[channelSubscription.size()];
-                channelSubscription.toArray(subscribedChannels);
-
-                Topic topic = new Topic(
+                PreferenceCenterTopic topic = new PreferenceCenterTopic(
                         topicObj.getString("topicId"),
                         topicObj.getString("topicName"),
                         topicObj.getString("topicDescription"),
                         subscribedChannels
                 );
 
-                topicsList.add(topic);
+                customerPreferences.add(topic);
             }
-
-            Topic[] customerPreferences = new Topic[topicsList.size()];
-            topicsList.toArray(customerPreferences);
 
             return new Preferences(configuredChannels, customerPreferences);
         } catch (NullPointerException | JSONException | IOException e) {

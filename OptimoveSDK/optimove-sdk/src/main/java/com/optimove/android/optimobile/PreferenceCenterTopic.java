@@ -1,12 +1,14 @@
 package com.optimove.android.optimobile;
 
-public class Topic {
+import java.util.List;
+
+public class PreferenceCenterTopic {
     private final String id;
     private final String name;
     private final String description;
-    private final OptimovePreferenceCenter.Channel[] subscribedChannels;
+    private final List<OptimovePreferenceCenter.Channel> subscribedChannels;
 
-    Topic(String id, String name, String description, OptimovePreferenceCenter.Channel[] subscribedChannels) {
+    PreferenceCenterTopic(String id, String name, String description, List<OptimovePreferenceCenter.Channel> subscribedChannels) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -25,7 +27,7 @@ public class Topic {
         return description;
     }
 
-    public OptimovePreferenceCenter.Channel[] getSubscribedChannels() {
+    public List<OptimovePreferenceCenter.Channel> getSubscribedChannels() {
         return subscribedChannels;
     }
 }
