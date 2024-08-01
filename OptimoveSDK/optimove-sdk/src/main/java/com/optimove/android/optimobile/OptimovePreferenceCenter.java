@@ -107,8 +107,8 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            // need to map region to correct string e.g. "dev-pb"
-            String url = "https://preference-center-" + config.getRegion() + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
+            String mappedRegion = shared.mapRegion(config.getRegion());
+            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
 
             OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
@@ -148,15 +148,46 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            Boolean result = false;
+            String mappedRegion = shared.mapRegion(config.getRegion());
+            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
 
-            // set customer preferences and return result
+            OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
-            this.fireCallback(result);
+            try {
+                JSONArray data = new JSONArray(updates.toArray());
+                Response response = httpClient.putSync(url, data);
+
+                if (!response.isSuccessful()) {
+                    this.fireCallback(false);
+                    return;
+                } else {
+                    this.fireCallback(true);
+                    return;
+                }
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+            } catch (Optimobile.PartialInitialisationException e) {
+                // noop
+            }
+
+            this.fireCallback(false);
         }
 
         private void fireCallback(Boolean result) {
             Optimobile.handler.post(() -> SetPreferencesRunnable.this.callback.run(result));
+        }
+    }
+
+    private String mapRegion(String region) {
+        switch (region) {
+            case "uk-1":
+                return "dev-pb";
+            case "eu-central-2":
+                return "eu";
+            case "us-east-1":
+                return "us";
+            default:
+                throw new IllegalArgumentException("Region is not supported: " + region);
         }
     }
 
