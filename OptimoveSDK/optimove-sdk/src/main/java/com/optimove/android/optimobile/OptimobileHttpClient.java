@@ -72,17 +72,6 @@ class OptimobileHttpClient {
         return this.doSyncRequest(request);
     }
 
-    Response putSync(String url, JSONArray data) throws IOException, Optimobile.PartialInitialisationException {
-        String dataStr = data.toString();
-
-        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
-        Request.Builder builder = new Request.Builder().put(body);
-        Request request = this.buildRequest(builder, url);
-
-        return this.doSyncRequest(request);
-    }
-
     Response getSync(String url) throws IOException, Optimobile.PartialInitialisationException {
         Request.Builder builder = new Request.Builder().get();
 

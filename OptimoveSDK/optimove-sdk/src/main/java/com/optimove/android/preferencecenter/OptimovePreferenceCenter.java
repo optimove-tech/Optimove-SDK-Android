@@ -1,9 +1,14 @@
-package com.optimove.android.optimobile;
+package com.optimove.android.preferencecenter;
+
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.optimove.android.OptimoveConfig;
+import com.optimove.android.main.tools.networking.HttpClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,14 +17,26 @@ import org.json.JSONObject;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
     private static OptimovePreferenceCenter shared;
     private static OptimoveConfig config;
     private static @Nullable String customerId;
+    private static int tenantId;
+
+    /**
+     * package
+     */
+    static ExecutorService executorService;
+    /**
+     * package
+     */
+    static final Handler handler = new Handler(Looper.getMainLooper());
 
     public interface PreferencesGetHandler {
         void run(@Nullable Preferences preferences);
@@ -66,18 +83,32 @@ public class OptimovePreferenceCenter {
     }
 
     /**
+     * Initializes an instance of OptimovePreferenceCenter
+     *
+     * @param currentConfig current config
+     * @param currentCustomerId current customer id
+     * @param currentTenantId current tenant id
+     */
+    public static void initialize(OptimoveConfig currentConfig, String currentCustomerId, int currentTenantId) {
+        shared = new OptimovePreferenceCenter();
+        config = currentConfig;
+        customerId = currentCustomerId;
+        tenantId = currentTenantId;
+    }
+
+    /**
      * Asynchronously runs preferences get handler on UI thread. Handler receives a single argument Preferences
      *
      * @param preferencesGetHandler handler
      */
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
         if (customerId == null) {
-            Optimobile.log(TAG, "No customer ID has been set");
+            Log.d(TAG, "No customer ID has been set");
             return;
         }
 
         Runnable task = new GetPreferencesRunnable(preferencesGetHandler);
-        Optimobile.executorService.submit(task);
+        executorService.submit(task);
     }
 
     /**
@@ -88,12 +119,12 @@ public class OptimovePreferenceCenter {
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
         if (customerId == null) {
-            Optimobile.log(TAG, "No customer ID has been set");
+            Log.d(TAG, "No customer ID has been set");
             return;
         }
 
         Runnable task = new SetPreferencesRunnable(preferencesSetHandler, updates);
-        Optimobile.executorService.submit(task);
+        executorService.submit(task);
     }
 
     static class GetPreferencesRunnable implements Runnable {
@@ -108,30 +139,28 @@ public class OptimovePreferenceCenter {
             String mappedRegion = shared.mapRegion(config.getRegion());
             String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
 
-            OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
+            HttpClient httpClient = HttpClient.getInstance();
 
-            try (Response response = httpClient.getSync(url)) {
+            try {
+                String encodedUrl = URLEncoder.encode(url, "UTF-8");
+                Response response = httpClient.getSync(encodedUrl, tenantId);
+
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
                 } else {
                    Preferences preferences = mapResponseToPreferences(response);
 
-                   if (preferences == null) {
-                       // log?
-                       return;
-                   }
-
-                    this.fireCallback(preferences);
+                   this.fireCallback(preferences);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (Optimobile.PartialInitialisationException e) {
-                // noop
             }
+
+            this.fireCallback(null);
         }
 
         private void fireCallback(Preferences preferences) {
-            Optimobile.handler.post(() -> GetPreferencesRunnable.this.callback.run(preferences));
+            handler.post(() -> GetPreferencesRunnable.this.callback.run(preferences));
         }
     }
 
@@ -149,31 +178,24 @@ public class OptimovePreferenceCenter {
             String mappedRegion = shared.mapRegion(config.getRegion());
             String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
 
-            OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
+            HttpClient httpClient = HttpClient.getInstance();
 
             try {
-                //TODO: Need to map Channels to int for updates
-                JSONArray data = new JSONArray(updates.toArray());
-                Response response = httpClient.putSync(url, data);
+                String encodedUrl = URLEncoder.encode(url, "UTF-8");
+                JSONArray data = mapPreferenceUpdatesToArray(updates);
+                Response response = httpClient.putSync(encodedUrl, data, tenantId);
 
-                if (!response.isSuccessful()) {
-                    this.fireCallback(false);
-                    return;
-                } else {
-                    this.fireCallback(true);
-                    return;
-                }
+                this.fireCallback(response.isSuccessful());
+                return;
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
-            } catch (Optimobile.PartialInitialisationException e) {
-                // noop
             }
 
             this.fireCallback(false);
         }
 
         private void fireCallback(Boolean result) {
-            Optimobile.handler.post(() -> SetPreferencesRunnable.this.callback.run(result));
+            handler.post(() -> SetPreferencesRunnable.this.callback.run(result));
         }
     }
 
@@ -190,17 +212,25 @@ public class OptimovePreferenceCenter {
         }
     }
 
-    static void initialize(OptimoveConfig currentConfig, String newCustomerId) {
-        shared = new OptimovePreferenceCenter();
-        config = currentConfig;
-        customerId = newCustomerId;
+    private static JSONArray mapPreferenceUpdatesToArray(List<PreferenceUpdate> updates) throws JSONException {
+        List<Object> mappedUpdates = new ArrayList<>();
+
+        for (int i = 0; i < updates.size(); i++) {
+            String updateId = updates.get(i).getId();
+            List<Channel> channels = updates.get(i).getSubscribedChannels();
+            List<Integer> mappedChannels = new ArrayList<>();
+            for (int j = 0; j < channels.size(); j++) {
+                mappedChannels.add(channels.get(i).getValue());
+            }
+
+            Object mappedUpdate = new Object() { final String id = updateId; final List<Integer> subscribedChannels = mappedChannels; };
+            mappedUpdates.add(mappedUpdate);
+        }
+
+        return new JSONArray(mappedUpdates.toArray());
     }
 
-    void setCustomerId(@Nullable String newCustomerId) {
-        customerId =  newCustomerId;
-    }
-
-    public static Preferences mapResponseToPreferences(Response response) {
+    private static Preferences mapResponseToPreferences(Response response) {
         try {
             JSONObject data = new JSONObject(response.body().string());
 
@@ -237,7 +267,7 @@ public class OptimovePreferenceCenter {
 
             return new Preferences(configuredChannels, customerPreferences);
         } catch (NullPointerException | JSONException | IOException e) {
-            Optimobile.log(TAG, e.getMessage());
+            Log.d(TAG, e.getMessage());
             return null;
         }
     }
@@ -245,17 +275,17 @@ public class OptimovePreferenceCenter {
     private static void logFailedResponse(Response response) {
         switch (response.code()) {
             case 404:
-                Optimobile.log(TAG, "User not found");
+                Log.d(TAG, "User not found");
                 break;
             case 422:
                 try {
-                    Optimobile.log(TAG, response.body().string());
+                    Log.d(TAG, response.body().string());
                 } catch (NullPointerException | IOException e) {
-                    Optimobile.log(TAG, e.getMessage());
+                    Log.d(TAG, e.getMessage());
                 }
                 break;
             default:
-                Optimobile.log(TAG, response.message());
+                Log.d(TAG, response.message());
                 break;
         }
     }

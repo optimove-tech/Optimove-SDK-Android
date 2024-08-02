@@ -113,6 +113,8 @@ public final class OptimoveConfig {
             return this;
         }
 
+
+
         boolean has(Feature feature) {
             return features.contains(feature);
         }
@@ -313,6 +315,10 @@ public final class OptimoveConfig {
 
     public boolean isOptimobileConfigured() {
         return this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
+    }
+
+    public boolean isPreferenceCenterConfigured() {
+        return true;
     }
 
     public @Nullable LogLevel getCustomMinLogLevel() {

@@ -37,6 +37,7 @@ import com.optimove.android.optistream.OptistreamDbHelper;
 import com.optimove.android.optimobile.Optimobile;
 import com.optimove.android.optimobile.PushActionHandlerInterface;
 import com.optimove.android.optimobile.PushTokenType;
+import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,6 +162,13 @@ final public class Optimove {
             if (!config.usesDelayedConfiguration()) {
                 Optimove.fetchConfigsAndFinishOptimoveInit(application, config);
             }
+        }
+
+        String userId =  shared.userInfo.getUserId();
+        boolean validUserId = userId != null && !userId.equals(shared.userInfo.getInitialVisitorId());
+
+        if (config.isPreferenceCenterConfigured() && validUserId) {
+            OptimovePreferenceCenter.initialize(config, shared.userInfo.getUserId(), shared.tenantInfo.getTenantId());
         }
     }
 

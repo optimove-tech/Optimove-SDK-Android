@@ -1,4 +1,4 @@
-package com.optimove.android.optimobile;
+package com.optimove.android.preferencecenter;
 
 import java.util.List;
 
