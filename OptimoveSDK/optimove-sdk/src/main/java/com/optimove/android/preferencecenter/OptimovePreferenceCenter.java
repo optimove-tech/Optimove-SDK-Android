@@ -92,6 +92,7 @@ public class OptimovePreferenceCenter {
     public static void initialize(OptimoveConfig currentConfig, String currentCustomerId, int currentTenantId) {
         if (currentConfig.getBrandGroupId() == null) {
             Log.d(TAG, "Preference center has not been enabled");
+            return;
         }
 
         shared = new OptimovePreferenceCenter();
