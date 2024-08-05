@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
@@ -29,7 +30,6 @@ public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
     private static OptimovePreferenceCenter shared;
     private static OptimoveConfig config;
-    private static UserInfo userInfo;
     private static int tenantId;
 
     /**
@@ -91,10 +91,9 @@ public class OptimovePreferenceCenter {
      * @param currentConfig current config
      * @param currentTenantId current tenant id
      */
-    public static void initialize(OptimoveConfig currentConfig, UserInfo currentUserInfo, int currentTenantId) {
+    public static void initialize(OptimoveConfig currentConfig, int currentTenantId) {
         shared = new OptimovePreferenceCenter();
         config = currentConfig;
-        userInfo = currentUserInfo;
         tenantId = currentTenantId;
 
         executorService = Executors.newSingleThreadExecutor();
@@ -106,6 +105,8 @@ public class OptimovePreferenceCenter {
      * @param preferencesGetHandler handler
      */
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
+        UserInfo userInfo = Optimove.getInstance().getUserInfo();
+
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
             Log.d(TAG, "Invalid customer ID");
             return;
@@ -122,6 +123,8 @@ public class OptimovePreferenceCenter {
      * @param updates list of preference updates to set
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
+        UserInfo userInfo = Optimove.getInstance().getUserInfo();
+
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
             Log.d(TAG, "Invalid customer ID");
             return;
