@@ -220,7 +220,7 @@ public class OptimovePreferenceCenter {
         List<Object> mappedUpdates = new ArrayList<>();
 
         for (int i = 0; i < updates.size(); i++) {
-            String updateId = updates.get(i).getId();
+            String updateId = updates.get(i).getTopicId();
             List<Channel> channels = updates.get(i).getSubscribedChannels();
             List<Integer> mappedChannels = new ArrayList<>();
             for (int j = 0; j < channels.size(); j++) {

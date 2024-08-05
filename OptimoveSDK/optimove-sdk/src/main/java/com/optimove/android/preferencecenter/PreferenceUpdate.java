@@ -6,12 +6,12 @@ public class PreferenceUpdate {
     private final String topicId;
     private final List<OptimovePreferenceCenter.Channel> subscribedChannels;
 
-    PreferenceUpdate(String id, List<OptimovePreferenceCenter.Channel> subscribedChannels) {
-        this.topicId = id;
+    PreferenceUpdate(String topicId, List<OptimovePreferenceCenter.Channel> subscribedChannels) {
+        this.topicId = topicId;
         this.subscribedChannels = subscribedChannels;
     }
 
-    public String getId() {
+    public String getTopicId() {
         return topicId;
     }
 
