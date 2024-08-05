@@ -4,9 +4,9 @@ import java.util.List;
 
 public class Preferences {
     private List<OptimovePreferenceCenter.Channel> configuredChannels;
-    private List<PreferenceCenterTopic> customerPreferences;
+    private List<Topic> customerPreferences;
 
-    Preferences(List<OptimovePreferenceCenter.Channel> configuredChannels, List<PreferenceCenterTopic> customerPreferences) {
+    Preferences(List<OptimovePreferenceCenter.Channel> configuredChannels, List<Topic> customerPreferences) {
         this.configuredChannels = configuredChannels;
         this.customerPreferences = customerPreferences;
     }
@@ -15,7 +15,7 @@ public class Preferences {
         return configuredChannels;
     }
 
-    public List<PreferenceCenterTopic> getCustomerPreferences() {
+    public List<Topic> getCustomerPreferences() {
         return customerPreferences;
     }
 }

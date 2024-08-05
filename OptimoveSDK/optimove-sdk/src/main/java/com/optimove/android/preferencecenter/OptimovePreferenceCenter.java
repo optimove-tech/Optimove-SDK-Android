@@ -4,11 +4,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
@@ -244,7 +242,7 @@ public class OptimovePreferenceCenter {
             }
 
             JSONArray topics = data.getJSONArray("topics");
-            List<PreferenceCenterTopic> customerPreferences = new ArrayList<>();
+            List<Topic> customerPreferences = new ArrayList<>();
 
             int topicLength = topics.length();
             for (int i = 0; i < topicLength; i++) {
@@ -256,7 +254,7 @@ public class OptimovePreferenceCenter {
                     subscribedChannels.add(Channel.getChannelByValue(channelSubscriptionArray.getInt(j)));
                 }
 
-                PreferenceCenterTopic topic = new PreferenceCenterTopic(
+                Topic topic = new Topic(
                         topicObj.getString("topicId"),
                         topicObj.getString("topicName"),
                         topicObj.getString("topicDescription"),
