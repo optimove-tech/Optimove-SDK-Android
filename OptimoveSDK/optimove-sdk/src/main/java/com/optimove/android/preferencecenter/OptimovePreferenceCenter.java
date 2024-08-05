@@ -30,7 +30,6 @@ public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
     private static OptimovePreferenceCenter shared;
     private static OptimoveConfig config;
-    private static int tenantId;
 
     /**
      * package
@@ -89,12 +88,10 @@ public class OptimovePreferenceCenter {
      * Initializes an instance of OptimovePreferenceCenter
      *
      * @param currentConfig current config
-     * @param currentTenantId current tenant id
      */
-    public static void initialize(OptimoveConfig currentConfig, int currentTenantId) {
+    public static void initialize(OptimoveConfig currentConfig) {
         shared = new OptimovePreferenceCenter();
         config = currentConfig;
-        tenantId = currentTenantId;
 
         executorService = Executors.newSingleThreadExecutor();
     }
@@ -150,7 +147,7 @@ public class OptimovePreferenceCenter {
 
             try {
                 String encodedUrl = URLEncoder.encode(url, "UTF-8");
-                Response response = httpClient.getSync(encodedUrl, tenantId);
+                Response response = httpClient.getSync(encodedUrl, Optimove.getInstance().getTenantInfo().getTenantId());
 
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
@@ -190,7 +187,7 @@ public class OptimovePreferenceCenter {
             try {
                 String encodedUrl = URLEncoder.encode(url, "UTF-8");
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
-                Response response = httpClient.putSync(encodedUrl, data, tenantId);
+                Response response = httpClient.putSync(encodedUrl, data, Optimove.getInstance().getTenantInfo().getTenantId());
 
                 this.fireCallback(response.isSuccessful());
                 return;

@@ -164,8 +164,8 @@ final public class Optimove {
             }
         }
 
-        if (config.isPreferenceCenterConfigured()) {
-            OptimovePreferenceCenter.initialize(config, shared.tenantInfo.getTenantId());
+        if (config.isOptimoveConfigured() && config.isPreferenceCenterConfigured()) {
+            OptimovePreferenceCenter.initialize(config);
         }
     }
 
