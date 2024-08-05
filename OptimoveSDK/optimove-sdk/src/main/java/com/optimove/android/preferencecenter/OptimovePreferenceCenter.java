@@ -144,7 +144,7 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             String mappedRegion = shared.mapRegion(config.getRegion());
-            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + userInfo.getUserId() + "&brandGroupId=" + config.getBrandGroupId();
+            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + Optimove.getInstance().getUserInfo().getUserId() + "&brandGroupId=" + config.getBrandGroupId();
 
             HttpClient httpClient = HttpClient.getInstance();
 
@@ -183,7 +183,7 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             String mappedRegion = shared.mapRegion(config.getRegion());
-            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + userInfo.getUserId() + "&brandGroupId=" + config.getBrandGroupId();
+            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + Optimove.getInstance().getUserInfo().getUserId() + "&brandGroupId=" + config.getBrandGroupId();
 
             HttpClient httpClient = HttpClient.getInstance();
 
