@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
@@ -95,6 +96,8 @@ public class OptimovePreferenceCenter {
         config = currentConfig;
         userInfo = currentUserInfo;
         tenantId = currentTenantId;
+
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     /**
