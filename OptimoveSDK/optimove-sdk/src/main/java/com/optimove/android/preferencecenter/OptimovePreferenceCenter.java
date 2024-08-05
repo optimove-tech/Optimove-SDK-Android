@@ -105,6 +105,7 @@ public class OptimovePreferenceCenter {
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
             Log.d(TAG, "Invalid customer ID");
+            return;
         }
 
         Runnable task = new GetPreferencesRunnable(preferencesGetHandler);
@@ -120,6 +121,7 @@ public class OptimovePreferenceCenter {
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
             Log.d(TAG, "Invalid customer ID");
+            return;
         }
 
         Runnable task = new SetPreferencesRunnable(preferencesSetHandler, updates);

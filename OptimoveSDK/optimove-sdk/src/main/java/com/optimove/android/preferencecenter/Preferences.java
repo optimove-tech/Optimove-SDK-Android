@@ -3,8 +3,8 @@ package com.optimove.android.preferencecenter;
 import java.util.List;
 
 public class Preferences {
-    private List<OptimovePreferenceCenter.Channel> configuredChannels;
-    private List<Topic> customerPreferences;
+    private final List<OptimovePreferenceCenter.Channel> configuredChannels;
+    private final List<Topic> customerPreferences;
 
     Preferences(List<OptimovePreferenceCenter.Channel> configuredChannels, List<Topic> customerPreferences) {
         this.configuredChannels = configuredChannels;
