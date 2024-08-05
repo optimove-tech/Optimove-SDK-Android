@@ -64,6 +64,7 @@ public final class OptimoveConfig {
 
     private boolean delayedInitialisation;
 
+    @Nullable
     private String brandGroupId;
 
 
@@ -96,7 +97,8 @@ public final class OptimoveConfig {
     public static class FeatureSet {
         private enum Feature {
             OPTIMOVE,
-            OPTIMOBILE
+            OPTIMOBILE,
+            PREFERENCE_CENTER
         }
 
         Set<Feature> features = new HashSet<>();
@@ -109,6 +111,12 @@ public final class OptimoveConfig {
 
         public FeatureSet withOptimobile() {
             features.add(Feature.OPTIMOBILE);
+
+            return this;
+        }
+
+        public FeatureSet withPreferenceCenter() {
+            features.add(Feature.PREFERENCE_CENTER);
 
             return this;
         }
@@ -318,7 +326,7 @@ public final class OptimoveConfig {
     }
 
     public boolean isPreferenceCenterConfigured() {
-        return true;
+        return this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER);
     }
 
     public @Nullable LogLevel getCustomMinLogLevel() {
@@ -457,6 +465,8 @@ public final class OptimoveConfig {
 
         public Builder enablePreferenceCenter(@NonNull String brandGroupId) {
             this.brandGroupId = brandGroupId;
+            this.featureSet.withPreferenceCenter();
+
             return this;
         }
 

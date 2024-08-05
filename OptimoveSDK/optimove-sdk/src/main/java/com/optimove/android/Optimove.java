@@ -164,11 +164,8 @@ final public class Optimove {
             }
         }
 
-        String userId =  shared.userInfo.getUserId();
-        boolean validUserId = userId != null && !userId.equals(shared.userInfo.getInitialVisitorId());
-
-        if (config.isPreferenceCenterConfigured() && validUserId) {
-            OptimovePreferenceCenter.initialize(config, shared.userInfo.getUserId(), shared.tenantInfo.getTenantId());
+        if (config.isPreferenceCenterConfigured()) {
+            OptimovePreferenceCenter.initialize(config, shared.userInfo, shared.tenantInfo.getTenantId());
         }
     }
 

@@ -4,10 +4,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
 
 import org.json.JSONArray;
@@ -20,13 +23,14 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
     private static OptimovePreferenceCenter shared;
     private static OptimoveConfig config;
-    private static @Nullable String customerId;
+    private static UserInfo userInfo;
     private static int tenantId;
 
     /**
@@ -86,18 +90,12 @@ public class OptimovePreferenceCenter {
      * Initializes an instance of OptimovePreferenceCenter
      *
      * @param currentConfig current config
-     * @param currentCustomerId current customer id
      * @param currentTenantId current tenant id
      */
-    public static void initialize(OptimoveConfig currentConfig, String currentCustomerId, int currentTenantId) {
-        if (currentConfig.getBrandGroupId() == null) {
-            Log.d(TAG, "Preference center has not been enabled");
-            return;
-        }
-
+    public static void initialize(OptimoveConfig currentConfig, UserInfo currentUserInfo, int currentTenantId) {
         shared = new OptimovePreferenceCenter();
         config = currentConfig;
-        customerId = currentCustomerId;
+        userInfo = currentUserInfo;
         tenantId = currentTenantId;
     }
 
@@ -107,9 +105,8 @@ public class OptimovePreferenceCenter {
      * @param preferencesGetHandler handler
      */
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
-        if (customerId == null) {
-            Log.d(TAG, "No customer ID has been set");
-            return;
+        if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
+            Log.d(TAG, "Invalid customer ID");
         }
 
         Runnable task = new GetPreferencesRunnable(preferencesGetHandler);
@@ -123,9 +120,8 @@ public class OptimovePreferenceCenter {
      * @param updates list of preference updates to set
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
-        if (customerId == null) {
-            Log.d(TAG, "No customer ID has been set");
-            return;
+        if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
+            Log.d(TAG, "Invalid customer ID");
         }
 
         Runnable task = new SetPreferencesRunnable(preferencesSetHandler, updates);
@@ -142,7 +138,7 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             String mappedRegion = shared.mapRegion(config.getRegion());
-            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
+            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + userInfo.getUserId() + "&brandGroupId=" + config.getBrandGroupId();
 
             HttpClient httpClient = HttpClient.getInstance();
 
@@ -181,7 +177,7 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             String mappedRegion = shared.mapRegion(config.getRegion());
-            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + customerId + "&brandGroupId=" + config.getBrandGroupId();
+            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + userInfo.getUserId() + "&brandGroupId=" + config.getBrandGroupId();
 
             HttpClient httpClient = HttpClient.getInstance();
 
