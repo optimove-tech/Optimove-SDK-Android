@@ -49,9 +49,7 @@ public class OptimovePreferenceCenter {
     }
 
     public enum Channel {
-        MOBILE_PUSH(489),
-        WEB_PUSH(490),
-        SMS(493);
+        MOBILE_PUSH(489), WEB_PUSH(490), SMS(493);
         private final int channel;
 
         Channel(int channel) {
@@ -63,7 +61,7 @@ public class OptimovePreferenceCenter {
             return channel;
         }
 
-        public static Channel getChannelByValue ( int value) {
+        private static Channel getChannelByValue(int value) {
             switch (value) {
                 case 489:
                     return MOBILE_PUSH;
@@ -114,10 +112,10 @@ public class OptimovePreferenceCenter {
     }
 
     /**
-     *  Asynchronously runs preferences set handler on UI thread. Handler receives a single Boolean result argument
+     * Asynchronously runs preferences set handler on UI thread. Handler receives a single Boolean result argument
      *
      * @param preferencesSetHandler handler
-     * @param updates list of preference updates to set
+     * @param updates               list of preference updates to set
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
@@ -146,12 +144,13 @@ public class OptimovePreferenceCenter {
             try {
                 String encodedCustomerId = URLEncoder.encode(Optimove.getInstance().getUserInfo().getUserId(), "UTF-8");
                 String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
-                Response response = httpClient.getSync(url, Optimove.getInstance().getTenantInfo().getTenantId());
 
-                if (!response.isSuccessful()) {
-                    logFailedResponse(response);
-                } else {
-                   preferences = mapResponseToPreferences(response);
+                try (Response response = httpClient.getSync(url, Optimove.getInstance().getTenantInfo().getTenantId())) {
+                    if (!response.isSuccessful()) {
+                        logFailedResponse(response);
+                    } else {
+                        preferences = mapResponseToPreferences(response);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -183,9 +182,10 @@ public class OptimovePreferenceCenter {
                 String encodedCustomerId = URLEncoder.encode(Optimove.getInstance().getUserInfo().getUserId(), "UTF-8");
                 String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
-                Response response = httpClient.putSync(url, data, Optimove.getInstance().getTenantInfo().getTenantId());
 
-                result = response.isSuccessful();
+                try (Response response = httpClient.putSync(url, data, Optimove.getInstance().getTenantInfo().getTenantId())) {
+                    result = response.isSuccessful();
+                }
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }
@@ -222,7 +222,10 @@ public class OptimovePreferenceCenter {
                 mappedChannels.add(channels.get(i).getValue());
             }
 
-            Object mappedUpdate = new Object() { final String id = updateId; final List<Integer> subscribedChannels = mappedChannels; };
+            Object mappedUpdate = new Object() {
+                final String id = updateId;
+                final List<Integer> subscribedChannels = mappedChannels;
+            };
             mappedUpdates.add(mappedUpdate);
         }
 
@@ -254,12 +257,7 @@ public class OptimovePreferenceCenter {
                     subscribedChannels.add(Channel.getChannelByValue(channelSubscriptionArray.getInt(j)));
                 }
 
-                Topic topic = new Topic(
-                        topicObj.getString("topicId"),
-                        topicObj.getString("topicName"),
-                        topicObj.getString("topicDescription"),
-                        subscribedChannels
-                );
+                Topic topic = new Topic(topicObj.getString("topicId"), topicObj.getString("topicName"), topicObj.getString("topicDescription"), subscribedChannels);
 
                 customerPreferences.add(topic);
             }
@@ -274,13 +272,13 @@ public class OptimovePreferenceCenter {
     private static void logFailedResponse(Response response) {
         switch (response.code()) {
             case 404:
-                Log.d(TAG, "User not found");
+                Log.e(TAG, "User not found");
                 break;
             case 422:
                 try {
                     Log.d(TAG, response.body().string());
                 } catch (NullPointerException | IOException e) {
-                    Log.d(TAG, e.getMessage());
+                    Log.e(TAG, e.getMessage());
                 }
                 break;
             default:
