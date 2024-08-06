@@ -144,7 +144,7 @@ public class OptimovePreferenceCenter {
             String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + Optimove.getInstance().getUserInfo().getUserId() + "&brandGroupId=" + config.getBrandGroupId();
 
             HttpClient httpClient = HttpClient.getInstance();
-
+            Preferences preferences = null;
             try {
                 String encodedUrl = URLEncoder.encode(url, "UTF-8");
                 Response response = httpClient.getSync(encodedUrl, Optimove.getInstance().getTenantInfo().getTenantId());
@@ -152,18 +152,16 @@ public class OptimovePreferenceCenter {
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
                 } else {
-                   Preferences preferences = mapResponseToPreferences(response);
-
-                   this.fireCallback(preferences);
+                   preferences = mapResponseToPreferences(response);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            this.fireCallback(null);
+            this.fireCallback(preferences);
         }
 
-        private void fireCallback(Preferences preferences) {
+        private void fireCallback(@Nullable Preferences preferences) {
             handler.post(() -> GetPreferencesRunnable.this.callback.run(preferences));
         }
     }
@@ -183,19 +181,18 @@ public class OptimovePreferenceCenter {
             String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + Optimove.getInstance().getUserInfo().getUserId() + "&brandGroupId=" + config.getBrandGroupId();
 
             HttpClient httpClient = HttpClient.getInstance();
-
+            boolean result = false;
             try {
                 String encodedUrl = URLEncoder.encode(url, "UTF-8");
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
                 Response response = httpClient.putSync(encodedUrl, data, Optimove.getInstance().getTenantInfo().getTenantId());
 
-                this.fireCallback(response.isSuccessful());
-                return;
+                result = response.isSuccessful();
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }
 
-            this.fireCallback(false);
+            this.fireCallback(result);
         }
 
         private void fireCallback(Boolean result) {
