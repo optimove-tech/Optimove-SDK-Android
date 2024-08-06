@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+import com.optimove.android.PreferenceCenterConfig;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
 
@@ -150,14 +151,15 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            String mappedRegion = shared.mapRegion(config.getRegion());
+            PreferenceCenterConfig prefCenterConfig = config.getPreferenceCenterConfig();
+            String region = prefCenterConfig.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
-                String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
+                String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + prefCenterConfig.getBrandGroupId();
 
-                try (Response response = httpClient.getSync(url, Optimove.getInstance().getTenantInfo().getTenantId())) {
+                try (Response response = httpClient.getSync(url, prefCenterConfig.getTenantId())) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
                     } else {
@@ -189,15 +191,16 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            String mappedRegion = shared.mapRegion(config.getRegion());
+            PreferenceCenterConfig prefCenterConfig = config.getPreferenceCenterConfig();
+            String region = prefCenterConfig.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             boolean result = false;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
-                String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
+                String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + prefCenterConfig.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
-                try (Response response = httpClient.putSync(url, data, Optimove.getInstance().getTenantInfo().getTenantId())) {
+                try (Response response = httpClient.putSync(url, data, prefCenterConfig.getTenantId())) {
                     result = response.isSuccessful();
                 }
             } catch (JSONException | IOException e) {

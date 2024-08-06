@@ -64,12 +64,7 @@ public final class OptimoveConfig {
 
     private boolean delayedInitialisation;
 
-    @Nullable
-    private String brandGroupId;
-
-    @Nullable
-    private int tenantId;
-
+    private @Nullable PreferenceCenterConfig preferenceCenterConfig;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -247,9 +242,16 @@ public final class OptimoveConfig {
         try {
             JSONArray result = this.parseCredentials(preferenceCenterCredentials);
 
-            this.region = result.getString(1);
-            this.tenantId = result.getInt(2);
-            this.brandGroupId = result.getString(3);
+            this.preferenceCenterConfig = new PreferenceCenterConfig();
+
+            String region = result.getString(1);
+            preferenceCenterConfig.setRegion(region);
+
+            int tenantId = result.getInt(2);
+            preferenceCenterConfig.setTenantId(tenantId);
+
+            String brandGroupId = result.getString(3);
+            preferenceCenterConfig.setBrandGroupId(brandGroupId);
         } catch (JSONException e) {
             throw new IllegalArgumentException("Preference center credentials are not correct");
         }
@@ -347,14 +349,6 @@ public final class OptimoveConfig {
         return this.minLogLevel;
     }
 
-    public @Nullable String getBrandGroupId() {
-        return this.brandGroupId;
-    }
-
-    public @Nullable int getTenantId() {
-        return this.tenantId;
-    }
-
     public boolean usesDelayedOptimobileConfiguration() {
         return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
@@ -365,6 +359,10 @@ public final class OptimoveConfig {
 
     public boolean usesDelayedConfiguration() {
         return this.delayedInitialisation;
+    }
+
+    public @Nullable PreferenceCenterConfig getPreferenceCenterConfig() {
+        return this.preferenceCenterConfig;
     }
 
     private boolean hasFinishedInitialisation() {
