@@ -75,7 +75,7 @@ public class OptimovePreferenceCenter {
                     return WHATSAPP;
                 case 15:
                     return MAIL;
-                case 495: 
+                case 495:
                     return INBOX;
                 default:
                     throw new IllegalArgumentException("Preference center does not support channel " + value);
@@ -111,7 +111,7 @@ public class OptimovePreferenceCenter {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
 
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
-            Log.d(TAG, "Customer ID is not set");
+            Log.w(TAG, "Customer ID is not set");
             return;
         }
 
@@ -129,7 +129,7 @@ public class OptimovePreferenceCenter {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
 
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
-            Log.d(TAG, "Customer ID is not set");
+            Log.w(TAG, "Customer ID is not set");
             return;
         }
 
@@ -272,29 +272,19 @@ public class OptimovePreferenceCenter {
 
             return new Preferences(configuredChannels, customerPreferences);
         } catch (NullPointerException | JSONException | IOException e) {
-            Log.d(TAG, e.getMessage());
+            Log.e(TAG, e.getMessage());
             return null;
         }
     }
 
     private static void logFailedResponse(Response response) {
         switch (response.code()) {
-            case 404:
-                Log.e(TAG, "User not found");
-                break;
-            case 422:
-                try {
-                    Log.d(TAG, response.body().string());
-                } catch (NullPointerException | IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
+            case 400:
+                Log.e(TAG, "Status code 400: check preference center configuration");
                 break;
             default:
-                Log.d(TAG, response.message());
+                Log.e(TAG, response.message());
                 break;
         }
     }
 }
-
-
-
