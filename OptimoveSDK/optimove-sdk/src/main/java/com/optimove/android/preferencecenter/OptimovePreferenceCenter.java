@@ -105,7 +105,7 @@ public class OptimovePreferenceCenter {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
 
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
-            Log.d(TAG, "Invalid customer ID");
+            Log.d(TAG, "Customer ID is not set");
             return;
         }
 
@@ -123,7 +123,7 @@ public class OptimovePreferenceCenter {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
 
         if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
-            Log.d(TAG, "Invalid customer ID");
+            Log.d(TAG, "Customer ID is not set");
             return;
         }
 
@@ -141,13 +141,12 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             String mappedRegion = shared.mapRegion(config.getRegion());
-            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + Optimove.getInstance().getUserInfo().getUserId() + "&brandGroupId=" + config.getBrandGroupId();
-
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
             try {
-                String encodedUrl = URLEncoder.encode(url, "UTF-8");
-                Response response = httpClient.getSync(encodedUrl, Optimove.getInstance().getTenantInfo().getTenantId());
+                String encodedCustomerId = URLEncoder.encode(Optimove.getInstance().getUserInfo().getUserId(), "UTF-8");
+                String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
+                Response response = httpClient.getSync(url, Optimove.getInstance().getTenantInfo().getTenantId());
 
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
@@ -178,14 +177,13 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             String mappedRegion = shared.mapRegion(config.getRegion());
-            String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + Optimove.getInstance().getUserInfo().getUserId() + "&brandGroupId=" + config.getBrandGroupId();
-
             HttpClient httpClient = HttpClient.getInstance();
             boolean result = false;
             try {
-                String encodedUrl = URLEncoder.encode(url, "UTF-8");
+                String encodedCustomerId = URLEncoder.encode(Optimove.getInstance().getUserInfo().getUserId(), "UTF-8");
+                String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
-                Response response = httpClient.putSync(encodedUrl, data, Optimove.getInstance().getTenantInfo().getTenantId());
+                Response response = httpClient.putSync(url, data, Optimove.getInstance().getTenantInfo().getTenantId());
 
                 result = response.isSuccessful();
             } catch (JSONException | IOException e) {
