@@ -67,6 +67,9 @@ public final class OptimoveConfig {
     @Nullable
     private String brandGroupId;
 
+    @Nullable
+    private int tenantId;
+
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -120,7 +123,6 @@ public final class OptimoveConfig {
 
             return this;
         }
-
 
 
         boolean has(Feature feature) {
@@ -181,10 +183,6 @@ public final class OptimoveConfig {
         this.minLogLevel = minLogLevel;
     }
 
-    private void setBrandGroupId(@Nullable String brandGroupId) {
-        this.brandGroupId = brandGroupId;
-    }
-
     void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
         if (optimoveCredentials == null && optimobileCredentials == null) {
             throw new IllegalArgumentException("Should provide at least optimove or optimobile credentials");
@@ -238,6 +236,22 @@ public final class OptimoveConfig {
 
         } catch (NullPointerException | JSONException | IllegalArgumentException e) {
             throw new IllegalArgumentException("Optimobile credentials are not correct");
+        }
+    }
+
+    private void setPreferenceCenterCredentials(String preferenceCenterCredentials) {
+        if (!this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
+            throw new IllegalArgumentException("Cannot set credentials for preference center as it is not in the desired feature set");
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(preferenceCenterCredentials);
+
+            this.region = result.getString(1);
+            this.tenantId = result.getInt(2);
+            this.brandGroupId = result.getString(3);
+        } catch (JSONException e) {
+            throw new IllegalArgumentException("Preference center credentials are not correct");
         }
     }
 
@@ -337,6 +351,10 @@ public final class OptimoveConfig {
         return this.brandGroupId;
     }
 
+    public @Nullable int getTenantId() {
+        return this.tenantId;
+    }
+
     public boolean usesDelayedOptimobileConfiguration() {
         return this.delayedInitialisation && this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
@@ -372,6 +390,7 @@ public final class OptimoveConfig {
         String region;
         private @Nullable String optimoveCredentials;
         private @Nullable String optimobileCredentials;
+        private @Nullable String preferenceCenterCredentials;
         private final @NonNull FeatureSet featureSet;
         private final boolean delayedInitialisation;
 
@@ -392,9 +411,7 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
-
-        private String brandGroupId = null;
-
+        
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
             if (featureSet.isEmpty()) {
                 throw new IllegalArgumentException("Feature set cannot be empty");
@@ -463,8 +480,8 @@ public final class OptimoveConfig {
             return this;
         }
 
-        public Builder enablePreferenceCenter(@NonNull String brandGroupId) {
-            this.brandGroupId = brandGroupId;
+        public Builder enablePreferenceCenter(@NonNull String preferenceCenterCredentials) {
+            this.preferenceCenterCredentials = preferenceCenterCredentials;
             this.featureSet.withPreferenceCenter();
 
             return this;
@@ -534,6 +551,10 @@ public final class OptimoveConfig {
                 newConfig.setBaseUrlMap(this.baseUrlMap);
             }
 
+            if (this.preferenceCenterCredentials != null) {
+                newConfig.setPreferenceCenterCredentials(this.preferenceCenterCredentials);
+            }
+
             if (this.overridingBaseUrlMap != null) {
                 newConfig.setBaseUrlMap(this.overridingBaseUrlMap);
             }
@@ -550,8 +571,6 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
-
-            newConfig.setBrandGroupId(this.brandGroupId);
 
             return newConfig;
         }
