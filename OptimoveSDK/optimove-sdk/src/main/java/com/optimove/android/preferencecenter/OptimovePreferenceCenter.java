@@ -109,13 +109,14 @@ public class OptimovePreferenceCenter {
      */
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
+        String userId = userInfo.getUserId();
 
-        if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
+        if (userId == null || Objects.equals(userId, userInfo.getVisitorId())) {
             Log.w(TAG, "Customer ID is not set");
             return;
         }
 
-        Runnable task = new GetPreferencesRunnable(preferencesGetHandler);
+        Runnable task = new GetPreferencesRunnable(userId, preferencesGetHandler);
         executorService.submit(task);
     }
 
@@ -127,20 +128,23 @@ public class OptimovePreferenceCenter {
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
+        String userId = userInfo.getUserId();
 
-        if (userInfo.getUserId() == null || Objects.equals(userInfo.getUserId(), userInfo.getVisitorId())) {
+        if (userId == null || Objects.equals(userId, userInfo.getVisitorId())) {
             Log.w(TAG, "Customer ID is not set");
             return;
         }
 
-        Runnable task = new SetPreferencesRunnable(preferencesSetHandler, updates);
+        Runnable task = new SetPreferencesRunnable(userId, preferencesSetHandler, updates);
         executorService.submit(task);
     }
 
     static class GetPreferencesRunnable implements Runnable {
+        private final String customerId;
         private final PreferencesGetHandler callback;
 
-        GetPreferencesRunnable(PreferencesGetHandler callback) {
+        GetPreferencesRunnable(String customerId, PreferencesGetHandler callback) {
+            this.customerId = customerId;
             this.callback = callback;
         }
 
@@ -150,7 +154,7 @@ public class OptimovePreferenceCenter {
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
             try {
-                String encodedCustomerId = URLEncoder.encode(Optimove.getInstance().getUserInfo().getUserId(), "UTF-8");
+                String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
 
                 try (Response response = httpClient.getSync(url, Optimove.getInstance().getTenantInfo().getTenantId())) {
@@ -173,10 +177,12 @@ public class OptimovePreferenceCenter {
     }
 
     static class SetPreferencesRunnable implements Runnable {
+        private final String customerId;
         private final PreferencesSetHandler callback;
         private final List<PreferenceUpdate> updates;
 
-        SetPreferencesRunnable(PreferencesSetHandler callback, List<PreferenceUpdate> updates) {
+        SetPreferencesRunnable(String customerId, PreferencesSetHandler callback, List<PreferenceUpdate> updates) {
+            this.customerId = customerId;
             this.callback = callback;
             this.updates = updates;
         }
@@ -187,7 +193,7 @@ public class OptimovePreferenceCenter {
             HttpClient httpClient = HttpClient.getInstance();
             boolean result = false;
             try {
-                String encodedCustomerId = URLEncoder.encode(Optimove.getInstance().getUserInfo().getUserId(), "UTF-8");
+                String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + mappedRegion + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
