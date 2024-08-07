@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
     private static OptimovePreferenceCenter shared;
-    private static OptimoveConfig config;
+    private static PreferenceCenterConfig config;
 
     /**
      * package
@@ -98,7 +98,7 @@ public class OptimovePreferenceCenter {
      */
     public static void initialize(OptimoveConfig currentConfig) {
         shared = new OptimovePreferenceCenter();
-        config = currentConfig;
+        config = currentConfig.getPreferenceCenterConfig();
 
         executorService = Executors.newSingleThreadExecutor();
     }
@@ -151,15 +151,14 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            PreferenceCenterConfig prefCenterConfig = config.getPreferenceCenterConfig();
-            String region = prefCenterConfig.getRegion();
+            String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
-                String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + prefCenterConfig.getBrandGroupId();
+                String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
 
-                try (Response response = httpClient.getSync(url, prefCenterConfig.getTenantId())) {
+                try (Response response = httpClient.getSync(url, config.getTenantId())) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
                     } else {
@@ -191,16 +190,15 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            PreferenceCenterConfig prefCenterConfig = config.getPreferenceCenterConfig();
-            String region = prefCenterConfig.getRegion();
+            String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             boolean result = false;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
-                String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + prefCenterConfig.getBrandGroupId();
+                String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
-                try (Response response = httpClient.putSync(url, data, prefCenterConfig.getTenantId())) {
+                try (Response response = httpClient.putSync(url, data, config.getTenantId())) {
                     result = response.isSuccessful();
                 }
             } catch (JSONException | IOException e) {
