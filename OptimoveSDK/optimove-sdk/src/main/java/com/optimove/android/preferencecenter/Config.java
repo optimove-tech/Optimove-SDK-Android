@@ -1,13 +1,11 @@
-package com.optimove.android;
+package com.optimove.android.preferencecenter;
 
-import androidx.annotation.Nullable;
-
-public class PreferenceCenterConfig {
+public class Config {
     private final String region;
     private final int tenantId;
     private final String brandGroupId;
 
-    public PreferenceCenterConfig(String region, int tenantId, String brandGroupId) {
+    public Config(String region, int tenantId, String brandGroupId) {
         this.region = region;
         this.brandGroupId = brandGroupId;
         this.tenantId = tenantId;

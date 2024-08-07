@@ -10,6 +10,7 @@ import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InternalSdkEmbeddingApi;
 import com.optimove.android.optimobile.UrlBuilder;
+import com.optimove.android.preferencecenter.Config;
 
 import org.json.JSONObject;
 
@@ -64,7 +65,7 @@ public final class OptimoveConfig {
 
     private boolean delayedInitialisation;
 
-    private @Nullable PreferenceCenterConfig preferenceCenterConfig;
+    private @Nullable Config preferenceCenterConfig;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -246,7 +247,7 @@ public final class OptimoveConfig {
             int tenantId = result.getInt(2);
             String brandGroupId = result.getString(3);
 
-            this.preferenceCenterConfig = new PreferenceCenterConfig(region, tenantId, brandGroupId);
+            this.preferenceCenterConfig = new Config(region, tenantId, brandGroupId);
         } catch (JSONException e) {
             throw new IllegalArgumentException("Preference center credentials are not correct");
         }
@@ -356,7 +357,7 @@ public final class OptimoveConfig {
         return this.delayedInitialisation;
     }
 
-    public @Nullable PreferenceCenterConfig getPreferenceCenterConfig() {
+    public @Nullable Config getPreferenceCenterConfig() {
         return this.preferenceCenterConfig;
     }
 

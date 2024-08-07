@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
-import com.optimove.android.PreferenceCenterConfig;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
 
@@ -30,7 +29,7 @@ import java.util.concurrent.Executors;
 public class OptimovePreferenceCenter {
     private static final String TAG = OptimovePreferenceCenter.class.getName();
     private static OptimovePreferenceCenter shared;
-    private static PreferenceCenterConfig config;
+    private static Config config;
 
     /**
      * package
@@ -93,6 +92,8 @@ public class OptimovePreferenceCenter {
 
     /**
      * Initializes an instance of OptimovePreferenceCenter
+     *
+     * This API is intended for internal SDK use. Do not call this API or depend on it in your app.
      *
      * @param currentConfig current config
      */
@@ -227,24 +228,24 @@ public class OptimovePreferenceCenter {
     }
 
     private static JSONArray mapPreferenceUpdatesToArray(List<PreferenceUpdate> updates) throws JSONException {
-        List<Object> mappedUpdates = new ArrayList<>();
+        JSONArray updatesArray = new JSONArray();
 
         for (int i = 0; i < updates.size(); i++) {
-            String updateId = updates.get(i).getTopicId();
+            String topicId = updates.get(i).getTopicId();
             List<Channel> channels = updates.get(i).getSubscribedChannels();
-            List<Integer> mappedChannels = new ArrayList<>();
+            List<Integer> subscribedChannels = new ArrayList<>();
             for (int j = 0; j < channels.size(); j++) {
-                mappedChannels.add(channels.get(i).getValue());
+                subscribedChannels.add(channels.get(i).getValue());
             }
 
-            Object mappedUpdate = new Object() {
-                final String id = updateId;
-                final List<Integer> subscribedChannels = mappedChannels;
-            };
-            mappedUpdates.add(mappedUpdate);
+            JSONObject mappedUpdate = new JSONObject();
+            mappedUpdate.put("topicId", topicId);
+            mappedUpdate.put("subscribedChannels", subscribedChannels);
+
+            updatesArray.put(mappedUpdate);
         }
 
-        return new JSONArray(mappedUpdates.toArray());
+        return updatesArray;
     }
 
     private static Preferences mapResponseToPreferences(Response response) {
