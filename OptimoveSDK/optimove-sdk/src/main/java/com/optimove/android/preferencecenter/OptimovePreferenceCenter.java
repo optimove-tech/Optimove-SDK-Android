@@ -152,7 +152,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            String region = shared.mapRegion(config.getRegion());
+            String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
             try {
@@ -191,7 +191,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            String region = shared.mapRegion(config.getRegion());
+            String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
 
             boolean result = false;
@@ -213,14 +213,6 @@ public class OptimovePreferenceCenter {
         private void fireCallback(Boolean result) {
             handler.post(() -> SetPreferencesRunnable.this.callback.run(result));
         }
-    }
-
-    private String mapRegion(String region) {
-        if (Objects.equals(region, "dev")) {
-            return "dev-pb";
-        }
-
-        return region;
     }
 
     private static JSONArray mapPreferenceUpdatesToArray(List<PreferenceUpdate> updates) throws JSONException {
