@@ -136,6 +136,7 @@ public class OptimovePreferenceCenter {
 
         if (userId == null || Objects.equals(userId, userInfo.getVisitorId())) {
             Log.w(TAG, "Customer ID is not set");
+            handler.post(() -> preferencesSetHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
 
@@ -157,7 +158,7 @@ public class OptimovePreferenceCenter {
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
-            ResultType resultType = ResultType.SUCCESS;
+            ResultType resultType = ResultType.ERROR;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
@@ -168,6 +169,7 @@ public class OptimovePreferenceCenter {
                         resultType = ResultType.ERROR;
                     } else {
                         preferences = mapResponseToPreferences(response);
+                        resultType = ResultType.SUCCESS;
                     }
                 }
             } catch (IOException e) {
