@@ -166,7 +166,6 @@ public class OptimovePreferenceCenter {
                 try (Response response = httpClient.getSync(url, config.getTenantId())) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
-                        resultType = ResultType.ERROR;
                     } else {
                         preferences = mapResponseToPreferences(response);
                         resultType = ResultType.SUCCESS;
