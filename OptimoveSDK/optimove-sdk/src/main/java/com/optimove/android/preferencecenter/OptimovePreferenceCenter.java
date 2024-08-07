@@ -235,7 +235,7 @@ public class OptimovePreferenceCenter {
 
             JSONObject mappedUpdate = new JSONObject();
             mappedUpdate.put("topicId", topicId);
-            mappedUpdate.put("subscribedChannels", subscribedChannels);
+            mappedUpdate.put("channelSubscription", subscribedChannels);
 
             updatesArray.put(mappedUpdate);
         }
