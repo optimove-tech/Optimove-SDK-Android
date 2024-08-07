@@ -3,39 +3,25 @@ package com.optimove.android;
 import androidx.annotation.Nullable;
 
 public class PreferenceCenterConfig {
-    @Nullable
-    private String region;
+    private final String region;
+    private final int tenantId;
+    private final String brandGroupId;
 
-    @Nullable
-    private String brandGroupId;
-
-    @Nullable
-    private int tenantId;
-
-    public PreferenceCenterConfig() {}
-
-    @Nullable
-    public String getRegion() {
-        return region;
+    public PreferenceCenterConfig(String region, int tenantId, String brandGroupId) {
+        this.region = region;
+        this.brandGroupId = brandGroupId;
+        this.tenantId = tenantId;
     }
 
-    public void setRegion(String region) {
-        this.region = region;
+    public String getRegion() {
+        return region;
     }
 
     public String getBrandGroupId() {
         return brandGroupId;
     }
 
-    public void setBrandGroupId(String brandGroupId) {
-        this.brandGroupId = brandGroupId;
-    }
-
     public int getTenantId() {
         return tenantId;
-    }
-
-    public void setTenantId(int tenantId) {
-        this.tenantId = tenantId;
     }
 }

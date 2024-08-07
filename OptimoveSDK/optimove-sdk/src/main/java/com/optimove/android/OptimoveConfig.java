@@ -242,16 +242,11 @@ public final class OptimoveConfig {
         try {
             JSONArray result = this.parseCredentials(preferenceCenterCredentials);
 
-            this.preferenceCenterConfig = new PreferenceCenterConfig();
-
             String region = result.getString(1);
-            preferenceCenterConfig.setRegion(region);
-
             int tenantId = result.getInt(2);
-            preferenceCenterConfig.setTenantId(tenantId);
-
             String brandGroupId = result.getString(3);
-            preferenceCenterConfig.setBrandGroupId(brandGroupId);
+
+            this.preferenceCenterConfig = new PreferenceCenterConfig(region, tenantId, brandGroupId);
         } catch (JSONException e) {
             throw new IllegalArgumentException("Preference center credentials are not correct");
         }
