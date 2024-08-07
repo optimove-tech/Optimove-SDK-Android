@@ -164,7 +164,7 @@ final public class Optimove {
             }
         }
 
-        if (config.isOptimoveConfigured() && config.isPreferenceCenterConfigured()) {
+        if (config.isPreferenceCenterConfigured()) {
             OptimovePreferenceCenter.initialize(config);
         }
     }
