@@ -230,7 +230,7 @@ public class OptimovePreferenceCenter {
             List<Channel> channels = updates.get(i).getSubscribedChannels();
             List<Integer> subscribedChannels = new ArrayList<>();
             for (int j = 0; j < channels.size(); j++) {
-                subscribedChannels.add(channels.get(i).getValue());
+                subscribedChannels.add(channels.get(j).getValue());
             }
 
             JSONObject mappedUpdate = new JSONObject();
