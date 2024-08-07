@@ -31,13 +31,8 @@ public class OptimovePreferenceCenter {
     private static OptimovePreferenceCenter shared;
     private static Config config;
 
-    /**
-     * package
-     */
     static ExecutorService executorService;
-    /**
-     * package
-     */
+
     static final Handler handler = new Handler(Looper.getMainLooper());
 
     public interface PreferencesGetHandler {
