@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,13 +17,23 @@ import androidx.core.content.ContextCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
+import com.optimove.android.optimobile.AnalyticsBackgroundEventWorker;
+import com.optimove.android.optimobile.InAppInboxItem;
+import com.optimove.android.optimobile.OptimoveInApp;
+import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
+import com.optimove.android.preferencecenter.PreferenceUpdate;
+import com.optimove.android.preferencecenter.Preferences;
+import com.optimove.android.preferencecenter.Topic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity {
 
+    static final String TAG = "TestAppMainActvity";
     private static final int WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169;
 
     private TextView outputTv;
@@ -97,6 +108,97 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void readInbox(View view) {
+        List<InAppInboxItem> items = OptimoveInApp.getInstance().getInboxItems();
+        if (items.size() == 0){
+            Log.d(TAG, "no inbox items!");
+            return;
+        }
+        for(int i=0; i< items.size(); i++){
+            InAppInboxItem item =  items.get(i);
+            Log.d(TAG, "title: " +   item.getTitle() + ", isRead: " + item.isRead());
+        }
+    }
+
+    public void markInboxAsRead(View view) {
+        Log.d(TAG, "mark  all inbox read");
+
+        OptimoveInApp.getInstance().markAllInboxItemsAsRead();
+    }
+
+    public void deleteInbox(View view) {
+
+        List<InAppInboxItem> items = OptimoveInApp.getInstance().getInboxItems();
+        if (items.size() == 0){
+            Log.d(TAG,"no inbox items!");
+            return;
+        }
+        for(int i=0; i< items.size(); i++){
+            OptimoveInApp.getInstance().deleteMessageFromInbox(items.get(i));
+        }
+
+    }
+
+    // ******************** PC start *********************
+
+    public void getPreferences(View view) {
+        OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
+            switch(result){
+                case ERROR_USER_NOT_SET:
+                    Log.d(TAG, "customer not set!");
+                    break;
+                case ERROR:
+                    Log.d(TAG, "Error! go check logs!");
+                    break;
+                case SUCCESS: {
+
+                    Log.d(TAG, "configured: " + preferences.getConfiguredChannels().toString());
+                    List<Topic> topics = preferences.getCustomerPreferences();
+                    for (int i=0; i< topics.size(); i++){
+                        Topic topic = topics.get(i);
+                        Log.d(TAG, topic.getId() + " " + topic.getName() + " " + topic.getSubscribedChannels().toString());
+                    }
+
+                    break;
+                }
+                default:  Log.d(TAG, "unknown res type");
+            };
+        });
+
+    }
+
+    public void setPreferences(View view) {
+        OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
+            switch(result){
+                case ERROR_USER_NOT_SET:
+                case ERROR:
+                    Log.d(TAG, "get prefs error!");
+                    break;
+                case SUCCESS: {
+                    Log.d(TAG, "loaded prefs for set: good");
+
+
+                    List<OptimovePreferenceCenter.Channel> configuredChannels = preferences.getConfiguredChannels();
+                    List<Topic> topics = preferences.getCustomerPreferences();
+
+                    List<PreferenceUpdate> updates = new ArrayList<>();
+                    for (int i=0; i< topics.size(); i++){
+                        updates.add(new PreferenceUpdate( topics.get(i).getId(), configuredChannels.subList(0, 1)));
+                    }
+
+                    OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync((OptimovePreferenceCenter.ResultType setResult) -> {
+                        Log.d(TAG, result.toString());
+                    }, updates);
+
+                    break;
+                }
+                default: Log.d(TAG, "unknown res type");
+            };
+        });
+    }
+
+    // ******************** PC end *********************
+
     public void setCredentials(View view) {
         EditText optimoveCreds = findViewById(R.id.optimoveCredInput);
         EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
@@ -153,17 +255,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideIrrelevantInputs() {
-        if (Optimove.getConfig().usesDelayedConfiguration()) {
-            return;
+        if (!Optimove.getConfig().isPreferenceCenterConfigured()){
+            Button getPrefsBtn = (Button) findViewById(R.id.getPreferences);
+            getPrefsBtn.setVisibility(View.GONE);
+
+            Button setPrefsBtn = (Button) findViewById(R.id.setPreferences);
+            setPrefsBtn.setVisibility(View.GONE);
         }
 
-        EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
-        optimoveCredInput.setVisibility(View.GONE);
 
-        EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
-        optimobileCredInput.setVisibility(View.GONE);
+        if (!Optimove.getConfig().usesDelayedConfiguration()) {
+            EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
+            optimoveCredInput.setVisibility(View.GONE);
 
-        Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
-        setCredsBtn.setVisibility(View.GONE);
+            EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
+            optimobileCredInput.setVisibility(View.GONE);
+
+            Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+            setCredsBtn.setVisibility(View.GONE);
+        }
     }
 }
