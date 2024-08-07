@@ -41,8 +41,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        outputTv = findViewById(R.id.userIdTextView);
+
 
         this.hideIrrelevantInputs();
 
@@ -110,13 +109,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void readInbox(View view) {
         List<InAppInboxItem> items = OptimoveInApp.getInstance().getInboxItems();
-        if (items.size() == 0){
+        if (items.size() == 0) {
             Log.d(TAG, "no inbox items!");
             return;
         }
-        for(int i=0; i< items.size(); i++){
-            InAppInboxItem item =  items.get(i);
-            Log.d(TAG, "title: " +   item.getTitle() + ", isRead: " + item.isRead());
+        for (int i = 0; i < items.size(); i++) {
+            InAppInboxItem item = items.get(i);
+            Log.d(TAG, "title: " + item.getTitle() + ", isRead: " + item.isRead());
         }
     }
 
@@ -129,11 +128,11 @@ public class MainActivity extends AppCompatActivity {
     public void deleteInbox(View view) {
 
         List<InAppInboxItem> items = OptimoveInApp.getInstance().getInboxItems();
-        if (items.size() == 0){
-            Log.d(TAG,"no inbox items!");
+        if (items.size() == 0) {
+            Log.d(TAG, "no inbox items!");
             return;
         }
-        for(int i=0; i< items.size(); i++){
+        for (int i = 0; i < items.size(); i++) {
             OptimoveInApp.getInstance().deleteMessageFromInbox(items.get(i));
         }
 
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void getPreferences(View view) {
         OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
-            switch(result){
+            switch (result) {
                 case ERROR_USER_NOT_SET:
                     Log.d(TAG, "customer not set!");
                     break;
@@ -154,22 +153,23 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d(TAG, "configured: " + preferences.getConfiguredChannels().toString());
                     List<Topic> topics = preferences.getCustomerPreferences();
-                    for (int i=0; i< topics.size(); i++){
+                    for (int i = 0; i < topics.size(); i++) {
                         Topic topic = topics.get(i);
                         Log.d(TAG, topic.getId() + " " + topic.getName() + " " + topic.getSubscribedChannels().toString());
                     }
 
                     break;
                 }
-                default:  Log.d(TAG, "unknown res type");
-            };
+                default:
+                    Log.d(TAG, "unknown res type");
+            }
         });
 
     }
 
     public void setPreferences(View view) {
         OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
-            switch(result){
+            switch (result) {
                 case ERROR_USER_NOT_SET:
                 case ERROR:
                     Log.d(TAG, "get prefs error!");
@@ -182,8 +182,8 @@ public class MainActivity extends AppCompatActivity {
                     List<Topic> topics = preferences.getCustomerPreferences();
 
                     List<PreferenceUpdate> updates = new ArrayList<>();
-                    for (int i=0; i< topics.size(); i++){
-                        updates.add(new PreferenceUpdate( topics.get(i).getId(), configuredChannels.subList(0, 1)));
+                    for (int i = 0; i < topics.size(); i++) {
+                        updates.add(new PreferenceUpdate(topics.get(i).getId(), configuredChannels.subList(0, 1)));
                     }
 
                     OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync((OptimovePreferenceCenter.ResultType setResult) -> {
@@ -192,8 +192,9 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
                 }
-                default: Log.d(TAG, "unknown res type");
-            };
+                default:
+                    Log.d(TAG, "unknown res type");
+            }
         });
     }
 
@@ -255,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideIrrelevantInputs() {
-        if (!Optimove.getConfig().isPreferenceCenterConfigured()){
+        if (!Optimove.getConfig().isPreferenceCenterConfigured()) {
             Button getPrefsBtn = (Button) findViewById(R.id.getPreferences);
             getPrefsBtn.setVisibility(View.GONE);
 

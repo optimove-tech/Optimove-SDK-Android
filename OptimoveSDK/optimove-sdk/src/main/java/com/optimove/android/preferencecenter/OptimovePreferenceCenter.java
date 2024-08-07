@@ -93,7 +93,7 @@ public class OptimovePreferenceCenter {
 
     /**
      * Initializes an instance of OptimovePreferenceCenter
-     *
+     * <p>
      * This API is intended for internal SDK use. Do not call this API or depend on it in your app.
      *
      * @param currentConfig current config
@@ -206,9 +206,9 @@ public class OptimovePreferenceCenter {
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
                 try (Response response = httpClient.putSync(url, data, config.getTenantId())) {
-                    if(response.isSuccessful()) {
+                    if (response.isSuccessful()) {
                         result = ResultType.SUCCESS;
-                    };
+                    }
                 }
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
