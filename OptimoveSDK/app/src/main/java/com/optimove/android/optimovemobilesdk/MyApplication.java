@@ -34,7 +34,6 @@ public class MyApplication extends Application {
             null,
             "base64Creds")
             .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-            .enablePreferenceCenter("base64PrefCenterCreds")
             .build());
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();
