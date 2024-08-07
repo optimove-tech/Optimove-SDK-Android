@@ -152,7 +152,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            String region = config.getRegion();
+            String region = shared.mapRegion(config.getRegion());
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
             try {
@@ -191,8 +191,9 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            String region = config.getRegion();
+            String region = shared.mapRegion(config.getRegion());
             HttpClient httpClient = HttpClient.getInstance();
+
             boolean result = false;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
@@ -215,16 +216,11 @@ public class OptimovePreferenceCenter {
     }
 
     private String mapRegion(String region) {
-        switch (region) {
-            case "uk-1":
-                return "dev-pb";
-            case "eu-central-2":
-                return "eu";
-            case "us-east-1":
-                return "us";
-            default:
-                throw new IllegalArgumentException("Region is not supported: " + region);
+        if (Objects.equals(region, "dev")) {
+            return "dev-pb";
         }
+
+        return region;
     }
 
     private static JSONArray mapPreferenceUpdatesToArray(List<PreferenceUpdate> updates) throws JSONException {
