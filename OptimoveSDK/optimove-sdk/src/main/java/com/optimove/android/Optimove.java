@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -164,8 +165,13 @@ final public class Optimove {
             }
         }
 
-        if (config.isPreferenceCenterConfigured()) {
-            OptimovePreferenceCenter.initialize(config);
+        if (config.isPreferenceCenterConfigured()){
+            if (!config.isOptimoveConfigured()){
+                Log.e("Optimove", "Preference center requires optimove credentials");
+            }
+            else{
+                OptimovePreferenceCenter.initialize(config);
+            }
         }
     }
 
