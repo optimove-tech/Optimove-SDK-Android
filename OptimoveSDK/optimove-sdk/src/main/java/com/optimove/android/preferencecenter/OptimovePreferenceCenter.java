@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class OptimovePreferenceCenter {
-    private static final String TAG = "OptimovePreferenceCenter";
+    private static final String TAG = "OptimovePrefCenter";
     private static OptimovePreferenceCenter shared;
     private static Config config;
 
@@ -36,11 +36,17 @@ public class OptimovePreferenceCenter {
     static final Handler handler = new Handler(Looper.getMainLooper());
 
     public interface PreferencesGetHandler {
-        void run(@Nullable Preferences preferences);
+        void run(ResultType result, @Nullable Preferences preferences);
     }
 
     public interface PreferencesSetHandler {
         void run(Boolean result);
+    }
+
+    public enum ResultType {
+        SUCCESS,
+        ERROR_USER_NOT_SET,
+        ERROR
     }
 
     public enum Channel {
@@ -110,6 +116,7 @@ public class OptimovePreferenceCenter {
 
         if (userId == null || Objects.equals(userId, userInfo.getVisitorId())) {
             Log.w(TAG, "Customer ID is not set");
+            handler.post(() -> preferencesGetHandler.run(ResultType.ERROR_USER_NOT_SET, null));
             return;
         }
 
@@ -150,6 +157,7 @@ public class OptimovePreferenceCenter {
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
+            ResultType resultType = ResultType.SUCCESS;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
@@ -157,6 +165,7 @@ public class OptimovePreferenceCenter {
                 try (Response response = httpClient.getSync(url, config.getTenantId())) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
+                        resultType = ResultType.ERROR;
                     } else {
                         preferences = mapResponseToPreferences(response);
                     }
@@ -165,11 +174,11 @@ public class OptimovePreferenceCenter {
                 e.printStackTrace();
             }
 
-            this.fireCallback(preferences);
+            this.fireCallback(resultType, preferences);
         }
 
-        private void fireCallback(@Nullable Preferences preferences) {
-            handler.post(() -> GetPreferencesRunnable.this.callback.run(preferences));
+        private void fireCallback(ResultType result, @Nullable Preferences preferences) {
+            handler.post(() -> GetPreferencesRunnable.this.callback.run(result, preferences));
         }
     }
 
