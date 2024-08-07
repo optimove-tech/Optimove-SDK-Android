@@ -40,7 +40,7 @@ public class OptimovePreferenceCenter {
     }
 
     public interface PreferencesSetHandler {
-        void run(Boolean result);
+        void run(ResultType result);
     }
 
     public enum ResultType {
@@ -198,14 +198,16 @@ public class OptimovePreferenceCenter {
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
 
-            boolean result = false;
+            ResultType result = ResultType.ERROR;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
                 try (Response response = httpClient.putSync(url, data, config.getTenantId())) {
-                    result = response.isSuccessful();
+                    if(response.isSuccessful()) {
+                        result = ResultType.SUCCESS;
+                    };
                 }
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
@@ -214,7 +216,7 @@ public class OptimovePreferenceCenter {
             this.fireCallback(result);
         }
 
-        private void fireCallback(Boolean result) {
+        private void fireCallback(ResultType result) {
             handler.post(() -> SetPreferencesRunnable.this.callback.run(result));
         }
     }
