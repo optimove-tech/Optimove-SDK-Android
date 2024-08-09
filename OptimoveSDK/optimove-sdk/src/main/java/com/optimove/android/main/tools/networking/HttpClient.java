@@ -4,6 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.optimove.android.Optimove;
+import com.optimove.android.OptimoveConfig;
+import com.optimove.android.optimobile.Optimobile;
+
+import org.json.JSONArray;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -181,5 +187,36 @@ public class HttpClient {
 
     public interface ErrorListener {
         void sendError(Exception e);
+    }
+
+    public Response getSync(String url, int tenantId) throws IOException {
+        Request.Builder builder = new Request.Builder().get();
+
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
+    public Response putSync(String url, JSONArray data, int tenantId) throws IOException {
+        String dataStr = data.toString();
+
+        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
+
+        Request.Builder builder = new Request.Builder().put(body);
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
+    private Request buildRequest(Request.Builder builder, String url, int tenantId) {
+        return builder.url(url)
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("X-Tenant-Id", String.valueOf(tenantId))
+                .build();
+    }
+
+    private Response doSyncRequest(Request request) throws IOException {
+        return this.okHttpClient.newCall(request).execute();
     }
 }
