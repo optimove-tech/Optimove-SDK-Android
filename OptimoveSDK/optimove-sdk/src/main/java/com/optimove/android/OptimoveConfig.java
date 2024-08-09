@@ -192,6 +192,20 @@ public final class OptimoveConfig {
         this.setOptimobileCredentials(optimobileCredentials);
     }
 
+    void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials, @Nullable String preferenceCenterCredentials) {
+        if (optimoveCredentials == null && optimobileCredentials == null && preferenceCenterCredentials == null) {
+            throw new IllegalArgumentException("Should provide at least optimove, optimobile or preference center credentials");
+        }
+
+        if (this.hasFinishedInitialisation()) {
+            throw new IllegalStateException("OptimoveConfig: credentials are already set");
+        }
+
+        this.setOptimoveCredentials(optimoveCredentials);
+        this.setOptimobileCredentials(optimobileCredentials);
+        this.setPreferenceCenterCredentials(preferenceCenterCredentials);
+    }
+
     private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
         if (optimoveCredentials == null) {
             return;
@@ -364,12 +378,17 @@ public final class OptimoveConfig {
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
+        boolean hasPreferenceCenterCreds = preferenceCenterConfig != null;
 
         if (!hasOptimoveCreds && featureSet.has(FeatureSet.Feature.OPTIMOVE)) {
             return false;
         }
 
         if (!hasOptimobileCreds && featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+            return false;
+        }
+
+        if (!hasPreferenceCenterCreds && featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
             return false;
         }
 
