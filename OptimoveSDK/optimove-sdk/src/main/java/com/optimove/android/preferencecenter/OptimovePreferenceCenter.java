@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 public class OptimovePreferenceCenter {
     private static final String TAG = "OptimovePrefCenter";
     private static OptimovePreferenceCenter shared;
-    private static OptimoveConfig optimoveConfig;
 
     static ExecutorService executorService;
 
@@ -95,13 +94,9 @@ public class OptimovePreferenceCenter {
      * Initializes an instance of OptimovePreferenceCenter
      * <p>
      * This API is intended for internal SDK use. Do not call this API or depend on it in your app.
-     *
-     * @param currentConfig current config
      */
-    public static void initialize(OptimoveConfig currentConfig) {
+    public static void initialize() {
         shared = new OptimovePreferenceCenter();
-        optimoveConfig = currentConfig;
-
         executorService = Executors.newSingleThreadExecutor();
     }
 
@@ -155,7 +150,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            Config config = optimoveConfig.getPreferenceCenterConfig();
+            Config config = Optimove.getConfig().getPreferenceCenterConfig();
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
@@ -197,7 +192,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            Config config = optimoveConfig.getPreferenceCenterConfig();
+            Config config = Optimove.getConfig().getPreferenceCenterConfig();
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
 

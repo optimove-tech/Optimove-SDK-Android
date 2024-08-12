@@ -170,7 +170,7 @@ final public class Optimove {
                 Log.e("Optimove", "Preference center requires optimove credentials");
             }
             else{
-                OptimovePreferenceCenter.initialize(config);
+                OptimovePreferenceCenter.initialize();
             }
         }
     }
