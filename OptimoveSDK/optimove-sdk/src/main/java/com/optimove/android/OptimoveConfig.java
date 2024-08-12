@@ -249,7 +249,7 @@ public final class OptimoveConfig {
         }
     }
 
-    private void setPreferenceCenterCredentials(String preferenceCenterCredentials) {
+    void setPreferenceCenterCredentials(String preferenceCenterCredentials) {
         if (!this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
             throw new IllegalArgumentException("Cannot set credentials for preference center as it is not in the desired feature set");
         }
@@ -424,7 +424,7 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
-        
+
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
             if (featureSet.isEmpty()) {
                 throw new IllegalArgumentException("Feature set cannot be empty");

@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 public class OptimovePreferenceCenter {
     private static final String TAG = "OptimovePrefCenter";
     private static OptimovePreferenceCenter shared;
-    private static Config config;
+    private static OptimoveConfig optimoveConfig;
 
     static ExecutorService executorService;
 
@@ -100,7 +100,7 @@ public class OptimovePreferenceCenter {
      */
     public static void initialize(OptimoveConfig currentConfig) {
         shared = new OptimovePreferenceCenter();
-        config = currentConfig.getPreferenceCenterConfig();
+        optimoveConfig = currentConfig;
 
         executorService = Executors.newSingleThreadExecutor();
     }
@@ -155,6 +155,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
+            Config config = optimoveConfig.getPreferenceCenterConfig();
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
             Preferences preferences = null;
@@ -196,6 +197,7 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
+            Config config = optimoveConfig.getPreferenceCenterConfig();
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
 

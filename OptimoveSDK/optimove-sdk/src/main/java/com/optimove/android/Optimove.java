@@ -230,18 +230,8 @@ final public class Optimove {
      * @param preferenceCenterCredentials credentials for preference center feature
      */
     public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials, @Nullable String preferenceCenterCredentials) {
-        if (!currentConfig.usesDelayedConfiguration()) {
-            throw new IllegalStateException("Cannot set credentials as delayed configuration is not enabled");
-        }
-
-        currentConfig.setCredentials(optimoveCredentials, optimobileCredentials, preferenceCenterCredentials);
-        if (optimobileCredentials != null && currentConfig.usesDelayedOptimobileConfiguration()) {
-            Optimobile.completeDelayedConfiguration(shared.getApplicationContext(), currentConfig);
-        }
-
-        if (optimoveCredentials != null && currentConfig.usesDelayedOptimoveConfiguration()) {
-            Optimove.fetchConfigsAndFinishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
-        }
+        setCredentials(optimoveCredentials, optimobileCredentials);
+        currentConfig.setPreferenceCenterCredentials(preferenceCenterCredentials);
     }
 
     /**
