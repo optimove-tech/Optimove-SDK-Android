@@ -150,11 +150,19 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
-            Config config = Optimove.getConfig().getPreferenceCenterConfig();
-            String region = config.getRegion();
-            HttpClient httpClient = HttpClient.getInstance();
+
             Preferences preferences = null;
             ResultType resultType = ResultType.ERROR;
+
+            Config config = Optimove.getConfig().getPreferenceCenterConfig();
+            if (config == null) {
+                this.fireCallback(resultType, preferences);
+                return;
+            }
+
+            String region = config.getRegion();
+            HttpClient httpClient = HttpClient.getInstance();
+
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
@@ -167,7 +175,7 @@ public class OptimovePreferenceCenter {
                         resultType = ResultType.SUCCESS;
                     }
                 }
-            } catch (IOException e) {
+            } catch (NullPointerException | IOException e) {
                 e.printStackTrace();
             }
 
@@ -192,11 +200,18 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
+            ResultType result = ResultType.ERROR;
+
             Config config = Optimove.getConfig().getPreferenceCenterConfig();
+            if (config == null) {
+                this.fireCallback(result);
+                return;
+            }
+
+
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
 
-            ResultType result = ResultType.ERROR;
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
