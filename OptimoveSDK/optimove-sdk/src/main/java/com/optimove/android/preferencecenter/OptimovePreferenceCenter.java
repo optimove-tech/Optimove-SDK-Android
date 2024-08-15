@@ -44,6 +44,7 @@ public class OptimovePreferenceCenter {
 
     public enum ResultType {
         SUCCESS,
+        ERROR_NOT_CONFIGURED,
         ERROR_USER_NOT_SET,
         ERROR
     }
@@ -106,6 +107,13 @@ public class OptimovePreferenceCenter {
      * @param preferencesGetHandler handler
      */
     public void getPreferencesAsync(@NonNull PreferencesGetHandler preferencesGetHandler) {
+        Config config = Optimove.getConfig().getPreferenceCenterConfig();
+        if (config == null) {
+            Log.e(TAG, "Preference center credentials are not set");
+            handler.post(() -> preferencesGetHandler.run(ResultType.ERROR_NOT_CONFIGURED, null));
+            return;
+        }
+
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
         String userId = userInfo.getUserId();
 
@@ -115,7 +123,7 @@ public class OptimovePreferenceCenter {
             return;
         }
 
-        Runnable task = new GetPreferencesRunnable(userId, preferencesGetHandler);
+        Runnable task = new GetPreferencesRunnable(config, userId, preferencesGetHandler);
         executorService.submit(task);
     }
 
@@ -126,6 +134,13 @@ public class OptimovePreferenceCenter {
      * @param updates               list of preference updates to set
      */
     public void setCustomerPreferencesAsync(@NonNull PreferencesSetHandler preferencesSetHandler, List<PreferenceUpdate> updates) {
+        Config config = Optimove.getConfig().getPreferenceCenterConfig();
+        if (config == null) {
+            Log.e(TAG, "Preference center credentials are not set");
+            handler.post(() -> preferencesSetHandler.run(ResultType.ERROR_NOT_CONFIGURED));
+            return;
+        }
+
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
         String userId = userInfo.getUserId();
 
@@ -135,30 +150,25 @@ public class OptimovePreferenceCenter {
             return;
         }
 
-        Runnable task = new SetPreferencesRunnable(userId, preferencesSetHandler, updates);
+        Runnable task = new SetPreferencesRunnable(config, userId, preferencesSetHandler, updates);
         executorService.submit(task);
     }
 
     static class GetPreferencesRunnable implements Runnable {
+        private final Config config;
         private final String customerId;
         private final PreferencesGetHandler callback;
 
-        GetPreferencesRunnable(String customerId, PreferencesGetHandler callback) {
+        GetPreferencesRunnable(Config config, String customerId, PreferencesGetHandler callback) {
+            this.config = config;
             this.customerId = customerId;
             this.callback = callback;
         }
 
         @Override
         public void run() {
-
             Preferences preferences = null;
             ResultType resultType = ResultType.ERROR;
-
-            Config config = Optimove.getConfig().getPreferenceCenterConfig();
-            if (config == null) {
-                this.fireCallback(resultType, preferences);
-                return;
-            }
 
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
@@ -188,11 +198,13 @@ public class OptimovePreferenceCenter {
     }
 
     static class SetPreferencesRunnable implements Runnable {
+        private final Config config;
         private final String customerId;
         private final PreferencesSetHandler callback;
         private final List<PreferenceUpdate> updates;
 
-        SetPreferencesRunnable(String customerId, PreferencesSetHandler callback, List<PreferenceUpdate> updates) {
+        SetPreferencesRunnable(Config config, String customerId, PreferencesSetHandler callback, List<PreferenceUpdate> updates) {
+            this.config = config;
             this.customerId = customerId;
             this.callback = callback;
             this.updates = updates;
@@ -201,13 +213,6 @@ public class OptimovePreferenceCenter {
         @Override
         public void run() {
             ResultType result = ResultType.ERROR;
-
-            Config config = Optimove.getConfig().getPreferenceCenterConfig();
-            if (config == null) {
-                this.fireCallback(result);
-                return;
-            }
-
 
             String region = config.getRegion();
             HttpClient httpClient = HttpClient.getInstance();
