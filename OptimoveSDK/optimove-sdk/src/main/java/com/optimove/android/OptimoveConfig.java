@@ -249,7 +249,7 @@ public final class OptimoveConfig {
         }
     }
 
-    void setPreferenceCenterCredentials(String preferenceCenterCredentials) {
+    void setPreferenceCenterCredentials(@NonNull String preferenceCenterCredentials) {
         if (!this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
             throw new IllegalArgumentException("Cannot set credentials for preference center as it is not in the desired feature set");
         }

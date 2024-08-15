@@ -165,11 +165,10 @@ final public class Optimove {
             }
         }
 
-        if (config.isPreferenceCenterConfigured()){
-            if (!config.isOptimoveConfigured()){
+        if (config.isPreferenceCenterConfigured()) {
+            if (!config.isOptimoveConfigured()) {
                 Log.e("Optimove", "Preference center requires optimove credentials");
-            }
-            else{
+            } else {
                 OptimovePreferenceCenter.initialize();
             }
         }
@@ -225,14 +224,17 @@ final public class Optimove {
     /**
      * Late setting of credentials. Must be called only if partial initialisation constructor was used and only once.
      *
-     * @param optimoveCredentials   credentials for track and trigger
-     * @param optimobileCredentials credentials for other mobile features (push, in-app, deep links etc)
+     * @param optimoveCredentials         credentials for track and trigger
+     * @param optimobileCredentials       credentials for other mobile features (push, in-app, deep links etc)
      * @param preferenceCenterCredentials credentials for preference center feature
      */
     public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials, @Nullable String preferenceCenterCredentials) {
         setCredentials(optimoveCredentials, optimobileCredentials);
-        currentConfig.setPreferenceCenterCredentials(preferenceCenterCredentials);
+        if (preferenceCenterCredentials != null) {
+            currentConfig.setPreferenceCenterCredentials(preferenceCenterCredentials);
+        }
     }
+
 
     /**
      * Gets the current config
