@@ -20,6 +20,7 @@ import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.optimobile.AnalyticsBackgroundEventWorker;
 import com.optimove.android.optimobile.InAppInboxItem;
 import com.optimove.android.optimobile.OptimoveInApp;
+import com.optimove.android.preferencecenter.Channel;
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
 import com.optimove.android.preferencecenter.PreferenceUpdate;
 import com.optimove.android.preferencecenter.Preferences;
@@ -178,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "loaded prefs for set: good");
 
 
-                    List<OptimovePreferenceCenter.Channel> configuredChannels = preferences.getConfiguredChannels();
+                    List<Channel> configuredChannels = preferences.getConfiguredChannels();
                     List<Topic> topics = preferences.getCustomerPreferences();
 
                     List<PreferenceUpdate> updates = new ArrayList<>();
