@@ -4,9 +4,9 @@ import java.util.List;
 
 public class PreferenceUpdate {
     private final String topicId;
-    private final List<OptimovePreferenceCenter.Channel> subscribedChannels;
+    private final List<Channel> subscribedChannels;
 
-    public PreferenceUpdate(String topicId, List<OptimovePreferenceCenter.Channel> subscribedChannels) {
+    public PreferenceUpdate(String topicId, List<Channel> subscribedChannels) {
         this.topicId = topicId;
         this.subscribedChannels = subscribedChannels;
     }
@@ -15,7 +15,7 @@ public class PreferenceUpdate {
         return topicId;
     }
 
-    public List<OptimovePreferenceCenter.Channel> getSubscribedChannels() {
+    public List<Channel> getSubscribedChannels() {
         return subscribedChannels;
     }
 }
