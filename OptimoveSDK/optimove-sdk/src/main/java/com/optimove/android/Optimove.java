@@ -230,7 +230,11 @@ final public class Optimove {
      */
     public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials, @Nullable String preferenceCenterCredentials) {
         setCredentials(optimoveCredentials, optimobileCredentials);
-        if (preferenceCenterCredentials != null) {
+        if (preferenceCenterCredentials != null ) {
+            if (optimoveCredentials == null){
+                Log.e("OptimovePC", "Preference Center requires optimove credentials set");
+                return;
+            }
             currentConfig.setPreferenceCenterCredentials(preferenceCenterCredentials);
         }
     }
