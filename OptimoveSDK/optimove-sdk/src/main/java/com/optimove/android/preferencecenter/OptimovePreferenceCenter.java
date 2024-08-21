@@ -150,6 +150,7 @@ public class OptimovePreferenceCenter {
                     }
                 }
             } catch (NullPointerException | IOException e) {
+                Log.e(TAG, e.getMessage());
                 e.printStackTrace();
             }
 
@@ -192,6 +193,7 @@ public class OptimovePreferenceCenter {
                     }
                 }
             } catch (JSONException | IOException e) {
+                Log.e(TAG, e.getMessage());
                 e.printStackTrace();
             }
 
