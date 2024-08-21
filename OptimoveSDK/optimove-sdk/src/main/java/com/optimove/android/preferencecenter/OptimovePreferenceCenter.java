@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class OptimovePreferenceCenter {
-    private static final String TAG = "OptimovePrefCenter";
+    private static final String TAG = "OptimovePC";
     private static OptimovePreferenceCenter shared;
 
     static ExecutorService executorService;
