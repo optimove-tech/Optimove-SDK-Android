@@ -167,7 +167,7 @@ final public class Optimove {
 
         if (config.isPreferenceCenterConfigured()) {
             if (!config.isOptimoveConfigured()) {
-                Log.e("Optimove", "Preference center requires optimove credentials");
+                Log.e("OptimovePC", "Preference center requires optimove credentials");
             } else {
                 OptimovePreferenceCenter.initialize();
             }
