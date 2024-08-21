@@ -17,7 +17,6 @@ import androidx.core.content.ContextCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
-import com.optimove.android.optimobile.AnalyticsBackgroundEventWorker;
 import com.optimove.android.optimobile.InAppInboxItem;
 import com.optimove.android.optimobile.OptimoveInApp;
 import com.optimove.android.preferencecenter.Channel;
@@ -35,6 +34,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     static final String TAG = "TestAppMainActvity";
+    static final String PC_TAG = "OptimovePC";
     private static final int WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169;
 
     private TextView outputTv;
@@ -149,21 +149,21 @@ public class MainActivity extends AppCompatActivity {
                 case ERROR_USER_NOT_SET:
                 case ERROR:
                 case ERROR_CREDENTIALS_NOT_SET:
-                    Log.d(TAG, result.toString());
+                    Log.d(PC_TAG, result.toString());
                     break;
                 case SUCCESS: {
 
-                    Log.d(TAG, "configured: " + preferences.getConfiguredChannels().toString());
+                    Log.d(PC_TAG, "configured: " + preferences.getConfiguredChannels().toString());
                     List<Topic> topics = preferences.getCustomerPreferences();
                     for (int i = 0; i < topics.size(); i++) {
                         Topic topic = topics.get(i);
-                        Log.d(TAG, topic.getId() + " " + topic.getName() + " " + topic.getSubscribedChannels().toString());
+                        Log.d(PC_TAG, topic.getId() + " " + topic.getName() + " " + topic.getSubscribedChannels().toString());
                     }
 
                     break;
                 }
                 default:
-                    Log.d(TAG, "unknown res type");
+                    Log.d(PC_TAG, "unknown res type");
             }
         });
 
@@ -175,10 +175,10 @@ public class MainActivity extends AppCompatActivity {
                 case ERROR_USER_NOT_SET:
                 case ERROR:
                 case ERROR_CREDENTIALS_NOT_SET:
-                    Log.d(TAG, result.toString());
+                    Log.d(PC_TAG, result.toString());
                     break;
                 case SUCCESS: {
-                    Log.d(TAG, "loaded prefs for set: good");
+                    Log.d(PC_TAG, "loaded prefs for set: good");
 
 
                     List<Channel> configuredChannels = preferences.getConfiguredChannels();
@@ -190,13 +190,13 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync((OptimovePreferenceCenter.ResultType setResult) -> {
-                        Log.d(TAG, result.toString());
+                        Log.d(PC_TAG, result.toString());
                     }, updates);
 
                     break;
                 }
                 default:
-                    Log.d(TAG, "unknown res type");
+                    Log.d(PC_TAG, "unknown res type");
             }
         });
     }
@@ -281,8 +281,13 @@ public class MainActivity extends AppCompatActivity {
             EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
             optimobileCredInput.setVisibility(View.GONE);
 
+            EditText pcCredInput = findViewById(R.id.prefCenterCredInput);
+            pcCredInput.setVisibility(View.GONE);
+
             Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
             setCredsBtn.setVisibility(View.GONE);
+
+
         }
     }
 }
