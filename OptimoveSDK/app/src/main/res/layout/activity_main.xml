@@ -207,6 +207,14 @@
                 android:ems="10"
                 android:hint="Optimobile credentials"
                 android:inputType="textPersonName" />
+            <EditText
+                android:id="@+id/prefCenterCredInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="Preference center credentials (optional)"
+                android:inputType="textPersonName" />
+
 
             <Button
                 android:id="@+id/submitCredentialsBtn"

@@ -152,6 +152,9 @@ public class MainActivity extends AppCompatActivity {
                 case ERROR:
                     Log.d(TAG, "Error! go check logs!");
                     break;
+                case ERROR_NOT_CONFIGURED:
+                    Log.d(TAG, "Preference center not configured");
+                    break;
                 case SUCCESS: {
 
                     Log.d(TAG, "configured: " + preferences.getConfiguredChannels().toString());
@@ -176,6 +179,9 @@ public class MainActivity extends AppCompatActivity {
                 case ERROR_USER_NOT_SET:
                 case ERROR:
                     Log.d(TAG, "get prefs error!");
+                    break;
+                case ERROR_NOT_CONFIGURED:
+                    Log.d(TAG, "Preference center not configured");
                     break;
                 case SUCCESS: {
                     Log.d(TAG, "loaded prefs for set: good");
@@ -206,9 +212,11 @@ public class MainActivity extends AppCompatActivity {
     public void setCredentials(View view) {
         EditText optimoveCreds = findViewById(R.id.optimoveCredInput);
         EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
+        EditText pcCreds = findViewById(R.id.prefCenterCredInput);
 
         String optimoveCredentials = optimoveCreds.getText().toString();
         String optimobileCredentials = optimobileCreds.getText().toString();
+        String prefCenterCredentials = pcCreds.getText().toString();
 
         if (optimoveCredentials.isEmpty() && optimobileCredentials.isEmpty()) {
             return;
@@ -222,8 +230,12 @@ public class MainActivity extends AppCompatActivity {
             optimobileCredentials = null;
         }
 
+        if (prefCenterCredentials.isEmpty()){
+            prefCenterCredentials = null;
+        }
+
         try {
-            Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
+            Optimove.setCredentials(optimoveCredentials, optimobileCredentials, prefCenterCredentials);
         } catch (Exception e) {
             outputTv.setText(e.getMessage());
             return;
