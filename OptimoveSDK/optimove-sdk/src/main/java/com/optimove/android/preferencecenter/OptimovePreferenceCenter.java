@@ -43,7 +43,7 @@ public class OptimovePreferenceCenter {
 
     public enum ResultType {
         SUCCESS,
-        ERROR_NOT_CONFIGURED,
+        ERROR_CREDENTIALS_NOT_SET,
         ERROR_USER_NOT_SET,
         ERROR
     }
@@ -74,7 +74,7 @@ public class OptimovePreferenceCenter {
         Config config = Optimove.getConfig().getPreferenceCenterConfig();
         if (config == null) {
             Log.e(TAG, "Preference center credentials are not set");
-            handler.post(() -> preferencesGetHandler.run(ResultType.ERROR_NOT_CONFIGURED, null));
+            handler.post(() -> preferencesGetHandler.run(ResultType.ERROR_CREDENTIALS_NOT_SET, null));
             return;
         }
 
@@ -101,7 +101,7 @@ public class OptimovePreferenceCenter {
         Config config = Optimove.getConfig().getPreferenceCenterConfig();
         if (config == null) {
             Log.e(TAG, "Preference center credentials are not set");
-            handler.post(() -> preferencesSetHandler.run(ResultType.ERROR_NOT_CONFIGURED));
+            handler.post(() -> preferencesSetHandler.run(ResultType.ERROR_CREDENTIALS_NOT_SET));
             return;
         }
 

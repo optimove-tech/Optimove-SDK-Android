@@ -147,13 +147,9 @@ public class MainActivity extends AppCompatActivity {
         OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
             switch (result) {
                 case ERROR_USER_NOT_SET:
-                    Log.d(TAG, "customer not set!");
-                    break;
                 case ERROR:
-                    Log.d(TAG, "Error! go check logs!");
-                    break;
-                case ERROR_NOT_CONFIGURED:
-                    Log.d(TAG, "Preference center not configured");
+                case ERROR_CREDENTIALS_NOT_SET:
+                    Log.d(TAG, result.toString());
                     break;
                 case SUCCESS: {
 
@@ -178,10 +174,8 @@ public class MainActivity extends AppCompatActivity {
             switch (result) {
                 case ERROR_USER_NOT_SET:
                 case ERROR:
-                    Log.d(TAG, "get prefs error!");
-                    break;
-                case ERROR_NOT_CONFIGURED:
-                    Log.d(TAG, "Preference center not configured");
+                case ERROR_CREDENTIALS_NOT_SET:
+                    Log.d(TAG, result.toString());
                     break;
                 case SUCCESS: {
                     Log.d(TAG, "loaded prefs for set: good");
