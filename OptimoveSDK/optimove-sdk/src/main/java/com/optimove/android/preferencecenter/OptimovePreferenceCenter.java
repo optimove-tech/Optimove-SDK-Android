@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -188,7 +189,9 @@ public class OptimovePreferenceCenter {
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
                 try (Response response = httpClient.putSync(url, data, config.getTenantId())) {
-                    if (response.isSuccessful()) {
+                    if (!response.isSuccessful()) {
+                        logFailedResponse(response);
+                    } else {
                         result = ResultType.SUCCESS;
                     }
                 }
@@ -266,12 +269,22 @@ public class OptimovePreferenceCenter {
     private static void logFailedResponse(Response response) {
         int code = response.code();
         String msg = "Request failed with code " + code + ". ";
+        String responseBodyAsStr = "";
+        try {
+            ResponseBody body = response.body();
+            if (body != null) {
+                responseBodyAsStr = body.string();
+            }
+        } catch (IOException e) {/**/}
+
+
         switch (code) {
-            case 400:
-                Log.e(TAG, msg + "Check preference center configuration");
+            case 400: {
+                Log.e(TAG, msg + "Check preference center configuration: " + responseBodyAsStr);
                 break;
+            }
             default:
-                Log.e(TAG, msg + response.message());
+                Log.e(TAG, msg + responseBodyAsStr);
                 break;
         }
     }

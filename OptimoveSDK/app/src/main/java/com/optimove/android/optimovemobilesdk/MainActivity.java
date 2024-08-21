@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync((OptimovePreferenceCenter.ResultType setResult) -> {
-                        Log.d(PC_TAG, result.toString());
+                        Log.d(PC_TAG, setResult.toString());
                     }, updates);
 
                     break;
