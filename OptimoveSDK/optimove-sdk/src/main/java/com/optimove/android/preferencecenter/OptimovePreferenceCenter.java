@@ -262,12 +262,14 @@ public class OptimovePreferenceCenter {
     }
 
     private static void logFailedResponse(Response response) {
-        switch (response.code()) {
+        int code = response.code();
+        String msg = "Request failed with code " + code + ". ";
+        switch (code) {
             case 400:
-                Log.e(TAG, "Status code 400: check preference center configuration");
+                Log.e(TAG, msg + "Check preference center configuration");
                 break;
             default:
-                Log.e(TAG, response.message());
+                Log.e(TAG, msg + response.message());
                 break;
         }
     }
