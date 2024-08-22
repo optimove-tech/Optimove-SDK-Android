@@ -20,7 +20,6 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 
 1. [Tracking custom events](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Tracking-custom-events)
 2. [Location and Beacons](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Location-and-Beacons)
-3. [Preference Center](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Preference-Center)
 
 ### Mobile Messaging
 
