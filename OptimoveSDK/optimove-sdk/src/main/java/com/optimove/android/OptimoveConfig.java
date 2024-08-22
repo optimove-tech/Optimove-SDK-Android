@@ -10,6 +10,7 @@ import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InternalSdkEmbeddingApi;
 import com.optimove.android.optimobile.UrlBuilder;
+import com.optimove.android.preferencecenter.Config;
 
 import org.json.JSONObject;
 
@@ -64,6 +65,7 @@ public final class OptimoveConfig {
 
     private boolean delayedInitialisation;
 
+    private @Nullable Config preferenceCenterConfig;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -94,7 +96,8 @@ public final class OptimoveConfig {
     public static class FeatureSet {
         private enum Feature {
             OPTIMOVE,
-            OPTIMOBILE
+            OPTIMOBILE,
+            PREFERENCE_CENTER
         }
 
         Set<Feature> features = new HashSet<>();
@@ -110,6 +113,13 @@ public final class OptimoveConfig {
 
             return this;
         }
+
+        public FeatureSet withPreferenceCenter() {
+            features.add(Feature.PREFERENCE_CENTER);
+
+            return this;
+        }
+
 
         boolean has(Feature feature) {
             return features.contains(feature);
@@ -181,6 +191,25 @@ public final class OptimoveConfig {
         this.setOptimoveCredentials(optimoveCredentials);
         this.setOptimobileCredentials(optimobileCredentials);
     }
+
+    void setPreferenceCenterCredentials(@NonNull String preferenceCenterCredentials) {
+        if (!this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
+            throw new IllegalArgumentException("Cannot set credentials for preference center as it is not in the desired feature set");
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(preferenceCenterCredentials);
+
+            String region = result.getString(1);
+            int tenantId = result.getInt(2);
+            String brandGroupId = result.getString(3);
+
+            this.preferenceCenterConfig = new Config(region, tenantId, brandGroupId);
+        } catch (JSONException e) {
+            throw new IllegalArgumentException("Preference center credentials are not correct");
+        }
+    }
+
 
     private void setOptimoveCredentials(@Nullable String optimoveCredentials) {
         if (optimoveCredentials == null) {
@@ -309,6 +338,10 @@ public final class OptimoveConfig {
         return this.featureSet.has(FeatureSet.Feature.OPTIMOBILE);
     }
 
+    public boolean isPreferenceCenterConfigured() {
+        return this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER);
+    }
+
     public @Nullable LogLevel getCustomMinLogLevel() {
         return this.minLogLevel;
     }
@@ -325,15 +358,24 @@ public final class OptimoveConfig {
         return this.delayedInitialisation;
     }
 
+    public @Nullable Config getPreferenceCenterConfig() {
+        return this.preferenceCenterConfig;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
+        boolean hasPreferenceCenterCreds = preferenceCenterConfig != null;
 
         if (!hasOptimoveCreds && featureSet.has(FeatureSet.Feature.OPTIMOVE)) {
             return false;
         }
 
         if (!hasOptimobileCreds && featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+            return false;
+        }
+
+        if (!hasPreferenceCenterCreds && featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
             return false;
         }
 
@@ -348,6 +390,7 @@ public final class OptimoveConfig {
         String region;
         private @Nullable String optimoveCredentials;
         private @Nullable String optimobileCredentials;
+        private @Nullable String preferenceCenterCredentials;
         private final @NonNull FeatureSet featureSet;
         private final boolean delayedInitialisation;
 
@@ -437,6 +480,13 @@ public final class OptimoveConfig {
             return this;
         }
 
+        public Builder enablePreferenceCenter(@NonNull String preferenceCenterCredentials) {
+            this.preferenceCenterCredentials = preferenceCenterCredentials;
+            this.featureSet.withPreferenceCenter();
+
+            return this;
+        }
+
         /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
@@ -499,6 +549,10 @@ public final class OptimoveConfig {
             } else {
                 newConfig.setRegion(this.region);
                 newConfig.setBaseUrlMap(this.baseUrlMap);
+            }
+
+            if (this.preferenceCenterCredentials != null) {
+                newConfig.setPreferenceCenterCredentials(this.preferenceCenterCredentials);
             }
 
             if (this.overridingBaseUrlMap != null) {

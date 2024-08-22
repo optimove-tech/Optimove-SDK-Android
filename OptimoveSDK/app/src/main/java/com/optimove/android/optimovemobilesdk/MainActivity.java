@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,13 +17,24 @@ import androidx.core.content.ContextCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
+import com.optimove.android.optimobile.InAppInboxItem;
+import com.optimove.android.optimobile.OptimoveInApp;
+import com.optimove.android.preferencecenter.Channel;
+import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
+import com.optimove.android.preferencecenter.PreferenceUpdate;
+import com.optimove.android.preferencecenter.Preferences;
+import com.optimove.android.preferencecenter.Topic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity {
 
+    static final String TAG = "TestAppMainActvity";
+    static final String PC_TAG = "OptimovePC";
     private static final int WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169;
 
     private TextView outputTv;
@@ -30,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         outputTv = findViewById(R.id.userIdTextView);
 
@@ -97,12 +110,107 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void readInbox(View view) {
+        List<InAppInboxItem> items = OptimoveInApp.getInstance().getInboxItems();
+        if (items.size() == 0) {
+            Log.d(TAG, "no inbox items!");
+            return;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            InAppInboxItem item = items.get(i);
+            Log.d(TAG, "title: " + item.getTitle() + ", isRead: " + item.isRead());
+        }
+    }
+
+    public void markInboxAsRead(View view) {
+        Log.d(TAG, "mark  all inbox read");
+
+        OptimoveInApp.getInstance().markAllInboxItemsAsRead();
+    }
+
+    public void deleteInbox(View view) {
+
+        List<InAppInboxItem> items = OptimoveInApp.getInstance().getInboxItems();
+        if (items.size() == 0) {
+            Log.d(TAG, "no inbox items!");
+            return;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            OptimoveInApp.getInstance().deleteMessageFromInbox(items.get(i));
+        }
+
+    }
+
+    // ******************** PC start *********************
+
+    public void getPreferences(View view) {
+        OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
+            switch (result) {
+                case ERROR_USER_NOT_SET:
+                case ERROR:
+                case ERROR_CREDENTIALS_NOT_SET:
+                    Log.d(PC_TAG, result.toString());
+                    break;
+                case SUCCESS: {
+
+                    Log.d(PC_TAG, "configured: " + preferences.getConfiguredChannels().toString());
+                    List<Topic> topics = preferences.getCustomerPreferences();
+                    for (int i = 0; i < topics.size(); i++) {
+                        Topic topic = topics.get(i);
+                        Log.d(PC_TAG, topic.getId() + " " + topic.getName() + " " + topic.getSubscribedChannels().toString());
+                    }
+
+                    break;
+                }
+                default:
+                    Log.d(PC_TAG, "unknown res type");
+            }
+        });
+
+    }
+
+    public void setPreferences(View view) {
+        OptimovePreferenceCenter.getInstance().getPreferencesAsync((OptimovePreferenceCenter.ResultType result, Preferences preferences) -> {
+            switch (result) {
+                case ERROR_USER_NOT_SET:
+                case ERROR:
+                case ERROR_CREDENTIALS_NOT_SET:
+                    Log.d(PC_TAG, result.toString());
+                    break;
+                case SUCCESS: {
+                    Log.d(PC_TAG, "loaded prefs for set: good");
+
+
+                    List<Channel> configuredChannels = preferences.getConfiguredChannels();
+                    List<Topic> topics = preferences.getCustomerPreferences();
+
+                    List<PreferenceUpdate> updates = new ArrayList<>();
+                    for (int i = 0; i < topics.size(); i++) {
+                        updates.add(new PreferenceUpdate(topics.get(i).getId(), configuredChannels.subList(0, 1)));
+                    }
+
+                    OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync((OptimovePreferenceCenter.ResultType setResult) -> {
+                        Log.d(PC_TAG, setResult.toString());
+                    }, updates);
+
+                    break;
+                }
+                default:
+                    Log.d(PC_TAG, "unknown res type");
+            }
+        });
+    }
+
+    // ******************** PC end *********************
+
     public void setCredentials(View view) {
         EditText optimoveCreds = findViewById(R.id.optimoveCredInput);
         EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
+        EditText pcCreds = findViewById(R.id.prefCenterCredInput);
 
         String optimoveCredentials = optimoveCreds.getText().toString();
         String optimobileCredentials = optimobileCreds.getText().toString();
+        String prefCenterCredentials = pcCreds.getText().toString();
 
         if (optimoveCredentials.isEmpty() && optimobileCredentials.isEmpty()) {
             return;
@@ -116,8 +224,12 @@ public class MainActivity extends AppCompatActivity {
             optimobileCredentials = null;
         }
 
+        if (prefCenterCredentials.isEmpty()){
+            prefCenterCredentials = null;
+        }
+
         try {
-            Optimove.setCredentials(optimoveCredentials, optimobileCredentials);
+            Optimove.setCredentials(optimoveCredentials, optimobileCredentials, prefCenterCredentials);
         } catch (Exception e) {
             outputTv.setText(e.getMessage());
             return;
@@ -153,17 +265,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideIrrelevantInputs() {
-        if (Optimove.getConfig().usesDelayedConfiguration()) {
-            return;
+        if (!Optimove.getConfig().isPreferenceCenterConfigured()) {
+            Button getPrefsBtn = (Button) findViewById(R.id.getPreferences);
+            getPrefsBtn.setVisibility(View.GONE);
+
+            Button setPrefsBtn = (Button) findViewById(R.id.setPreferences);
+            setPrefsBtn.setVisibility(View.GONE);
         }
 
-        EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
-        optimoveCredInput.setVisibility(View.GONE);
 
-        EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
-        optimobileCredInput.setVisibility(View.GONE);
+        if (!Optimove.getConfig().usesDelayedConfiguration()) {
+            EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
+            optimoveCredInput.setVisibility(View.GONE);
 
-        Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
-        setCredsBtn.setVisibility(View.GONE);
+            EditText optimobileCredInput = findViewById(R.id.optimobileCredInput);
+            optimobileCredInput.setVisibility(View.GONE);
+
+            EditText pcCredInput = findViewById(R.id.prefCenterCredInput);
+            pcCredInput.setVisibility(View.GONE);
+
+            Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
+            setCredsBtn.setVisibility(View.GONE);
+
+
+        }
     }
 }

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +38,7 @@ import com.optimove.android.optistream.OptistreamDbHelper;
 import com.optimove.android.optimobile.Optimobile;
 import com.optimove.android.optimobile.PushActionHandlerInterface;
 import com.optimove.android.optimobile.PushTokenType;
+import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -162,6 +164,14 @@ final public class Optimove {
                 Optimove.fetchConfigsAndFinishOptimoveInit(application, config);
             }
         }
+
+        if (config.isPreferenceCenterConfigured()) {
+            if (!config.isOptimoveConfigured()) {
+                Log.e("OptimovePC", "Preference center requires optimove credentials");
+            } else {
+                OptimovePreferenceCenter.initialize();
+            }
+        }
     }
 
     private static void fetchConfigsAndFinishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config) {
@@ -210,6 +220,25 @@ final public class Optimove {
             Optimove.fetchConfigsAndFinishOptimoveInit((Application) shared.getApplicationContext(), currentConfig);
         }
     }
+
+    /**
+     * Late setting of credentials. Must be called only if partial initialisation constructor was used and only once.
+     *
+     * @param optimoveCredentials         credentials for track and trigger
+     * @param optimobileCredentials       credentials for other mobile features (push, in-app, deep links etc)
+     * @param preferenceCenterCredentials credentials for preference center feature
+     */
+    public static void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials, @Nullable String preferenceCenterCredentials) {
+        setCredentials(optimoveCredentials, optimobileCredentials);
+        if (preferenceCenterCredentials != null ) {
+            if (optimoveCredentials == null){
+                Log.e("OptimovePC", "Preference Center requires optimove credentials set");
+                return;
+            }
+            currentConfig.setPreferenceCenterCredentials(preferenceCenterCredentials);
+        }
+    }
+
 
     /**
      * Gets the current config

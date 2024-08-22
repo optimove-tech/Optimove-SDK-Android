@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.4.0
+
+- Add Preference Center feature
+
 ## 7.3.1
 
 - Fix: don't set custom sound if provided resource doesn't exist
