@@ -29,6 +29,7 @@ In this guide we will discuss the steps necessary to implement the Optimove Andr
 3. [In-App Setup](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/in-app)
 4. [Deferred Deep Linking](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/deferred-deep-linking)
 5. [Testing](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/testing-troubleshooting)
+6. [Preference Center](https://github.com/optimove-tech/Optimove-SDK-Android/wiki/Preference-Center)
 
 > **NOTE**:
 To unlock these capabilities, you will need to have added the relevant OptiMobile channels to your Optimove package. If you can’t see this feature in your Optimove instance, contact your CSM to find out more.
