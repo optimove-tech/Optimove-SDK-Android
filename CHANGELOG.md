@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.4.1
+
+- Fix duplicated events sent when multiple immediate events reported
+
 ## 7.4.0
 
 - Add Preference Center feature
