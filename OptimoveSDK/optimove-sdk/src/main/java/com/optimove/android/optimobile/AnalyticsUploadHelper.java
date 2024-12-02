@@ -74,11 +74,26 @@ class AnalyticsUploadHelper {
 
         // Clean up batch from DB
         if (result) {
-            Runnable trimTask = new AnalyticsContract.TrimEventsRunnable(context, maxEventId);
-            Optimobile.executorService.submit(trimTask);
+            deletePersistedEvents(context, maxEventId);
         }
 
         return result;
+    }
+
+    private void deletePersistedEvents(Context context, long maxEventId){
+        try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            db.delete(
+                    AnalyticsContract.AnalyticsEvent.TABLE_NAME,
+                    AnalyticsContract.AnalyticsEvent.COL_ID + " <= ?",
+                    new String[]{String.valueOf(maxEventId)});
+
+            Optimobile.log(TAG, "Deleted persistent events up to " + maxEventId + " (inclusive)");
+        } catch (SQLiteException e) {
+            Optimobile.log(TAG, "Failed to delete persistent events up to " + maxEventId + " (inclusive)");
+            e.printStackTrace();
+        }
     }
 
     private Pair<ArrayList<JSONObject>, Long> getBatchOfEvents(SQLiteDatabase db, long minEventId) {
