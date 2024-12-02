@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Pair;
 
+import androidx.annotation.WorkerThread;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +30,7 @@ class AnalyticsUploadHelper {
     /**
      * package
      */
+    @WorkerThread
     Result flushEvents(Context context) {
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
