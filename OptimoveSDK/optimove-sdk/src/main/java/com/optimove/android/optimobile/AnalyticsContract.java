@@ -150,42 +150,6 @@ final class AnalyticsContract {
     }
 
     /**
-     * Task to clear out synced events from the local DB
-     */
-    static class TrimEventsRunnable implements Runnable {
-
-        private static final String TAG = TrimEventsRunnable.class.getName();
-
-        private Context mContext;
-        private long mUpToEventId;
-
-        private TrimEventsRunnable() {
-        }
-
-        TrimEventsRunnable(Context context, long upToEventId) {
-            mContext = context.getApplicationContext();
-            mUpToEventId = upToEventId;
-        }
-
-        @Override
-        public void run() {
-            try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(mContext)) {
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-                db.delete(
-                        AnalyticsEvent.TABLE_NAME,
-                        AnalyticsEvent.COL_ID + " <= ?",
-                        new String[]{String.valueOf(mUpToEventId)});
-
-                Optimobile.log(TAG, "Trimmed events up to " + mUpToEventId + " (inclusive)");
-            } catch (SQLiteException e) {
-                Optimobile.log(TAG, "Failed to trim events up to " + mUpToEventId + " (inclusive)");
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
      * Records current install info for analytics
      */
     static class StatsCallHomeRunnable implements Runnable {
