@@ -30,9 +30,11 @@ public class MyApplication extends Application {
   public void onCreate() {
     super.onCreate();
 
+    String optimoveApiKey = "";
+    String optimobileApiKey = "";
+
     Optimove.initialize(this, new OptimoveConfig.Builder(
-            null,
-            "base64Creds")
+            optimoveApiKey, optimobileApiKey)
             .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
             .build());
     // Shouldn't be called unless explicitly told to
