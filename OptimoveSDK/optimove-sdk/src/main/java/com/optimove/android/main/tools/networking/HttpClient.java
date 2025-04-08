@@ -208,6 +208,17 @@ public class HttpClient {
         return this.doSyncRequest(request);
     }
 
+    public Response postSync(String url, JSONArray data, int tenantId) throws IOException {
+        String dataStr = data.toString();
+
+        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
+
+        Request.Builder builder = new Request.Builder().post(body);
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
     private Request buildRequest(Request.Builder builder, String url, int tenantId) {
         return builder.url(url)
                 .addHeader("Accept", "application/json")

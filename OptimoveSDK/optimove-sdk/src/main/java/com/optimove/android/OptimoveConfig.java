@@ -6,6 +6,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.embeddedmessaging.EmbeddedMessagingConfig;
 import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InternalSdkEmbeddingApi;
@@ -67,6 +68,8 @@ public final class OptimoveConfig {
 
     private @Nullable Config preferenceCenterConfig;
 
+    private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
+
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
@@ -97,7 +100,8 @@ public final class OptimoveConfig {
         private enum Feature {
             OPTIMOVE,
             OPTIMOBILE,
-            PREFERENCE_CENTER
+            PREFERENCE_CENTER,
+            EMBEDDED_MESSAGING,
         }
 
         Set<Feature> features = new HashSet<>();
@@ -116,6 +120,12 @@ public final class OptimoveConfig {
 
         public FeatureSet withPreferenceCenter() {
             features.add(Feature.PREFERENCE_CENTER);
+
+            return this;
+        }
+
+        public FeatureSet withEmbeddedMessaging() {
+            features.add(Feature.EMBEDDED_MESSAGING);
 
             return this;
         }
@@ -193,7 +203,7 @@ public final class OptimoveConfig {
     }
 
     void setPreferenceCenterCredentials(@NonNull String preferenceCenterCredentials) {
-        if (!this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
+        if (!this.isPreferenceCenterConfigured()) {
             throw new IllegalArgumentException("Cannot set credentials for preference center as it is not in the desired feature set");
         }
 
@@ -207,6 +217,24 @@ public final class OptimoveConfig {
             this.preferenceCenterConfig = new Config(region, tenantId, brandGroupId);
         } catch (JSONException e) {
             throw new IllegalArgumentException("Preference center credentials are not correct");
+        }
+    }
+
+    void setEmbeddedMessagingConfig(@NonNull String embeddedMessagingConfigurationString) {
+        if(!this.isEmbeddedMessagingConfigured()) {
+            throw new IllegalArgumentException("Cannot set configuration for embedded messaging as it is not in the desired feature set");
+        }
+
+        try {
+            JSONArray result = this.parseCredentials(embeddedMessagingConfigurationString);
+
+            String region = result.getString(1);
+            int tenantId = result.getInt(2);
+            String brandId = result.getString(3);
+
+            this.embeddedMessagingConfig = new EmbeddedMessagingConfig(region, tenantId, brandId);
+        } catch (JSONException e) {
+            throw new IllegalArgumentException("Embedded Messaging Config is not correct");
         }
     }
 
@@ -342,6 +370,10 @@ public final class OptimoveConfig {
         return this.featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER);
     }
 
+    public boolean isEmbeddedMessagingConfigured() {
+        return this.featureSet.has(FeatureSet.Feature.EMBEDDED_MESSAGING);
+    }
+
     public @Nullable LogLevel getCustomMinLogLevel() {
         return this.minLogLevel;
     }
@@ -362,10 +394,15 @@ public final class OptimoveConfig {
         return this.preferenceCenterConfig;
     }
 
+    public @Nullable EmbeddedMessagingConfig getEmbeddedMessagingConfig() {
+        return this.embeddedMessagingConfig;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
         boolean hasPreferenceCenterCreds = preferenceCenterConfig != null;
+        boolean hasEmbeddedMessagingConfig = embeddedMessagingConfig != null;
 
         if (!hasOptimoveCreds && featureSet.has(FeatureSet.Feature.OPTIMOVE)) {
             return false;
@@ -376,6 +413,10 @@ public final class OptimoveConfig {
         }
 
         if (!hasPreferenceCenterCreds && featureSet.has(FeatureSet.Feature.PREFERENCE_CENTER)) {
+            return false;
+        }
+
+        if (!hasEmbeddedMessagingConfig && isEmbeddedMessagingConfigured()) {
             return false;
         }
 
@@ -391,6 +432,7 @@ public final class OptimoveConfig {
         private @Nullable String optimoveCredentials;
         private @Nullable String optimobileCredentials;
         private @Nullable String preferenceCenterCredentials;
+        private @Nullable String embeddedMessagingConfigurationString;
         private final @NonNull FeatureSet featureSet;
         private final boolean delayedInitialisation;
 
@@ -487,6 +529,13 @@ public final class OptimoveConfig {
             return this;
         }
 
+        public Builder enableEmbeddedMessaging(@NonNull String embeddedMessagingConfigurationString) {
+            this.embeddedMessagingConfigurationString = embeddedMessagingConfigurationString;
+            this.featureSet.withEmbeddedMessaging();
+
+            return this;
+        }
+
         /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
@@ -553,6 +602,10 @@ public final class OptimoveConfig {
 
             if (this.preferenceCenterCredentials != null) {
                 newConfig.setPreferenceCenterCredentials(this.preferenceCenterCredentials);
+            }
+
+            if(this.embeddedMessagingConfigurationString != null) {
+                newConfig.setEmbeddedMessagingConfig(this.embeddedMessagingConfigurationString);
             }
 
             if (this.overridingBaseUrlMap != null) {
