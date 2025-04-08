@@ -1,21 +1,12 @@
 package com.optimove.android.embeddedmessaging;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.annotation.Target;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 

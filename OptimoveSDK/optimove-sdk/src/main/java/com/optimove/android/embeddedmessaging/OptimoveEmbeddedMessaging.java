@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -42,6 +43,7 @@ public class OptimoveEmbeddedMessaging {
 
     public static void initialize() {
         shared = new OptimoveEmbeddedMessaging();
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     public enum ResultType {
@@ -62,10 +64,10 @@ public class OptimoveEmbeddedMessaging {
         }
 
         UserInfo userInfo = Optimove.getInstance().getUserInfo();
-        String userId = userInfo.getUserId();
+        String userId = userInfo.getUserId() == null ? userInfo.getVisitorId() : userInfo.getUserId();
 
-        if (userId == null || Objects.equals(userId, userInfo.getVisitorId())) {
-            Log.w(TAG, "Customer ID is not set");
+        if (userId == null) {
+            Log.w(TAG, "Customer/Visitor ID is not set");
             handler.post(() -> embeddedMessagesGetHandler.run(ResultType.ERROR_USER_NOT_SET, null));
             return;
         }
@@ -99,7 +101,7 @@ public class OptimoveEmbeddedMessaging {
             try {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = String.format(
-                        "https://optimobile-inbox-srv-%s.optimove.net/embeddedMessages/getEmbeddedMessages/?customerId=%s&tenantId=%s&brandId%s",
+                        "https://optimobile-inbox-srv-%s.optimove.net/api/v1/embeddedmessages/getembeddedmessages?customerId=%s&tenantId=%s&brandId=%s",
                         region, encodedCustomerId, config.getTenantId(), config.getBrandId());
                 JSONArray postBody = new JSONArray();
                 for(ContainerMessageRequest cm : requestBody) {

@@ -34,6 +34,7 @@ public class MyApplication extends Application {
             "WyIxIiwgIjgwYTRhMjI0ZGRkMTRhNDQ4MTNlYzIwZmNkMjAxNjE2IiwgIm1vYmlsZS1jb25maWd1cmF0aW9uLjEuMC4wIl0=",
             "WzEsInVrLTEiLCI2YjE5OThhYS1lZmM1LTRjODUtYjg4ZC1mMjQzMTE4ODA1NTAiLCJKcTMxVEJ6dmxmVTQxb2xzMXltQVZTSVdjNXlnY3VmbHpjbysiXQ==")
             .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
+            .enableEmbeddedMessaging("WzEsImRldiIsICIzMDEzIiwgIjlhYmI4ZDZkLTYyZWQtNDJkMS05N2QxLWM4MmQxNWY5YzFmYyJd")
             .build());
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();

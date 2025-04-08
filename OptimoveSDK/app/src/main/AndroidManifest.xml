@@ -29,6 +29,9 @@
                <data android:scheme="https" android:host="submariners.lnk.click"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.optimove.android.optimovemobilesdk.EmbeddedMessagingActivity"
+            android:parentActivityName=".MainActivity"/>
 
         <!-- Optimobile FCM handler -->
         <service android:name="com.optimove.android.optimobile.FirebaseMessagingService" android:exported="false">

@@ -203,6 +203,12 @@ public class MainActivity extends AppCompatActivity {
 
     // ******************** PC end *********************
 
+    public void viewEmbeddedMessaging(View view) {
+        // Do nothing for now
+        Intent intent = new Intent(this, EmbeddedMessagingActivity.class);
+       startActivity(intent);
+    }
+
     public void setCredentials(View view) {
         EditText optimoveCreds = findViewById(R.id.optimoveCredInput);
         EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
@@ -273,6 +279,10 @@ public class MainActivity extends AppCompatActivity {
             setPrefsBtn.setVisibility(View.GONE);
         }
 
+        if(!Optimove.getConfig().isEmbeddedMessagingConfigured()) {
+            Button viewEmbeddedMessagingBtn = findViewById(R.id.viewEmbeddedMessaging);
+            viewEmbeddedMessagingBtn.setVisibility(View.GONE);
+        }
 
         if (!Optimove.getConfig().usesDelayedConfiguration()) {
             EditText optimoveCredInput = findViewById(R.id.optimoveCredInput);
