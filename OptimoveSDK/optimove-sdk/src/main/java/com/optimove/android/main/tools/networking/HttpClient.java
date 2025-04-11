@@ -219,6 +219,13 @@ public class HttpClient {
         return this.doSyncRequest(request);
     }
 
+    public Response deleteSync(String url, int tenantId) throws IOException {
+        Request.Builder builder = new Request.Builder().delete();
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
     private Request buildRequest(Request.Builder builder, String url, int tenantId) {
         return builder.url(url)
                 .addHeader("Accept", "application/json")
