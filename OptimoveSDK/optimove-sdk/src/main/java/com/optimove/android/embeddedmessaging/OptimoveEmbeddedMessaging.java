@@ -226,7 +226,7 @@ public class OptimoveEmbeddedMessaging {
             EmbeddedMessagingResult result = new EmbeddedMessagingResult(ResultType.ERROR, null);
 
             try {
-                String url = String.format("%s&id=%s", super.getBaseUrl("messages"), id);
+                String url = super.getBaseUrl(String.format("messages/%s", id));
                 result = super.deleteSync(url);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());

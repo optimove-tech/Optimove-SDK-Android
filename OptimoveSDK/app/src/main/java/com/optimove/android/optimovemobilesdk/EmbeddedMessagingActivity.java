@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.optimove.android.Optimove;
 import com.optimove.android.embeddedmessaging.Container;
 import com.optimove.android.embeddedmessaging.ContainerMessageRequest;
 import com.optimove.android.embeddedmessaging.EmbeddedMessage;
@@ -61,13 +62,17 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
                 Log.d("DEBUG", "Chose Click Metric");
                 break;
             case "Delete":
-                Log.d("DEBUG", "Chose Delete");
+                deleteMessage();
                 break;
         }
         return true;
     }
 
     public void getMessages(View view) {
+        refreshMessages();
+    }
+
+    private void refreshMessages() {
         ContainerMessageRequest[] request = getRequestBody();
         OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, List<Container> containers) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
@@ -84,6 +89,27 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
                 case SUCCESS:
                     if (containers == null) return;
                     updateViewFromContainers(containers);
+                    break;
+            }
+        });
+    }
+
+    private void deleteMessage() {
+        OptimoveEmbeddedMessaging.getInstance().deleteEmbeddedMessageAsync(selectedMessageId, (OptimoveEmbeddedMessaging.ResultType result) -> {
+            TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+            switch (result) {
+                case ERROR:
+                    containersRetrievedAmt.setText("Generic error");
+                    break;
+                case ERROR_USER_NOT_SET:
+                    containersRetrievedAmt.setText("User not set error");
+                    break;
+                case ERROR_CONFIG_NOT_SET:
+                    containersRetrievedAmt.setText("Config not set error");
+                    break;
+                case SUCCESS:
+                    containersRetrievedAmt.setText("Message Deleted");
+                    refreshMessages();
                     break;
             }
         });
