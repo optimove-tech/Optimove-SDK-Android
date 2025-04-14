@@ -1,27 +1,28 @@
 package com.optimove.android.embeddedmessaging;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class EmbeddedMessageMetricsRequest {
+import java.util.Date;
+
+public class EmbeddedMessageStatusRequest {
     private int tenantId;
     private String brandId;
     private String customerId;
     private String now;
-    private MetricEvent event;
     private String engagementId;
-    private String executionDateTime;
     private CampaignKind campaignKind;
+    private String messageId;
+    private Date readAt;
 
-
-    public EmbeddedMessageMetricsRequest(
-            String now, MetricEvent event, String engagementId, String executionDateTime,
-            CampaignKind campaignKind) {
+    public EmbeddedMessageStatusRequest(String now, String engagementId, CampaignKind campaignKind,
+                                        String messageId, Date readAt) {
         this.now = now;
-        this.event = event;
         this.engagementId = engagementId;
-        this.executionDateTime = executionDateTime;
         this.campaignKind = campaignKind;
+        this.messageId = messageId;
+        this.readAt = readAt;
     }
 
     public void setTenantId(int tenantId) {
@@ -34,18 +35,22 @@ public class EmbeddedMessageMetricsRequest {
         this.customerId = customerId;
     }
 
+
     public JSONObject toJSONObject() throws JSONException {
+        JSONArray metricsArray = new JSONArray();
         JSONObject metricsObj = new JSONObject();
         metricsObj.put("customerId", customerId);
         metricsObj.put("now", now);
-        metricsObj.put("event", event.ordinal());
         metricsObj.put("engagementId", engagementId);
-        metricsObj.put("executionDateTime", executionDateTime);
+        metricsObj.put("messageId", messageId);
+        metricsObj.put("readAt", readAt.getTime());
         metricsObj.put("campaignKind", campaignKind.ordinal());
+        metricsArray.put(metricsObj);
         JSONObject obj = new JSONObject();
         obj.put("tenantId", tenantId);
         obj.put("brandId", brandId);
-        obj.put("messageMetrics", metricsObj);
+        obj.put("statusMetrics", metricsArray);
         return obj;
     }
 }
+

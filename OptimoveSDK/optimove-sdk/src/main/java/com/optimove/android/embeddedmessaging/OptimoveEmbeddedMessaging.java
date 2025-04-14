@@ -106,20 +106,45 @@ public class OptimoveEmbeddedMessaging {
 
     public void deleteEmbeddedMessageAsync(String Id, @NonNull EmbeddedMessagesSetHandler embeddedMessagesDeleteHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesDeleteHandler);
-
         if (config == null) return;
 
         Runnable task = new DeleteEmbeddedMessagesRunnable(config, Id, embeddedMessagesDeleteHandler);
         executorService.submit(task);
     }
 
-    public void postEmbeddedMessageMetricsAsync(
+    public void reportClickMetricAsync(
             EmbeddedMessageMetricsRequest metrics,
             @NonNull EmbeddedMessagesSetHandler embeddedMessagesMetricsHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesMetricsHandler);
         if (config == null) return;
 
-        Runnable task = new PostEmbeddedMesssagesMetricsRunnable(metrics, config, embeddedMessagesMetricsHandler);
+        UserInfo userInfo = Optimove.getInstance().getUserInfo();
+        String userId = userInfo.getUserId() == null ? userInfo.getVisitorId() : userInfo.getUserId();
+
+        if (userId == null) {
+            Log.w(TAG, "Customer/Visitor ID is not set");
+            handler.post(() -> embeddedMessagesMetricsHandler.run(ResultType.ERROR_USER_NOT_SET));
+            return;
+        }
+        Runnable task = new PostEmbeddedMesssagesMetricsRunnable(metrics, config, userId, embeddedMessagesMetricsHandler);
+        executorService.submit(task);
+    }
+
+    public void setAsReadASync(EmbeddedMessageStatusRequest statusMetrics,
+                               @NonNull EmbeddedMessagesSetHandler embeddedMessagesStatusHandler) {
+        EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesStatusHandler);
+        if (config == null) return;
+
+        UserInfo userInfo = Optimove.getInstance().getUserInfo();
+        String userId = userInfo.getUserId() == null ? userInfo.getVisitorId() : userInfo.getUserId();
+
+        if (userId == null) {
+            Log.w(TAG, "Customer/Visitor ID is not set");
+            handler.post(() -> embeddedMessagesStatusHandler.run(ResultType.ERROR_USER_NOT_SET));
+            return;
+        }
+        Runnable task = new PutEmbeddedMessagesStatusRunnable(
+                statusMetrics, config, userId, embeddedMessagesStatusHandler);
         executorService.submit(task);
     }
 
@@ -136,14 +161,12 @@ public class OptimoveEmbeddedMessaging {
 
     class GetEmbeddedMessagesRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
         private final EmbeddedMessagesGetHandler callback;
-        private final EmbeddedMessagingConfig config;
         private final String customerId;
         private final ContainerMessageRequest[] requestBody;
 
         GetEmbeddedMessagesRunnable(
                 EmbeddedMessagingConfig config, String customerId, EmbeddedMessagesGetHandler callback, ContainerMessageRequest[] requestBody) {
             super(config);
-            this.config = config;
             this.customerId = customerId;
             this.callback = callback;
             this.requestBody = requestBody;
@@ -176,16 +199,59 @@ public class OptimoveEmbeddedMessaging {
         }
     }
 
+    class PutEmbeddedMessagesStatusRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
+        private final EmbeddedMessagesSetHandler callback;
+        private final EmbeddedMessagingConfig config;
+        private final EmbeddedMessageStatusRequest statusMetrics;
+        private final String customerId;
+
+        public PutEmbeddedMessagesStatusRunnable(
+                EmbeddedMessageStatusRequest statusMetrics, EmbeddedMessagingConfig config,
+                String customerId, EmbeddedMessagesSetHandler callback) {
+            super(config);
+            this.config = config;
+            this.callback = callback;
+            this.customerId = customerId;
+            this.statusMetrics = statusMetrics;
+        }
+
+        @Override
+        public void run() {
+            EmbeddedMessagingResult result = new EmbeddedMessagingResult(ResultType.ERROR, null);
+
+            try {
+                String url = super.getBaseUrl("messages/status");
+                statusMetrics.setTenantId(config.getTenantId());
+                statusMetrics.setBrandId(config.getBrandId());
+                statusMetrics.setCustomerId(customerId);
+                result = super.putSync(url, statusMetrics.toJSONObject(), false);
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+                e.printStackTrace();
+            }
+
+            this.fireCallback(result.getResult());
+        }
+
+        private void fireCallback(ResultType result) {
+            handler.post(() -> PutEmbeddedMessagesStatusRunnable.this.callback.run(result));
+        }
+    }
+
     class PostEmbeddedMesssagesMetricsRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
         private final EmbeddedMessagesSetHandler callback;
+        private final EmbeddedMessagingConfig config;
         private final EmbeddedMessageMetricsRequest metrics;
+        private final String customerId;
 
         public PostEmbeddedMesssagesMetricsRunnable(
                 EmbeddedMessageMetricsRequest metrics, EmbeddedMessagingConfig config,
-                EmbeddedMessagesSetHandler callback){
+                String customerId, EmbeddedMessagesSetHandler callback) {
             super(config);
+            this.config = config;
             this.callback = callback;
             this.metrics = metrics;
+            this.customerId = customerId;
         }
 
         @Override
@@ -194,9 +260,10 @@ public class OptimoveEmbeddedMessaging {
 
             try {
                 String url = super.getBaseUrl("messages/metrics");
-                JSONArray postData = new JSONArray();
-                postData.put(metrics.toJSONObject());
-                result = super.postSync(url, postData, false);
+                metrics.setTenantId(config.getTenantId());
+                metrics.setBrandId(config.getBrandId());
+                metrics.setCustomerId(customerId);
+                result = super.postSync(url, metrics.toJSONObject(), false);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
@@ -272,10 +339,22 @@ public class OptimoveEmbeddedMessaging {
             }
         }
 
-        public EmbeddedMessagingResult putSync(String url, JSONArray postData, boolean expectResponse) {
+        public EmbeddedMessagingResult postSync(String url, JSONObject postData, boolean expectResponse) {
             HttpClient httpClient = HttpClient.getInstance();
 
-            try (Response response = httpClient.putSync(url, postData, config.getTenantId())) {
+            try (Response response = httpClient.postSingleSync(url, postData, config.getTenantId())) {
+                return handleResponse(response, expectResponse);
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+                e.printStackTrace();
+                return new EmbeddedMessagingResult(ResultType.ERROR, null);
+            }
+        }
+
+        public EmbeddedMessagingResult putSync(String url, JSONObject postData, boolean expectResponse) {
+            HttpClient httpClient = HttpClient.getInstance();
+
+            try (Response response = httpClient.putSingleSync(url, postData, config.getTenantId())) {
                 return handleResponse(response, expectResponse);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());

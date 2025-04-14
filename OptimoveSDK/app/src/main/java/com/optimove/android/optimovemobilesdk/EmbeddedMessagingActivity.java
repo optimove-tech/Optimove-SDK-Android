@@ -1,13 +1,10 @@
 package com.optimove.android.optimovemobilesdk;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -15,18 +12,23 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.optimove.android.Optimove;
 import com.optimove.android.embeddedmessaging.Container;
 import com.optimove.android.embeddedmessaging.ContainerMessageRequest;
 import com.optimove.android.embeddedmessaging.EmbeddedMessage;
+import com.optimove.android.embeddedmessaging.EmbeddedMessageMetricsRequest;
+import com.optimove.android.embeddedmessaging.EmbeddedMessageStatusRequest;
+import com.optimove.android.embeddedmessaging.MetricEvent;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class EmbeddedMessagingActivity extends AppCompatActivity {
 
     public EmbeddedMessage[] listMessages;
     private String selectedMessageId;
+    private EmbeddedMessage selectedMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,7 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         listView.setOnItemLongClickListener((adapterView, view, i, l) -> {
             Log.d("DEBUG", String.format("Item clicked at position: %s", listMessages[i].getId()));
             selectedMessageId = listMessages[i].getId();
+            selectedMessage = listMessages[i];
             return false;
         });
         registerForContextMenu(listView);
@@ -56,10 +59,10 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         Log.d("DEBUG", String.format("Selected Item clicked with Id: %s", selectedMessageId));
         switch (title) {
             case "Mark as Read":
-                Log.d("DEBUG", "Chose Mark as Read");
+                setAsRead();
                 break;
             case "Click Metric":
-                Log.d("DEBUG", "Chose Click Metric");
+                sendClickMetrics();
                 break;
             case "Delete":
                 deleteMessage();
@@ -74,22 +77,57 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
 
     private void refreshMessages() {
         ContainerMessageRequest[] request = getRequestBody();
-        OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, List<Container> containers) -> {
-            TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
-            switch (result) {
-                case ERROR:
-                    containersRetrievedAmt.setText("Generic error");
-                    break;
-                case ERROR_USER_NOT_SET:
-                    containersRetrievedAmt.setText("User not set error");
-                    break;
-                case ERROR_CONFIG_NOT_SET:
-                    containersRetrievedAmt.setText("Config not set error");
-                    break;
-                case SUCCESS:
+        if (request.length < 1) {
+            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync((OptimoveEmbeddedMessaging.ResultType result, List<Container> containers) -> {
+                TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+                if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
                     if (containers == null) return;
-                    updateViewFromContainers(containers);
-                    break;
+                    updateViewFromContainers(containers, containersRetrievedAmt);
+                } else {
+                    handleErrors(result, containersRetrievedAmt);
+                }
+            });
+        } else {
+            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, List<Container> containers) -> {
+                TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+                if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
+                    if (containers == null) return;
+                    updateViewFromContainers(containers, containersRetrievedAmt);
+                } else {
+                    handleErrors(result, containersRetrievedAmt);
+                }
+            });
+        }
+    }
+
+    private void sendClickMetrics() {
+        Date justNow = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
+                sdf.format(justNow), MetricEvent.CLICK, selectedMessage.getEngagementId(), sdf.format(justNow),
+                selectedMessage.getCampaignKind());
+        OptimoveEmbeddedMessaging.getInstance().reportClickMetricAsync(request, (OptimoveEmbeddedMessaging.ResultType result) -> {
+            TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+            if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
+                containersRetrievedAmt.setText("Click Metrics Sent");
+            } else {
+                handleErrors(result, containersRetrievedAmt);
+            }
+        });
+    }
+
+    private void setAsRead() {
+        Date justNow = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
+                sdf.format(justNow), selectedMessage.getEngagementId(), selectedMessage.getCampaignKind(),
+                selectedMessageId, justNow);
+        OptimoveEmbeddedMessaging.getInstance().setAsReadASync(request, (OptimoveEmbeddedMessaging.ResultType result) -> {
+            TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+            if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
+                containersRetrievedAmt.setText("Message marked as Read");
+            } else {
+                handleErrors(result, containersRetrievedAmt);
             }
         });
     }
@@ -97,22 +135,27 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
     private void deleteMessage() {
         OptimoveEmbeddedMessaging.getInstance().deleteEmbeddedMessageAsync(selectedMessageId, (OptimoveEmbeddedMessaging.ResultType result) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
-            switch (result) {
-                case ERROR:
-                    containersRetrievedAmt.setText("Generic error");
-                    break;
-                case ERROR_USER_NOT_SET:
-                    containersRetrievedAmt.setText("User not set error");
-                    break;
-                case ERROR_CONFIG_NOT_SET:
-                    containersRetrievedAmt.setText("Config not set error");
-                    break;
-                case SUCCESS:
-                    containersRetrievedAmt.setText("Message Deleted");
-                    refreshMessages();
-                    break;
+            if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
+                containersRetrievedAmt.setText("Message Deleted");
+                refreshMessages();
+            } else {
+                handleErrors(result, containersRetrievedAmt);
             }
         });
+    }
+
+    private void handleErrors(OptimoveEmbeddedMessaging.ResultType result, TextView containersRetrievedAmt) {
+        switch (result) {
+            case ERROR:
+                containersRetrievedAmt.setText("Generic error");
+                break;
+            case ERROR_USER_NOT_SET:
+                containersRetrievedAmt.setText("User not set error");
+                break;
+            case ERROR_CONFIG_NOT_SET:
+                containersRetrievedAmt.setText("Config not set error");
+                break;
+        }
     }
 
     private ContainerMessageRequest[] getRequestBody() {
@@ -140,8 +183,7 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         return request;
     }
 
-    private void updateViewFromContainers(List<Container> containers) {
-        TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+    private void updateViewFromContainers(List<Container> containers, TextView containersRetrievedAmt) {
         containersRetrievedAmt.setText(String.format("%d containers retrieved", containers.toArray().length));
         ListView listView = findViewById(R.id.messageListView);
         ArrayAdapter<String> adaptor = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
