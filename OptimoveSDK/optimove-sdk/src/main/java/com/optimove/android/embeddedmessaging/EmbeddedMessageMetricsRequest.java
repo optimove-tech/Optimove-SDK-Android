@@ -39,6 +39,10 @@ public class EmbeddedMessageMetricsRequest {
     }
 
     public JSONObject toJSONObject() throws JSONException {
+        if(tenantId == 0) throw new IllegalArgumentException("Tenant Id is required");
+        if(brandId.isEmpty()) throw new IllegalArgumentException("Brand Id is required");
+        if(customerId.isEmpty()) throw new IllegalArgumentException("customer Id is required");
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         JSONObject metricsObj = new JSONObject();
         metricsObj.put("customerId", customerId);

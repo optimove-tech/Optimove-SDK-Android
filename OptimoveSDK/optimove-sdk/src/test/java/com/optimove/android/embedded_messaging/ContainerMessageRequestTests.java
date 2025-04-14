@@ -12,9 +12,8 @@ public class ContainerMessageRequestTests {
     @Test
     public void shouldConvertToJson() throws JSONException {
         ContainerMessageRequest request = new ContainerMessageRequest("test-id", 2);
-        JSONObject expected = new JSONObject("{\"limit\":2,\"containerId\":\"test-id\"}");
         JSONObject actual = request.toJSONObject();
-        Assert.assertEquals(expected.getString("containerId"), actual.getString("containerId"));
-        Assert.assertEquals(expected.getInt("limit"), actual.getInt("limit"));
+        Assert.assertEquals("test-id", actual.getString("containerId"));
+        Assert.assertEquals(2, actual.getInt("limit"));
     }
 }
