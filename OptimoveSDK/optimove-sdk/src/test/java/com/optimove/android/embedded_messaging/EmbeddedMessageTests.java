@@ -1,6 +1,5 @@
 package com.optimove.android.embedded_messaging;
 
-import com.optimove.android.embeddedmessaging.CampaignKind;
 import com.optimove.android.embeddedmessaging.EmbeddedMessage;
 
 import org.json.JSONException;
@@ -37,9 +36,5 @@ public class EmbeddedMessageTests {
         EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
         Assert.assertEquals(new Date(1744278486), message.getCreatedAt());
     }
-    @Test
-    public void shouldConvertIntToCampaignKinds() throws JSONException {
-        EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
-        Assert.assertEquals(CampaignKind.SCHEDULED, message.getCampaignKind());
-    }
+
 }

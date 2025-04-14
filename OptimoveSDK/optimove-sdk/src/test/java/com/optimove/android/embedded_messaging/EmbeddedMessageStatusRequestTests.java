@@ -1,8 +1,6 @@
 package com.optimove.android.embedded_messaging;
 
-import com.optimove.android.embeddedmessaging.CampaignKind;
 import com.optimove.android.embeddedmessaging.EmbeddedMessageStatusRequest;
-import com.optimove.android.embeddedmessaging.MetricEvent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +16,7 @@ public class EmbeddedMessageStatusRequestTests {
         Date dt = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
-                dt, "engagement", CampaignKind.SCHEDULED, "message", dt, dt);
+                dt, "engagement", 1, "message", dt, dt);
         request.setCustomerId("customer");
         request.setBrandId("brand");
         request.setTenantId(123);
@@ -31,7 +29,7 @@ public class EmbeddedMessageStatusRequestTests {
         Assert.assertEquals(sdf.format(dt), actualMetrics.getString("now"));
         Assert.assertEquals("engagement", actualMetrics.getString("engagementId"));
         Assert.assertEquals(sdf.format(dt), actualMetrics.getString("executionDateTime"));
-        Assert.assertEquals(CampaignKind.SCHEDULED.ordinal(), actualMetrics.getInt("campaignKind"));
+        Assert.assertEquals(1, actualMetrics.getInt("campaignKind"));
         Assert.assertEquals("message", actualMetrics.getString("messageId"));
         Assert.assertEquals(dt.getTime(), actualMetrics.getLong("readAt"));
     }
@@ -40,7 +38,7 @@ public class EmbeddedMessageStatusRequestTests {
     public void shouldThrowErrorsOnMissingFields() {
         Date dt = new Date();
         EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
-                dt, "engagement", CampaignKind.SCHEDULED, "message", dt, dt);
+                dt, "engagement", 1, "message", dt, dt);
         Assert.assertThrows(IllegalArgumentException.class, request::toJSONObject);
     }
 }

@@ -14,11 +14,11 @@ public class EmbeddedMessageStatusRequest {
     private Date now;
     private String engagementId;
     private Date executionDateTime;
-    private CampaignKind campaignKind;
+    private int campaignKind;
     private String messageId;
     private Date readAt;
 
-    public EmbeddedMessageStatusRequest(Date now, String engagementId, CampaignKind campaignKind,
+    public EmbeddedMessageStatusRequest(Date now, String engagementId, int campaignKind,
                                         String messageId, Date readAt, Date executionDateTime) {
         this.now = now;
         this.engagementId = engagementId;
@@ -53,7 +53,7 @@ public class EmbeddedMessageStatusRequest {
         metricsObj.put("messageId", messageId);
         metricsObj.put("readAt", readAt.getTime());
         metricsObj.put("executionDateTime", sdf.format(executionDateTime));
-        metricsObj.put("campaignKind", campaignKind.ordinal());
+        metricsObj.put("campaignKind", campaignKind);
         metricsArray.put(metricsObj);
         JSONObject obj = new JSONObject();
         obj.put("tenantId", tenantId);

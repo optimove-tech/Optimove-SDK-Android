@@ -25,7 +25,7 @@ public class EmbeddedMessage {
     private String media;
     private String url;
     private Map<String, String> payload;
-    private CampaignKind campaignKind;
+    private int campaignKind;
     private String engagementId;
     private Date executionDateTime;
 
@@ -43,7 +43,7 @@ public class EmbeddedMessage {
         content = jsonMessage.optString("content");
         media = jsonMessage.optString("media");
         url = jsonMessage.optString("url");
-        campaignKind = CampaignKind.values()[jsonMessage.optInt("campaignKind")];
+        campaignKind = jsonMessage.optInt("campaignKind");
         engagementId = jsonMessage.optString("engagementId");
         executionDateTime = convertIntToDate(jsonMessage.optLong("executionDateTime"));
     }
@@ -104,7 +104,7 @@ public class EmbeddedMessage {
         return payload;
     }
 
-    public CampaignKind getCampaignKind() {
+    public int getCampaignKind() {
         return campaignKind;
     }
 

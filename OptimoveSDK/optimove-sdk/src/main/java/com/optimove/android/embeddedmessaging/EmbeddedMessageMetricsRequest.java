@@ -15,12 +15,12 @@ public class EmbeddedMessageMetricsRequest {
     private MetricEvent event;
     private String engagementId;
     private Date executionDateTime;
-    private CampaignKind campaignKind;
+    private int campaignKind;
 
 
     public EmbeddedMessageMetricsRequest(
             Date now, MetricEvent event, String engagementId, Date executionDateTime,
-            CampaignKind campaignKind) {
+            int campaignKind) {
         this.now = now;
         this.event = event;
         this.engagementId = engagementId;
@@ -50,7 +50,7 @@ public class EmbeddedMessageMetricsRequest {
         metricsObj.put("event", event.ordinal());
         metricsObj.put("engagementId", engagementId);
         metricsObj.put("executionDateTime", sdf.format(executionDateTime));
-        metricsObj.put("campaignKind", campaignKind.ordinal());
+        metricsObj.put("campaignKind", campaignKind);
         JSONObject obj = new JSONObject();
         obj.put("tenantId", tenantId);
         obj.put("brandId", brandId);

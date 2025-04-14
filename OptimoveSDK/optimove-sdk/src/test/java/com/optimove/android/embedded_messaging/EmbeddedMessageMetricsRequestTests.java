@@ -1,6 +1,5 @@
 package com.optimove.android.embedded_messaging;
 
-import com.optimove.android.embeddedmessaging.CampaignKind;
 import com.optimove.android.embeddedmessaging.EmbeddedMessageMetricsRequest;
 import com.optimove.android.embeddedmessaging.MetricEvent;
 
@@ -18,7 +17,7 @@ public class EmbeddedMessageMetricsRequestTests {
         Date dt = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
-                dt, MetricEvent.CLICK, "engagement", dt, CampaignKind.SCHEDULED);
+                dt, MetricEvent.CLICK, "engagement", dt, 1);
         request.setCustomerId("customer");
         request.setBrandId("brand");
         request.setTenantId(123);
@@ -31,7 +30,7 @@ public class EmbeddedMessageMetricsRequestTests {
         Assert.assertEquals(sdf.format(dt), actualMetrics.getString("now"));
         Assert.assertEquals("engagement", actualMetrics.getString("engagementId"));
         Assert.assertEquals(sdf.format(dt), actualMetrics.getString("executionDateTime"));
-        Assert.assertEquals(CampaignKind.SCHEDULED.ordinal(), actualMetrics.getInt("campaignKind"));
+        Assert.assertEquals(1, actualMetrics.getInt("campaignKind"));
 
     }
 
@@ -39,7 +38,7 @@ public class EmbeddedMessageMetricsRequestTests {
     public void shouldThrowErrorsOnMissingFields() {
         Date dt = new Date();
         EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
-                dt, MetricEvent.CLICK, "engagement", dt, CampaignKind.SCHEDULED);
+                dt, MetricEvent.CLICK, "engagement", dt, 1);
         Assert.assertThrows(IllegalArgumentException.class, request::toJSONObject);
     }
 }
