@@ -228,9 +228,9 @@ public final class OptimoveConfig {
         try {
             JSONArray result = this.parseCredentials(embeddedMessagingConfigurationString);
 
-            String region = result.getString(1);
-            int tenantId = result.getInt(2);
-            String brandId = result.getString(3);
+            String region = result.getString(0);
+            int tenantId = result.getInt(1);
+            String brandId = result.getString(2);
 
             this.embeddedMessagingConfig = new EmbeddedMessagingConfig(region, tenantId, brandId);
         } catch (JSONException e) {

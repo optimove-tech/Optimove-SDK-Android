@@ -20,7 +20,6 @@ import com.optimove.android.embeddedmessaging.EmbeddedMessageStatusRequest;
 import com.optimove.android.embeddedmessaging.MetricEvent;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -102,9 +101,8 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
 
     private void sendClickMetrics() {
         Date justNow = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
-                sdf.format(justNow), MetricEvent.CLICK, selectedMessage.getEngagementId(), sdf.format(justNow),
+                justNow, MetricEvent.CLICK, selectedMessage.getEngagementId(), justNow,
                 selectedMessage.getCampaignKind());
         OptimoveEmbeddedMessaging.getInstance().reportClickMetricAsync(request, (OptimoveEmbeddedMessaging.ResultType result) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
@@ -118,10 +116,9 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
 
     private void setAsRead() {
         Date justNow = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
-                sdf.format(justNow), selectedMessage.getEngagementId(), selectedMessage.getCampaignKind(),
-                selectedMessageId, justNow);
+                justNow, selectedMessage.getEngagementId(), selectedMessage.getCampaignKind(),
+                selectedMessageId, justNow, selectedMessage.getExecutionDateTime());
         OptimoveEmbeddedMessaging.getInstance().setAsReadASync(request, (OptimoveEmbeddedMessaging.ResultType result) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
             if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
