@@ -179,7 +179,7 @@ public class OptimoveEmbeddedMessaging {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = String.format(
                         "%s&customerId=%s",
-                        super.getBaseUrl("embeddedmessages/getembeddedmessages"),
+                        super.getBaseUrl("embedded-messages/get-embedded-messages"),
                         encodedCustomerId);
                 JSONArray postBody = new JSONArray();
                 for (ContainerMessageRequest cm : requestBody) {
@@ -398,7 +398,7 @@ public class OptimoveEmbeddedMessaging {
                         JSONObject message = containerMessages.getJSONObject(i);
                         embeddedMessages[i] = new EmbeddedMessage(message);
                     }
-                    containers.add(new Container(containerId, "", embeddedMessages));
+                    containers.add(new Container(containerId, embeddedMessages));
                 }
                 return containers;
             } catch (NullPointerException | JSONException | IOException e) {
