@@ -30,8 +30,6 @@ public class EmbeddedMessage {
     private Date executionDateTime;
     private int messageLayoutType;
 
-    private
-
     public EmbeddedMessage(JSONObject jsonMessage) throws JSONException {
         id = jsonMessage.optString("id");
         containerId = jsonMessage.optString("containerId");

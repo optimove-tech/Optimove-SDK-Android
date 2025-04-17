@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,7 +57,7 @@ public class OptimoveEmbeddedMessaging {
     }
 
     public interface EmbeddedMessagesGetHandler {
-        void run(ResultType result, @Nullable List<Container> containers);
+        void run(ResultType result, @Nullable EmbeddedMessagesResponse response);
     }
 
     public interface EmbeddedMessagesSetHandler {
@@ -64,19 +66,19 @@ public class OptimoveEmbeddedMessaging {
 
     public class EmbeddedMessagingResult {
         private ResultType result;
-        private List<Container> containers;
+        private EmbeddedMessagesResponse response;
 
-        public EmbeddedMessagingResult(ResultType result, List<Container> containers) {
+        public EmbeddedMessagingResult(ResultType result, EmbeddedMessagesResponse response) {
             this.result = result;
-            this.containers = containers;
+            this.response = response;
         }
 
         public ResultType getResult() {
             return this.result;
         }
 
-        public List<Container> getContainers() {
-            return this.containers;
+        public EmbeddedMessagesResponse getResponse() {
+            return this.response;
         }
     }
 
@@ -191,11 +193,11 @@ public class OptimoveEmbeddedMessaging {
                 e.printStackTrace();
             }
 
-            this.fireCallback(result.getResult(), result.getContainers());
+            this.fireCallback(result.getResult(), result.getResponse());
         }
 
-        private void fireCallback(ResultType result, @Nullable List<Container> containers) {
-            handler.post(() -> GetEmbeddedMessagesRunnable.this.callback.run(result, containers));
+        private void fireCallback(ResultType result, @Nullable EmbeddedMessagesResponse response) {
+            handler.post(() -> GetEmbeddedMessagesRunnable.this.callback.run(result, response));
         }
     }
 
@@ -372,20 +374,20 @@ public class OptimoveEmbeddedMessaging {
         }
 
         private EmbeddedMessagingResult handleResponse(Response response, boolean expectResponse) {
-            List<Container> containers = null;
+            EmbeddedMessagesResponse containers = null;
             ResultType resultType = ResultType.ERROR;
             if (!response.isSuccessful()) {
                 logFailedResponse(response);
             } else {
-                containers = expectResponse ? mapResponseToContainers(response) : null;
+                containers = expectResponse ? mapResponse(response) : null;
                 resultType = ResultType.SUCCESS;
             }
             return new EmbeddedMessagingResult(resultType, containers);
         }
 
-        private List<Container> mapResponseToContainers(Response response) {
+        private EmbeddedMessagesResponse mapResponse(Response response) {
             try {
-                List<Container> containers = new ArrayList<>();
+                Map<String, Container> containerMap = new HashMap<>();
                 JSONObject data = new JSONObject(response.body().string());
 
                 JSONObject containerObject = data.getJSONObject("containers");
@@ -398,9 +400,9 @@ public class OptimoveEmbeddedMessaging {
                         JSONObject message = containerMessages.getJSONObject(i);
                         embeddedMessages[i] = new EmbeddedMessage(message);
                     }
-                    containers.add(new Container(containerId, embeddedMessages));
+                    containerMap.put(containerId, new Container(containerId, embeddedMessages));
                 }
-                return containers;
+                return new EmbeddedMessagesResponse(containerMap);
             } catch (NullPointerException | JSONException | IOException e) {
                 Log.e(TAG, e.getMessage());
                 return null;

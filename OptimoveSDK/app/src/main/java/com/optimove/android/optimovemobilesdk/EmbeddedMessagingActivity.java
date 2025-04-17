@@ -17,11 +17,12 @@ import com.optimove.android.embeddedmessaging.ContainerMessageRequest;
 import com.optimove.android.embeddedmessaging.EmbeddedMessage;
 import com.optimove.android.embeddedmessaging.EmbeddedMessageMetricsRequest;
 import com.optimove.android.embeddedmessaging.EmbeddedMessageStatusRequest;
+import com.optimove.android.embeddedmessaging.EmbeddedMessagesResponse;
 import com.optimove.android.embeddedmessaging.MetricEvent;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 
 public class EmbeddedMessagingActivity extends AppCompatActivity {
 
@@ -77,21 +78,22 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
     private void refreshMessages() {
         ContainerMessageRequest[] request = getRequestBody();
         if (request.length < 1) {
-            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync((OptimoveEmbeddedMessaging.ResultType result, List<Container> containers) -> {
+            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync((OptimoveEmbeddedMessaging.ResultType result, EmbeddedMessagesResponse response) -> {
                 TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
                 if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                    if (containers == null) return;
-                    updateViewFromContainers(containers, containersRetrievedAmt);
+                    if (response.getContainersMap() == null) return;
+
+                    updateViewFromResponse(response.getContainersMap(), containersRetrievedAmt);
                 } else {
                     handleErrors(result, containersRetrievedAmt);
                 }
             });
         } else {
-            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, List<Container> containers) -> {
+            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, EmbeddedMessagesResponse response) -> {
                 TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
                 if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                    if (containers == null) return;
-                    updateViewFromContainers(containers, containersRetrievedAmt);
+                    if (response.getContainersMap() == null) return;
+                    updateViewFromResponse(response.getContainersMap(), containersRetrievedAmt);
                 } else {
                     handleErrors(result, containersRetrievedAmt);
                 }
@@ -180,17 +182,16 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         return request;
     }
 
-    private void updateViewFromContainers(List<Container> containers, TextView containersRetrievedAmt) {
-        containersRetrievedAmt.setText(String.format("%d containers retrieved", containers.toArray().length));
+    private void updateViewFromResponse(Map<String, Container> response, TextView containersRetrievedAmt) {
+        containersRetrievedAmt.setText(String.format("%d containers retrieved", response.size()));
         ListView listView = findViewById(R.id.messageListView);
         ArrayAdapter<String> adaptor = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         listView.setAdapter(adaptor);
-        for (Container container : containers) {
-            listMessages = container.getMessages();
+        for (Map.Entry<String, Container> entry : response.entrySet()) {
+            listMessages = entry.getValue().getMessages();
             for (EmbeddedMessage message : listMessages) {
                 adaptor.add(String.format("%s: %s", message.getTitle(), message.getContent()));
             }
         }
-
     }
 }
