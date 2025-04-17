@@ -24,10 +24,13 @@ public class EmbeddedMessage {
     private String content;
     private String media;
     private String url;
-    private Map<String, String> payload;
+    private String payload;
     private int campaignKind;
     private String engagementId;
     private Date executionDateTime;
+    private int messageLayoutType;
+
+    private
 
     public EmbeddedMessage(JSONObject jsonMessage) throws JSONException {
         id = jsonMessage.optString("id");
@@ -44,8 +47,10 @@ public class EmbeddedMessage {
         media = jsonMessage.optString("media");
         url = jsonMessage.optString("url");
         campaignKind = jsonMessage.optInt("campaignKind");
+        payload = jsonMessage.optString("payload");
         engagementId = jsonMessage.optString("engagementId");
         executionDateTime = convertIntToDate(jsonMessage.optLong("executionDateTime"));
+        messageLayoutType = jsonMessage.optInt("messageLayoutType");
     }
 
     public String getId() {
@@ -100,7 +105,7 @@ public class EmbeddedMessage {
         return url;
     }
 
-    public Map<String, String> getPayload() {
+    public String getPayload() {
         return payload;
     }
 
@@ -114,6 +119,10 @@ public class EmbeddedMessage {
 
     public Date getExecutionDateTime() {
         return executionDateTime;
+    }
+
+    public int getMessageLayoutType() {
+        return messageLayoutType;
     }
 
     private Date convertIntToDate(long unixTimestamp) {
