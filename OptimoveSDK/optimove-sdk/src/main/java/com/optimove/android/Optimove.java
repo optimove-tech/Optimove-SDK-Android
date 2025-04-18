@@ -176,7 +176,7 @@ final public class Optimove {
 
         if(config.isEmbeddedMessagingConfigured()) {
             if(!config.isOptimobileConfigured()) {
-                Log.e("OptimoveEM", "Embedded messaging requires optimove credentials");
+                Log.e("OptimoveEM", "Embedded messaging requires optimobile credentials");
             } else {
                 OptimoveEmbeddedMessaging.initialize();
             }
