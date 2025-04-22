@@ -1,5 +1,8 @@
 package com.optimove.android.embeddedmessaging;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -105,6 +108,14 @@ public class EmbeddedMessage {
 
     public String getPayload() {
         return payload;
+    }
+
+    public JSONObject getJSONPayload() throws JSONException {
+        return new JSONObject(payload);
+    }
+
+    public <T> T getPayload(Class<T> cls) {
+        return new Gson().fromJson(payload, cls);
     }
 
     public int getCampaignKind() {
