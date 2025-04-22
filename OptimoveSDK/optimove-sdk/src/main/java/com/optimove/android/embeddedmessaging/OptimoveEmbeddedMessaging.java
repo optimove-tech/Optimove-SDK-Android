@@ -16,18 +16,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import kotlin.NotImplementedError;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -82,7 +78,7 @@ public class OptimoveEmbeddedMessaging {
         }
     }
 
-    public void getEmbeddedMessagesAsync(ContainerMessageRequest[] requestBody, @NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
+    public void getMessagesAsync(ContainerRequestOptions[] requestBody, @NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
         EmbeddedMessagingConfig config = Optimove.getConfig().getEmbeddedMessagingConfig();
         if (config == null) {
             Log.e(TAG, "Embedded messaging config is not set");
@@ -102,20 +98,16 @@ public class OptimoveEmbeddedMessaging {
         executorService.submit(task);
     }
 
-    public void getEmbeddedMessagesAsync(@NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
-        getEmbeddedMessagesAsync(new ContainerMessageRequest[]{}, embeddedMessagesGetHandler);
-    }
-
-    public void deleteEmbeddedMessageAsync(String Id, @NonNull EmbeddedMessagesSetHandler embeddedMessagesDeleteHandler) {
+    public void deleteMessageAsync(EmbeddedMessage message, @NonNull EmbeddedMessagesSetHandler embeddedMessagesDeleteHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesDeleteHandler);
         if (config == null) return;
 
-        Runnable task = new DeleteEmbeddedMessagesRunnable(config, Id, embeddedMessagesDeleteHandler);
+        Runnable task = new DeleteEmbeddedMessagesRunnable(config, message.getId(), embeddedMessagesDeleteHandler);
         executorService.submit(task);
     }
 
     public void reportClickMetricAsync(
-            EmbeddedMessageMetricsRequest metrics,
+            EmbeddedMessage message,
             @NonNull EmbeddedMessagesSetHandler embeddedMessagesMetricsHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesMetricsHandler);
         if (config == null) return;
@@ -128,11 +120,14 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesMetricsHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
+        EmbeddedMessageMetricsRequest metrics = new EmbeddedMessageMetricsRequest(
+                new Date(), MetricEvent.CLICK, message.getEngagementId(),
+                message.getExecutionDateTime(), message.getCampaignKind());
         Runnable task = new PostEmbeddedMesssagesMetricsRunnable(metrics, config, userId, embeddedMessagesMetricsHandler);
         executorService.submit(task);
     }
 
-    public void setAsReadASync(EmbeddedMessageStatusRequest statusMetrics,
+    public void setAsReadASync(EmbeddedMessage message, boolean isRead,
                                @NonNull EmbeddedMessagesSetHandler embeddedMessagesStatusHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesStatusHandler);
         if (config == null) return;
@@ -145,6 +140,10 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesStatusHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
+        Date now = new Date();
+        EmbeddedMessageStatusRequest statusMetrics = new EmbeddedMessageStatusRequest(
+                now, message.getEngagementId(), message.getCampaignKind(), message.getId(),
+                isRead ? now : null, message.getExecutionDateTime());
         Runnable task = new PutEmbeddedMessagesStatusRunnable(
                 statusMetrics, config, userId, embeddedMessagesStatusHandler);
         executorService.submit(task);
@@ -164,10 +163,10 @@ public class OptimoveEmbeddedMessaging {
     class GetEmbeddedMessagesRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
         private final EmbeddedMessagesGetHandler callback;
         private final String customerId;
-        private final ContainerMessageRequest[] requestBody;
+        private final ContainerRequestOptions[] requestBody;
 
         GetEmbeddedMessagesRunnable(
-                EmbeddedMessagingConfig config, String customerId, EmbeddedMessagesGetHandler callback, ContainerMessageRequest[] requestBody) {
+                EmbeddedMessagingConfig config, String customerId, EmbeddedMessagesGetHandler callback, ContainerRequestOptions[] requestBody) {
             super(config);
             this.customerId = customerId;
             this.callback = callback;
@@ -184,7 +183,7 @@ public class OptimoveEmbeddedMessaging {
                         super.getBaseUrl("embedded-messages/get-embedded-messages"),
                         encodedCustomerId);
                 JSONArray postBody = new JSONArray();
-                for (ContainerMessageRequest cm : requestBody) {
+                for (ContainerRequestOptions cm : requestBody) {
                     postBody.put(cm.toJSONObject());
                 }
                 result = super.postSync(url, postBody, true);

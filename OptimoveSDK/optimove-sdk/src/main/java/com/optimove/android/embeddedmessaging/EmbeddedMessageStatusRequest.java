@@ -51,7 +51,9 @@ public class EmbeddedMessageStatusRequest {
         metricsObj.put("now", sdf.format(now));
         metricsObj.put("engagementId", engagementId);
         metricsObj.put("messageId", messageId);
-        metricsObj.put("readAt", readAt.getTime());
+        if(readAt != null) {
+            metricsObj.put("readAt", readAt.getTime());
+        }
         metricsObj.put("executionDateTime", sdf.format(executionDateTime));
         metricsObj.put("campaignKind", campaignKind);
         metricsArray.put(metricsObj);

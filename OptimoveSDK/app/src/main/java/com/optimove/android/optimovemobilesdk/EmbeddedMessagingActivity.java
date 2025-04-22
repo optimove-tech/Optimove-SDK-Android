@@ -13,15 +13,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.optimove.android.embeddedmessaging.Container;
-import com.optimove.android.embeddedmessaging.ContainerMessageRequest;
+import com.optimove.android.embeddedmessaging.ContainerRequestOptions;
 import com.optimove.android.embeddedmessaging.EmbeddedMessage;
-import com.optimove.android.embeddedmessaging.EmbeddedMessageMetricsRequest;
-import com.optimove.android.embeddedmessaging.EmbeddedMessageStatusRequest;
 import com.optimove.android.embeddedmessaging.EmbeddedMessagesResponse;
-import com.optimove.android.embeddedmessaging.MetricEvent;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 
-import java.util.Date;
 import java.util.Map;
 
 public class EmbeddedMessagingActivity extends AppCompatActivity {
@@ -76,37 +72,20 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
     }
 
     private void refreshMessages() {
-        ContainerMessageRequest[] request = getRequestBody();
-        if (request.length < 1) {
-            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync((OptimoveEmbeddedMessaging.ResultType result, EmbeddedMessagesResponse response) -> {
-                TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
-                if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                    if (response.getContainersMap() == null) return;
-
-                    updateViewFromResponse(response.getContainersMap(), containersRetrievedAmt);
-                } else {
-                    handleErrors(result, containersRetrievedAmt);
-                }
-            });
-        } else {
-            OptimoveEmbeddedMessaging.getInstance().getEmbeddedMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, EmbeddedMessagesResponse response) -> {
-                TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
-                if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                    if (response.getContainersMap() == null) return;
-                    updateViewFromResponse(response.getContainersMap(), containersRetrievedAmt);
-                } else {
-                    handleErrors(result, containersRetrievedAmt);
-                }
-            });
-        }
+        ContainerRequestOptions[] request = getRequestBody();
+        OptimoveEmbeddedMessaging.getInstance().getMessagesAsync(request, (OptimoveEmbeddedMessaging.ResultType result, EmbeddedMessagesResponse response) -> {
+            TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+            if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
+                if (response.getContainersMap() == null) return;
+                updateViewFromResponse(response.getContainersMap(), containersRetrievedAmt);
+            } else {
+                handleErrors(result, containersRetrievedAmt);
+            }
+        });
     }
 
     private void sendClickMetrics() {
-        Date justNow = new Date();
-        EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
-                justNow, MetricEvent.CLICK, selectedMessage.getEngagementId(), justNow,
-                selectedMessage.getCampaignKind());
-        OptimoveEmbeddedMessaging.getInstance().reportClickMetricAsync(request, (OptimoveEmbeddedMessaging.ResultType result) -> {
+        OptimoveEmbeddedMessaging.getInstance().reportClickMetricAsync(selectedMessage, (OptimoveEmbeddedMessaging.ResultType result) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
             if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
                 containersRetrievedAmt.setText("Click Metrics Sent");
@@ -117,22 +96,20 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
     }
 
     private void setAsRead() {
-        Date justNow = new Date();
-        EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
-                justNow, selectedMessage.getEngagementId(), selectedMessage.getCampaignKind(),
-                selectedMessageId, justNow, selectedMessage.getExecutionDateTime());
-        OptimoveEmbeddedMessaging.getInstance().setAsReadASync(request, (OptimoveEmbeddedMessaging.ResultType result) -> {
-            TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
-            if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                containersRetrievedAmt.setText("Message marked as Read");
-            } else {
-                handleErrors(result, containersRetrievedAmt);
-            }
-        });
+        OptimoveEmbeddedMessaging.getInstance().setAsReadASync(
+                selectedMessage, selectedMessage.getReadAt() != null,
+                (OptimoveEmbeddedMessaging.ResultType result) -> {
+                    TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
+                    if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
+                        containersRetrievedAmt.setText("Message marked as Read");
+                    } else {
+                        handleErrors(result, containersRetrievedAmt);
+                    }
+                });
     }
 
     private void deleteMessage() {
-        OptimoveEmbeddedMessaging.getInstance().deleteEmbeddedMessageAsync(selectedMessageId, (OptimoveEmbeddedMessaging.ResultType result) -> {
+        OptimoveEmbeddedMessaging.getInstance().deleteMessageAsync(selectedMessage, (OptimoveEmbeddedMessaging.ResultType result) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
             if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
                 containersRetrievedAmt.setText("Message Deleted");
@@ -157,19 +134,19 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         }
     }
 
-    private ContainerMessageRequest[] getRequestBody() {
+    private ContainerRequestOptions[] getRequestBody() {
         EditText containerEdit = findViewById(R.id.containerEdit);
         String containerString = containerEdit.getText().toString();
         EditText limitEdit = findViewById(R.id.limitEdit);
 
         if (containerString.isEmpty()) {
-            return new ContainerMessageRequest[]{};
+            return new ContainerRequestOptions[]{};
         }
 
         String[] containerIds = containerString.split(";");
         String[] limits = limitEdit.getText().toString().split(";");
 
-        ContainerMessageRequest[] request = new ContainerMessageRequest[containerIds.length];
+        ContainerRequestOptions[] request = new ContainerRequestOptions[containerIds.length];
         for (int i = 0; i < containerIds.length; i++) {
             int limit;
             try {
@@ -177,7 +154,7 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
             } catch (Exception e) {
                 limit = 50;
             }
-            request[i] = new ContainerMessageRequest(containerIds[i], limit);
+            request[i] = new ContainerRequestOptions(containerIds[i], limit);
         }
         return request;
     }

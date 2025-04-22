@@ -3,12 +3,12 @@ package com.optimove.android.embeddedmessaging;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ContainerMessageRequest {
+public class ContainerRequestOptions {
 
     private String containerId;
     private int limit;
 
-    public ContainerMessageRequest(String containerId, int limit) {
+    public ContainerRequestOptions(String containerId, int limit) {
         this.containerId = containerId;
         this.limit = limit;
     }

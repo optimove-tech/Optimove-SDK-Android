@@ -1,6 +1,6 @@
 package com.optimove.android.embedded_messaging;
 
-import com.optimove.android.embeddedmessaging.ContainerMessageRequest;
+import com.optimove.android.embeddedmessaging.ContainerRequestOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,7 +11,7 @@ public class ContainerMessageRequestTests {
 
     @Test
     public void shouldConvertToJson() throws JSONException {
-        ContainerMessageRequest request = new ContainerMessageRequest("test-id", 2);
+        ContainerRequestOptions request = new ContainerRequestOptions("test-id", 2);
         JSONObject actual = request.toJSONObject();
         Assert.assertEquals("test-id", actual.getString("containerId"));
         Assert.assertEquals(2, actual.getInt("limit"));

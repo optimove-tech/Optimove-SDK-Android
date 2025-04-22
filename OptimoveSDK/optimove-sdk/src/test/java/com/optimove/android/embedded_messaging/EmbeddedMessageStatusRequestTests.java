@@ -24,7 +24,7 @@ public class EmbeddedMessageStatusRequestTests {
         Assert.assertEquals(123, actual.getInt("tenantId"));
         Assert.assertEquals("brand", actual.getString("brandId"));
 
-        JSONObject actualMetrics = actual.getJSONArray("statusMetrics").getJSONObject(0) ;
+        JSONObject actualMetrics = actual.getJSONArray("statusMetrics").getJSONObject(0);
         Assert.assertEquals("customer", actualMetrics.getString("customerId"));
         Assert.assertEquals(sdf.format(dt), actualMetrics.getString("now"));
         Assert.assertEquals("engagement", actualMetrics.getString("engagementId"));
@@ -40,5 +40,19 @@ public class EmbeddedMessageStatusRequestTests {
         EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
                 dt, "engagement", 1, "message", dt, dt);
         Assert.assertThrows(IllegalArgumentException.class, request::toJSONObject);
+    }
+
+    @Test
+    public void shouldAllowNullReadAt() throws JSONException {
+        Date dt = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        EmbeddedMessageStatusRequest request = new EmbeddedMessageStatusRequest(
+                dt, "engagement", 1, "message", null, dt);
+        request.setCustomerId("customer");
+        request.setBrandId("brand");
+        request.setTenantId(123);
+        JSONObject actual = request.toJSONObject();
+        JSONObject actualMetrics = actual.getJSONArray("statusMetrics").getJSONObject(0);
+        Assert.assertEquals(-1, actualMetrics.optLong("readAt", -1));
     }
 }
