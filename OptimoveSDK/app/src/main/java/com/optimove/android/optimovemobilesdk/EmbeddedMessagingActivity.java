@@ -44,7 +44,7 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.setHeaderTitle("Choose an Action");
-        menu.add(0, v.getId(), 0, "Mark as Read");
+        menu.add(0, v.getId(), 0, "Toggle Set as Read");
         menu.add(0, v.getId(), 0, "Click Metric");
         menu.add(0, v.getId(), 0, "Delete");
     }
@@ -54,7 +54,7 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         String title = item.getTitle().toString();
         Log.d("DEBUG", String.format("Selected Item clicked with Id: %s", selectedMessageId));
         switch (title) {
-            case "Mark as Read":
+            case "Toggle Set as Read":
                 setAsRead();
                 break;
             case "Click Metric":
@@ -96,12 +96,14 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
     }
 
     private void setAsRead() {
+        boolean unreadMessage = selectedMessage.getReadAt() == null;
         OptimoveEmbeddedMessaging.getInstance().setAsReadASync(
-                selectedMessage, selectedMessage.getReadAt() != null,
+                selectedMessage, unreadMessage,
                 (OptimoveEmbeddedMessaging.ResultType result) -> {
                     TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
                     if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                        containersRetrievedAmt.setText("Message marked as Read");
+                        refreshMessages();
+                        containersRetrievedAmt.setText("Message marked as " + (unreadMessage ? "read" : "unread"));
                     } else {
                         handleErrors(result, containersRetrievedAmt);
                     }
@@ -112,8 +114,8 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         OptimoveEmbeddedMessaging.getInstance().deleteMessageAsync(selectedMessage, (OptimoveEmbeddedMessaging.ResultType result) -> {
             TextView containersRetrievedAmt = findViewById(R.id.containersRetrievedAmt);
             if (result == OptimoveEmbeddedMessaging.ResultType.SUCCESS) {
-                containersRetrievedAmt.setText("Message Deleted");
                 refreshMessages();
+                containersRetrievedAmt.setText("Message Deleted");
             } else {
                 handleErrors(result, containersRetrievedAmt);
             }
@@ -167,7 +169,8 @@ public class EmbeddedMessagingActivity extends AppCompatActivity {
         for (Map.Entry<String, Container> entry : response.entrySet()) {
             listMessages = entry.getValue().getMessages();
             for (EmbeddedMessage message : listMessages) {
-                adaptor.add(String.format("%s: %s", message.getTitle(), message.getContent()));
+                boolean messageUnread = message.getReadAt() == null;
+                adaptor.add(String.format("%s: %s %s", message.getTitle(), message.getContent(), messageUnread ? "•": ""));
             }
         }
     }

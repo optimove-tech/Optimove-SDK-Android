@@ -1,11 +1,17 @@
 package com.optimove.android.embedded_messaging;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.optimove.android.embeddedmessaging.EmbeddedMessage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockitoAnnotations;
+
 import java.util.Date;
 
 public class EmbeddedMessageTests {
@@ -30,19 +36,33 @@ public class EmbeddedMessageTests {
             "        \"updatedAt\": null,\n" +
             "        \"deletedAt\": null\n" +
             "      }";
-
+    EmbeddedMessage message;
+    @Before
+    public void setUp() throws JSONException {
+       message = new EmbeddedMessage(new JSONObject(testJSON));
+    }
     @Test
-    public void shouldConvertIntsToDates() throws JSONException {
-        EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
+    public void shouldConvertIntsToDates(){
         Assert.assertEquals(new Date(1744278486), message.getCreatedAt());
     }
 
     @Test
+    public void shouldAllowNullReadAt() {
+        Assert.assertNull(message.getReadAt());
+    }
+
+    @Test
     public void shouldGetPayloadAsJsonObject() throws JSONException {
-        EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
         JSONObject payloadData = message.getJSONPayload();
         Assert.assertEquals("value1", payloadData.getString("key1"));
         Assert.assertEquals("value2", payloadData.getString("key2"));
+    }
+    
+    @Test
+    public void shouldGetPayloadAsCustomObject() throws JSONException {
+        TestPayload payloadData = message.getPayload(TestPayload.class);
+        Assert.assertEquals("value1", payloadData.getKey1());
+        Assert.assertEquals("value2", payloadData.getKey2());
     }
 
     class TestPayload {
@@ -59,11 +79,6 @@ public class EmbeddedMessageTests {
             return this.key2;
         }
     }
-    @Test
-    public void shouldGetPayloadAsCustomObject() throws JSONException {
-        EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
-        TestPayload payloadData = message.getPayload(TestPayload.class);
-        Assert.assertEquals("value1", payloadData.getKey1());
-        Assert.assertEquals("value2", payloadData.getKey2());
-    }
+
+
 }

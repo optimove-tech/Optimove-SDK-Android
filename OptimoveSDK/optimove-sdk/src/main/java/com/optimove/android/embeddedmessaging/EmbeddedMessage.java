@@ -37,10 +37,10 @@ public class EmbeddedMessage {
         id = jsonMessage.optString("id");
         containerId = jsonMessage.optString("containerId");
         templateId = jsonMessage.optInt("templateId");
-        createdAt = convertIntToDate(jsonMessage.optLong("createdAt"));
-        updatedAt = convertIntToDate(jsonMessage.optLong("updatedAt"));
-        readAt = convertIntToDate(jsonMessage.optLong("readAt"));
-        expiryDate = convertIntToDate(jsonMessage.optLong("expiryDate"));
+        createdAt = convertLongToDate(jsonMessage.optLong("createdAt"));
+        updatedAt = convertLongToDate(jsonMessage.optLong("updatedAt"));
+        readAt = convertLongToNullableDate(jsonMessage.optLong("readAt"));
+        expiryDate = convertLongToNullableDate(jsonMessage.optLong("expiryDate"));
         customerId = jsonMessage.optString("customerId");
         isVisitor = jsonMessage.optBoolean("isVisitor");
         title = jsonMessage.optString("title");
@@ -50,7 +50,7 @@ public class EmbeddedMessage {
         campaignKind = jsonMessage.optInt("campaignKind");
         payload = jsonMessage.optString("payload");
         engagementId = jsonMessage.optString("engagementId");
-        executionDateTime = convertIntToDate(jsonMessage.optLong("executionDateTime"));
+        executionDateTime = convertLongToDate(jsonMessage.optLong("executionDateTime"));
         messageLayoutType = jsonMessage.optInt("messageLayoutType");
     }
 
@@ -134,7 +134,13 @@ public class EmbeddedMessage {
         return messageLayoutType;
     }
 
-    private Date convertIntToDate(long unixTimestamp) {
+    private Date convertLongToNullableDate(long unixTimestamp) {
+        if(unixTimestamp <= 0) {
+            return null;
+        }
+        return convertLongToDate(unixTimestamp);
+    }
+    private Date convertLongToDate(long unixTimestamp) {
         return new Date(unixTimestamp);
     }
 }
