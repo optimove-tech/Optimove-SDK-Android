@@ -20,7 +20,7 @@ public class EmbeddedMessageTests {
             "        \"readAt\": null,\n" +
             "        \"url\": \"https://google.com\",\n" +
             "        \"engagementId\": \"0\",\n" +
-            "        \"payload\": {},\n" +
+            "        \"payload\": \"{'key1': 'value1', 'key2': 'value2'}\",\n" +
             "        \"campaignKind\": 1,\n" +
             "        \"executionDateTime\": \"2025-04-08T13:32:16Z\",\n" +
             "        \"expiryDate\": \"2025-05-08T23:59:00Z\",\n" +
@@ -37,4 +37,33 @@ public class EmbeddedMessageTests {
         Assert.assertEquals(new Date(1744278486), message.getCreatedAt());
     }
 
+    @Test
+    public void shouldGetPayloadAsJsonObject() throws JSONException {
+        EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
+        JSONObject payloadData = message.getJSONPayload();
+        Assert.assertEquals("value1", payloadData.getString("key1"));
+        Assert.assertEquals("value2", payloadData.getString("key2"));
+    }
+
+    class TestPayload {
+        private String key1;
+        private String key2;
+        public TestPayload(String key1, String key2) {
+            this.key1 = key1;
+            this.key2 = key2;
+        }
+        public String getKey1() {
+            return this.key1;
+        }
+        public String getKey2() {
+            return this.key2;
+        }
+    }
+    @Test
+    public void shouldGetPayloadAsCustomObject() throws JSONException {
+        EmbeddedMessage message = new EmbeddedMessage(new JSONObject(testJSON));
+        TestPayload payloadData = message.getPayload(TestPayload.class);
+        Assert.assertEquals("value1", payloadData.getKey1());
+        Assert.assertEquals("value2", payloadData.getKey2());
+    }
 }
