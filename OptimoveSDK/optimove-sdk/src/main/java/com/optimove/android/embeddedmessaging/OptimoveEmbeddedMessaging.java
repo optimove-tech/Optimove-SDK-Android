@@ -78,6 +78,12 @@ public class OptimoveEmbeddedMessaging {
         }
     }
 
+    /**
+     * Asynchronously gets embedded messages
+     *
+     * @param requestBody an array of containerIds and the limit of messages for each container
+     * @param embeddedMessagesGetHandler handler
+     */
     public void getMessagesAsync(ContainerRequestOptions[] requestBody, @NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
         EmbeddedMessagingConfig config = Optimove.getConfig().getEmbeddedMessagingConfig();
         if (config == null) {
@@ -98,6 +104,12 @@ public class OptimoveEmbeddedMessaging {
         executorService.submit(task);
     }
 
+    /**
+     * Asynchronously delete a message
+     *
+     * @param message the message that we are deleting
+     * @param embeddedMessagesDeleteHandler handler
+     */
     public void deleteMessageAsync(EmbeddedMessage message, @NonNull EmbeddedMessagesSetHandler embeddedMessagesDeleteHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesDeleteHandler);
         if (config == null) return;
@@ -106,6 +118,12 @@ public class OptimoveEmbeddedMessaging {
         executorService.submit(task);
     }
 
+    /**
+     * Asynchronously sends a click metric for a message
+     *
+     * @param message the message that we are sending the metric for
+     * @param embeddedMessagesMetricsHandler handler
+     */
     public void reportClickMetricAsync(
             EmbeddedMessage message,
             @NonNull EmbeddedMessagesSetHandler embeddedMessagesMetricsHandler) {
@@ -126,7 +144,13 @@ public class OptimoveEmbeddedMessaging {
         Runnable task = new PostEmbeddedMesssagesMetricsRunnable(metrics, config, userId, embeddedMessagesMetricsHandler);
         executorService.submit(task);
     }
-
+    /**
+     * Asynchronously sets a message as read
+     *
+     * @param message the message to set as read
+     * @param isRead  are we marking this as read or not
+     * @param embeddedMessagesStatusHandler handler
+     */
     public void setAsReadASync(EmbeddedMessage message, boolean isRead,
                                @NonNull EmbeddedMessagesSetHandler embeddedMessagesStatusHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesStatusHandler);
