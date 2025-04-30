@@ -175,8 +175,8 @@ final public class Optimove {
         }
 
         if(config.isEmbeddedMessagingConfigured()) {
-            if(!config.isOptimobileConfigured()) {
-                Log.e("OptimoveEM", "Embedded messaging requires optimobile credentials");
+            if(!config.isOptimoveConfigured()) {
+                Log.e("OptimoveEM", "Embedded messaging requires optimove credentials");
             } else {
                 OptimoveEmbeddedMessaging.initialize();
             }
@@ -261,6 +261,7 @@ final public class Optimove {
         if (optimoveCredentialManager.getPreferenceCenterCredentials() != null) {
             if (optimoveCredentialManager.getOptimoveCredentials() == null) {
                 Log.e("Optimove PC", "Preference Center requires optimove credentials set");
+                return;
             }
             currentConfig.setPreferenceCenterCredentials(optimoveCredentialManager.getPreferenceCenterCredentials());
         }
@@ -268,6 +269,7 @@ final public class Optimove {
         if(optimoveCredentialManager.getEmbeddedMessagingConfig() != null) {
             if (optimoveCredentialManager.getOptimoveCredentials() == null) {
                 Log.e("Optimove EM", "Embedded Messaging requires optimove credentials set");
+                return;
             }
             currentConfig.setEmbeddedMessagingConfig(optimoveCredentialManager.getEmbeddedMessagingConfig());
         }
