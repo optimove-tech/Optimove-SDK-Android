@@ -79,12 +79,12 @@ public class OptimoveEmbeddedMessaging {
     }
 
     /**
-     * Asynchronously gets embedded messages
+     * Gets the embedded messages from the server.
      *
-     * @param requestBody an array of containerIds and the limit of messages for each container
-     * @param embeddedMessagesGetHandler handler
+     * @param containerRequestOptions The options for the container request.
+     * @param embeddedMessagesGetHandler handler that returns the status of the process and the embedded messages response.
      */
-    public void getMessagesAsync(ContainerRequestOptions[] requestBody, @NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
+    public void getMessagesAsync(ContainerRequestOptions[] containerRequestOptions, @NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
         EmbeddedMessagingConfig config = Optimove.getConfig().getEmbeddedMessagingConfig();
         if (config == null) {
             Log.e(TAG, "Embedded messaging config is not set");
@@ -100,15 +100,15 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesGetHandler.run(ResultType.ERROR_USER_NOT_SET, null));
             return;
         }
-        Runnable task = new GetEmbeddedMessagesRunnable(config, userId, embeddedMessagesGetHandler, requestBody);
+        Runnable task = new GetEmbeddedMessagesRunnable(config, userId, embeddedMessagesGetHandler, containerRequestOptions);
         executorService.submit(task);
     }
 
     /**
-     * Asynchronously delete a message
+     * Deletes the given message from the server.
      *
-     * @param message the message that we are deleting
-     * @param embeddedMessagesDeleteHandler handler
+     * @param message                       the message to delete.
+     * @param embeddedMessagesDeleteHandler handler that returns the status of the process.
      */
     public void deleteMessageAsync(EmbeddedMessage message, @NonNull EmbeddedMessagesSetHandler embeddedMessagesDeleteHandler) {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesDeleteHandler);
@@ -119,10 +119,10 @@ public class OptimoveEmbeddedMessaging {
     }
 
     /**
-     * Asynchronously sends a click metric for a message
+     * Reports a click metric for the given embedded message
      *
-     * @param message the message that we are sending the metric for
-     * @param embeddedMessagesMetricsHandler handler
+     * @param message                        The message to report the click metric for.
+     * @param embeddedMessagesMetricsHandler handler that returns the status of the process.
      */
     public void reportClickMetricAsync(
             EmbeddedMessage message,
@@ -144,12 +144,13 @@ public class OptimoveEmbeddedMessaging {
         Runnable task = new PostEmbeddedMesssagesMetricsRunnable(metrics, config, userId, embeddedMessagesMetricsHandler);
         executorService.submit(task);
     }
+
     /**
-     * Asynchronously sets a message as read
+     * Updates the read status of the given embedded message on the server
      *
-     * @param message the message to set as read
-     * @param isRead  are we marking this as read or not
-     * @param embeddedMessagesStatusHandler handler
+     * @param message                       The message to update.
+     * @param isRead                        The new read status of the message boolean.
+     * @param embeddedMessagesStatusHandler handler that returns the status of the process.
      */
     public void setAsReadASync(EmbeddedMessage message, boolean isRead,
                                @NonNull EmbeddedMessagesSetHandler embeddedMessagesStatusHandler) {
