@@ -11,6 +11,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 import com.optimove.android.main.common.EventHandlerFactory;
 import com.optimove.android.main.common.EventHandlerProvider;
 import com.optimove.android.main.common.LifecycleObserver;
@@ -172,6 +173,14 @@ final public class Optimove {
                 OptimovePreferenceCenter.initialize();
             }
         }
+
+        if(config.isEmbeddedMessagingConfigured()) {
+            if(!config.isOptimoveConfigured()) {
+                Log.e("OptimoveEM", "Embedded messaging requires optimove credentials");
+            } else {
+                OptimoveEmbeddedMessaging.initialize();
+            }
+        }
     }
 
     private static void fetchConfigsAndFinishOptimoveInit(@NonNull Application application, @NonNull OptimoveConfig config) {
@@ -236,6 +245,33 @@ final public class Optimove {
                 return;
             }
             currentConfig.setPreferenceCenterCredentials(preferenceCenterCredentials);
+        }
+    }
+
+    /**
+     * Late setting of credentials. Must be called only if partial initialisation constructor was used and only once.
+     *
+     * @param optimoveCredentialManager has all potential credentials in a single object
+     */
+    public static void setCredentials(OptimoveCredentialManager optimoveCredentialManager) {
+        setCredentials(
+                optimoveCredentialManager.getOptimoveCredentials(),
+                optimoveCredentialManager.getOptimobileCredentials());
+
+        if (optimoveCredentialManager.getPreferenceCenterCredentials() != null) {
+            if (optimoveCredentialManager.getOptimoveCredentials() == null) {
+                Log.e("Optimove PC", "Preference Center requires optimove credentials set");
+                return;
+            }
+            currentConfig.setPreferenceCenterCredentials(optimoveCredentialManager.getPreferenceCenterCredentials());
+        }
+
+        if(optimoveCredentialManager.getEmbeddedMessagingConfig() != null) {
+            if (optimoveCredentialManager.getOptimoveCredentials() == null) {
+                Log.e("Optimove EM", "Embedded Messaging requires optimove credentials set");
+                return;
+            }
+            currentConfig.setEmbeddedMessagingConfig(optimoveCredentialManager.getEmbeddedMessagingConfig());
         }
     }
 

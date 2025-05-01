@@ -9,6 +9,7 @@ import com.optimove.android.OptimoveConfig;
 import com.optimove.android.optimobile.Optimobile;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -203,6 +204,46 @@ public class HttpClient {
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
 
         Request.Builder builder = new Request.Builder().put(body);
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
+    public Response putSingleSync(String url, JSONObject data, int tenantId) throws IOException {
+        String dataStr = data.toString();
+
+        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
+
+        Request.Builder builder = new Request.Builder().put(body);
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
+    public Response postSync(String url, JSONArray data, int tenantId) throws IOException {
+        String dataStr = data.toString();
+
+        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
+
+        Request.Builder builder = new Request.Builder().post(body);
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
+    public Response postSingleSync(String url, JSONObject data, int tenantId) throws IOException {
+        String dataStr = data.toString();
+
+        RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
+
+        Request.Builder builder = new Request.Builder().post(body);
+        Request request = this.buildRequest(builder, url, tenantId);
+
+        return this.doSyncRequest(request);
+    }
+
+    public Response deleteSync(String url, int tenantId) throws IOException {
+        Request.Builder builder = new Request.Builder().delete();
         Request request = this.buildRequest(builder, url, tenantId);
 
         return this.doSyncRequest(request);
