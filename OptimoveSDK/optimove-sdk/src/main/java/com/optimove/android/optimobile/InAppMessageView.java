@@ -50,7 +50,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-class InAppMessageView extends WebViewClient {
+public class InAppMessageView extends WebViewClient {
 
     private enum State {
         INITIAL,
@@ -71,7 +71,11 @@ class InAppMessageView extends WebViewClient {
     private static final String HOST_MESSAGE_TYPE_PRESENT_MESSAGE = "PRESENT_MESSAGE";
     private static final String HOST_MESSAGE_TYPE_CLOSE_MESSAGE = "CLOSE_MESSAGE";
     private static final String HOST_MESSAGE_TYPE_SET_NOTCH_INSETS = "SET_NOTCH_INSETS";
-
+    private static final String OPTIMOVE_METRICS_CONTEXT = "optimoveMetricsContext";
+    private static final String CUSTOMER_ID = "customerID";
+    private static final String CALL_TO_ACTION_ID = "callToActionId";
+    private static final String EVENT_TYPE_CLICK = "click";
+    private static final String EMPTY_STRING = "";
     private static final String JS_NAME = "Android";
 
     private State state;
@@ -97,7 +101,7 @@ class InAppMessageView extends WebViewClient {
     private InAppMessage currentMessage;
 
     @UiThread
-    InAppMessageView(@NonNull InAppMessagePresenter presenter, @NonNull InAppMessage message, @NonNull Activity currentActivity) {
+    public InAppMessageView(@NonNull InAppMessagePresenter presenter, @NonNull InAppMessage message, @NonNull Activity currentActivity) {
         this.state = State.INITIAL;
         pageFinished = false;
         this.presenter = presenter;
@@ -428,11 +432,42 @@ class InAppMessageView extends WebViewClient {
                 if (null == data) {
                     return;
                 }
+                clickEvent(data);
                 List<ExecutableAction> actions = this.parseButtonActionData(data);
                 currentActivity.runOnUiThread(() -> this.executeActions(currentActivity, actions));
                 return;
             default:
                 Log.d(TAG, "Unknown message type: " + messageType);
+        }
+    }
+
+    public void clickEvent(JSONObject executeActionsData) {
+
+        try{
+            JSONObject messageData = currentMessage.getData();
+
+            assert messageData != null;
+            if(!messageData.has(OPTIMOVE_METRICS_CONTEXT)) {
+                return;
+            }
+            JSONObject currentMessageData = messageData.getJSONObject(OPTIMOVE_METRICS_CONTEXT);
+
+            currentMessageData.put(CUSTOMER_ID, Optimobile.getCurrentUserIdentifier(currentActivity));
+
+            if (!executeActionsData.has(CALL_TO_ACTION_ID)) {
+                return;
+            }
+
+            String callToActionId = executeActionsData.getString(CALL_TO_ACTION_ID);
+            if (callToActionId.equals(EMPTY_STRING)){
+                return;
+            }
+
+            currentMessageData.put(CALL_TO_ACTION_ID,callToActionId);
+
+            Optimobile.trackEventImmediately(currentActivity, EVENT_TYPE_CLICK, currentMessageData);
+        } catch(JSONException e) {
+            e.printStackTrace();
         }
     }
 
