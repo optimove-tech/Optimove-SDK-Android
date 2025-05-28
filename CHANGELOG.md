@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.6.0
+
+- API to set push notification accent color
+
+## 7.5.0
+
+- Embedded messaging
+
 ## 7.4.1
 
 - Fix duplicated events sent when multiple immediate events reported
