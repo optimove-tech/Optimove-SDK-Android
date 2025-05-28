@@ -2,6 +2,7 @@ package com.optimove.android;
 
 import android.util.Base64;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,6 +49,8 @@ public final class OptimoveConfig {
 
     @DrawableRes
     private int notificationSmallIconId;
+
+    private Integer notificationAccentColor;
     private int sessionIdleTimeoutSeconds;
 
     private InAppConsentStrategy inAppConsentStrategy;
@@ -151,6 +154,10 @@ public final class OptimoveConfig {
 
     private void setNotificationSmallIconId(@DrawableRes int notificationSmallIconId) {
         this.notificationSmallIconId = notificationSmallIconId;
+    }
+
+    private void setNotificationAccentColor(Integer notificationAccentColor) {
+        this.notificationAccentColor = notificationAccentColor;
     }
 
     private void setSessionIdleTimeoutSeconds(int timeoutSeconds) {
@@ -324,6 +331,12 @@ public final class OptimoveConfig {
         return notificationSmallIconId;
     }
 
+    public @ColorInt
+    Integer getNotificationAccentColor() {
+        return notificationAccentColor;
+    }
+
+
     public int getSessionIdleTimeoutSeconds() {
         return sessionIdleTimeoutSeconds;
     }
@@ -438,6 +451,9 @@ public final class OptimoveConfig {
 
         @DrawableRes
         private int notificationSmallIconDrawableId = OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
+
+        @ColorInt
+        private Integer notificationAccentColor = null;
         private int sessionIdleTimeoutSeconds = OptimoveConfig.DEFAULT_SESSION_IDLE_TIMEOUT_SECONDS;
 
         private InAppConsentStrategy consentStrategy = null;
@@ -491,6 +507,11 @@ public final class OptimoveConfig {
          */
         public Builder setPushSmallIconId(@DrawableRes int drawableIconId) {
             this.notificationSmallIconDrawableId = drawableIconId;
+            return this;
+        }
+
+        public Builder setPushAccentColor(@ColorInt int accentColor) {
+            this.notificationAccentColor = accentColor;
             return this;
         }
 
@@ -613,6 +634,7 @@ public final class OptimoveConfig {
             }
 
             newConfig.setNotificationSmallIconId(notificationSmallIconDrawableId);
+            newConfig.setNotificationAccentColor(notificationAccentColor);
             newConfig.setSessionIdleTimeoutSeconds(sessionIdleTimeoutSeconds);
             newConfig.setRuntimeInfo(this.runtimeInfo);
             newConfig.setSdkInfo(this.sdkInfo);
