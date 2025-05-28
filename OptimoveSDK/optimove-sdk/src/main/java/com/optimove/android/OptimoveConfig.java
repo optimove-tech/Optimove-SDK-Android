@@ -228,7 +228,7 @@ public final class OptimoveConfig {
     }
 
     void setEmbeddedMessagingConfig(@NonNull String embeddedMessagingConfigurationString) {
-        if(!this.isEmbeddedMessagingConfigured()) {
+        if (!this.isEmbeddedMessagingConfigured()) {
             throw new IllegalArgumentException("Cannot set configuration for embedded messaging as it is not in the desired feature set");
         }
 
@@ -625,7 +625,7 @@ public final class OptimoveConfig {
                 newConfig.setPreferenceCenterCredentials(this.preferenceCenterCredentials);
             }
 
-            if(this.embeddedMessagingConfigurationString != null) {
+            if (this.embeddedMessagingConfigurationString != null) {
                 newConfig.setEmbeddedMessagingConfig(this.embeddedMessagingConfigurationString);
             }
 

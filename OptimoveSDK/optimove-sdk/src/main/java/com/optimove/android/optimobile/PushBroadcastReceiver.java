@@ -79,7 +79,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
     /**
      * Handles showing a notification in the notification drawer when a content push is received.
-     *
+     * <p>
      * Override and use custom notification builder for complete control.
      *
      * @param context
@@ -223,7 +223,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
                 .setContentIntent(pendingOpenIntent)
                 .setDeleteIntent(pendingDismissedIntent);
 
-        if (accentColor != null){
+        if (accentColor != null) {
             notificationBuilder.setColor(accentColor);
         }
 
