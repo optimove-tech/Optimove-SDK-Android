@@ -34,10 +34,10 @@ public class MyApplication extends Application {
     super.onCreate();
 
     Optimove.initialize(this, new OptimoveConfig.Builder(
-            "base64_optimove_creds",
-            "base64_optimobile_creds")
+            "optimove_creds",
+            "optimobile_creds")
             .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-            .enableEmbeddedMessaging("base64_embedded_config_string")
+            .enableEmbeddedMessaging("embedded_config_string")
             .setPushSmallIconId(R.drawable.small_icon)
             .setPushAccentColor(Color.parseColor("#FF0000"))
             .build());
