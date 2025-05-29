@@ -3,9 +3,12 @@ package com.optimove.android.optimovemobilesdk;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+
+import androidx.core.content.ContextCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
@@ -31,11 +34,14 @@ public class MyApplication extends Application {
     super.onCreate();
 
     Optimove.initialize(this, new OptimoveConfig.Builder(
-            "WyIxIiwgIjgwYTRhMjI0ZGRkMTRhNDQ4MTNlYzIwZmNkMjAxNjE2IiwgIm1vYmlsZS1jb25maWd1cmF0aW9uLjEuMC4wIl0=",
-            "WzEsInVrLTEiLCI2YjE5OThhYS1lZmM1LTRjODUtYjg4ZC1mMjQzMTE4ODA1NTAiLCJKcTMxVEJ6dmxmVTQxb2xzMXltQVZTSVdjNXlnY3VmbHpjbysiXQ==")
+            "optimove_creds",
+            "optimobile_creds")
             .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-            .enableEmbeddedMessaging("WyJkZXYiLDExNzUzLCI5YWJiOGQ2ZC02MmVkLTQyZDEtOTdkMS1jODJkMTVmOWMxZmMiXQ==")
+            .enableEmbeddedMessaging("embedded_config_string")
+            .setPushSmallIconId(R.drawable.small_icon)
+            .setPushAccentColor(Color.parseColor("#FF0000"))
             .build());
+
     // Shouldn't be called unless explicitly told to
     Optimove.enableStagingRemoteLogs();
 
