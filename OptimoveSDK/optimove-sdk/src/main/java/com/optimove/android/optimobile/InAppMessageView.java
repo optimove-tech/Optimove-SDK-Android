@@ -18,8 +18,10 @@ import android.view.DisplayCutout;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.RenderProcessGoneDetail;
@@ -30,6 +32,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
@@ -169,7 +172,7 @@ class InAppMessageView extends WebViewClient {
     }
 
     @UiThread
-    @SuppressWarnings("deprecation")
+//    @SuppressWarnings("deprecation")
     private void setStatusBarColorForDialog(Activity currentActivity) {
         if (currentActivity == null) {
             return;
@@ -198,7 +201,11 @@ class InAppMessageView extends WebViewClient {
             statusBarColor = currentActivity.getResources().getColor(R.color.statusBarColorForNotch);
         }
 
-        window.setStatusBarColor(statusBarColor);
+        if (Build.VERSION.SDK_INT >= 35) {
+            setStatusBarColor(window, statusBarColor);
+        } else {
+            window.setStatusBarColor(statusBarColor);
+        }
     }
 
     @UiThread
@@ -217,6 +224,34 @@ class InAppMessageView extends WebViewClient {
 
         if (!prevFlagDrawsSystemBarBackgrounds) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        }
+    }
+
+    @UiThread
+    @RequiresApi(api = 35)
+    private void setStatusBarColor(Window window, int statusBarColor) {
+        View decorView = window.getDecorView();
+
+        View statusBarBackground = new View(currentActivity);
+        statusBarBackground.setBackgroundColor(statusBarColor);
+
+        WindowInsetsController controller = window.getInsetsController();
+        if (controller != null) {
+            controller.addOnControllableInsetsChangedListener((insetController, typeMask) -> {
+                if ((typeMask & WindowInsets.Type.statusBars()) != 0) {
+                    WindowInsets insets = decorView.getRootWindowInsets();
+                    if (insets != null) {
+                        int statusBarHeight = insets.getInsets(WindowInsets.Type.statusBars()).top;
+
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.MATCH_PARENT, statusBarHeight);
+                        statusBarBackground.setLayoutParams(params);
+
+                        ViewGroup decorViewGroup = (ViewGroup) decorView;
+                        decorViewGroup.addView(statusBarBackground);
+                    }
+                }
+            });
         }
     }
 
