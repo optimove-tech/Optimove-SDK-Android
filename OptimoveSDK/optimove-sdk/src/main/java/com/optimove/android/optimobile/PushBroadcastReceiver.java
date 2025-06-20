@@ -22,9 +22,11 @@ import android.util.DisplayMetrics;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+import com.optimove.android.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,7 +79,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
     /**
      * Handles showing a notification in the notification drawer when a content push is received.
-     *
+     * <p>
      * Override and use custom notification builder for complete control.
      *
      * @param context
@@ -211,6 +213,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         OptimoveConfig config = Optimove.getConfig();
         int icon = config != null ? config.getNotificationSmallIconId() : OptimoveConfig.DEFAULT_NOTIFICATION_ICON_ID;
+        Integer accentColor = config != null ? config.getNotificationAccentColor() : null;
 
         notificationBuilder
                 .setSmallIcon(icon)
@@ -219,6 +222,10 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
                 .setAutoCancel(true)
                 .setContentIntent(pendingOpenIntent)
                 .setDeleteIntent(pendingDismissedIntent);
+
+        if (accentColor != null) {
+            notificationBuilder.setColor(accentColor);
+        }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             int priority = pushMessage.getChannel().equals(IMPORTANT_CHANNEL_ID) ? Notification.PRIORITY_MAX : Notification.PRIORITY_DEFAULT;
