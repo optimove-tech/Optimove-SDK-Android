@@ -33,7 +33,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -202,7 +202,7 @@ public class OptitrackTests {
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
 
         Thread.sleep(100);
-        verifyZeroInteractions(httpClient);
+        verifyNoInteractions(httpClient);
     }
 
     private OptistreamEvent getRegularEvent(boolean isRealtime, String name) {
