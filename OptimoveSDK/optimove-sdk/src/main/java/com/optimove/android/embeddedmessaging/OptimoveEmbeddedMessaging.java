@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -81,7 +82,7 @@ public class OptimoveEmbeddedMessaging {
     /**
      * Gets the embedded messages from the server.
      *
-     * @param containerRequestOptions The options for the container request.
+     * @param containerRequestOptions    The options for the container request.
      * @param embeddedMessagesGetHandler handler that returns the status of the process and the embedded messages response.
      */
     public void getMessagesAsync(ContainerRequestOptions[] containerRequestOptions, @NonNull EmbeddedMessagesGetHandler embeddedMessagesGetHandler) {
@@ -114,7 +115,20 @@ public class OptimoveEmbeddedMessaging {
         EmbeddedMessagingConfig config = handleConfigForAsyncSetCall(embeddedMessagesDeleteHandler);
         if (config == null) return;
 
-        Runnable task = new DeleteEmbeddedMessagesRunnable(config, message.getId(), embeddedMessagesDeleteHandler);
+        UserInfo userInfo = Optimove.getInstance().getUserInfo();
+        String userId = userInfo.getUserId() == null ? userInfo.getVisitorId() : userInfo.getUserId();
+
+        if (userId == null) {
+            Log.w(TAG, "Customer/Visitor ID is not set");
+            handler.post(() -> embeddedMessagesDeleteHandler.run(ResultType.ERROR_USER_NOT_SET));
+            return;
+        }
+        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(message.getId());
+        EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
+                new Date(), UUID.randomUUID().toString(), EventType.DELETED, context, userId,
+                userInfo.getVisitorId());
+
+        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, embeddedMessagesDeleteHandler);
         executorService.submit(task);
     }
 
@@ -138,10 +152,11 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesMetricsHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
-        EmbeddedMessageMetricsRequest metrics = new EmbeddedMessageMetricsRequest(
-                new Date(), MetricEvent.CLICK, message.getEngagementId(),
-                message.getExecutionDateTime(), message.getCampaignKind());
-        Runnable task = new PostEmbeddedMesssagesMetricsRunnable(metrics, config, userId, embeddedMessagesMetricsHandler);
+        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(message.getId());
+        EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
+                new Date(), UUID.randomUUID().toString(), EventType.CLICKED, context, userId,
+                userInfo.getVisitorId());
+        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, embeddedMessagesMetricsHandler);
         executorService.submit(task);
     }
 
@@ -165,12 +180,12 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesStatusHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
-        Date now = new Date();
-        EmbeddedMessageStatusRequest statusMetrics = new EmbeddedMessageStatusRequest(
-                now, message.getEngagementId(), message.getCampaignKind(), message.getId(),
-                isRead ? now : null, message.getExecutionDateTime());
-        Runnable task = new PutEmbeddedMessagesStatusRunnable(
-                statusMetrics, config, userId, embeddedMessagesStatusHandler);
+        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(message.getId());
+        EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
+                new Date(), UUID.randomUUID().toString(), isRead ? EventType.READ : EventType.UNREAD,
+                context, userId, userInfo.getVisitorId());
+        Runnable task = new EventReportEmbeddedMessagesRunnable(
+                config, request, embeddedMessagesStatusHandler);
         executorService.submit(task);
     }
 
@@ -205,7 +220,7 @@ public class OptimoveEmbeddedMessaging {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = String.format(
                         "%s&customerId=%s",
-                        super.getBaseUrl("embedded-messages/get-embedded-messages"),
+                        super.getBaseUrl("embedded-messages/get"),
                         encodedCustomerId);
                 JSONArray postBody = new JSONArray();
                 for (ContainerRequestOptions cm : requestBody) {
@@ -225,20 +240,18 @@ public class OptimoveEmbeddedMessaging {
         }
     }
 
-    class PutEmbeddedMessagesStatusRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
+    class EventReportEmbeddedMessagesRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
         private final EmbeddedMessagesSetHandler callback;
-        private final EmbeddedMessagingConfig config;
-        private final EmbeddedMessageStatusRequest statusMetrics;
-        private final String customerId;
 
-        public PutEmbeddedMessagesStatusRunnable(
-                EmbeddedMessageStatusRequest statusMetrics, EmbeddedMessagingConfig config,
-                String customerId, EmbeddedMessagesSetHandler callback) {
+        private final EmbeddedMessageEventRequest request;
+
+        EventReportEmbeddedMessagesRunnable(
+                EmbeddedMessagingConfig config,
+                EmbeddedMessageEventRequest request,
+                EmbeddedMessagesSetHandler callback) {
             super(config);
-            this.config = config;
             this.callback = callback;
-            this.customerId = customerId;
-            this.statusMetrics = statusMetrics;
+            this.request = request;
         }
 
         @Override
@@ -246,11 +259,10 @@ public class OptimoveEmbeddedMessaging {
             EmbeddedMessagingResult result = new EmbeddedMessagingResult(ResultType.ERROR, null);
 
             try {
-                String url = super.getBaseUrl("messages/status");
-                statusMetrics.setTenantId(config.getTenantId());
-                statusMetrics.setBrandId(config.getBrandId());
-                statusMetrics.setCustomerId(customerId);
-                result = super.putSync(url, statusMetrics.toJSONObject(), false);
+                JSONArray postData = new JSONArray();
+                postData.put(request.toJSONObject());
+                String url = super.getBaseUrl("events/report");
+                result = super.postSync(url, postData, false);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
@@ -260,77 +272,7 @@ public class OptimoveEmbeddedMessaging {
         }
 
         private void fireCallback(ResultType result) {
-            handler.post(() -> PutEmbeddedMessagesStatusRunnable.this.callback.run(result));
-        }
-    }
-
-    class PostEmbeddedMesssagesMetricsRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
-        private final EmbeddedMessagesSetHandler callback;
-        private final EmbeddedMessagingConfig config;
-        private final EmbeddedMessageMetricsRequest metrics;
-        private final String customerId;
-
-        public PostEmbeddedMesssagesMetricsRunnable(
-                EmbeddedMessageMetricsRequest metrics, EmbeddedMessagingConfig config,
-                String customerId, EmbeddedMessagesSetHandler callback) {
-            super(config);
-            this.config = config;
-            this.callback = callback;
-            this.metrics = metrics;
-            this.customerId = customerId;
-        }
-
-        @Override
-        public void run() {
-            EmbeddedMessagingResult result = new EmbeddedMessagingResult(ResultType.ERROR, null);
-
-            try {
-                String url = super.getBaseUrl("messages/metrics");
-                metrics.setTenantId(config.getTenantId());
-                metrics.setBrandId(config.getBrandId());
-                metrics.setCustomerId(customerId);
-                result = super.postSync(url, metrics.toJSONObject(), false);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-            }
-
-            this.fireCallback(result.getResult());
-        }
-
-        private void fireCallback(ResultType result) {
-            handler.post(() -> PostEmbeddedMesssagesMetricsRunnable.this.callback.run(result));
-        }
-
-    }
-
-    class DeleteEmbeddedMessagesRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
-        private final EmbeddedMessagesSetHandler callback;
-        private final String id;
-
-        DeleteEmbeddedMessagesRunnable(EmbeddedMessagingConfig config, String id, EmbeddedMessagesSetHandler callback) {
-            super(config);
-            this.callback = callback;
-            this.id = id;
-        }
-
-        @Override
-        public void run() {
-            EmbeddedMessagingResult result = new EmbeddedMessagingResult(ResultType.ERROR, null);
-
-            try {
-                String url = super.getBaseUrl(String.format("messages/%s", id));
-                result = super.deleteSync(url);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-            }
-
-            this.fireCallback(result.getResult());
-        }
-
-        private void fireCallback(ResultType result) {
-            handler.post(() -> DeleteEmbeddedMessagesRunnable.this.callback.run(result));
+            handler.post(() -> EventReportEmbeddedMessagesRunnable.this.callback.run(result));
         }
     }
 
@@ -339,18 +281,6 @@ public class OptimoveEmbeddedMessaging {
 
         public EmbeddedMessagesRunnableBase(EmbeddedMessagingConfig config) {
             this.config = config;
-        }
-
-        public EmbeddedMessagingResult deleteSync(String url) {
-            HttpClient httpClient = HttpClient.getInstance();
-
-            try (Response response = httpClient.deleteSync(url, config.getTenantId())) {
-                return handleResponse(response, false);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-                return new EmbeddedMessagingResult(ResultType.ERROR, null);
-            }
         }
 
         public EmbeddedMessagingResult postSync(String url, JSONArray postData, boolean expectResponse) {
@@ -364,36 +294,11 @@ public class OptimoveEmbeddedMessaging {
                 return new EmbeddedMessagingResult(ResultType.ERROR, null);
             }
         }
-
-        public EmbeddedMessagingResult postSync(String url, JSONObject postData, boolean expectResponse) {
-            HttpClient httpClient = HttpClient.getInstance();
-
-            try (Response response = httpClient.postSingleSync(url, postData, config.getTenantId())) {
-                return handleResponse(response, expectResponse);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-                return new EmbeddedMessagingResult(ResultType.ERROR, null);
-            }
-        }
-
-        public EmbeddedMessagingResult putSync(String url, JSONObject postData, boolean expectResponse) {
-            HttpClient httpClient = HttpClient.getInstance();
-
-            try (Response response = httpClient.putSingleSync(url, postData, config.getTenantId())) {
-                return handleResponse(response, expectResponse);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-                e.printStackTrace();
-                return new EmbeddedMessagingResult(ResultType.ERROR, null);
-            }
-        }
-
         protected String getBaseUrl(String endpoint) {
             String region = config.getRegion();
 
             return String.format(
-                    "https://optimobile-inbox-srv-%s.optimove.net/api/v1/%s?tenantId=%s&brandId=%s",
+                    "https://optimobile-inbox-srv-%s.optimove.net/api/v2/%s?tenantId=%s&brandId=%s",
                     region, endpoint, config.getTenantId(), config.getBrandId());
         }
 

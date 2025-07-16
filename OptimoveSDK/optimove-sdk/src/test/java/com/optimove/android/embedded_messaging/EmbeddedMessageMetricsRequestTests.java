@@ -1,7 +1,7 @@
 package com.optimove.android.embedded_messaging;
 
 import com.optimove.android.embeddedmessaging.EmbeddedMessageMetricsRequest;
-import com.optimove.android.embeddedmessaging.MetricEvent;
+import com.optimove.android.embeddedmessaging.EventType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +17,7 @@ public class EmbeddedMessageMetricsRequestTests {
         Date dt = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
-                dt, MetricEvent.CLICK, "engagement", dt, 1);
+                dt, EventType.CLICK, "engagement", dt, 1);
         request.setCustomerId("customer");
         request.setBrandId("brand");
         request.setTenantId(123);
@@ -38,7 +38,7 @@ public class EmbeddedMessageMetricsRequestTests {
     public void shouldThrowErrorsOnMissingFields() {
         Date dt = new Date();
         EmbeddedMessageMetricsRequest request = new EmbeddedMessageMetricsRequest(
-                dt, MetricEvent.CLICK, "engagement", dt, 1);
+                dt, EventType.CLICK, "engagement", dt, 1);
         Assert.assertThrows(IllegalArgumentException.class, request::toJSONObject);
     }
 }

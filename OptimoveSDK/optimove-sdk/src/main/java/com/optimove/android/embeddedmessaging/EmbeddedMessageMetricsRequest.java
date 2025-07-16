@@ -12,14 +12,14 @@ public class EmbeddedMessageMetricsRequest {
     private String brandId;
     private String customerId;
     private Date now;
-    private MetricEvent event;
+    private EventType event;
     private String engagementId;
     private Date executionDateTime;
     private int campaignKind;
 
 
     public EmbeddedMessageMetricsRequest(
-            Date now, MetricEvent event, String engagementId, Date executionDateTime,
+            Date now, EventType event, String engagementId, Date executionDateTime,
             int campaignKind) {
         this.now = now;
         this.event = event;
