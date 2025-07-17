@@ -123,7 +123,8 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesDeleteHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
-        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(message.getId());
+        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(
+                message.getId(), message.getContainerId());
         EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
                 new Date(), UUID.randomUUID().toString(), EventType.DELETED, context, userId,
                 userInfo.getVisitorId());
@@ -152,7 +153,8 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesMetricsHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
-        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(message.getId());
+        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(
+                message.getId(), message.getContainerId());
         EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
                 new Date(), UUID.randomUUID().toString(), EventType.CLICKED, context, userId,
                 userInfo.getVisitorId());
@@ -180,7 +182,8 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesStatusHandler.run(ResultType.ERROR_USER_NOT_SET));
             return;
         }
-        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(message.getId());
+        EmbeddedMessageMetricEventContext context = new EmbeddedMessageMetricEventContext(
+                message.getId(), message.getContainerId());
         EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
                 new Date(), UUID.randomUUID().toString(), isRead ? EventType.READ : EventType.UNREAD,
                 context, userId, userInfo.getVisitorId());
