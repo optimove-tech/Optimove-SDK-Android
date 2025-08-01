@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.7.0
+
+- Updated to use Embedded Messaging V2 endpoints
+
 ## 7.6.0
 
 - API to set push notification accent color
