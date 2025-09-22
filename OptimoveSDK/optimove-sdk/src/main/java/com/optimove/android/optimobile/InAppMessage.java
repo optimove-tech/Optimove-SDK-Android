@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-class InAppMessage {
+class InAppMessage implements InAppMessageInfo {
     private String presentedWhen;
     private final int inAppId;
     @Nullable
@@ -89,6 +89,11 @@ class InAppMessage {
         return inAppId;
     }
 
+    @Override
+    public int getMessageId() {
+        return inAppId;
+    }
+
     String getPresentedWhen() {
         return presentedWhen;
     }
@@ -124,6 +129,12 @@ class InAppMessage {
 
     @Nullable
     JSONObject getInbox() {
+        return inbox;
+    }
+
+    @Override
+    @Nullable
+    public JSONObject getInboxConfig() {
         return inbox;
     }
 

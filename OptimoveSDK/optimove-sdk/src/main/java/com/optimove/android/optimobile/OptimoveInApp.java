@@ -21,6 +21,9 @@ public class OptimoveInApp {
     private static OptimoveInApp shared;
     @NonNull
     private final Application application;
+    
+    @Nullable
+    private InAppMessageDisplayFilter inAppMessageDisplayFilter = null;
 
     public enum InboxMessagePresentationResult {
         FAILED,
@@ -165,6 +168,36 @@ public class OptimoveInApp {
         presenter.setDisplayMode(mode);
     }
 
+    /**
+     * Sets a filter to conditionally display in-app messages.
+     * 
+     * <p>The filter allows you to intercept messages before they are shown and decide
+     * whether to display or suppress them based on your own logic. This is useful for
+     * scenarios where you want to control message timing based on user state, app context,
+     * or external API responses.</p>
+     * 
+     * <p>The filter callback is executed on a background thread to avoid blocking the UI.
+     * You can perform synchronous or asynchronous operations in the filter.</p>
+     * 
+     * @param filter The filter to use for conditional message display, or null to remove filtering
+     */
+    public void setInAppMessageDisplayFilter(@Nullable InAppMessageDisplayFilter filter) {
+        this.inAppMessageDisplayFilter = filter;
+        if (presenter != null) {
+            presenter.setInAppMessageDisplayFilter(filter);
+        }
+    }
+
+    /**
+     * Gets the currently set in-app message display filter.
+     * 
+     * @return The current filter, or null if no filter is set
+     */
+    @Nullable
+    public InAppMessageDisplayFilter getInAppMessageDisplayFilter() {
+        return inAppMessageDisplayFilter;
+    }
+
 
     //==============================================================================================
     //-- Internal Helpers
@@ -186,6 +219,11 @@ public class OptimoveInApp {
         }
 
         presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());
+        
+        // Pass any existing filter to the new presenter
+        if (shared.inAppMessageDisplayFilter != null) {
+            presenter.setInAppMessageDisplayFilter(shared.inAppMessageDisplayFilter);
+        }
 
         shared.toggleInAppMessageMonitoring(inAppEnabled);
     }

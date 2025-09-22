@@ -14,17 +14,26 @@ import com.optimove.android.OptimoveConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     private static final String TAG = InAppMessagePresenter.class.getName();
+    private static final long FILTER_TIMEOUT_MS = 5000; // 5 seconds
 
     private final List<InAppMessage> messageQueue = new ArrayList<>();
     private final Context context;
+    private final ScheduledExecutorService filterExecutor = Executors.newSingleThreadScheduledExecutor();
 
     @NonNull
     private OptimoveConfig.InAppDisplayMode displayMode;
+    
+    @Nullable
+    private InAppMessageDisplayFilter messageDisplayFilter = null;
 
     @Nullable
     private Activity currentActivity;
@@ -158,7 +167,14 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         if (null == currentActivity) {
             return;
         }
-        view = new InAppMessageView(this, currentMessage, currentActivity);
+        
+        // Check if a filter is set and apply it
+        if (messageDisplayFilter != null) {
+            applyMessageFilter(currentMessage);
+        } else {
+            // No filter set, show the message directly
+            showMessageDirectly(currentMessage);
+        }
     }
 
     @UiThread
@@ -217,5 +233,82 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }
 
         return messageQueue.get(0);
+    }
+    
+    /**
+     * Sets the message display filter for conditional message display.
+     */
+    void setInAppMessageDisplayFilter(@Nullable InAppMessageDisplayFilter filter) {
+        this.messageDisplayFilter = filter;
+    }
+    
+    /**
+     * Applies the message filter to determine if the message should be shown.
+     */
+    @UiThread
+    private void applyMessageFilter(@NonNull InAppMessage message) {
+        final Activity activity = currentActivity; // Capture current activity
+        if (activity == null) {
+            return;
+        }
+        
+        // Use atomic boolean to ensure callback is only processed once
+        final AtomicBoolean callbackProcessed = new AtomicBoolean(false);
+        
+        // Create the callback that will handle the filter result
+        InAppMessageFilterCallback callback = new InAppMessageFilterCallback() {
+            @Override
+            public void onFilterResult(@NonNull InAppMessageDisplayFilter.FilterResult result) {
+                if (!callbackProcessed.compareAndSet(false, true)) {
+                    // Callback already processed, ignore
+                    return;
+                }
+                
+                // Switch back to UI thread to handle the result
+                Optimobile.handler.post(() -> {
+                    if (result == InAppMessageDisplayFilter.FilterResult.SHOW) {
+                        showMessageDirectly(message);
+                    } else {
+                        // Message suppressed, move to next message
+                        messageQueue.remove(0);
+                        presentMessageToClient();
+                    }
+                });
+            }
+        };
+        
+        // Execute filter on background thread with timeout
+        filterExecutor.execute(() -> {
+            try {
+                messageDisplayFilter.shouldDisplayMessage((InAppMessageInfo) message, callback);
+            } catch (Exception e) {
+                Log.e(TAG, "Error in message display filter", e);
+                // On error, suppress the message
+                callback.onFilterResult(InAppMessageDisplayFilter.FilterResult.SUPPRESS);
+            }
+        });
+        
+        // Set up timeout to prevent indefinite waiting
+        filterExecutor.schedule(() -> {
+            if (callbackProcessed.compareAndSet(false, true)) {
+                Log.w(TAG, "Message display filter timed out, suppressing message");
+                // Timeout reached, suppress the message
+                Optimobile.handler.post(() -> {
+                    messageQueue.remove(0);
+                    presentMessageToClient();
+                });
+            }
+        }, FILTER_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+    }
+    
+    /**
+     * Shows the message directly without filtering.
+     */
+    @UiThread
+    private void showMessageDirectly(@NonNull InAppMessage message) {
+        if (currentActivity == null) {
+            return;
+        }
+        view = new InAppMessageView(this, message, currentActivity);
     }
 }

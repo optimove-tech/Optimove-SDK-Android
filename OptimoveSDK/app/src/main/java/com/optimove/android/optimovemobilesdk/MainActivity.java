@@ -18,6 +18,9 @@ import androidx.core.content.ContextCompat;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.optimobile.InAppInboxItem;
+import com.optimove.android.optimobile.InAppMessageDisplayFilter;
+import com.optimove.android.optimobile.InAppMessageFilterCallback;
+import com.optimove.android.optimobile.InAppMessageInfo;
 import com.optimove.android.optimobile.OptimoveInApp;
 import com.optimove.android.preferencecenter.Channel;
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
@@ -54,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
+        
+        // Set up conditional in-app message display filter for demo
+        setupInAppMessageFilter();
     }
 
     @Override
@@ -299,5 +305,101 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
+    }
+    
+    /**
+     * Demo implementation of conditional in-app message display.
+     * This shows how to set up a filter that can conditionally show or suppress messages.
+     */
+    private void setupInAppMessageFilter() {
+        try {
+            OptimoveInApp.getInstance().setInAppMessageDisplayFilter(new InAppMessageDisplayFilter() {
+                @Override
+                public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageFilterCallback callback) {
+                    Log.d(TAG, "Filter called for message ID: " + message.getMessageId());
+                    
+                    // Example 1: Check if user is in a specific app state
+                    if (isUserInCheckoutFlow()) {
+                        Log.d(TAG, "User in checkout - suppressing message");
+                        callback.onFilterResult(FilterResult.SUPPRESS);
+                        return;
+                    }
+                    
+                    // Example 2: Check message custom data
+                    if (message.getData() != null) {
+                        try {
+                            if (message.getData().has("vip_only") && 
+                                message.getData().getBoolean("vip_only") && 
+                                !isUserVip()) {
+                                Log.d(TAG, "VIP-only message for non-VIP user - suppressing");
+                                callback.onFilterResult(FilterResult.SUPPRESS);
+                                return;
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error checking message data", e);
+                        }
+                    }
+                    
+                    // Example 3: Simulate async API call (e.g., checking external eligibility)
+                    if (shouldCheckExternalEligibility(message)) {
+                        Log.d(TAG, "Checking external eligibility...");
+                        checkUserEligibilityAsync(message, callback);
+                        return;
+                    }
+                    
+                    // Default: show the message
+                    Log.d(TAG, "Showing message");
+                    callback.onFilterResult(FilterResult.SHOW);
+                }
+            });
+            
+            Log.d(TAG, "In-app message filter configured successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to configure in-app message filter", e);
+        }
+    }
+    
+    private boolean isUserInCheckoutFlow() {
+        // Example: check if current activity or app state indicates checkout
+        // For demo purposes, randomly suppress 30% of messages
+        return Math.random() < 0.3;
+    }
+    
+    private boolean isUserVip() {
+        // Example: check user's VIP status from your app's data
+        // For demo purposes, randomly assign VIP status
+        return Math.random() < 0.5;
+    }
+    
+    private boolean shouldCheckExternalEligibility(InAppMessageInfo message) {
+        // Example: check if message requires external validation
+        // For demo purposes, check if message has specific custom data
+        if (message.getData() != null) {
+            return message.getData().has("check_external");
+        }
+        return false;
+    }
+    
+    private void checkUserEligibilityAsync(InAppMessageInfo message, InAppMessageFilterCallback callback) {
+        // Simulate async API call
+        new Thread(() -> {
+            try {
+                // Simulate network delay
+                Thread.sleep(1000);
+                
+                // Simulate API response (random for demo)
+                boolean eligible = Math.random() < 0.7; // 70% eligible
+                
+                Log.d(TAG, "External eligibility check complete: " + eligible);
+                callback.onFilterResult(eligible ? 
+                    InAppMessageDisplayFilter.FilterResult.SHOW : 
+                    InAppMessageDisplayFilter.FilterResult.SUPPRESS);
+                    
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Eligibility check interrupted", e);
+                // On error, suppress the message
+                callback.onFilterResult(InAppMessageDisplayFilter.FilterResult.SUPPRESS);
+            }
+        }).start();
     }
 }
