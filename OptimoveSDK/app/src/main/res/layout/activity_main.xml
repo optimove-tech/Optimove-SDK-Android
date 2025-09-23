@@ -66,6 +66,22 @@
             android:textAllCaps="false"
             android:textColor="#FFFFFF" />
 
+        <Button
+            android:id="@+id/requestPushPermissionButton"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_margin="16dp"
+            android:layout_weight="0"
+            android:background="#7D7D7D"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:onClick="requestPushPermission"
+            android:text="Request Push Permission"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

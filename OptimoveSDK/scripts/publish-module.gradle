@@ -20,11 +20,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-artifacts {
-    archives androidSourcesJar
-    archives javadocJar
-}
-
 group = PUBLISH_GROUP_ID
 version = PUBLISH_VERSION
 
