@@ -227,6 +227,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void requestPushPermission(View view) {
+        Optimove.getInstance().pushRequestDeviceToken();
+    }
+
     public void setCredentials(View view) {
         EditText optimoveCreds = findViewById(R.id.optimoveCredInput);
         EditText optimobileCreds = findViewById(R.id.optimobileCredInput);
