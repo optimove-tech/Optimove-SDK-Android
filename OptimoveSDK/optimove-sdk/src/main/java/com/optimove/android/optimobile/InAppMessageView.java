@@ -36,7 +36,6 @@ import android.widget.RelativeLayout;
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.UiThread;
 
 import com.optimove.android.BuildConfig;
@@ -161,21 +160,12 @@ class InAppMessageView extends WebViewClient {
 
         String script = "window.postHostMessage(" + j.toString() + ")";
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            wv.evaluateJavascript(script, null);
-        } else {
-            wv.loadUrl("javascript:" + script);
-        }
+        wv.evaluateJavascript(script, null);
     }
 
     @UiThread
-    @SuppressWarnings("deprecation")
     private void setStatusBarColorForDialog(Activity currentActivity) {
         if (currentActivity == null) {
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
         }
 
@@ -202,7 +192,6 @@ class InAppMessageView extends WebViewClient {
     }
 
     @UiThread
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void unsetStatusBarColorForDialog(Activity dialogActivity) {
         if (dialogActivity == null) {
             return;
@@ -225,7 +214,7 @@ class InAppMessageView extends WebViewClient {
         if (dialog != null) {
             dialog.setOnKeyListener(null);
             dialog.dismiss();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
                 unsetStatusBarColorForDialog(dialogActivity);
             }
         }
@@ -243,7 +232,7 @@ class InAppMessageView extends WebViewClient {
     @UiThread
     private void showWebView(@NonNull final Activity currentActivity) {
         try {
-            if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (BuildConfig.DEBUG) {
                 WebView.setWebContentsDebuggingEnabled(true);
             }
 
@@ -286,9 +275,7 @@ class InAppMessageView extends WebViewClient {
 
             WebSettings settings = wv.getSettings();
             settings.setJavaScriptEnabled(true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                settings.setMediaPlaybackRequiresUserGesture(false);
-            }
+            settings.setMediaPlaybackRequiresUserGesture(false);
 
             wv.addJavascriptInterface(this, JS_NAME);
             wv.setWebViewClient(this);
@@ -315,7 +302,10 @@ class InAppMessageView extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         view.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-        setStatusBarColorForDialog(currentActivity);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            setStatusBarColorForDialog(currentActivity);
+        }
+
         pageFinished = true;
 
         sendCurrentMessageToClient();
@@ -324,7 +314,6 @@ class InAppMessageView extends WebViewClient {
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
         super.onReceivedHttpError(view, request, errorResponse);
 
@@ -458,7 +447,7 @@ class InAppMessageView extends WebViewClient {
         }
 
         List<Rect> cutoutBoundingRectangles = displayCutout.getBoundingRects();
-        if (cutoutBoundingRectangles.size() == 0) {
+        if (cutoutBoundingRectangles.isEmpty()) {
             return;
         }
 
