@@ -23,17 +23,17 @@ import java.util.concurrent.TimeUnit;
 class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     private static final String TAG = InAppMessagePresenter.class.getName();
-    private static final long FILTER_TIMEOUT_MS = 5000; // 5 seconds
+    private static final long INTERCEPTOR_TIMEOUT_MS = 5000; // 5 seconds
 
     private final List<InAppMessage> messageQueue = new ArrayList<>();
     private final Context context;
-    private final ScheduledExecutorService filterExecutor = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService interceptorExecutor = Executors.newSingleThreadScheduledExecutor();
 
     @NonNull
     private OptimoveConfig.InAppDisplayMode displayMode;
     
     @Nullable
-    private InAppMessageDisplayFilter messageDisplayFilter = null;
+    private InAppMessageInterceptor messageInterceptor = null;
 
     @Nullable
     private Activity currentActivity;
@@ -168,11 +168,19 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             return;
         }
         
-        // Check if a filter is set and apply it
-        if (messageDisplayFilter != null) {
-            applyMessageFilter(currentMessage);
+        // Check display mode to determine how to handle the message
+        OptimoveConfig.InAppDisplayMode mode = getDisplayMode();
+        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED) {
+            if (messageInterceptor != null) {
+                applyMessageInterception(currentMessage);
+            } else {
+                // INTERCEPTED mode but no interceptor set - suppress the message
+                Log.w(TAG, "Display mode is INTERCEPTED but no interceptor is set, suppressing message");
+                messageQueue.remove(0);
+                presentMessageToClient(); // Try next message
+            }
         } else {
-            // No filter set, show the message directly
+            // AUTOMATIC mode - show the message directly
             showMessageDirectly(currentMessage);
         }
     }
@@ -236,17 +244,17 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     }
     
     /**
-     * Sets the message display filter for conditional message display.
+     * Sets the message interceptor for conditional message display when mode is INTERCEPTED.
      */
-    void setInAppMessageDisplayFilter(@Nullable InAppMessageDisplayFilter filter) {
-        this.messageDisplayFilter = filter;
+    void setInAppMessageInterceptor(@Nullable InAppMessageInterceptor interceptor) {
+        this.messageInterceptor = interceptor;
     }
     
     /**
-     * Applies the message filter to determine if the message should be shown.
+     * Applies message interception to determine if the message should be shown.
      */
     @UiThread
-    private void applyMessageFilter(@NonNull InAppMessage message) {
+    private void applyMessageInterception(@NonNull InAppMessage message) {
         final Activity activity = currentActivity; // Capture current activity
         if (activity == null) {
             return;
@@ -255,10 +263,10 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         // Use atomic boolean to ensure callback is only processed once
         final AtomicBoolean callbackProcessed = new AtomicBoolean(false);
         
-        // Create the callback that will handle the filter result
-        InAppMessageFilterCallback callback = new InAppMessageFilterCallback() {
+        // Create the callback that will handle the intercept result
+        InAppMessageInterceptorCallback callback = new InAppMessageInterceptorCallback() {
             @Override
-            public void onFilterResult(@NonNull InAppMessageDisplayFilter.FilterResult result) {
+            public void onInterceptResult(@NonNull InAppMessageInterceptor.InterceptResult result) {
                 if (!callbackProcessed.compareAndSet(false, true)) {
                     // Callback already processed, ignore
                     return;
@@ -266,7 +274,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                 
                 // Switch back to UI thread to handle the result
                 Optimobile.handler.post(() -> {
-                    if (result == InAppMessageDisplayFilter.FilterResult.SHOW) {
+                    if (result == InAppMessageInterceptor.InterceptResult.SHOW) {
                         showMessageDirectly(message);
                     } else {
                         // Message suppressed, move to next message
@@ -277,28 +285,28 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             }
         };
         
-        // Execute filter on background thread with timeout
-        filterExecutor.execute(() -> {
+        // Execute interceptor on background thread with timeout
+        interceptorExecutor.execute(() -> {
             try {
-                messageDisplayFilter.shouldDisplayMessage((InAppMessageInfo) message, callback);
+                messageInterceptor.shouldDisplayMessage((InAppMessageInfo) message, callback);
             } catch (Exception e) {
-                Log.e(TAG, "Error in message display filter", e);
+                Log.e(TAG, "Error in message interceptor", e);
                 // On error, suppress the message
-                callback.onFilterResult(InAppMessageDisplayFilter.FilterResult.SUPPRESS);
+                callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
             }
         });
         
         // Set up timeout to prevent indefinite waiting
-        filterExecutor.schedule(() -> {
+        interceptorExecutor.schedule(() -> {
             if (callbackProcessed.compareAndSet(false, true)) {
-                Log.w(TAG, "Message display filter timed out, suppressing message");
+                Log.w(TAG, "Message interceptor timed out, suppressing message");
                 // Timeout reached, suppress the message
                 Optimobile.handler.post(() -> {
                     messageQueue.remove(0);
                     presentMessageToClient();
                 });
             }
-        }, FILTER_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }, INTERCEPTOR_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
     
     /**
@@ -320,18 +328,18 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         // Unregister from AppStateWatcher to prevent memory leaks
         OptimobileInitProvider.getAppStateWatcher().unregisterListener(this);
         
-        // Shutdown the filter executor to prevent thread leaks
-        if (filterExecutor != null && !filterExecutor.isShutdown()) {
-            filterExecutor.shutdown();
+        // Shutdown the interceptor executor to prevent thread leaks
+        if (interceptorExecutor != null && !interceptorExecutor.isShutdown()) {
+            interceptorExecutor.shutdown();
             try {
                 // Wait a bit for existing tasks to terminate
-                if (!filterExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
-                    Log.w(TAG, "Filter executor did not terminate gracefully, forcing shutdown");
-                    filterExecutor.shutdownNow();
+                if (!interceptorExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    Log.w(TAG, "Interceptor executor did not terminate gracefully, forcing shutdown");
+                    interceptorExecutor.shutdownNow();
                 }
             } catch (InterruptedException e) {
-                Log.w(TAG, "Interrupted while waiting for filter executor shutdown");
-                filterExecutor.shutdownNow();
+                Log.w(TAG, "Interrupted while waiting for interceptor executor shutdown");
+                interceptorExecutor.shutdownNow();
                 Thread.currentThread().interrupt();
             }
         }

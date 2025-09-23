@@ -23,7 +23,7 @@ public class OptimoveInApp {
     private final Application application;
     
     @Nullable
-    private InAppMessageDisplayFilter inAppMessageDisplayFilter = null;
+    private InAppMessageInterceptor inAppMessageInterceptor = null;
 
     public enum InboxMessagePresentationResult {
         FAILED,
@@ -169,33 +169,37 @@ public class OptimoveInApp {
     }
 
     /**
-     * Sets a filter to conditionally display in-app messages.
+     * Sets an interceptor to conditionally display in-app messages when display mode is INTERCEPTED.
      * 
-     * <p>The filter allows you to intercept messages before they are shown and decide
+     * <p>The interceptor allows you to intercept messages before they are shown and decide
      * whether to display or suppress them based on your own logic. This is useful for
      * scenarios where you want to control message timing based on user state, app context,
      * or external API responses.</p>
      * 
-     * <p>The filter callback is executed on a background thread to avoid blocking the UI.
-     * You can perform synchronous or asynchronous operations in the filter.</p>
+     * <p><strong>Note:</strong> The interceptor only works when the display mode is set to 
+     * {@link OptimoveConfig.InAppDisplayMode#INTERCEPTED}. Use {@link #setDisplayMode(OptimoveConfig.InAppDisplayMode)}
+     * to set the mode to INTERCEPTED.</p>
      * 
-     * @param filter The filter to use for conditional message display, or null to remove filtering
+     * <p>The interceptor callback is executed on a background thread to avoid blocking the UI.
+     * You can perform synchronous or asynchronous operations in the interceptor.</p>
+     * 
+     * @param interceptor The interceptor to use for conditional message display, or null to remove interception
      */
-    public void setInAppMessageDisplayFilter(@Nullable InAppMessageDisplayFilter filter) {
-        this.inAppMessageDisplayFilter = filter;
+    public void setInAppMessageInterceptor(@Nullable InAppMessageInterceptor interceptor) {
+        this.inAppMessageInterceptor = interceptor;
         if (presenter != null) {
-            presenter.setInAppMessageDisplayFilter(filter);
+            presenter.setInAppMessageInterceptor(interceptor);
         }
     }
 
     /**
-     * Gets the currently set in-app message display filter.
+     * Gets the currently set in-app message interceptor.
      * 
-     * @return The current filter, or null if no filter is set
+     * @return The current interceptor, or null if no interceptor is set
      */
     @Nullable
-    public InAppMessageDisplayFilter getInAppMessageDisplayFilter() {
-        return inAppMessageDisplayFilter;
+    public InAppMessageInterceptor getInAppMessageInterceptor() {
+        return inAppMessageInterceptor;
     }
 
 
@@ -225,9 +229,9 @@ public class OptimoveInApp {
         
         presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());
         
-        // Pass any existing filter to the new presenter
-        if (shared.inAppMessageDisplayFilter != null) {
-            presenter.setInAppMessageDisplayFilter(shared.inAppMessageDisplayFilter);
+        // Pass any existing interceptor to the new presenter
+        if (shared.inAppMessageInterceptor != null) {
+            presenter.setInAppMessageInterceptor(shared.inAppMessageInterceptor);
         }
 
         shared.toggleInAppMessageMonitoring(inAppEnabled);

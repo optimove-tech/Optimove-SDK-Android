@@ -3,7 +3,7 @@ package com.optimove.android.optimobile;
 import androidx.annotation.NonNull;
 
 /**
- * Interface for conditional in-app message display.
+ * Interface for intercepting in-app messages when display mode is set to INTERCEPTED.
  * 
  * This interface allows you to intercept in-app messages before they are displayed
  * and decide whether to show or suppress them based on your own custom logic.
@@ -15,32 +15,36 @@ import androidx.annotation.NonNull;
  * 
  * Example usage:
  * <pre>
- * OptimoveInApp.getInstance().setInAppMessageDisplayFilter(new InAppMessageDisplayFilter() {
+ * // Set display mode to INTERCEPTED
+ * OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED);
+ * 
+ * // Set your interceptor
+ * OptimoveInApp.getInstance().setInAppMessageInterceptor(new InAppMessageInterceptor() {
  *     @Override
- *     public void shouldDisplayMessage(@NonNull InAppMessage message, @NonNull InAppMessageFilterCallback callback) {
- *         // Example: suppress messages during checkout flow
+ *     public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
+ *         // Your logic here
  *         if (isUserInCheckoutFlow()) {
- *             callback.onFilterResult(FilterResult.SUPPRESS);
+ *             callback.onInterceptResult(InterceptResult.SUPPRESS);
  *             return;
  *         }
  *         
- *         // Example: async API call to check user eligibility
+ *         // Async API call example
  *         checkUserEligibilityAsync(message, new ApiCallback() {
  *             @Override
  *             public void onResult(boolean eligible) {
- *                 callback.onFilterResult(eligible ? FilterResult.SHOW : FilterResult.SUPPRESS);
+ *                 callback.onInterceptResult(eligible ? InterceptResult.SHOW : InterceptResult.SUPPRESS);
  *             }
  *         });
  *     }
  * });
  * </pre>
  */
-public interface InAppMessageDisplayFilter {
+public interface InAppMessageInterceptor {
     
     /**
-     * Filter result options for message display decision.
+     * Intercept result options for message display decision.
      */
-    enum FilterResult {
+    enum InterceptResult {
         /** Show the message to the user */
         SHOW,
         /** Suppress the message (do not display) */
@@ -48,7 +52,7 @@ public interface InAppMessageDisplayFilter {
     }
     
     /**
-     * Called when an in-app message is about to be displayed.
+     * Called when an in-app message is about to be displayed and display mode is INTERCEPTED.
      * 
      * <p>This method is called on a background thread to avoid blocking the UI.
      * You can perform synchronous or asynchronous operations here.</p>
@@ -60,5 +64,5 @@ public interface InAppMessageDisplayFilter {
      * @param message Information about the in-app message that is about to be displayed
      * @param callback Callback to invoke with your decision. Can be called from any thread.
      */
-    void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageFilterCallback callback);
+    void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback);
 }

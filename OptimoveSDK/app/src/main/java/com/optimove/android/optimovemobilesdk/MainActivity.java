@@ -19,10 +19,11 @@ import androidx.core.content.ContextCompat;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.optimobile.InAppInboxItem;
-import com.optimove.android.optimobile.InAppMessageDisplayFilter;
-import com.optimove.android.optimobile.InAppMessageFilterCallback;
+import com.optimove.android.optimobile.InAppMessageInterceptor;
+import com.optimove.android.optimobile.InAppMessageInterceptorCallback;
 import com.optimove.android.optimobile.InAppMessageInfo;
 import com.optimove.android.optimobile.OptimoveInApp;
+import com.optimove.android.OptimoveConfig;
 import com.optimove.android.preferencecenter.Channel;
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
 import com.optimove.android.preferencecenter.PreferenceUpdate;
@@ -59,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
         //deferred deep links
         Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
         
-        // Set up conditional in-app message display filter for demo
-        setupInAppMessageFilter();
+        // Set up conditional in-app message display interceptor for demo
+        setupInAppMessageInterceptor();
     }
 
     @Override
@@ -309,20 +310,24 @@ public class MainActivity extends AppCompatActivity {
     }
     
     /**
-     * Demo implementation of conditional in-app message display.
-     * This shows how to set up a filter that can conditionally show or suppress messages.
+     * Demo implementation of conditional in-app message display using INTERCEPTED mode.
+     * This shows how to set up an interceptor that can conditionally show or suppress messages.
      */
-    private void setupInAppMessageFilter() {
+    private void setupInAppMessageInterceptor() {
         try {
-            OptimoveInApp.getInstance().setInAppMessageDisplayFilter(new InAppMessageDisplayFilter() {
+            // First, set display mode to INTERCEPTED
+            OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED);
+            
+            // Then set up the interceptor
+            OptimoveInApp.getInstance().setInAppMessageInterceptor(new InAppMessageInterceptor() {
                 @Override
-                public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageFilterCallback callback) {
-                    Log.d(TAG, "Filter called for message ID: " + message.getMessageId());
+                public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
+                    Log.d(TAG, "Interceptor called for message ID: " + message.getMessageId());
                     
                     // Example 1: Check if user is in a specific app state
                     if (isUserInCheckoutFlow()) {
                         Log.d(TAG, "User in checkout - suppressing message");
-                        callback.onFilterResult(FilterResult.SUPPRESS);
+                        callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
                         return;
                     }
                     
@@ -333,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
                                 message.getData().getBoolean("vip_only") && 
                                 !isUserVip()) {
                                 Log.d(TAG, "VIP-only message for non-VIP user - suppressing");
-                                callback.onFilterResult(FilterResult.SUPPRESS);
+                                callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
                                 return;
                             }
                         } catch (Exception e) {
@@ -350,13 +355,13 @@ public class MainActivity extends AppCompatActivity {
                     
                     // Default: show the message
                     Log.d(TAG, "Showing message");
-                    callback.onFilterResult(FilterResult.SHOW);
+                    callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SHOW);
                 }
             });
             
-            Log.d(TAG, "In-app message filter configured successfully");
+            Log.d(TAG, "In-app message interceptor configured successfully");
         } catch (Exception e) {
-            Log.e(TAG, "Failed to configure in-app message filter", e);
+            Log.e(TAG, "Failed to configure in-app message interceptor", e);
         }
     }
     
@@ -381,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
     
-    private void checkUserEligibilityAsync(InAppMessageInfo message, InAppMessageFilterCallback callback) {
+    private void checkUserEligibilityAsync(InAppMessageInfo message, InAppMessageInterceptorCallback callback) {
         // Simulate async API call
         new Thread(() -> {
             try {
@@ -392,14 +397,14 @@ public class MainActivity extends AppCompatActivity {
                 boolean eligible = Math.random() < 0.7; // 70% eligible
                 
                 Log.d(TAG, "External eligibility check complete: " + eligible);
-                callback.onFilterResult(eligible ? 
-                    InAppMessageDisplayFilter.FilterResult.SHOW : 
-                    InAppMessageDisplayFilter.FilterResult.SUPPRESS);
+                callback.onInterceptResult(eligible ? 
+                    InAppMessageInterceptor.InterceptResult.SHOW : 
+                    InAppMessageInterceptor.InterceptResult.SUPPRESS);
                     
             } catch (InterruptedException e) {
                 Log.e(TAG, "Eligibility check interrupted", e);
                 // On error, suppress the message
-                callback.onFilterResult(InAppMessageDisplayFilter.FilterResult.SUPPRESS);
+                callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
             }
         }).start();
     }
