@@ -94,7 +94,9 @@ class InAppMessage implements InAppMessageInfo {
         return inAppId;
     }
 
-    String getPresentedWhen() {
+    @Override
+    @Nullable
+    public String getPresentedWhen() {
         return presentedWhen;
     }
 
@@ -103,12 +105,15 @@ class InAppMessage implements InAppMessageInfo {
         return badgeConfig;
     }
 
+    @Override
     @Nullable
-    JSONObject getData() {
+    public JSONObject getData() {
         return data;
     }
 
-    JSONObject getContent() {
+    @Override
+    @NonNull
+    public JSONObject getContent() {
         return content;
     }
 
@@ -117,13 +122,15 @@ class InAppMessage implements InAppMessageInfo {
         return dismissedAt;
     }
 
+    @Override
     @Nullable
-    Date getUpdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
     }
 
+    @Override
     @Nullable
-    Date getExpiresAt() {
+    public Date getExpiresAt() {
         return expiresAt;
     }
 
@@ -148,8 +155,9 @@ class InAppMessage implements InAppMessageInfo {
         return readAt;
     }
 
+    @Override
     @Nullable
-    Date getSentAt() {
+    public Date getSentAt() {
         return sentAt;
     }
 
