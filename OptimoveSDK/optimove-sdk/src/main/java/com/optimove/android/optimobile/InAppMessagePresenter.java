@@ -311,4 +311,35 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }
         view = new InAppMessageView(this, message, currentActivity);
     }
+    
+    /**
+     * Cleans up resources used by this presenter.
+     * This method should be called when the presenter is no longer needed to prevent memory leaks.
+     */
+    void cleanup() {
+        // Unregister from AppStateWatcher to prevent memory leaks
+        OptimobileInitProvider.getAppStateWatcher().unregisterListener(this);
+        
+        // Shutdown the filter executor to prevent thread leaks
+        if (filterExecutor != null && !filterExecutor.isShutdown()) {
+            filterExecutor.shutdown();
+            try {
+                // Wait a bit for existing tasks to terminate
+                if (!filterExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    Log.w(TAG, "Filter executor did not terminate gracefully, forcing shutdown");
+                    filterExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                Log.w(TAG, "Interrupted while waiting for filter executor shutdown");
+                filterExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        
+        // Clear any remaining messages and dispose view
+        messageQueue.clear();
+        disposeView();
+        
+        Log.d(TAG, "InAppMessagePresenter cleanup completed");
+    }
 }

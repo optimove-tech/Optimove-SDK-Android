@@ -218,6 +218,11 @@ public class OptimoveInApp {
             shared.clearLastSyncTime(application);
         }
 
+        // Clean up any existing presenter before creating a new one
+        if (presenter != null) {
+            presenter.cleanup();
+        }
+        
         presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());
         
         // Pass any existing filter to the new presenter
