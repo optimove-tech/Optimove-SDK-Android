@@ -14,6 +14,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
@@ -45,6 +50,19 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         outputTv = findViewById(R.id.userIdTextView);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        final View root = findViewById(R.id.scroll);
+        if (root != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+                Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+                return insets;
+            });
+
+            WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), root);
+            controller.setAppearanceLightStatusBars(true);
+        }
 
         this.hideIrrelevantInputs();
 
