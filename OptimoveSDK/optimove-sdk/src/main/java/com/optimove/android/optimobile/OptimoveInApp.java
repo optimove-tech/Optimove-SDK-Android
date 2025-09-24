@@ -166,19 +166,19 @@ public class OptimoveInApp {
     }
 
     public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode) {
+        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED) {
+            throw new IllegalArgumentException("INTERCEPTED mode requires an interceptor. Use setDisplayMode(INTERCEPTED, interceptor) instead.");
+        }
         presenter.setDisplayMode(mode);
     }
 
     /**
-     * Sets display mode to INTERCEPTED and configures the interceptor in one step.
+     * Sets display mode with interceptor in one step (required for INTERCEPTED mode).
      * 
-     * @param interceptor The interceptor to use for conditional message display
+     * @param mode The display mode to set
+     * @param interceptor The interceptor to use (required when mode is INTERCEPTED)
      */
-    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode, @Nullable InAppMessageInterceptor interceptor) {
-        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED && interceptor == null) {
-            Log.w("OptimoveInApp", "Setting INTERCEPTED mode with null interceptor - messages will be suppressed");
-        }
-        
+    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode, @NonNull InAppMessageInterceptor interceptor) {
         this.inAppMessageInterceptor = interceptor;
         if (presenter != null) {
             presenter.setInAppMessageInterceptor(interceptor);
@@ -188,6 +188,7 @@ public class OptimoveInApp {
 
     /**
      * Sets an interceptor for conditional message display when mode is INTERCEPTED.
+     * Note: Use setDisplayMode(INTERCEPTED, interceptor) for a safer one-step API.
      * 
      * @param interceptor The interceptor to use, or null to remove
      */

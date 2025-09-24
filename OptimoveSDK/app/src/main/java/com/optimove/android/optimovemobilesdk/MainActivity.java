@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
     
     private void setupInAppMessageInterceptor() {
         try {
-            // One-step setup: set INTERCEPTED mode and interceptor together
+            // One-step API: set INTERCEPTED mode and interceptor together
             OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED, new InAppMessageInterceptor() {
                 @Override
                 public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
