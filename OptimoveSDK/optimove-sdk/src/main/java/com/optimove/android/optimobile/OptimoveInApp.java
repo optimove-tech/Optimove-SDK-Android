@@ -202,7 +202,7 @@ public class OptimoveInApp {
         }
         
         if (presenter != null) {
-            presenter.setInterceptorTimeout(timeoutMs);
+            presenter.setInterceptorTimeout(this.interceptorTimeoutMs);
         }
     }
 
