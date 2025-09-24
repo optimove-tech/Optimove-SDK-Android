@@ -174,7 +174,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             } else {
                 // INTERCEPTED mode but no interceptor set - suppress the message
                 Log.w(TAG, "Display mode is INTERCEPTED but no interceptor is set, suppressing message");
-                messageQueue.remove(0);
+                messageQueue.remove(currentMessage);
                 presentMessageToClient(); // Try next message
             }
         } else {
@@ -275,8 +275,8 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                     if (result == InAppMessageInterceptor.InterceptResult.SHOW) {
                         showMessageDirectly(message);
                     } else {
-                        // Message suppressed, move to next message
-                        messageQueue.remove(0);
+                        // Message suppressed, remove this specific message and move to next
+                        messageQueue.remove(message);
                         presentMessageToClient();
                     }
                 });
