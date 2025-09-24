@@ -32,8 +32,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     
     @Nullable
     private InAppMessageInterceptor messageInterceptor = null;
-    
-    private long interceptorTimeoutMs = 5000; // Default 5 seconds
 
     @Nullable
     private Activity currentActivity;
@@ -250,10 +248,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         this.messageInterceptor = interceptor;
     }
     
-    void setInterceptorTimeout(long timeoutMs) {
-        this.interceptorTimeoutMs = Math.max(1000, timeoutMs); // Minimum 1 second
-    }
-    
     /**
      * Applies message interception to determine if the message should be shown.
      */
@@ -289,7 +283,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             }
         };
         
-        // Execute interceptor on background thread with timeout
+        // Execute interceptor on background thread
         interceptorExecutor.execute(() -> {
             try {
                 messageInterceptor.shouldDisplayMessage((InAppMessageInfo) message, callback);
@@ -299,18 +293,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                 callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
             }
         });
-        
-        // Set up timeout to prevent indefinite waiting
-        interceptorExecutor.schedule(() -> {
-            if (callbackProcessed.compareAndSet(false, true)) {
-                Log.w(TAG, "Message interceptor timed out, suppressing message");
-                // Timeout reached, suppress the message
-                Optimobile.handler.post(() -> {
-                    messageQueue.remove(0);
-                    presentMessageToClient();
-                });
-            }
-        }, interceptorTimeoutMs, TimeUnit.MILLISECONDS);
     }
     
     @UiThread

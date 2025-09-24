@@ -25,8 +25,6 @@ public class OptimoveInApp {
     
     @Nullable
     private InAppMessageInterceptor inAppMessageInterceptor = null;
-    
-    private long interceptorTimeoutMs = 5000; // Default 5 seconds
 
     public enum InboxMessagePresentationResult {
         FAILED,
@@ -188,33 +186,6 @@ public class OptimoveInApp {
         return inAppMessageInterceptor;
     }
 
-    /**
-     * Sets the timeout for message interceptor callbacks.
-     * 
-     * @param timeoutMs Timeout in milliseconds (minimum 1000ms, default 5000ms)
-     */
-    public void setInAppMessageInterceptorTimeout(long timeoutMs) {
-        if (timeoutMs < 1000) {
-            Log.w("OptimoveInApp", "Interceptor timeout must be at least 1000ms, using 1000ms");
-            this.interceptorTimeoutMs = 1000;
-        } else {
-            this.interceptorTimeoutMs = timeoutMs;
-        }
-        
-        if (presenter != null) {
-            presenter.setInterceptorTimeout(timeoutMs);
-        }
-    }
-
-    /**
-     * Gets the current interceptor timeout in milliseconds.
-     * 
-     * @return Timeout in milliseconds
-     */
-    public long getInAppMessageInterceptorTimeout() {
-        return interceptorTimeoutMs;
-    }
-
 
     //==============================================================================================
     //-- Internal Helpers
@@ -244,8 +215,6 @@ public class OptimoveInApp {
         if (shared.inAppMessageInterceptor != null) {
             presenter.setInAppMessageInterceptor(shared.inAppMessageInterceptor);
         }
-        
-        presenter.setInterceptorTimeout(shared.interceptorTimeoutMs);
 
         shared.toggleInAppMessageMonitoring(inAppEnabled);
     }
