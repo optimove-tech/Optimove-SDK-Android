@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.7.1
+
+- Use reflective status bar color on pre‑Android 15 (API <35) to avoid Play deprecation warnings
+
 ## 7.7.0
 
 - Updated to use Embedded Messaging V2 endpoints
