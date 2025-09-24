@@ -222,14 +222,12 @@ public class OptimoveInApp {
             shared.clearLastSyncTime(application);
         }
 
-        // Clean up any existing presenter before creating a new one
         if (presenter != null) {
             presenter.cleanup();
         }
         
         presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());
         
-        // Pass any existing interceptor to the new presenter
         if (shared.inAppMessageInterceptor != null) {
             presenter.setInAppMessageInterceptor(shared.inAppMessageInterceptor);
         }

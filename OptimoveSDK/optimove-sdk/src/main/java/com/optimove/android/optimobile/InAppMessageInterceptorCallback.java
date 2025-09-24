@@ -3,20 +3,14 @@ package com.optimove.android.optimobile;
 import androidx.annotation.NonNull;
 
 /**
- * Callback interface for in-app message interceptor results.
- * 
- * This callback is used to return the result of message interception logic
- * to the SDK. The callback can be invoked from any thread.
+ * Callback for returning interceptor decisions to the SDK.
  */
 public interface InAppMessageInterceptorCallback {
     
     /**
-     * Called to provide the intercept result for a message.
+     * Reports the intercept decision. Can be called from any thread.
      * 
-     * <p>This method can be called from any thread. The SDK will handle
-     * switching to the appropriate thread for message display.</p>
-     * 
-     * @param result The intercept result indicating whether to show or suppress the message
+     * @param result SHOW or SUPPRESS the message
      */
     void onInterceptResult(@NonNull InAppMessageInterceptor.InterceptResult result);
 }

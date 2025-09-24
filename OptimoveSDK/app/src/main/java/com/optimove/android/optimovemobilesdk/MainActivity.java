@@ -309,29 +309,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    /**
-     * Demo implementation of conditional in-app message display using INTERCEPTED mode.
-     * This shows how to set up an interceptor that can conditionally show or suppress messages.
-     */
     private void setupInAppMessageInterceptor() {
         try {
-            // First, set display mode to INTERCEPTED
             OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED);
             
-            // Then set up the interceptor
             OptimoveInApp.getInstance().setInAppMessageInterceptor(new InAppMessageInterceptor() {
                 @Override
                 public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
                     Log.d(TAG, "Interceptor called for message ID: " + message.getMessageId());
                     
-                    // Example 1: Check if user is in a specific app state
                     if (isUserInCheckoutFlow()) {
                         Log.d(TAG, "User in checkout - suppressing message");
                         callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
                         return;
                     }
                     
-                    // Example 2: Check message custom data
                     if (message.getData() != null) {
                         try {
                             if (message.getData().has("vip_only") && 
@@ -346,14 +338,12 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     
-                    // Example 3: Simulate async API call (e.g., checking external eligibility)
                     if (shouldCheckExternalEligibility(message)) {
                         Log.d(TAG, "Checking external eligibility...");
                         checkUserEligibilityAsync(message, callback);
                         return;
                     }
                     
-                    // Default: show the message
                     Log.d(TAG, "Showing message");
                     callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SHOW);
                 }
@@ -366,20 +356,14 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private boolean isUserInCheckoutFlow() {
-        // Example: check if current activity or app state indicates checkout
-        // For demo purposes, randomly suppress 30% of messages
         return Math.random() < 0.3;
     }
     
     private boolean isUserVip() {
-        // Example: check user's VIP status from your app's data
-        // For demo purposes, randomly assign VIP status
         return Math.random() < 0.5;
     }
     
     private boolean shouldCheckExternalEligibility(InAppMessageInfo message) {
-        // Example: check if message requires external validation
-        // For demo purposes, check if message has specific custom data
         if (message.getData() != null) {
             return message.getData().has("check_external");
         }
@@ -387,15 +371,10 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void checkUserEligibilityAsync(InAppMessageInfo message, InAppMessageInterceptorCallback callback) {
-        // Simulate async API call
         new Thread(() -> {
             try {
-                // Simulate network delay
                 Thread.sleep(1000);
-                
-                // Simulate API response (random for demo)
-                boolean eligible = Math.random() < 0.7; // 70% eligible
-                
+                boolean eligible = Math.random() < 0.7;
                 Log.d(TAG, "External eligibility check complete: " + eligible);
                 callback.onInterceptResult(eligible ? 
                     InAppMessageInterceptor.InterceptResult.SHOW : 

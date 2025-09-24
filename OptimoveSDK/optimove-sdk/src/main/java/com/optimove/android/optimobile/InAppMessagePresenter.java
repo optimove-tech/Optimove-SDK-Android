@@ -309,9 +309,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }, INTERCEPTOR_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
     
-    /**
-     * Shows the message directly without filtering.
-     */
     @UiThread
     private void showMessageDirectly(@NonNull InAppMessage message) {
         if (currentActivity == null) {
@@ -320,19 +317,12 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         view = new InAppMessageView(this, message, currentActivity);
     }
     
-    /**
-     * Cleans up resources used by this presenter.
-     * This method should be called when the presenter is no longer needed to prevent memory leaks.
-     */
     void cleanup() {
-        // Unregister from AppStateWatcher to prevent memory leaks
         OptimobileInitProvider.getAppStateWatcher().unregisterListener(this);
         
-        // Shutdown the interceptor executor to prevent thread leaks
         if (interceptorExecutor != null && !interceptorExecutor.isShutdown()) {
             interceptorExecutor.shutdown();
             try {
-                // Wait a bit for existing tasks to terminate
                 if (!interceptorExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
                     Log.w(TAG, "Interceptor executor did not terminate gracefully, forcing shutdown");
                     interceptorExecutor.shutdownNow();
@@ -344,7 +334,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             }
         }
         
-        // Clear any remaining messages and dispose view
         messageQueue.clear();
         disposeView();
         
