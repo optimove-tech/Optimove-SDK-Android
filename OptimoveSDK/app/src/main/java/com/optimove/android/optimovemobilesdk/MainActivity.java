@@ -311,9 +311,8 @@ public class MainActivity extends AppCompatActivity {
     
     private void setupInAppMessageInterceptor() {
         try {
-            OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED);
-            
-            OptimoveInApp.getInstance().setInAppMessageInterceptor(new InAppMessageInterceptor() {
+            // One-step setup: set INTERCEPTED mode and interceptor together
+            OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED, new InAppMessageInterceptor() {
                 @Override
                 public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
                     Log.d(TAG, "Interceptor called for message ID: " + message.getMessageId());
@@ -349,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             
-            Log.d(TAG, "In-app message interceptor configured successfully");
+            Log.d(TAG, "In-app message interceptor configured successfully with one-step setup");
         } catch (Exception e) {
             Log.e(TAG, "Failed to configure in-app message interceptor", e);
         }
