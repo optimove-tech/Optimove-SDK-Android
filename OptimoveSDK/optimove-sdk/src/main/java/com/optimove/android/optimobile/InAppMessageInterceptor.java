@@ -17,7 +17,7 @@ public interface InAppMessageInterceptor {
      * Called when an in-app message is about to be displayed.
      * This method runs on a background thread.
      * 
-     * You MUST call the callback within 5 seconds or the message will be suppressed.
+     * You MUST call the callback within the configured timeout (default 5 seconds) or the message will be suppressed.
      * 
      * @param message Information about the in-app message
      * @param callback Callback to invoke with your decision (can be called from any thread)

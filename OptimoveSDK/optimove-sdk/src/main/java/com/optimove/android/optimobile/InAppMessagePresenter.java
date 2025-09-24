@@ -23,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     private static final String TAG = InAppMessagePresenter.class.getName();
-    private static final long INTERCEPTOR_TIMEOUT_MS = 5000; // 5 seconds
-
     private final List<InAppMessage> messageQueue = new ArrayList<>();
     private final Context context;
     private final ScheduledExecutorService interceptorExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -34,6 +32,8 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     
     @Nullable
     private InAppMessageInterceptor messageInterceptor = null;
+    
+    private long interceptorTimeoutMs = 5000; // Default 5 seconds
 
     @Nullable
     private Activity currentActivity;
@@ -250,6 +250,10 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         this.messageInterceptor = interceptor;
     }
     
+    void setInterceptorTimeout(long timeoutMs) {
+        this.interceptorTimeoutMs = Math.max(1000, timeoutMs); // Minimum 1 second
+    }
+    
     /**
      * Applies message interception to determine if the message should be shown.
      */
@@ -306,7 +310,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                     presentMessageToClient();
                 });
             }
-        }, INTERCEPTOR_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }, interceptorTimeoutMs, TimeUnit.MILLISECONDS);
     }
     
     @UiThread

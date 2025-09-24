@@ -3,6 +3,7 @@ package com.optimove.android.optimobile;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +25,8 @@ public class OptimoveInApp {
     
     @Nullable
     private InAppMessageInterceptor inAppMessageInterceptor = null;
+    
+    private long interceptorTimeoutMs = 5000; // Default 5 seconds
 
     public enum InboxMessagePresentationResult {
         FAILED,
@@ -169,21 +172,9 @@ public class OptimoveInApp {
     }
 
     /**
-     * Sets an interceptor to conditionally display in-app messages when display mode is INTERCEPTED.
+     * Sets an interceptor for conditional message display when mode is INTERCEPTED.
      * 
-     * <p>The interceptor allows you to intercept messages before they are shown and decide
-     * whether to display or suppress them based on your own logic. This is useful for
-     * scenarios where you want to control message timing based on user state, app context,
-     * or external API responses.</p>
-     * 
-     * <p><strong>Note:</strong> The interceptor only works when the display mode is set to 
-     * {@link OptimoveConfig.InAppDisplayMode#INTERCEPTED}. Use {@link #setDisplayMode(OptimoveConfig.InAppDisplayMode)}
-     * to set the mode to INTERCEPTED.</p>
-     * 
-     * <p>The interceptor callback is executed on a background thread to avoid blocking the UI.
-     * You can perform synchronous or asynchronous operations in the interceptor.</p>
-     * 
-     * @param interceptor The interceptor to use for conditional message display, or null to remove interception
+     * @param interceptor The interceptor to use, or null to remove
      */
     public void setInAppMessageInterceptor(@Nullable InAppMessageInterceptor interceptor) {
         this.inAppMessageInterceptor = interceptor;
@@ -192,14 +183,36 @@ public class OptimoveInApp {
         }
     }
 
-    /**
-     * Gets the currently set in-app message interceptor.
-     * 
-     * @return The current interceptor, or null if no interceptor is set
-     */
     @Nullable
     public InAppMessageInterceptor getInAppMessageInterceptor() {
         return inAppMessageInterceptor;
+    }
+
+    /**
+     * Sets the timeout for message interceptor callbacks.
+     * 
+     * @param timeoutMs Timeout in milliseconds (minimum 1000ms, default 5000ms)
+     */
+    public void setInAppMessageInterceptorTimeout(long timeoutMs) {
+        if (timeoutMs < 1000) {
+            Log.w("OptimoveInApp", "Interceptor timeout must be at least 1000ms, using 1000ms");
+            this.interceptorTimeoutMs = 1000;
+        } else {
+            this.interceptorTimeoutMs = timeoutMs;
+        }
+        
+        if (presenter != null) {
+            presenter.setInterceptorTimeout(timeoutMs);
+        }
+    }
+
+    /**
+     * Gets the current interceptor timeout in milliseconds.
+     * 
+     * @return Timeout in milliseconds
+     */
+    public long getInAppMessageInterceptorTimeout() {
+        return interceptorTimeoutMs;
     }
 
 
@@ -231,6 +244,8 @@ public class OptimoveInApp {
         if (shared.inAppMessageInterceptor != null) {
             presenter.setInAppMessageInterceptor(shared.inAppMessageInterceptor);
         }
+        
+        presenter.setInterceptorTimeout(shared.interceptorTimeoutMs);
 
         shared.toggleInAppMessageMonitoring(inAppEnabled);
     }

@@ -311,12 +311,16 @@ public class MainActivity extends AppCompatActivity {
     
     private void setupInAppMessageInterceptor() {
         try {
+            // Configure custom timeout (7 seconds instead of default 5)
+            OptimoveInApp.getInstance().setInAppMessageInterceptorTimeout(7000);
+            
             OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED);
             
             OptimoveInApp.getInstance().setInAppMessageInterceptor(new InAppMessageInterceptor() {
                 @Override
                 public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
                     Log.d(TAG, "Interceptor called for message ID: " + message.getMessageId());
+                    Log.d(TAG, "Using timeout: " + OptimoveInApp.getInstance().getInAppMessageInterceptorTimeout() + "ms");
                     
                     if (isUserInCheckoutFlow()) {
                         Log.d(TAG, "User in checkout - suppressing message");
