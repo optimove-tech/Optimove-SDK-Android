@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             
-            Log.d(TAG, "In-app message interceptor configured successfully with one-step setup");
+            Log.d(TAG, "In-app message interceptor configured successfully with unified API");
         } catch (Exception e) {
             Log.e(TAG, "Failed to configure in-app message interceptor", e);
         }

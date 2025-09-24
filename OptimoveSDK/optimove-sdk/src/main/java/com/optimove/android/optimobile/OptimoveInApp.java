@@ -165,39 +165,30 @@ public class OptimoveInApp {
         this.inAppDeepLinkHandler = handler;
     }
 
-    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode) {
-        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED) {
-            throw new IllegalArgumentException("INTERCEPTED mode requires an interceptor. Use setDisplayMode(INTERCEPTED, interceptor) instead.");
-        }
-        presenter.setDisplayMode(mode);
-    }
-
     /**
-     * Sets display mode with interceptor in one step (required for INTERCEPTED mode).
+     * Sets the display mode for in-app messages.
      * 
      * @param mode The display mode to set
-     * @param interceptor The interceptor to use (required when mode is INTERCEPTED)
+     * @param interceptor The interceptor to use (required when mode is INTERCEPTED, ignored for other modes)
      */
-    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode, @NonNull InAppMessageInterceptor interceptor) {
-        this.inAppMessageInterceptor = interceptor;
+    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode, @Nullable InAppMessageInterceptor interceptor) {
+        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED && interceptor == null) {
+            throw new IllegalArgumentException("INTERCEPTED mode requires an interceptor");
+        }
+        
+        // Only set interceptor if mode is INTERCEPTED
+        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED) {
+            this.inAppMessageInterceptor = interceptor;
+        } else {
+            this.inAppMessageInterceptor = null; // Clear interceptor for other modes
+        }
+        
         if (presenter != null) {
-            presenter.setInAppMessageInterceptor(interceptor);
+            presenter.setInAppMessageInterceptor(this.inAppMessageInterceptor);
             presenter.setDisplayMode(mode);
         }
     }
 
-    /**
-     * Sets an interceptor for conditional message display when mode is INTERCEPTED.
-     * Note: Use setDisplayMode(INTERCEPTED, interceptor) for a safer one-step API.
-     * 
-     * @param interceptor The interceptor to use, or null to remove
-     */
-    public void setInAppMessageInterceptor(@Nullable InAppMessageInterceptor interceptor) {
-        this.inAppMessageInterceptor = interceptor;
-        if (presenter != null) {
-            presenter.setInAppMessageInterceptor(interceptor);
-        }
-    }
 
     @Nullable
     public InAppMessageInterceptor getInAppMessageInterceptor() {
