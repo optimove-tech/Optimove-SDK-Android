@@ -1,5 +1,21 @@
 # Changelog
 
+## 7.8.0
+
+Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage: 
+```java
+OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+  // Example: decide based on your own logic
+  if (/* show conditions */) {
+    decision.show();
+  } else {
+    decision.suppress(); // permanently suppress this message
+  }
+});
+```
+
+Note: If no decision is made within 5s, the SDK auto-suppresses the message. Suppressed messages won’t reappear.
+
 ## 7.7.0
 
 - Updated to use Embedded Messaging V2 endpoints
