@@ -3,7 +3,6 @@ package com.optimove.android.optimobile;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -167,34 +166,20 @@ public class OptimoveInApp {
 
     /**
      * Sets the display mode for in-app messages.
-     * 
-     * @param mode The display mode to set
+     *
      * @param interceptor The interceptor to use (required when mode is INTERCEPTED, ignored for other modes)
      */
-    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode, @Nullable InAppMessageInterceptor interceptor) {
-        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED && interceptor == null) {
-            throw new IllegalArgumentException("INTERCEPTED mode requires an interceptor");
-        }
-        
-        // Only set interceptor if mode is INTERCEPTED
-        if (mode == OptimoveConfig.InAppDisplayMode.INTERCEPTED) {
-            this.inAppMessageInterceptor = interceptor;
-        } else {
-            this.inAppMessageInterceptor = null; // Clear interceptor for other modes
-        }
+    public void setInAppMessageInterceptor(InAppMessageInterceptor interceptor) {
+        this.inAppMessageInterceptor = interceptor;
         
         if (presenter != null) {
             presenter.setInAppMessageInterceptor(this.inAppMessageInterceptor);
-            presenter.setDisplayMode(mode);
         }
     }
 
-
-    @Nullable
-    public InAppMessageInterceptor getInAppMessageInterceptor() {
-        return inAppMessageInterceptor;
+    public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode) {
+        presenter.setDisplayMode(mode);
     }
-
 
     //==============================================================================================
     //-- Internal Helpers
@@ -213,10 +198,6 @@ public class OptimoveInApp {
             shared.updateInAppEnablementFlags(false);
             InAppMessageService.clearAllMessages(application);
             shared.clearLastSyncTime(application);
-        }
-
-        if (presenter != null) {
-            presenter.cleanup();
         }
         
         presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());

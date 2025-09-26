@@ -80,8 +80,7 @@ public final class OptimoveConfig {
 
     public enum InAppDisplayMode {
         AUTOMATIC,
-        PAUSED,
-        INTERCEPTED
+        PAUSED
     }
 
     public enum Region {

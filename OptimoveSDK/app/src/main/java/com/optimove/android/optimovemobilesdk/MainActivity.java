@@ -10,8 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,11 +20,8 @@ import androidx.core.content.ContextCompat;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.optimobile.InAppInboxItem;
-import com.optimove.android.optimobile.InAppMessageInterceptor;
-import com.optimove.android.optimobile.InAppMessageInterceptorCallback;
 import com.optimove.android.optimobile.InAppMessageInfo;
 import com.optimove.android.optimobile.OptimoveInApp;
-import com.optimove.android.OptimoveConfig;
 import com.optimove.android.preferencecenter.Channel;
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
 import com.optimove.android.preferencecenter.PreferenceUpdate;
@@ -43,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169;
 
     private TextView outputTv;
+    private AlertDialog inAppDecisionDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
-        
-        // Set up conditional in-app message display interceptor for demo
+
         setupInAppMessageInterceptor();
     }
 
@@ -90,6 +88,14 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
+            inAppDecisionDialog.dismiss();
+        }
+        super.onDestroy();
     }
 
     public void reportEvent(View view) {
@@ -308,82 +314,29 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    
     private void setupInAppMessageInterceptor() {
-        try {
-            // One-step API: set INTERCEPTED mode and interceptor together
-            OptimoveInApp.getInstance().setDisplayMode(OptimoveConfig.InAppDisplayMode.INTERCEPTED, new InAppMessageInterceptor() {
-                @Override
-                public void shouldDisplayMessage(@NonNull InAppMessageInfo message, @NonNull InAppMessageInterceptorCallback callback) {
-                    Log.d(TAG, "Interceptor called for message ID: " + message.getMessageId());
-                    
-                    if (isUserInCheckoutFlow()) {
-                        Log.d(TAG, "User in checkout - suppressing message");
-                        callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
-                        return;
+            OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+                runOnUiThread(() -> {
+                    if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
+                        inAppDecisionDialog.dismiss();
                     }
-                    
-                    if (message.getData() != null) {
-                        try {
-                            if (message.getData().has("vip_only") && 
-                                message.getData().getBoolean("vip_only") && 
-                                !isUserVip()) {
-                                Log.d(TAG, "VIP-only message for non-VIP user - suppressing");
-                                callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
-                                return;
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error checking message data", e);
-                        }
-                    }
-                    
-                    if (shouldCheckExternalEligibility(message)) {
-                        Log.d(TAG, "Checking external eligibility...");
-                        checkUserEligibilityAsync(message, callback);
-                        return;
-                    }
-                    
-                    Log.d(TAG, "Showing message");
-                    callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SHOW);
-                }
+
+                    inAppDecisionDialog = new AlertDialog.Builder(this)
+                        .setTitle("QA: In-App Message")
+                        .setMessage("Message ID: " + message.getMessageId() + "\nShow this message?")
+                        .setPositiveButton("Show", (d, w) -> {
+                            decision.show();
+                            d.dismiss();
+                        })
+                        .setNegativeButton("Suppress", (d, w) -> {
+                            decision.suppress();
+                            d.dismiss();
+                        })
+                        .setOnCancelListener(d -> decision.suppress())
+                        .create();
+
+                    inAppDecisionDialog.show();
+                });
             });
-            
-            Log.d(TAG, "In-app message interceptor configured successfully with unified API");
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to configure in-app message interceptor", e);
-        }
-    }
-    
-    private boolean isUserInCheckoutFlow() {
-        return Math.random() < 0.3;
-    }
-    
-    private boolean isUserVip() {
-        return Math.random() < 0.5;
-    }
-    
-    private boolean shouldCheckExternalEligibility(InAppMessageInfo message) {
-        if (message.getData() != null) {
-            return message.getData().has("check_external");
-        }
-        return false;
-    }
-    
-    private void checkUserEligibilityAsync(InAppMessageInfo message, InAppMessageInterceptorCallback callback) {
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                boolean eligible = Math.random() < 0.7;
-                Log.d(TAG, "External eligibility check complete: " + eligible);
-                callback.onInterceptResult(eligible ? 
-                    InAppMessageInterceptor.InterceptResult.SHOW : 
-                    InAppMessageInterceptor.InterceptResult.SUPPRESS);
-                    
-            } catch (InterruptedException e) {
-                Log.e(TAG, "Eligibility check interrupted", e);
-                // On error, suppress the message
-                callback.onInterceptResult(InAppMessageInterceptor.InterceptResult.SUPPRESS);
-            }
-        }).start();
     }
 }
