@@ -109,7 +109,7 @@
             android:layout_margin="16dp"
             android:background="#7D7D7D"
             android:gravity="center"
-            android:onClick="enableInAppInterception"
+            android:onClick="enableInAppInterceptionClicked"
             android:text="Enable In-App Interception"
             android:textAllCaps="false"
             android:textColor="#FFFFFF" />

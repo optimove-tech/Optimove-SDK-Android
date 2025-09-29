@@ -20,7 +20,6 @@ import androidx.core.content.ContextCompat;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.optimobile.InAppInboxItem;
-import com.optimove.android.optimobile.InAppMessageInfo;
 import com.optimove.android.optimobile.OptimoveInApp;
 import com.optimove.android.preferencecenter.Channel;
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
@@ -308,12 +307,18 @@ public class MainActivity extends AppCompatActivity {
 
             Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
             setCredsBtn.setVisibility(View.GONE);
-
-
         }
     }
-    public void enableInAppInterception(View view) {
+    public void enableInAppInterceptionClicked(View view) {
         Button btn = (Button) view;
+
+        enableInAppInterception();
+        btn.setEnabled(false);
+        btn.setText("Intercepting In-App (restart app to disable)");
+        Toast.makeText(this, "In-App interception enabled", Toast.LENGTH_SHORT).show();
+    }
+
+    private void enableInAppInterception(){
         OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
             runOnUiThread(() -> {
                 if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
@@ -321,25 +326,21 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 inAppDecisionDialog = new AlertDialog.Builder(this)
-                    .setTitle("QA: In-App Message")
-                    .setMessage("Message ID: " + message.getMessageId() + "\nShow this message?")
-                    .setPositiveButton("Show", (d, w) -> {
-                        decision.show();
-                        d.dismiss();
-                    })
-                    .setNegativeButton("Suppress", (d, w) -> {
-                        decision.suppress();
-                        d.dismiss();
-                    })
-                    .setOnCancelListener(d -> decision.suppress())
-                    .create();
+                        .setTitle("QA: In-App Message")
+                        .setMessage("Message ID: " + message.getMessageId() + "\nShow this message?")
+                        .setPositiveButton("Show", (d, w) -> {
+                            decision.show();
+                            d.dismiss();
+                        })
+                        .setNegativeButton("Suppress", (d, w) -> {
+                            decision.suppress();
+                            d.dismiss();
+                        })
+                        .setOnCancelListener(d -> decision.suppress())
+                        .create();
 
                 inAppDecisionDialog.show();
             });
         });
-
-        btn.setEnabled(false);
-        btn.setText("Intercepting In-App (restart app to disable)");
-        Toast.makeText(this, "In-App interception enabled", Toast.LENGTH_SHORT).show();
     }
 }
