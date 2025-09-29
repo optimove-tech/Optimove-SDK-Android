@@ -58,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
-
-        setupInAppMessageInterceptor();
     }
 
     @Override
@@ -314,29 +312,34 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    private void setupInAppMessageInterceptor() {
-            OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
-                runOnUiThread(() -> {
-                    if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
-                        inAppDecisionDialog.dismiss();
-                    }
+    public void enableInAppInterception(View view) {
+        Button btn = (Button) view;
+        OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+            runOnUiThread(() -> {
+                if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
+                    inAppDecisionDialog.dismiss();
+                }
 
-                    inAppDecisionDialog = new AlertDialog.Builder(this)
-                        .setTitle("QA: In-App Message")
-                        .setMessage("Message ID: " + message.getMessageId() + "\nShow this message?")
-                        .setPositiveButton("Show", (d, w) -> {
-                            decision.show();
-                            d.dismiss();
-                        })
-                        .setNegativeButton("Suppress", (d, w) -> {
-                            decision.suppress();
-                            d.dismiss();
-                        })
-                        .setOnCancelListener(d -> decision.suppress())
-                        .create();
+                inAppDecisionDialog = new AlertDialog.Builder(this)
+                    .setTitle("QA: In-App Message")
+                    .setMessage("Message ID: " + message.getMessageId() + "\nShow this message?")
+                    .setPositiveButton("Show", (d, w) -> {
+                        decision.show();
+                        d.dismiss();
+                    })
+                    .setNegativeButton("Suppress", (d, w) -> {
+                        decision.suppress();
+                        d.dismiss();
+                    })
+                    .setOnCancelListener(d -> decision.suppress())
+                    .create();
 
-                    inAppDecisionDialog.show();
-                });
+                inAppDecisionDialog.show();
             });
+        });
+
+        btn.setEnabled(false);
+        btn.setText("Intercepting In-App (restart app to disable)");
+        Toast.makeText(this, "In-App interception enabled", Toast.LENGTH_SHORT).show();
     }
 }
