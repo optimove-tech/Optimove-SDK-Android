@@ -39,8 +39,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     private InAppMessageView view;
 
     private boolean interceptionInProgress = false;
-    @Nullable
-    private Integer currentDisplayedMessageId = null;
 
     InAppMessagePresenter(Context context, @NonNull OptimoveConfig.InAppDisplayMode defaultDisplayMode) {
         this.context = context.getApplicationContext();
@@ -150,7 +148,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
         view.dispose();
         view = null;
-        currentDisplayedMessageId = null;
     }
 
     @UiThread
@@ -162,23 +159,18 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             return;
         }
 
-        // If a view already exists, prefer reusing it. Intercept only if the message changes.
+        // If a view already exists, prefer reusing it.
         if (null != view) {
-            int currentId = currentMessage.getInAppId();
-            if (currentDisplayedMessageId != null && currentDisplayedMessageId == currentId) {
+            if (interceptionInProgress) {
                 return;
             }
 
             if (messageInterceptor != null) {
-                if (interceptionInProgress) {
-                    return;
-                }
                 interceptionInProgress = true;
                 applyMessageInterception(currentMessage);
                 return;
             }
-
-            currentDisplayedMessageId = currentId;
+       
             view.showMessage(currentMessage);
             return;
         }
@@ -285,11 +277,9 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                 Optimobile.handler.post(() -> {
                     interceptionInProgress = false;
                     if (view != null) {
-                        currentDisplayedMessageId = message.getInAppId();
                         view.showMessage(message);
                     } else {
                         showMessageDirectly(message);
-                        currentDisplayedMessageId = message.getInAppId();
                     }
                 });
             }
