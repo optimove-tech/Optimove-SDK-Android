@@ -312,7 +312,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             if (processed.get()) {
                 return;
             }
-            interceptionInProgress = false;
             callback.suppress();
         }, 5, TimeUnit.SECONDS);
 
