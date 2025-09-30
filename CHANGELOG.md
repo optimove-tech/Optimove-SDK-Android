@@ -16,6 +16,16 @@ OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
 
 Note: If no decision is made within 5s, the SDK auto-suppresses the message. Suppressed messages won’t reappear.
 
+Optional: configure a custom timeout by overriding `getTimeoutMs()`:
+
+```java
+OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+  //...
+   @Override public long getTimeoutMs() { return 12000L; } // 12s custom timeout
+});
+```
+
+
 ## 7.7.0
 
 - Updated to use Embedded Messaging V2 endpoints
