@@ -1,6 +1,5 @@
 package com.optimove.android.optimobile;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.json.JSONException;
@@ -12,7 +11,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-class InAppMessage implements InAppMessageInfo {
+class InAppMessage {
     private String presentedWhen;
     private final int inAppId;
     @Nullable
@@ -90,14 +89,7 @@ class InAppMessage implements InAppMessageInfo {
         return inAppId;
     }
 
-    @Override
-    public int getMessageId() {
-        return inAppId;
-    }
-
-    @Override
-    @Nullable
-    public String getPresentedWhen() {
+    String getPresentedWhen() {
         return presentedWhen;
     }
 
@@ -106,15 +98,12 @@ class InAppMessage implements InAppMessageInfo {
         return badgeConfig;
     }
 
-    @Override
     @Nullable
-    public JSONObject getData() {
+    JSONObject getData() {
         return data;
     }
 
-    @Override
-    @NonNull
-    public JSONObject getContent() {
+    JSONObject getContent() {
         return content;
     }
 
@@ -123,26 +112,18 @@ class InAppMessage implements InAppMessageInfo {
         return dismissedAt;
     }
 
-    @Override
     @Nullable
-    public Date getUpdatedAt() {
+    Date getUpdatedAt() {
         return updatedAt;
     }
 
-    @Override
     @Nullable
-    public Date getExpiresAt() {
+    Date getExpiresAt() {
         return expiresAt;
     }
 
     @Nullable
     JSONObject getInbox() {
-        return inbox;
-    }
-
-    @Override
-    @Nullable
-    public JSONObject getInboxConfig() {
         return inbox;
     }
 
@@ -156,9 +137,8 @@ class InAppMessage implements InAppMessageInfo {
         return readAt;
     }
 
-    @Override
     @Nullable
-    public Date getSentAt() {
+    Date getSentAt() {
         return sentAt;
     }
 

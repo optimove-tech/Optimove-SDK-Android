@@ -306,7 +306,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }, 5, TimeUnit.SECONDS);
 
         try {
-            messageInterceptor.processMessage(message, callback);
+            messageInterceptor.processMessage(message.getData(), callback);
         } catch (Exception e) {
             Log.e(TAG, "Error in message interceptor", e);
             callback.suppress();

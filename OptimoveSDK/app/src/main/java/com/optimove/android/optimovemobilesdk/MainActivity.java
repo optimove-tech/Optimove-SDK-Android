@@ -319,15 +319,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void enableInAppInterception(){
-        OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+        OptimoveInApp.getInstance().setInAppMessageInterceptor((messageData, decision) -> {
             runOnUiThread(() -> {
                 if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
                     inAppDecisionDialog.dismiss();
                 }
+                String dataText = messageData != null ? messageData.toString() : "No data provided";
 
                 inAppDecisionDialog = new AlertDialog.Builder(this)
                         .setTitle("QA: In-App Message")
-                        .setMessage("Message ID: " + message.getMessageId() + "\nShow this message?")
+                        .setMessage(dataText + "\nShow this message?")
                         .setPositiveButton("Show", (d, w) -> {
                             decision.show();
                             d.dismiss();
