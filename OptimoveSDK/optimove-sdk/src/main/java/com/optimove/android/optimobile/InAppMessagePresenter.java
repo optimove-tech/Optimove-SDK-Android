@@ -298,12 +298,14 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             }
         };
 
+        long timeoutMs = messageInterceptor.getTimeoutMs();
+
         interceptorExecutor.schedule(() -> {
             if (processed.get()) {
                 return;
             }
             callback.suppress();
-        }, 5, TimeUnit.SECONDS);
+        }, timeoutMs, TimeUnit.MILLISECONDS);
 
         try {
             messageInterceptor.processMessage(message.getData(), callback);
