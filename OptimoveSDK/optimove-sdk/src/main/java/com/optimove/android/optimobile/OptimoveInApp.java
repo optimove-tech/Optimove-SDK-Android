@@ -157,8 +157,13 @@ public class OptimoveInApp {
      *
      * @param handler
      */
-    public void setDeepLinkHandler(InAppDeepLinkHandlerInterface handler) {
-        this.inAppDeepLinkHandler = handler;
+    public void setDeepLinkHandler(@Nullable InAppDeepLinkHandlerInterface handler) {
+        if (handler == null) {
+            this.inAppDeepLinkHandler = null;
+        } else {
+            // Store a strong ref to a wrapper that only weakly references the app's handler
+            this.inAppDeepLinkHandler = new WeakDeepLinkHandler(application, handler);
+        }
     }
 
     public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode) {
@@ -264,5 +269,49 @@ public class OptimoveInApp {
         }
 
         Optimobile.handler.post(inboxUpdatedHandler);
+    }
+
+    private static final class WeakDeepLinkHandler implements InAppDeepLinkHandlerInterface {
+        private static final String TAG = "OptimoveInApp";
+        private final java.lang.ref.WeakReference<InAppDeepLinkHandlerInterface> delegateRef;
+        private final android.content.Context appContext;
+        // Optional strict flag (wire this from your config if you like)
+        private final boolean strictMode;
+
+        WeakDeepLinkHandler(@NonNull android.content.Context context,
+                            @NonNull InAppDeepLinkHandlerInterface delegate) {
+            this(context, delegate, /*strictMode=*/false);
+        }
+
+        WeakDeepLinkHandler(@NonNull android.content.Context context,
+                            @NonNull InAppDeepLinkHandlerInterface delegate,
+                            boolean strictMode) {
+            this.appContext = context.getApplicationContext();
+            this.delegateRef = new java.lang.ref.WeakReference<>(delegate);
+            this.strictMode = strictMode;
+        }
+
+        @Override
+        public void handle(android.content.Context context,
+                           InAppButtonPress buttonPress) {
+            InAppDeepLinkHandlerInterface delegate = delegateRef.get();
+            if (delegate == null) return;
+
+            try {
+                // Use app context to avoid propagating an Activity reference
+                delegate.handle(appContext, buttonPress);
+            } catch (RuntimeException e) {
+                // Log with full stacktrace so integrators see the failure in Logcat
+                android.util.Log.e(TAG, "DeepLinkHandler threw a RuntimeException", e);
+                if (strictMode) throw e; // crash in strict/debug builds if desired
+            } catch (Throwable t) {
+                // Catch-all to prevent app crash, but still surface it
+                android.util.Log.e(TAG, "DeepLinkHandler threw a non-fatal Throwable", t);
+                if (strictMode) {
+                    // Wrapping in RuntimeException so you can opt-in to fail fast
+                    throw new RuntimeException("DeepLinkHandler non-fatal error", t);
+                }
+            }
+        }
     }
 }

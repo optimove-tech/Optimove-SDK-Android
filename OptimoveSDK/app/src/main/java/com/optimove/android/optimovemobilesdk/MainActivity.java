@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
+import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InAppInboxItem;
 import com.optimove.android.optimobile.OptimoveInApp;
 import com.optimove.android.preferencecenter.Channel;
@@ -46,6 +47,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         outputTv = findViewById(R.id.userIdTextView);
 
+
+        OptimoveInApp.getInstance().setDeepLinkHandler(new InAppDeepLinkHandlerInterface() {
+            @Override
+            public void handle(android.content.Context context, InAppButtonPress buttonPress) {
+                Log.d(TAG, "DeepLink handler invoked");
+                startActivity(new Intent(MainActivity.this, MainActivity.class)); // or any Activity you have
+            }
+        });
+
         this.hideIrrelevantInputs();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -54,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "MainActivity.onDestroy called");
     }
 
     @Override
@@ -90,6 +106,13 @@ public class MainActivity extends AppCompatActivity {
         outputTv.setText("Reporting Custom Event for Visitor without optional value");
         runFromWorker(() -> Optimove.getInstance().reportEvent(new SimpleCustomEvent()));
         runFromWorker(() -> Optimove.getInstance().reportEvent("Event_No ParaMs     "));
+    }
+
+    public void killActivity(View view) {
+        if (view == null)
+            return;
+        Log.d("TAG", "killActivity called");
+        finish(); // forces MainActivity.onDestroy() right now
     }
 
     public void updateUserId(View view) {

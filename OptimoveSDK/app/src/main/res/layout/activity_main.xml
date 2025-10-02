@@ -231,12 +231,20 @@
                 android:ems="10"
                 android:hint="Preference center credentials (optional)"
                 android:inputType="textPersonName" />
+
             <Button
                 android:id="@+id/submitCredentialsBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="setCredentials"
                 android:text="Submit credentials" />
+
+            <Button
+                android:id="@+id/KillActivity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="killActivity"
+                android:text="Kill Activity" />
 
         </LinearLayout>
 
