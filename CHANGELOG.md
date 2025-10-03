@@ -2,7 +2,7 @@
 
 ## 7.8.0
 
-- Uodate to fix memory leak in OptimoveInApp.setDeepLinkHandler
+- Update to fix memory leak in OptimoveInApp.setDeepLinkHandler
 
 ## 7.7.0
 
