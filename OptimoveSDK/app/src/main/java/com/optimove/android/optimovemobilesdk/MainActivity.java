@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -19,6 +21,8 @@ import com.optimove.android.Optimove;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.optimobile.InAppInboxItem;
 import com.optimove.android.optimobile.OptimoveInApp;
+import com.optimove.android.optimobile.InAppMessageInterceptor;
+import com.optimove.android.optimobile.InAppMessageInterceptorCallback;
 import com.optimove.android.preferencecenter.Channel;
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter;
 import com.optimove.android.preferencecenter.PreferenceUpdate;
@@ -29,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity {
@@ -38,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169;
 
     private TextView outputTv;
+    private AlertDialog inAppDecisionDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +88,14 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
+            inAppDecisionDialog.dismiss();
+        }
+        super.onDestroy();
     }
 
     public void reportEvent(View view) {
@@ -296,8 +310,61 @@ public class MainActivity extends AppCompatActivity {
 
             Button setCredsBtn = (Button) findViewById(R.id.submitCredentialsBtn);
             setCredsBtn.setVisibility(View.GONE);
-
-
         }
+    }
+    public void enableInAppInterceptionClicked(View view) {
+        Button btn = (Button) view;
+
+        CharSequence[] options = new CharSequence[]{"Default (5000 ms)", "12,000 ms"};
+        final int[] selected = new int[]{0};
+
+        new AlertDialog.Builder(this)
+                .setTitle("Enable In-App Interception")
+                .setSingleChoiceItems(options, 0, (d, which) -> selected[0] = which)
+                .setPositiveButton("Enable", (d, w) -> {
+                    long timeoutMs = selected[0] == 0 ? 5000L : 12000L;
+                    enableInAppInterception(timeoutMs);
+                    btn.setEnabled(false);
+                    btn.setText("Intercepting In-App (restart app to disable)");
+                    Toast.makeText(this, "In-App interception enabled (" + timeoutMs + " ms)", Toast.LENGTH_SHORT).show();
+                    d.dismiss();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void enableInAppInterception(long timeoutMs){
+        OptimoveInApp.getInstance().setInAppMessageInterceptor(new InAppMessageInterceptor() {
+            @Override
+            public void processMessage(JSONObject messageData, InAppMessageInterceptorCallback decision) {
+                runOnUiThread(() -> {
+                    if (inAppDecisionDialog != null && inAppDecisionDialog.isShowing()) {
+                        inAppDecisionDialog.dismiss();
+                    }
+                    String dataText = messageData != null ? messageData.toString() : "No data provided";
+
+                    inAppDecisionDialog = new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("QA: In-App Message")
+                            .setMessage(dataText + "\nShow this message?")
+                            .setPositiveButton("Show", (dialog, w) -> {
+                                decision.show();
+                                dialog.dismiss();
+                            })
+                            .setNegativeButton("Suppress", (dialog, w) -> {
+                                decision.suppress();
+                                dialog.dismiss();
+                            })
+                            .setOnCancelListener(dialog -> decision.suppress())
+                            .create();
+
+                    inAppDecisionDialog.show();
+                });
+            }
+
+            @Override
+            public long getTimeoutMs() {
+                return timeoutMs;
+            }
+        });
     }
 }

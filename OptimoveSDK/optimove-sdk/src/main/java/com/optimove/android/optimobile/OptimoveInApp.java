@@ -21,6 +21,9 @@ public class OptimoveInApp {
     private static OptimoveInApp shared;
     @NonNull
     private final Application application;
+    
+    @Nullable
+    private InAppMessageInterceptor inAppMessageInterceptor = null;
 
     public enum InboxMessagePresentationResult {
         FAILED,
@@ -161,10 +164,22 @@ public class OptimoveInApp {
         this.inAppDeepLinkHandler = handler;
     }
 
+    /**
+     * Sets the display mode for in-app messages.
+     *
+     * @param interceptor The interceptor to use (required when mode is INTERCEPTED, ignored for other modes)
+     */
+    public void setInAppMessageInterceptor(InAppMessageInterceptor interceptor) {
+        this.inAppMessageInterceptor = interceptor;
+        
+        if (presenter != null) {
+            presenter.setInAppMessageInterceptor(this.inAppMessageInterceptor);
+        }
+    }
+
     public void setDisplayMode(OptimoveConfig.InAppDisplayMode mode) {
         presenter.setDisplayMode(mode);
     }
-
 
     //==============================================================================================
     //-- Internal Helpers
@@ -184,8 +199,12 @@ public class OptimoveInApp {
             InAppMessageService.clearAllMessages(application);
             shared.clearLastSyncTime(application);
         }
-
+        
         presenter = new InAppMessagePresenter(application, currentConfig.getInAppDisplayMode());
+        
+        if (shared.inAppMessageInterceptor != null) {
+            presenter.setInAppMessageInterceptor(shared.inAppMessageInterceptor);
+        }
 
         shared.toggleInAppMessageMonitoring(inAppEnabled);
     }
