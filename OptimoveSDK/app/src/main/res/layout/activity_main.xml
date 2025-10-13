@@ -101,6 +101,19 @@
                 android:textColor="#FFFFFF" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/enableInAppInterceptionBtn"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_margin="16dp"
+            android:background="#7D7D7D"
+            android:gravity="center"
+            android:onClick="enableInAppInterceptionClicked"
+            android:text="Enable In-App Interception"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
