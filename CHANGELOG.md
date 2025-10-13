@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.7.1
+## 7.8.1
 
 - Update to fix memory leak in OptimoveInApp.setDeepLinkHandler
 
