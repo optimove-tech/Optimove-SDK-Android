@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.8.1
+
+- Update to fix memory leak in OptimoveInApp.setDeepLinkHandler
+
 ## 7.8.0
 
 Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage: 
@@ -24,7 +28,6 @@ OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
    @Override public long getTimeoutMs() { return 12000L; } // 12s custom timeout
 });
 ```
-
 
 ## 7.7.0
 

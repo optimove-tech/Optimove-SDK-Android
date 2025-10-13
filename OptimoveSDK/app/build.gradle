@@ -34,6 +34,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     testImplementation 'junit:junit:4.12'
 
+    // LeakCanary for debug builds only
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
+
     // implementation platform('com.google.firebase:firebase-bom:28.2.0')
     // implementation 'com.google.firebase:firebase-messaging'
 }

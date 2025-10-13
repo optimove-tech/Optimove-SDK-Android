@@ -160,8 +160,13 @@ public class OptimoveInApp {
      *
      * @param handler
      */
-    public void setDeepLinkHandler(InAppDeepLinkHandlerInterface handler) {
-        this.inAppDeepLinkHandler = handler;
+    public void setDeepLinkHandler(@Nullable InAppDeepLinkHandlerInterface handler) {
+        if (handler == null) {
+            this.inAppDeepLinkHandler = null;
+        } else {
+            // Store a strong ref to a wrapper that only weakly references the app's handler
+            this.inAppDeepLinkHandler = new WeakDeepLinkHandler(application, handler);
+        }
     }
 
     /**
@@ -283,5 +288,48 @@ public class OptimoveInApp {
         }
 
         Optimobile.handler.post(inboxUpdatedHandler);
+    }
+
+    private static final class WeakDeepLinkHandler implements InAppDeepLinkHandlerInterface {
+        private static final String TAG = "OptimoveInApp";
+        private final java.lang.ref.WeakReference<InAppDeepLinkHandlerInterface> delegateRef;
+        private final android.content.Context appContext;
+
+        WeakDeepLinkHandler(@NonNull Context context,
+                            @NonNull InAppDeepLinkHandlerInterface delegate) {
+            this.appContext = context.getApplicationContext();
+            this.delegateRef = new java.lang.ref.WeakReference<>(delegate);
+        }
+
+        @Override
+        public void handle(android.content.Context context, InAppButtonPress buttonPress) {
+            InAppDeepLinkHandlerInterface delegate = delegateRef.get();
+            if (delegate == null) return;
+
+            try {
+                delegate.handle(appContext, buttonPress);
+            } catch (Throwable t) {
+
+                android.util.Log.e(TAG, "DeepLinkHandler error", t);
+
+                if (isStrictModeActive()) {
+                    try {
+                        android.os.StrictMode.noteSlowCall("DeepLinkHandler exception");
+                    } catch (Throwable ignored) {
+                    }
+                    if (t instanceof RuntimeException) throw (RuntimeException) t;
+                    throw new RuntimeException("DeepLinkHandler error", t);
+                }
+            }
+        }
+
+        private static boolean isStrictModeActive() {
+            try {
+                return !android.os.StrictMode.getThreadPolicy()
+                        .equals(android.os.StrictMode.ThreadPolicy.LAX);
+            } catch (Throwable ignore) {
+                return false;
+            }
+        }
     }
 }
