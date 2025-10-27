@@ -1,0 +1,443 @@
+{
+  "project_info": {
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "firebase_url": "https://YOUR_FIREBASE_DB_URL.firebaseio.com",
+    "project_id": "YOUR_PROJECT_ID",
+    "storage_bucket": "YOUR_STORAGE_BUCKET.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_1",
+        "android_client_info": {
+          "package_name": "com.placeholder.package1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_1",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_1"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_1",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_1",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle1"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_2",
+        "android_client_info": {
+          "package_name": "com.placeholder.package2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_2",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_2"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_2",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_2",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle2"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_3",
+        "android_client_info": {
+          "package_name": "com.placeholder.package3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_3",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_3"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_3",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_3",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle3"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_4",
+        "android_client_info": {
+          "package_name": "com.placeholder.package4"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_4",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_4",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_4",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle4"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_5",
+        "android_client_info": {
+          "package_name": "com.placeholder.package5"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_5",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_5"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_5",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_5",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle5"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_6",
+        "android_client_info": {
+          "package_name": "com.placeholder.package6"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_6",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_6"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_6",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_6",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle6"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_7",
+        "android_client_info": {
+          "package_name": "com.placeholder.package7"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_7",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_7"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_7",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_7",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle7"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_8",
+        "android_client_info": {
+          "package_name": "com.placeholder.package8"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_8",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_8",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_8",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle8"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_9",
+        "android_client_info": {
+          "package_name": "com.placeholder.package9"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_9",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_9"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_9",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_9",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle9"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_10",
+        "android_client_info": {
+          "package_name": "com.placeholder.package10"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_10",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_10",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_10",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle10"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_11",
+        "android_client_info": {
+          "package_name": "com.placeholder.package11"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_11",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_11"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_11",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_11",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle11"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_NUMBER:android:APP_HASH_12",
+        "android_client_info": {
+          "package_name": "com.placeholder.package12"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_OAUTH_CLIENT_ID_12",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_API_KEY_12"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "YOUR_OAUTH_CLIENT_ID_12",
+              "client_type": 3
+            },
+            {
+              "client_id": "YOUR_IOS_OAUTH_CLIENT_ID_12",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.placeholder.iosbundle12"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
