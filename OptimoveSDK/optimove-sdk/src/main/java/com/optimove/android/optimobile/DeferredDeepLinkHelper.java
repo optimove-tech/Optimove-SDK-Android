@@ -1,5 +1,8 @@
 package com.optimove.android.optimobile;
 
+import static android.content.ClipDescription.CLASSIFICATION_COMPLETE;
+import static android.content.Context.CLIPBOARD_SERVICE;
+
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
@@ -8,11 +11,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.textclassifier.TextClassifier;
 import android.webkit.URLUtil;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
@@ -26,12 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
-
-import static android.content.ClipDescription.CLASSIFICATION_COMPLETE;
-import static android.content.Context.CLIPBOARD_SERVICE;
 
 public class DeferredDeepLinkHelper {
     private static class CachedLink {
@@ -45,12 +41,8 @@ public class DeferredDeepLinkHelper {
     }
 
     private @Nullable CachedLink cachedLink;
-    private @Nullable JSONObject cachedFingerprintComponents;
-
     private static AtomicBoolean continuationHandled;
     static AtomicBoolean nonContinuationLinkCheckedForSession = new AtomicBoolean(false);
-    @SuppressWarnings("FieldCanBeLocal")
-    private DeepLinkFingerprinter fingerprinter;
 
     /* package */ DeferredDeepLinkHelper() {
         continuationHandled = new AtomicBoolean(false);
@@ -99,25 +91,21 @@ public class DeferredDeepLinkHelper {
     }
 
     /* package */ void checkForNonContinuationLinkMatch(Context context) {
-        if (this.checkForDeferredLinkOnClipboard(context)) {
-            return;
-        }
-
         if (continuationHandled.get()) {
             return;
         }
 
-        this.checkForWebToAppBannerTap(context);
+        this.checkForDeferredLinkOnClipboard(context);
     }
 
-    /* package */ boolean maybeProcessUrl(Context context, String urlStr, boolean wasDeferred) {
+    /* package */ void maybeProcessUrl(Context context, String urlStr, boolean wasDeferred) {
         URL url = this.getURL(urlStr);
         if (url == null) {
-            return false;
+            return;
         }
 
         if (!this.urlShouldBeHandled(url)) {
-            return false;
+            return;
         }
 
         if (!wasDeferred) {
@@ -127,16 +115,11 @@ public class DeferredDeepLinkHelper {
         }
 
         this.handleDeepLink(context, url, wasDeferred);
-        return true;
     }
 
     /* package */ void maybeProcessCachedLink(Context context) {
         if (this.cachedLink != null) {
             this.handleDeepLink(context, this.cachedLink.url, this.cachedLink.wasDeferred);
-        }
-
-        if (this.cachedFingerprintComponents != null) {
-            this.handleFingerprintComponents(context, cachedFingerprintComponents);
         }
     }
 
@@ -155,22 +138,22 @@ public class DeferredDeepLinkHelper {
         clipboard.setPrimaryClip(clipData);
     }
 
-    private boolean checkForDeferredLinkOnClipboard(Context context) {
-        return checkForDeferredLinkOnClipboardWithRetry(context, false);
+    private void checkForDeferredLinkOnClipboard(Context context) {
+        checkForDeferredLinkOnClipboardWithRetry(context, false);
     }
 
-    private boolean checkForDeferredLinkOnClipboardWithRetry(Context context, boolean isRetry) {
+    private void checkForDeferredLinkOnClipboardWithRetry(Context context, boolean isRetry) {
         SharedPreferences preferences = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
         boolean checked = preferences.getBoolean(SharedPrefs.DEFERRED_LINK_CHECKED_KEY, false);
         if (checked) {
-            return false;
+            return;
         }
 
         String text = this.getClipText(context, isRetry);
         
         // If first attempt and text is null due to unavailable description, retry will be scheduled
         if (text == null && !isRetry) {
-            return false;
+            return;
         }
 
         // Mark as checked now (either we got text or retry exhausted)
@@ -179,10 +162,8 @@ public class DeferredDeepLinkHelper {
         editor.apply();
 
         if (text != null) {
-            return this.maybeProcessUrl(context, text, true);
+            this.maybeProcessUrl(context, text, true);
         }
-
-        return false;
     }
 
     private @Nullable
@@ -344,101 +325,5 @@ public class DeferredDeepLinkHelper {
         }
 
         Optimobile.handler.post(() -> handler.handle(context, resolution, url.toString(), data));
-    }
-
-    //********************************* FINGERPRINTING *********************************
-
-    private void checkForWebToAppBannerTap(Context context) {
-        fingerprinter = new DeepLinkFingerprinter(context);
-
-        fingerprinter.getFingerprintComponents(new Optimobile.ResultCallback<JSONObject>() {
-            @Override
-            public void onSuccess(JSONObject components) {
-                DeferredDeepLinkHelper.this.handleFingerprintComponents(context, components);
-            }
-        });
-    }
-
-    private void handleFingerprintComponents(Context context, JSONObject components) {
-        String encodedComponents = Base64.encodeToString(components.toString().getBytes(), Base64.NO_WRAP);
-        String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/_taps?fingerprint=" + encodedComponents);
-
-        try {
-            OptimobileHttpClient.getInstance().getAsync(requestUrl, new Callback() {
-                @Override
-                public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    e.printStackTrace();
-                    DeferredDeepLinkHelper.this.cachedFingerprintComponents = null;
-                }
-
-                @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    DeferredDeepLinkHelper.this.cachedFingerprintComponents = null;
-                    if (response.isSuccessful()) {
-                        DeferredDeepLinkHelper.this.handledFingerprintSuccessResponse(context, response);
-                    } else {
-                        DeferredDeepLinkHelper.this.handledFingerprintFailedResponse(context, response);
-                    }
-                }
-            });
-        } catch (Optimobile.PartialInitialisationException e) {
-            this.cachedFingerprintComponents = components;
-        }
-    }
-
-    private void handledFingerprintSuccessResponse(Context context, Response response) {
-        if (response.code() != 200) {
-            response.close();
-            return;
-        }
-
-        try {
-            JSONObject data = new JSONObject(response.body().string());
-            String linkUrl = data.getString("linkUrl");
-            URL url = new URL(linkUrl);
-
-            DeepLink deepLink = new DeepLink(url, data);
-
-            this.invokeDeepLinkHandler(context, DeepLinkResolution.LINK_MATCHED, url, deepLink);
-
-            this.trackLinkMatched(context, url, false);
-        } catch (NullPointerException | JSONException | IOException e) {
-            // Fingerprint matches that fail to parse correctly can't know the URL so
-            // don't invoke any error handler.
-            e.printStackTrace();
-        } finally {
-            response.close();
-        }
-
-    }
-
-    private void handledFingerprintFailedResponse(Context context, Response response) {
-        int statusCode = response.code();
-        if (statusCode != 410 && statusCode != 429) {
-            response.close();
-            return;
-        }
-
-        try {
-            JSONObject data = new JSONObject(response.body().string());
-            String linkUrl = data.getString("linkUrl");
-            URL url = new URL(linkUrl);
-
-            switch (statusCode) {
-                case 410:
-                    this.invokeDeepLinkHandler(context, DeepLinkResolution.LINK_EXPIRED, url, null);
-                    break;
-                case 429:
-                    this.invokeDeepLinkHandler(context, DeepLinkResolution.LINK_LIMIT_EXCEEDED, url, null);
-                    break;
-            }
-        } catch (NullPointerException | JSONException | IOException e) {
-            // Fingerprint matches that fail to parse correctly can't know the URL so
-            // don't invoke any error handler.
-
-            e.printStackTrace();
-        } finally {
-            response.close();
-        }
     }
 }
