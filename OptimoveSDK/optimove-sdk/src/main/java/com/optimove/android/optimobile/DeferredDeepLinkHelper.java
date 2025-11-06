@@ -156,45 +156,56 @@ public class DeferredDeepLinkHelper {
     }
 
     private boolean checkForDeferredLinkOnClipboard(Context context) {
-        boolean handled = false;
+        return checkForDeferredLinkOnClipboardWithRetry(context, false);
+    }
 
+    private boolean checkForDeferredLinkOnClipboardWithRetry(Context context, boolean isRetry) {
         SharedPreferences preferences = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
         boolean checked = preferences.getBoolean(SharedPrefs.DEFERRED_LINK_CHECKED_KEY, false);
         if (checked) {
-            return handled;
+            return false;
         }
 
+        String text = this.getClipText(context, isRetry);
+        
+        // If first attempt and text is null due to unavailable description, retry will be scheduled
+        if (text == null && !isRetry) {
+            return false;
+        }
+
+        // Mark as checked now (either we got text or retry exhausted)
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(SharedPrefs.DEFERRED_LINK_CHECKED_KEY, true);
         editor.apply();
 
-        String text = this.getClipText(context);
-        if (text == null) {
-            return handled;
+        if (text != null) {
+            return this.maybeProcessUrl(context, text, true);
         }
 
-        handled = this.maybeProcessUrl(context, text, true);
-
-        return handled;
+        return false;
     }
 
     private @Nullable
-    String getClipText(Context context) {
+    String getClipText(Context context, boolean isRetry) {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
         if (clipboard == null) {
             return null;
         }
 
+        // Use description to check before reading clipboard (Android 12+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ClipDescription description = clipboard.getPrimaryClipDescription();
-            if (description == null) {
+            
+            // If description not available and this is first attempt, schedule retry
+            if (description == null || description.getClassificationStatus() != CLASSIFICATION_COMPLETE) {
+                if (!isRetry) {
+                    Optimobile.handler.postDelayed(() -> {
+                        checkForDeferredLinkOnClipboardWithRetry(context, true);
+                    }, 400);
+                }
                 return null;
             }
-
-            if (description.getClassificationStatus() != CLASSIFICATION_COMPLETE) {
-                return null;
-            }
-
+            
             float score = description.getConfidenceScore(TextClassifier.TYPE_URL);
             if (score != 1) {
                 return null;
