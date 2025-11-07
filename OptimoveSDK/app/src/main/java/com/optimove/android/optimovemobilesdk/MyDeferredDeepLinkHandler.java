@@ -3,6 +3,7 @@ package com.optimove.android.optimovemobilesdk;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -23,6 +24,7 @@ public class MyDeferredDeepLinkHandler implements DeferredDeepLinkHandlerInterfa
             output += data.data.toString();
         }
         Log.d(TAG, output);
+        Toast.makeText(context, output, Toast.LENGTH_SHORT).show();
     }
 
 }

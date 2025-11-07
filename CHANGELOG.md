@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.9.0
+
+- Added retry logic for deferred deep links when clipboard description is unavailable on first attempt
+- Removed fingerprinting code
+
 ## 7.8.1
 
 - Update to fix memory leak in OptimoveInApp.setDeepLinkHandler
