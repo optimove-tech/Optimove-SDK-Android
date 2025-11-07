@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
         //deferred deep links
         Optimove.getInstance().seeIntent(getIntent(), savedInstanceState);
+        
+        // Request push notification permission
+        Optimove.getInstance().pushRequestDeviceToken();
     }
 
     @Override
