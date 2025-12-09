@@ -103,26 +103,6 @@ public class DeferredDeepLinkHelper {
         }
     }
 
-    private void checkInstallReferrer(Context context) {
-        InstallReferrerHelper.getInstallReferrer(context, new InstallReferrerHelper.InstallReferrerCallback() {
-            @Override
-            public void onInstallReferrerReceived(@Nullable String referrerUrl) {
-                String deepLink = InstallReferrerHelper.extractDeepLinkFromReferrer(referrerUrl);
-                if (deepLink != null) {
-                    DeferredDeepLinkHelper.this.maybeProcessUrl(context, deepLink, true);
-                } else {
-                    DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
-                }
-            }
-
-            @Override
-            public void onInstallReferrerFailed() {
-                // Install Referrer failed, fall back to clipboard
-                DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
-            }
-        });
-    }
-
     /* package */ void maybeProcessUrl(Context context, String urlStr, boolean wasDeferred) {
         URL url = this.getURL(urlStr);
         if (url == null) {
@@ -147,6 +127,27 @@ public class DeferredDeepLinkHelper {
             this.handleDeepLink(context, this.cachedLink.url, this.cachedLink.wasDeferred);
         }
     }
+
+    private void checkInstallReferrer(Context context) {
+        InstallReferrerHelper.getInstallReferrer(context, new InstallReferrerHelper.InstallReferrerCallback() {
+            @Override
+            public void onInstallReferrerReceived(@Nullable String referrerUrl) {
+                String deepLink = InstallReferrerHelper.extractDeepLinkFromReferrer(referrerUrl);
+                if (deepLink != null) {
+                    DeferredDeepLinkHelper.this.maybeProcessUrl(context, deepLink, true);
+                } else {
+                    DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
+                }
+            }
+
+            @Override
+            public void onInstallReferrerFailed() {
+                // Install Referrer failed, fall back to clipboard
+                DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
+            }
+        });
+    }
+
 
     private void clearClipboard(Context context) {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
