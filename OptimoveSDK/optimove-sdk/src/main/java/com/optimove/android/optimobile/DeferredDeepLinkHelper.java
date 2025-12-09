@@ -96,11 +96,9 @@ public class DeferredDeepLinkHelper {
             return;
         }
 
-        // Try Install Referrer API first if available
         if (InstallReferrerHelper.isInstallReferrerAvailable() && !installReferrerChecked.getAndSet(true)) {
             this.checkInstallReferrer(context);
         } else {
-            // Fall back to clipboard check if Install Referrer not available or already checked
             this.checkForDeferredLinkOnClipboard(context);
         }
     }
@@ -111,10 +109,8 @@ public class DeferredDeepLinkHelper {
             public void onInstallReferrerReceived(@Nullable String referrerUrl) {
                 String deepLink = InstallReferrerHelper.extractDeepLinkFromReferrer(referrerUrl);
                 if (deepLink != null) {
-                    // Found a deep link in the install referrer
                     DeferredDeepLinkHelper.this.maybeProcessUrl(context, deepLink, true);
                 } else {
-                    // No deep link found in install referrer, fall back to clipboard
                     DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
                 }
             }
