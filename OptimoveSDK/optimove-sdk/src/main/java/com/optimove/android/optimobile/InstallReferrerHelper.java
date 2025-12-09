@@ -128,6 +128,7 @@ public class InstallReferrerHelper {
             return null;
         }
 
+        // TODO: Possibly don't need this is referrer from deeplink-service will always be referrer=https://...
         // Try to parse as query parameters
         String[] params = referrerString.split("&");
         for (String param : params) {
