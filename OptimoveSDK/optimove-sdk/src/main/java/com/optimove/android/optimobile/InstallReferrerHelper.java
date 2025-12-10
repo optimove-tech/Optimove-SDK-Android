@@ -59,9 +59,12 @@ public class InstallReferrerHelper {
                             callback.onInstallReferrerReceived(referrerUrl);
                         } catch (Exception e) {
                             e.printStackTrace();
+                            client.endConnection();
                             callback.onInstallReferrerFailed();
+
                         }
                     } else {
+                        client.endConnection();
                         callback.onInstallReferrerFailed();
                     }
                 }
