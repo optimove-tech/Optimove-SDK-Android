@@ -1,5 +1,8 @@
 # Changelog
 
+## 7.9.1
+- Bumped GSON version number to fix a vulnerability issue
+
 ## 7.9.0
 
 - Added retry logic for deferred deep links when clipboard description is unavailable on first attempt
