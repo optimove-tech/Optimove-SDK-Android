@@ -27,3 +27,8 @@
 -dontwarn okio.**
 -keep class com.huawei.hms.** { *; }
 -dontwarn com.huawei.hms.
+
+# Keep Install Referrer API classes for reflection checks
+-keepnames class com.android.installreferrer.api.InstallReferrerClient
+-keepnames class com.android.installreferrer.api.InstallReferrerStateListener
+-keepnames class com.android.installreferrer.api.ReferrerDetails

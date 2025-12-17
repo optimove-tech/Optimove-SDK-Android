@@ -28,9 +28,9 @@ public class InstallReferrerHelper {
      */
     public static boolean isInstallReferrerAvailable() {
         try {
-            Class.forName(INSTALL_REFERRER_CLIENT_CLASS);
+            Class<?> clazz = InstallReferrerClient.class;
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (NoClassDefFoundError e) {
             return false;
         }
     }
