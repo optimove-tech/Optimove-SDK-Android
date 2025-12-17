@@ -50,27 +50,27 @@ public class InstallReferrerHelper {
             client.startConnection(new InstallReferrerStateListener() {
                 @Override
                 public void onInstallReferrerSetupFinished(int responseCode) {
-                    if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
-                        try {
-                            ReferrerDetails referrerDetails = client.getInstallReferrer();
-                            String referrerUrl = referrerDetails.getInstallReferrer();
-
-                            client.endConnection();
-                            callback.onInstallReferrerReceived(referrerUrl);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            client.endConnection();
+                    try {
+                        if (responseCode == InstallReferrerClient.InstallReferrerResponse.OK) {
+                            try {
+                                ReferrerDetails referrerDetails = client.getInstallReferrer();
+                                String referrerUrl = referrerDetails.getInstallReferrer();
+                                callback.onInstallReferrerReceived(referrerUrl);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                callback.onInstallReferrerFailed();
+                            }
+                        } else {
                             callback.onInstallReferrerFailed();
-
                         }
-                    } else {
+                    } finally {
                         client.endConnection();
-                        callback.onInstallReferrerFailed();
                     }
                 }
 
                 @Override
                 public void onInstallReferrerServiceDisconnected() {
+                    client.endConnection();
                     callback.onInstallReferrerFailed();
                 }
             });
