@@ -43,6 +43,7 @@ public class DeferredDeepLinkHelper {
     private @Nullable CachedLink cachedLink;
     private static AtomicBoolean continuationHandled;
     static AtomicBoolean nonContinuationLinkCheckedForSession = new AtomicBoolean(false);
+    private AtomicBoolean installReferrerChecked = new AtomicBoolean(false);
 
     /* package */ DeferredDeepLinkHelper() {
         continuationHandled = new AtomicBoolean(false);
@@ -95,7 +96,11 @@ public class DeferredDeepLinkHelper {
             return;
         }
 
-        this.checkForDeferredLinkOnClipboard(context);
+        if (InstallReferrerHelper.isInstallReferrerAvailable() && !installReferrerChecked.getAndSet(true)) {
+            this.checkInstallReferrer(context);
+        } else {
+            this.checkForDeferredLinkOnClipboard(context);
+        }
     }
 
     /* package */ void maybeProcessUrl(Context context, String urlStr, boolean wasDeferred) {
@@ -122,6 +127,27 @@ public class DeferredDeepLinkHelper {
             this.handleDeepLink(context, this.cachedLink.url, this.cachedLink.wasDeferred);
         }
     }
+
+    private void checkInstallReferrer(Context context) {
+        InstallReferrerHelper.getInstallReferrer(context, new InstallReferrerHelper.InstallReferrerCallback() {
+            @Override
+            public void onInstallReferrerReceived(@Nullable String referrerUrl) {
+                String deepLink = InstallReferrerHelper.extractDeepLinkFromReferrer(referrerUrl);
+                if (deepLink != null) {
+                    DeferredDeepLinkHelper.this.maybeProcessUrl(context, deepLink, true);
+                } else {
+                    DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
+                }
+            }
+
+            @Override
+            public void onInstallReferrerFailed() {
+                // Install Referrer failed, fall back to clipboard
+                DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);
+            }
+        });
+    }
+
 
     private void clearClipboard(Context context) {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
@@ -150,7 +176,7 @@ public class DeferredDeepLinkHelper {
         }
 
         String text = this.getClipText(context, isRetry);
-        
+
         // If first attempt and text is null due to unavailable description, retry will be scheduled
         if (text == null && !isRetry) {
             return;
@@ -176,7 +202,7 @@ public class DeferredDeepLinkHelper {
         // Use description to check before reading clipboard (Android 12+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ClipDescription description = clipboard.getPrimaryClipDescription();
-            
+
             // If description not available and this is first attempt, schedule retry
             if (description == null || description.getClassificationStatus() != CLASSIFICATION_COMPLETE) {
                 if (!isRetry) {
@@ -186,7 +212,7 @@ public class DeferredDeepLinkHelper {
                 }
                 return null;
             }
-            
+
             float score = description.getConfidenceScore(TextClassifier.TYPE_URL);
             if (score != 1) {
                 return null;

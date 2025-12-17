@@ -37,8 +37,9 @@ dependencies {
     // LeakCanary for debug builds only
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 
-     implementation platform('com.google.firebase:firebase-bom:28.2.0')
-     implementation 'com.google.firebase:firebase-messaging'
+    implementation platform('com.google.firebase:firebase-bom:28.2.0')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 }
 
 apply plugin: 'com.google.gms.google-services'

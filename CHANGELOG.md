@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.10.0
+
+- Integrated Google Play Install Referrer Library for reliable install source detection and improved DDL attribution
+
 ## 7.9.0
 
 - Added retry logic for deferred deep links when clipboard description is unavailable on first attempt
