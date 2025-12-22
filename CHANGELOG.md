@@ -1,7 +1,12 @@
 # Changelog
 
-## 7.9.1
+## 7.10.1
+
 - Bumped GSON version number to fix a vulnerability issue
+
+## 7.10.0
+
+- Integrated Google Play Install Referrer Library for reliable install source detection and improved DDL attribution
 
 ## 7.9.0
 
