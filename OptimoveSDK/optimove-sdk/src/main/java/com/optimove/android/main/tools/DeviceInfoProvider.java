@@ -83,16 +83,24 @@ public class DeviceInfoProvider {
     }
 
     public String getCityNameFromLocation(Context context, @NonNull Location location){
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+
+        // Validate coordinates - latitude must be [-90, 90], longitude must be [-180, 180]
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            return null;
+        }
+
         Geocoder gcd = new Geocoder(context, Locale.ENGLISH);
 
         try {
-            List<Address> addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-            if (addresses.size() > 0) {
+            List<Address> addresses = gcd.getFromLocation(latitude, longitude, 1);
+            if (addresses != null && addresses.size() > 0) {
                 return addresses.get(0).getLocality();
             } else {
                 return null;
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             return null;
         }
     }
