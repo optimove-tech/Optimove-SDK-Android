@@ -44,12 +44,10 @@ public class EventGenerator {
         String language = deviceInfoProvider.getDeviceLanguage()
                 .replace('_', '-').toLowerCase();
         Location location = deviceInfoProvider.getDeviceLocation(context);
-        String cityName = null;
         String locationLongitude = null;
         String locationLatitude = null;
 
         if (location != null) {
-            cityName = deviceInfoProvider.getCityNameFromLocation(context, location);
             locationLongitude = String.valueOf(location.getLongitude());
             locationLatitude = String.valueOf(location.getLatitude());
         }
@@ -60,7 +58,7 @@ public class EventGenerator {
                         .withSdkPlatform("Android")
                         .withSdkVersion(BuildConfig.OPTIMOVE_VERSION_NAME)
                         .withAppNs(packageName)
-                        .withLocation(cityName)
+                        .withLocation(null)
                         .withLocationLongitude(locationLongitude)
                         .withLocationLatitude(locationLatitude)
                         .withIp(deviceInfoProvider.getIP(context))
