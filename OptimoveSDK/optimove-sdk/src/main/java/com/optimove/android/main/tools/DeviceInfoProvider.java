@@ -1,24 +1,19 @@
 package com.optimove.android.main.tools;
 
 import android.content.Context;
-import android.location.Address;
 import android.location.Criteria;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.optimove.android.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
-import java.util.List;
 import java.util.Locale;
 
 import static android.content.Context.LOCATION_SERVICE;
@@ -78,29 +73,6 @@ public class DeviceInfoProvider {
         try {
             return locationManager.getLastKnownLocation(bestProvider);
         } catch (SecurityException e) {
-            return null;
-        }
-    }
-
-    public String getCityNameFromLocation(Context context, @NonNull Location location){
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-
-        // Validate coordinates - latitude must be [-90, 90], longitude must be [-180, 180]
-        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-            return null;
-        }
-
-        Geocoder gcd = new Geocoder(context, Locale.ENGLISH);
-
-        try {
-            List<Address> addresses = gcd.getFromLocation(latitude, longitude, 1);
-            if (addresses != null && addresses.size() > 0) {
-                return addresses.get(0).getLocality();
-            } else {
-                return null;
-            }
-        } catch (IOException | IllegalArgumentException e) {
             return null;
         }
     }
