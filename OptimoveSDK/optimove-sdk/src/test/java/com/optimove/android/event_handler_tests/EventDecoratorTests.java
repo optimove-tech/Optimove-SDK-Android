@@ -6,7 +6,6 @@ import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.main.events.SimpleCustomEvent;
 import com.optimove.android.main.sdk_configs.reused_configs.EventConfigs;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -20,7 +19,7 @@ import static com.optimove.android.optistream.OptitrackConstants.EVENT_DEVICE_TY
 import static com.optimove.android.optistream.OptitrackConstants.EVENT_NATIVE_MOBILE_PARAM_KEY;
 import static com.optimove.android.optistream.OptitrackConstants.EVENT_OS_PARAM_KEY;
 import static com.optimove.android.optistream.OptitrackConstants.EVENT_PLATFORM_PARAM_KEY;
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,14 +56,10 @@ public class EventDecoratorTests {
         when(eventConfigs.getParameterConfigs()).thenReturn(parameterConfigMap);
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, new HashMap<>());
         eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_OS_PARAM_KEY)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY)));
     }
     @Test
     public void reportedEventsShouldBePartiallyDecoratedIfNumberOfParamsDoesntAllow() {
@@ -85,15 +80,11 @@ public class EventDecoratorTests {
 
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, eventParams);
         eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY)));
         //shouldnt reach the EVENT_OS_PARAM_KEY param
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
-                .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && (arg.get(0).getParameters() == null || !arg.get(0).getParameters().containsKey(EVENT_OS_PARAM_KEY))));
     }
     @Test
     public void nonConfiguredEventShouldntBeDecorated() {
@@ -103,14 +94,10 @@ public class EventDecoratorTests {
 
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, eventParams);
         eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
-                .getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
-                .getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
-                .getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertFalse(arg.get(0)
-                .getParameters().containsKey(EVENT_OS_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && (arg.get(0).getParameters() == null || !arg.get(0).getParameters().containsKey(EVENT_PLATFORM_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && (arg.get(0).getParameters() == null || !arg.get(0).getParameters().containsKey(EVENT_DEVICE_TYPE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && (arg.get(0).getParameters() == null || !arg.get(0).getParameters().containsKey(EVENT_NATIVE_MOBILE_PARAM_KEY))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && (arg.get(0).getParameters() == null || !arg.get(0).getParameters().containsKey(EVENT_OS_PARAM_KEY))));
     }
 
     @Test
@@ -118,7 +105,6 @@ public class EventDecoratorTests {
         String eventName = "some_event";
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(eventName, null);
         eventDecorator.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), eventName)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && eventName.equals(arg.get(0).getName())));
     }
 }

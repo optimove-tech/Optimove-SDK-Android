@@ -14,7 +14,6 @@ import com.optimove.android.main.events.core_events.SdkMetadataEvent;
 import com.optimove.android.main.events.core_events.UserAgentHeaderEvent;
 import com.optimove.android.main.tools.DeviceInfoProvider;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -22,7 +21,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -91,8 +90,7 @@ public class EventGeneratorTests {
     @Test
     public void userAgentEventShouldBeSentWhenInitialized() {
         eventGenerator.generateStartEvents();
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertTrue(arrayContains(arg,
-                UserAgentHeaderEvent.EVENT_NAME))));
+        verify(eventHandler,timeout(300)).reportEvent(argThat(arg -> arg != null && arrayContains(arg, UserAgentHeaderEvent.EVENT_NAME)));
     }
     private boolean arrayContains(List<OptimoveEvent> optimoveEvents, String eventName) {
         for (OptimoveEvent optimoveEvent: optimoveEvents) {
@@ -106,7 +104,6 @@ public class EventGeneratorTests {
     @Test
     public void sdkMetadataEventShouldBeSentWhenInitialized() {
         eventGenerator.generateStartEvents();
-        verify(eventHandler,timeout(300)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), SdkMetadataEvent.EVENT_NAME)));
+        verify(eventHandler,timeout(300)).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && SdkMetadataEvent.EVENT_NAME.equals(arg.get(0).getName())));
     }
 }

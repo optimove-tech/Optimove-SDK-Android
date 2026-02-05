@@ -1,16 +1,15 @@
 package com.optimove.android.event_handler_tests;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 
 import com.optimove.android.main.event_handlers.EventHandler;
 import com.optimove.android.main.event_handlers.EventMemoryBuffer;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.main.events.SimpleCustomEvent;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -44,8 +43,7 @@ public class EventMemoryBufferTests {
         eventMemoryBuffer.setNext(nextEventHandler);
 
         verify(nextEventHandler, times(1)).reportEvent(any());
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.size()
-               , numberOfEvents)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && arg.size() == numberOfEvents));
     }
     @Test
     public void maximumSizeNumberOfEventsShouldBePassedToNextIfBiggerThanMaximumSizeReportedAndNextSet() {
@@ -57,8 +55,7 @@ public class EventMemoryBufferTests {
         eventMemoryBuffer.setNext(nextEventHandler);
 
         verify(nextEventHandler, times(1)).reportEvent(any());
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.size()
-                , bufferMaximumSize)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && arg.size() == bufferMaximumSize));
     }
     @Test
     public void reportEventcaseNextIsNull(){

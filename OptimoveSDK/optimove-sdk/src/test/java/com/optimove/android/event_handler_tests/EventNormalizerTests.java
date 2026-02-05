@@ -5,7 +5,6 @@ import com.optimove.android.main.event_handlers.EventNormalizer;
 import com.optimove.android.main.events.OptimoveEvent;
 import com.optimove.android.main.events.SimpleCustomEvent;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -15,7 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 
 public class EventNormalizerTests {
@@ -43,10 +42,8 @@ public class EventNormalizerTests {
         customEventsParameters.put(unformattedParameter, "some");
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(unformattedName, customEventsParameters);
         eventNormalizer.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), formattedName)));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertTrue(arg.get(0)
-                .getParameters().containsKey(formattedParameter))));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && formattedName.equals(arg.get(0).getName())));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && arg.get(0).getParameters() != null && arg.get(0).getParameters().containsKey(formattedParameter)));
     }
 
     @Test
@@ -54,7 +51,6 @@ public class EventNormalizerTests {
         String formattedName = "some_event";
         OptimoveEvent optimoveEvent = new SimpleCustomEvent(formattedName, null);
         eventNormalizer.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(nextEventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), formattedName)));
+        verify(nextEventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && formattedName.equals(arg.get(0).getName())));
     }
 }

@@ -11,13 +11,12 @@ import com.optimove.android.main.event_handlers.EventHandler;
 import com.optimove.android.main.events.core_events.AppOpenEvent;
 import com.optimove.android.main.tools.DeviceInfoProvider;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -67,8 +66,7 @@ public class OptimoveLifecycleEventGeneratorTests {
     public void appOpenShouldBeReportedWhenActivityFirstStarts() {
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
-        verify(eventHandler).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), AppOpenEvent.EVENT_NAME)));
+        verify(eventHandler).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && AppOpenEvent.EVENT_NAME.equals(arg.get(0).getName())));
     }
 
     @Test
@@ -76,7 +74,6 @@ public class OptimoveLifecycleEventGeneratorTests {
         lifecycleObserver.addActivityStartedListener(optimoveLifecycleEventGenerator);
         lifecycleObserver.onActivityStarted(mock(Activity.class));
         lifecycleObserver.onActivityStarted(mock(Activity.class));
-        verify(eventHandler,times(1)).reportEvent(assertArg(arg -> Assert.assertEquals(arg.get(0)
-                .getName(), AppOpenEvent.EVENT_NAME)));
+        verify(eventHandler,times(1)).reportEvent(argThat(arg -> arg != null && !arg.isEmpty() && AppOpenEvent.EVENT_NAME.equals(arg.get(0).getName())));
     }
 }

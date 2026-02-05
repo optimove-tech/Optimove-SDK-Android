@@ -9,7 +9,6 @@ import com.optimove.android.optistream.OptistreamEvent;
 import com.optimove.android.optistream.OptistreamHandler;
 import com.optimove.android.realtime.RealtimeManager;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -19,12 +18,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static info.solidsoft.mockito.java8.AssertionMatcher.assertArg;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class DestinationDeciderTests {
@@ -55,7 +54,7 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, true, false);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verifyZeroInteractions(realtimeManager);
+        verifyNoInteractions(realtimeManager);
 
     }
 
@@ -71,7 +70,7 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, false, false);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verifyZeroInteractions(realtimeManager);
+        verifyNoInteractions(realtimeManager);
     }
     @Test
     public void eventShouldntBeReportedToRealtimeIfRealtimeEnabledThroughOptistream() {
@@ -85,7 +84,7 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, true, true);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verifyZeroInteractions(realtimeManager);
+        verifyNoInteractions(realtimeManager);
     }
 
     @Test
@@ -105,7 +104,6 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, true, false);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verify(realtimeManager).reportEvents(assertArg(arg -> Assert.assertTrue(arg.get(0).getName().equals(
-                eventName))));
+        verify(realtimeManager).reportEvents(argThat(arg -> arg != null && !arg.isEmpty() && eventName.equals(arg.get(0).getName())));
     }
 }
