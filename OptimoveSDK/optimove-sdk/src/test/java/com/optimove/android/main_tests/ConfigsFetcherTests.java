@@ -24,9 +24,12 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static com.optimove.android.main.sdk_configs.ConfigsFetcher.GLOBAL_CONFIG_FILE_BASE_URL;
 import static com.optimove.android.main.sdk_configs.ConfigsFetcher.TENANT_CONFIG_FILE_BASE_URL;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -109,7 +112,7 @@ public class ConfigsFetcherTests {
     }
 
     @Test(timeout = 1000)
-    public void shouldReadFromFileIfNetworkErrorFromTenantConfigsFetch() {
+    public void shouldReadFromFileIfNetworkErrorFromTenantConfigsFetch() throws InterruptedException {
         doAnswer(invocation -> {
             HttpClient.ErrorListener errorListener =
                     (HttpClient.ErrorListener) invocation.getArguments()[0];
@@ -125,12 +128,18 @@ public class ConfigsFetcherTests {
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
-        regularConfigFetcher.fetchConfigs(configs -> Assert.assertEquals(configs.getTenantId(), randomTenantId)
-                , Assert::fail);
+        CountDownLatch latch = new CountDownLatch(1);
+        regularConfigFetcher.fetchConfigs(
+                configs -> {
+                    Assert.assertEquals(configs.getTenantId(), randomTenantId);
+                    latch.countDown();
+                },
+                Assert::fail);
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
     }
 
     @Test(timeout = 1000)
-    public void shouldReadFromFileIfNetworkErrorFromGlobalConfigsFetch() {
+    public void shouldReadFromFileIfNetworkErrorFromGlobalConfigsFetch() throws InterruptedException {
         doAnswer(invocation -> {
             HttpClient.ErrorListener errorListener =
                     (HttpClient.ErrorListener) invocation.getArguments()[0];
@@ -146,12 +155,18 @@ public class ConfigsFetcherTests {
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
-        regularConfigFetcher.fetchConfigs(configs -> Assert.assertEquals(configs.getTenantId(), randomTenantId)
-                , Assert::fail);
+        CountDownLatch latch = new CountDownLatch(1);
+        regularConfigFetcher.fetchConfigs(
+                configs -> {
+                    Assert.assertEquals(configs.getTenantId(), randomTenantId);
+                    latch.countDown();
+                },
+                Assert::fail);
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
     }
 
     @Test(timeout = 1000)
-    public void shouldDeleteRedundantLocalConfigsIfTakenFromLocal() {
+    public void shouldDeleteRedundantLocalConfigsIfTakenFromLocal() throws InterruptedException {
         String first = "first";
         String second = "second";
         Map savedFiles = mock(Map.class);
@@ -168,10 +183,10 @@ public class ConfigsFetcherTests {
         when(deleter.named(second)).thenReturn(deleter);
         when(deleter.from(FileUtils.SourceDir.INTERNAL)).thenReturn(deleter);
 
+        CountDownLatch latch = new CountDownLatch(1);
+        regularConfigFetcher.fetchConfigs(configs -> fail(), error -> latch.countDown());
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
 
-        regularConfigFetcher.fetchConfigs(configs -> fail()
-                , error -> {
-                });
         InOrder inOrder = Mockito.inOrder(editor);
         int timeout = 1000;
         verify(editor, timeout(timeout)).remove(first);
@@ -185,12 +200,17 @@ public class ConfigsFetcherTests {
 
 
     @Test
-    public void shouldFetchConfigFileCorrectlyAndSaveIt() {
+    public void shouldFetchConfigFileCorrectlyAndSaveIt() throws InterruptedException {
         applyPositiveConfigFetch();
         FileUtils.Writer writer = getMockFileWriter();
-        regularConfigFetcher.fetchConfigs(configs ->
-                        Assert.assertTrue(configsAreTheSame(configs, this.configs))
-                , Assert::fail);
+        CountDownLatch latch = new CountDownLatch(1);
+        regularConfigFetcher.fetchConfigs(
+                configs -> {
+                    Assert.assertTrue(configsAreTheSame(configs, this.configs));
+                    latch.countDown();
+                },
+                Assert::fail);
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
 
         InOrder inOrder = Mockito.inOrder(editor);
         inOrder.verify(editor, timeout(1000))
@@ -201,7 +221,7 @@ public class ConfigsFetcherTests {
     }
 
     @Test
-    public void shouldFailConfigIfLocalFileMissesOptitrackConfigs() {
+    public void shouldFailConfigIfLocalFileMissesOptitrackConfigs() throws InterruptedException {
         int randomTenantId = 56757;
         Gson gson = new Gson();
         ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
@@ -213,12 +233,18 @@ public class ConfigsFetcherTests {
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
-        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
-        verify(configsErrorListener, timeout(1000)).error(anyString());
+        CountDownLatch latch = new CountDownLatch(1);
+        ConfigsFetcher.ConfigsErrorListener wrappingListener = error -> {
+            configsErrorListener.error(error);
+            latch.countDown();
+        };
+        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), wrappingListener);
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        verify(configsErrorListener).error(anyString());
     }
 
     @Test
-    public void shouldFailConfigIfLocalFileMissesRealtimeConfigs() {
+    public void shouldFailConfigIfLocalFileMissesRealtimeConfigs() throws InterruptedException {
         int randomTenantId = 56757;
         Gson gson = new Gson();
         ConfigsFetcher.ConfigsErrorListener configsErrorListener = mock(ConfigsFetcher.ConfigsErrorListener.class);
@@ -230,8 +256,14 @@ public class ConfigsFetcherTests {
         storedInFileConfig.setTenantId(randomTenantId);
         when(reader.asString()).thenReturn(gson.toJson(storedInFileConfig));
 
-        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), configsErrorListener);
-        verify(configsErrorListener, timeout(1000)).error(anyString());
+        CountDownLatch latch = new CountDownLatch(1);
+        ConfigsFetcher.ConfigsErrorListener wrappingListener = error -> {
+            configsErrorListener.error(error);
+            latch.countDown();
+        };
+        regularConfigFetcher.fetchConfigs(mock(ConfigsFetcher.ConfigsListener.class), wrappingListener);
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        verify(configsErrorListener).error(anyString());
     }
 
     private void applyParseErrorOnGlobalBuilder() {
