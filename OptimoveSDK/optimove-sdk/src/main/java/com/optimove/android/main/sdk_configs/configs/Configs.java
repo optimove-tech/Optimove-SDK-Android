@@ -16,6 +16,9 @@ public class Configs {
     private OptitrackConfigs optitrackConfigs;
     private Map<String, EventConfigs> eventsConfigs;
 
+    public Configs() {
+    }
+
     public Configs(int tenantId, boolean enableRealtime,
                    boolean enableRealtimeThroughOptistream,
                    @NonNull LogsConfigs logsConfigs,
