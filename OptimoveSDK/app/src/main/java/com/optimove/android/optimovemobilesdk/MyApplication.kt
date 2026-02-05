@@ -6,29 +6,46 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import com.optimove.android.Optimove
 import com.optimove.android.OptimoveConfig
 
 class MyApplication : Application() {
 
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(base)
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            Log.e(TAG, "Uncaught exception in thread ${thread.name}", throwable)
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
-        Optimove.initialize(
-            this,
-            OptimoveConfig.Builder(
-                "optimove_creds",
-                "optimobile_creds"
+        try {
+            Optimove.initialize(
+                this,
+                OptimoveConfig.Builder(
+                    "WyIxIiwgIjgwYTRhMjI0ZGRkMTRhNDQ4MTNlYzIwZmNkMjAxNjE2IiwgIm1vYmlsZS1jb25maWd1cmF0aW9uLjEuMC4wLXN0ZyJd",
+                    "WzEsInVrLTEiLCI2YjE5OThhYS1lZmM1LTRjODUtYjg4ZC1mMjQzMTE4ODA1NTAiLCJKcTMxVEJ6dmxmVTQxb2xzMXltQVZTSVdjNXlnY3VmbHpjbysiXQ=="
+                )
+                    .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
+                    //.enableEmbeddedMessaging("embedded_config_string")
+                    .setPushSmallIconId(R.drawable.small_icon)
+                    .setPushAccentColor(Color.parseColor("#FF0000"))
+                    .build()
             )
-                .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-                .enableEmbeddedMessaging("embedded_config_string")
-                .setPushSmallIconId(R.drawable.small_icon)
-                .setPushAccentColor(Color.parseColor("#FF0000"))
-                .build()
-        )
-        Optimove.enableStagingRemoteLogs()
+            Optimove.enableStagingRemoteLogs()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Crash in Application.onCreate", t)
+            throw t
+        }
     }
 
     companion object {
+        private const val TAG = "MyApplication"
+
         fun askForOverlayPermissions() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
             val context = Optimove.getInstance().applicationContext

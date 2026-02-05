@@ -53,7 +53,10 @@ fun MainScreen(
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
     onEnableInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
-    onOpenDeeplinkTest: () -> Unit
+    onOpenDeeplinkTest: () -> Unit,
+    lastSetLocation: String?,
+    onSetLocationClicked: () -> Unit,
+    onSetAttributesClicked: () -> Unit
 ) {
     var userId by remember { mutableStateOf("") }
     var userEmail by remember { mutableStateOf("") }
@@ -161,6 +164,42 @@ fun MainScreen(
         ) {
             Text(if (isInterceptingInApp) "Intercepting In-App (restart to disable)" else "Enable In-App Interception")
         }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Button(
+            onClick = onSetLocationClicked,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("Set Location")
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Button(
+            onClick = onSetAttributesClicked,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("Set Attributes")
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        if (lastSetLocation != null) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = CardShape,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Text(
+                    text = "Test location: $lastSetLocation",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(SectionPadding),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
         Spacer(modifier = Modifier.height(4.dp))
 
         Row(

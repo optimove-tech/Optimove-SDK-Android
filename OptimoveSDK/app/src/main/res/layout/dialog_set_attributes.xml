@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Associates attributes with the current user. Set User ID first for best results."
+        android:textSize="14sp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingBottom="16dp" />
+
+    <EditText
+        android:id="@+id/attr_key_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Attribute key (e.g. tier)"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/attr_value_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Attribute value (e.g. gold)"
+        android:layout_marginTop="12dp"
+        android:inputType="text" />
+</LinearLayout>

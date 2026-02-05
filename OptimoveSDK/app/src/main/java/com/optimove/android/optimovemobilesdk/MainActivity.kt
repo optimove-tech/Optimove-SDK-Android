@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import androidx.core.content.ContextCompat
 import com.optimove.android.Optimove
 import com.optimove.android.main.events.OptimoveEvent
 import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface
+import com.optimove.android.optimobile.Optimobile
 import com.optimove.android.optimobile.InAppMessageInterceptor
 import com.optimove.android.optimobile.InAppMessageInterceptorCallback
 import com.optimove.android.optimobile.OptimoveInApp
@@ -28,6 +30,8 @@ import com.optimove.android.preferencecenter.PreferenceUpdate
 import com.optimove.android.preferencecenter.Topic
 import com.optimove.android.optimovemobilesdk.ui.MainScreen
 import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
+import android.text.InputFilter
+import android.widget.EditText
 import org.json.JSONObject
 
 @SuppressLint("SetTextI18n")
@@ -36,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var outputText by mutableStateOf("Welcome to the Optimove Android SDK test")
     private var credentialsSubmitted by mutableStateOf(false)
     private var isInterceptingInApp by mutableStateOf(false)
+    private var lastSetLocation by mutableStateOf<String?>(null)
     private var inAppDecisionDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +86,10 @@ class MainActivity : AppCompatActivity() {
                     onSetCredentials = ::setCredentials,
                     onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
                     onResetToken = {},
-                    onOpenDeeplinkTest = ::openDeeplinkTest
+                    onOpenDeeplinkTest = ::openDeeplinkTest,
+                    lastSetLocation = lastSetLocation,
+                    onSetLocationClicked = ::showSetLocationDialog,
+                    onSetAttributesClicked = ::showSetAttributesDialog
                 )
             }
         }
@@ -201,6 +209,112 @@ class MainActivity : AppCompatActivity() {
 
     private fun openDeeplinkTest() {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(DeeplinkTargetActivity.DEEPLINK_TEST_URI)))
+    }
+
+    private fun showSetLocationDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_set_location, null)
+        val latInput = dialogView.findViewById<EditText>(R.id.lat_input)
+        val lngInput = dialogView.findViewById<EditText>(R.id.lng_input)
+
+        lastSetLocation?.let { location ->
+            val parts = location.split(",").map { it.trim() }
+            if (parts.size == 2) {
+                latInput.setText(parts[0])
+                lngInput.setText(parts[1])
+            }
+        }
+
+        val commaFilter = InputFilter { source, _, _, _, _, _ ->
+            if (source.toString().contains(",")) "" else null
+        }
+        latInput.filters = arrayOf(commaFilter)
+        lngInput.filters = arrayOf(commaFilter)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Set Location")
+            .setView(dialogView)
+            .setPositiveButton("Set Location", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val latText = latInput.text.toString().replace(",", ".").trim()
+                val lngText = lngInput.text.toString().replace(",", ".").trim()
+                val lat = latText.toDoubleOrNull()
+                val lng = lngText.toDoubleOrNull()
+
+                when {
+                    lat == null || lng == null -> {
+                        Toast.makeText(this, "Invalid coordinates. Enter numbers only.", Toast.LENGTH_LONG).show()
+                    }
+                    lat !in -90.0..90.0 -> {
+                        Toast.makeText(this, "Latitude must be between -90 and 90.", Toast.LENGTH_LONG).show()
+                    }
+                    lng !in -180.0..180.0 -> {
+                        Toast.makeText(this, "Longitude must be between -180 and 180.", Toast.LENGTH_LONG).show()
+                    }
+                    else -> {
+                        sendTestLocation(lat, lng)
+                        dialog.dismiss()
+                    }
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun sendTestLocation(latitude: Double, longitude: Double) {
+        val testLocation = Location("test").apply {
+            this.latitude = latitude
+            this.longitude = longitude
+            time = System.currentTimeMillis()
+        }
+        Optimove.getInstance().sendLocationUpdate(testLocation)
+        lastSetLocation = "$latitude, $longitude"
+        Toast.makeText(this, "Location sent", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showSetAttributesDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_set_attributes, null)
+        val keyInput = dialogView.findViewById<EditText>(R.id.attr_key_input)
+        val valueInput = dialogView.findViewById<EditText>(R.id.attr_value_input)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Set Attributes")
+            .setView(dialogView)
+            .setPositiveButton("Send", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val key = keyInput.text.toString().trim()
+                val value = valueInput.text.toString().trim()
+
+                when {
+                    key.isEmpty() -> {
+                        Toast.makeText(this, "Attribute key is required.", Toast.LENGTH_LONG).show()
+                    }
+                    value.isEmpty() -> {
+                        Toast.makeText(this, "Attribute value is required.", Toast.LENGTH_LONG).show()
+                    }
+                    else -> {
+                        sendAttributes(key, value)
+                        dialog.dismiss()
+                    }
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun sendAttributes(key: String, value: String) {
+        val userId = Optimobile.getCurrentUserIdentifier(this)
+        val attributes = JSONObject().apply { put(key, value) }
+        Optimobile.associateUserWithInstall(this, userId, attributes)
+        outputText = "Sent attribute: $key = $value"
+        Toast.makeText(this, "Attributes sent", Toast.LENGTH_SHORT).show()
     }
 
     private fun setCredentials(optimove: String?, optimobile: String?, prefCenter: String?) {
