@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.optimove.android.optimovemobilesdk">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
@@ -21,17 +20,27 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <intent-filter android:label="deepLabel" android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Specify which URIs should be matched. Note, domain should be .lnk.click -->
-               <data android:scheme="https" android:host="submariners.lnk.click"/>
-            </intent-filter>
         </activity>
         <activity
             android:name="com.optimove.android.optimovemobilesdk.EmbeddedMessagingActivity"
             android:parentActivityName=".MainActivity"/>
+        <activity
+            android:name="com.optimove.android.optimovemobilesdk.DeeplinkTargetActivity"
+            android:parentActivityName=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="optimoveapp" android:host="testdeeplink" />
+            </intent-filter>
+            <intent-filter android:label="deepLabel" android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="submariners.lnk.click"/>
+            </intent-filter>
+        </activity>
 
         <!-- Optimobile FCM handler -->
         <service android:name="com.optimove.android.optimobile.FirebaseMessagingService" android:exported="false">
