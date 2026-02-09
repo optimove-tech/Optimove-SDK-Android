@@ -563,6 +563,9 @@ public final class Optimobile {
             throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
         }
 
+        // Rebuild urlBuilder with the region extracted from the credentials
+        urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+
         flushEvents(context);
         maybeTriggerInAppSync(context);
         if (config.getDeferredDeepLinkHandler() != null) {

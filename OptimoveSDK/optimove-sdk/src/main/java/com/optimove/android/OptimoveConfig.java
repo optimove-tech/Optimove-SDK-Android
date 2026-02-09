@@ -59,6 +59,7 @@ public final class OptimoveConfig {
     private JSONObject runtimeInfo;
     private JSONObject sdkInfo;
     private @Nullable Map<UrlBuilder.Service, String> baseUrlMap;
+    private @Nullable Map<UrlBuilder.Service, String> overridingBaseUrlMap;
 
     private URL deepLinkCname;
     private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
@@ -176,6 +177,10 @@ public final class OptimoveConfig {
         this.baseUrlMap = baseUrlMap;
     }
 
+    private void setOverridingBaseUrlMap(@Nullable Map<UrlBuilder.Service, String> overridingBaseUrlMap) {
+        this.overridingBaseUrlMap = overridingBaseUrlMap;
+    }
+
     private void setInAppConsentStrategy(InAppConsentStrategy strategy) {
         this.inAppConsentStrategy = strategy;
     }
@@ -283,6 +288,11 @@ public final class OptimoveConfig {
             this.secretKey = result.getString(3);
 
             this.baseUrlMap = UrlBuilder.defaultMapping(region);
+
+            // Re-apply any overriding base URL map that was set during build
+            if (this.overridingBaseUrlMap != null) {
+                this.baseUrlMap = this.overridingBaseUrlMap;
+            }
 
         } catch (NullPointerException | JSONException | IllegalArgumentException e) {
             throw new IllegalArgumentException("Optimobile credentials are not correct");
@@ -630,6 +640,7 @@ public final class OptimoveConfig {
             }
 
             if (this.overridingBaseUrlMap != null) {
+                newConfig.setOverridingBaseUrlMap(this.overridingBaseUrlMap);
                 newConfig.setBaseUrlMap(this.overridingBaseUrlMap);
             }
 
