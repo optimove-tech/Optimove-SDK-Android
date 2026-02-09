@@ -20,13 +20,6 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <intent-filter android:label="deepLabel" android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Specify which URIs should be matched. Note, domain should be .lnk.click -->
-               <data android:scheme="https" android:host="submariners.lnk.click"/>
-            </intent-filter>
         </activity>
         <activity
             android:name="com.optimove.android.optimovemobilesdk.EmbeddedMessagingActivity"
@@ -40,6 +33,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="optimoveapp" android:host="testdeeplink" />
+            </intent-filter>
+            <intent-filter android:label="deepLabel" android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="submariners.lnk.click"/>
             </intent-filter>
         </activity>
 
