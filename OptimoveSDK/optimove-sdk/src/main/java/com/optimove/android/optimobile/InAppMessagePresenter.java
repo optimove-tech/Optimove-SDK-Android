@@ -14,22 +14,31 @@ import com.optimove.android.OptimoveConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     private static final String TAG = InAppMessagePresenter.class.getName();
-
     private final List<InAppMessage> messageQueue = new ArrayList<>();
     private final Context context;
+    private final ScheduledExecutorService interceptorExecutor = Executors.newSingleThreadScheduledExecutor();
 
     @NonNull
     private OptimoveConfig.InAppDisplayMode displayMode;
 
     @Nullable
+    private InAppMessageInterceptor messageInterceptor = null;
+
+    @Nullable
     private Activity currentActivity;
     @Nullable
     private InAppMessageView view;
+
+    private boolean interceptionInProgress = false;
 
     InAppMessagePresenter(Context context, @NonNull OptimoveConfig.InAppDisplayMode defaultDisplayMode) {
         this.context = context.getApplicationContext();
@@ -150,7 +159,18 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             return;
         }
 
+        // If a view already exists, prefer reusing it.
         if (null != view) {
+            if (interceptionInProgress) {
+                return;
+            }
+
+            if (messageInterceptor != null) {
+                interceptionInProgress = true;
+                applyMessageInterception(currentMessage);
+                return;
+            }
+       
             view.showMessage(currentMessage);
             return;
         }
@@ -158,7 +178,17 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         if (null == currentActivity) {
             return;
         }
-        view = new InAppMessageView(this, currentMessage, currentActivity);
+
+        if (messageInterceptor != null) {
+            if (interceptionInProgress) {
+                return;
+            }
+            interceptionInProgress = true;
+            applyMessageInterception(currentMessage);
+            return;
+        }
+
+        showMessageDirectly(currentMessage);
     }
 
     @UiThread
@@ -217,5 +247,79 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }
 
         return messageQueue.get(0);
+    }
+
+    /**
+     * Sets the message interceptor for conditional message display
+     */
+    void setInAppMessageInterceptor(@Nullable InAppMessageInterceptor interceptor) {
+        this.messageInterceptor = interceptor;
+    }
+
+    /**
+     * Calls the message interceptor which will also determine if the message should be shown
+     */
+    @UiThread
+    private void applyMessageInterception(@NonNull InAppMessage message) {
+        final Activity activity = currentActivity;
+        if (activity == null || messageInterceptor == null) {
+            return;
+        }
+
+        final AtomicBoolean processed = new AtomicBoolean(false);
+
+        InAppMessageInterceptorCallback callback = new InAppMessageInterceptorCallback() {
+            @Override
+            public void show() {
+                if (!processed.compareAndSet(false, true)) {
+                    return;
+                }
+                Optimobile.handler.post(() -> {
+                    interceptionInProgress = false;
+                    if (view != null) {
+                        view.showMessage(message);
+                    } else {
+                        showMessageDirectly(message);
+                    }
+                });
+            }
+
+            @Override
+            public void suppress() {
+                if (!processed.compareAndSet(false, true)) {
+                    return;
+                }
+                Optimobile.handler.post(() -> {
+                    interceptionInProgress = false;
+                    InAppMessageService.handleMessageSuppressed(context, message);
+                    messageQueue.remove(message);
+                    presentMessageToClient();
+                });
+            }
+        };
+
+        long timeoutMs = messageInterceptor.getTimeoutMs();
+
+        interceptorExecutor.schedule(() -> {
+            if (processed.get()) {
+                return;
+            }
+            callback.suppress();
+        }, timeoutMs, TimeUnit.MILLISECONDS);
+
+        try {
+            messageInterceptor.processMessage(message.getData(), callback);
+        } catch (Exception e) {
+            Log.e(TAG, "Error in message interceptor", e);
+            callback.suppress();
+        }
+    }
+
+    @UiThread
+    private void showMessageDirectly(@NonNull InAppMessage message) {
+        if (currentActivity == null) {
+            return;
+        }
+        view = new InAppMessageView(this, message, currentActivity);
     }
 }

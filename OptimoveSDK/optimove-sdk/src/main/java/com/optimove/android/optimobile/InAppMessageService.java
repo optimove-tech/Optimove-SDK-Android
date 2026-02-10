@@ -159,6 +159,11 @@ class InAppMessageService {
         clearNotification(context, message.getInAppId());
     }
 
+    static void handleMessageSuppressed(@NonNull Context context, @NonNull InAppMessage message) {
+        updateDismissedAt(context, message);
+        clearNotification(context, message.getInAppId());
+    }
+
     private static void updateDismissedAt(Context context, InAppMessage message) {
         message.setDismissedAt(new Date());
         Runnable task = new InAppContract.TrackMessageDismissedRunnable(context, message);

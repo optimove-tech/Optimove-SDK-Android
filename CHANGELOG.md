@@ -1,5 +1,47 @@
 # Changelog
 
+## 7.10.1
+
+- Bumped GSON version number to fix a vulnerability issue
+
+## 7.10.0
+
+- Integrated Google Play Install Referrer Library for reliable install source detection and improved DDL attribution
+
+## 7.9.0
+
+- Added retry logic for deferred deep links when clipboard description is unavailable on first attempt
+- Removed fingerprinting code
+
+## 7.8.1
+
+- Update to fix memory leak in OptimoveInApp.setDeepLinkHandler
+
+## 7.8.0
+
+Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage: 
+```java
+OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+  // Example: decide based on your own logic
+  if (/* show conditions */) {
+    decision.show();
+  } else {
+    decision.suppress(); // permanently suppress this message
+  }
+});
+```
+
+Note: If no decision is made within 5s, the SDK auto-suppresses the message. Suppressed messages won’t reappear.
+
+Optional: configure a custom timeout by overriding `getTimeoutMs()`:
+
+```java
+OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
+  //...
+   @Override public long getTimeoutMs() { return 12000L; } // 12s custom timeout
+});
+```
+
 ## 7.7.0
 
 - Updated to use Embedded Messaging V2 endpoints
