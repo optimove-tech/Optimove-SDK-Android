@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.10.2
+
+- Fixed URL builder not being rebuilt during delayed initialisation when credentials are set, causing API calls to use the wrong region
+
 ## 7.10.1
 
 - Bumped GSON version number to fix a vulnerability issue
