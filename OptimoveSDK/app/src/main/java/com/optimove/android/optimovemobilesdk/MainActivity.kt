@@ -16,6 +16,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import android.content.Context
+import android.content.SharedPreferences
+import android.os.Build
+import android.provider.Settings
 import com.optimove.android.Optimove
 import com.optimove.android.main.events.OptimoveEvent
 import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface
@@ -37,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     private var credentialsSubmitted by mutableStateOf(false)
     private var isInterceptingInApp by mutableStateOf(false)
     private var inAppDecisionDialog: AlertDialog? = null
+    private var persistedUserId by mutableStateOf("")
+    private var persistedUserEmail by mutableStateOf("")
+    private lateinit var identityPrefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +67,10 @@ class MainActivity : AppCompatActivity() {
         Optimove.getInstance().seeIntent(intent, savedInstanceState)
         Optimove.getInstance().pushRequestDeviceToken()
 
+        identityPrefs = getSharedPreferences(IDENTITY_PREF_NAME, Context.MODE_PRIVATE)
+        persistedUserEmail = identityPrefs.getString(KEY_USER_EMAIL, "") ?: ""
+        persistedUserId = identityPrefs.getString(KEY_USER_ID, "") ?: ""
+
         setContent {
             AppTheme {
                 MainScreen(
@@ -69,9 +80,14 @@ class MainActivity : AppCompatActivity() {
                     showDelayedConfig = showDelayedConfig,
                     credentialsSubmitted = credentialsSubmitted,
                     isInterceptingInApp = isInterceptingInApp,
+                    userId = persistedUserId,
+                    userEmail = persistedUserEmail,
+                    onUserIdChange = { persistedUserId = it },
+                    onUserEmailChange = { persistedUserEmail = it },
                     onReportEvent = ::reportEvent,
                     onKillActivity = ::killActivity,
                     onUpdateUserId = ::updateUserId,
+                    onClearIdentity = ::clearIdentity,
                     onReadInbox = ::readInbox,
                     onMarkInboxAsRead = ::markInboxAsRead,
                     onDeleteInbox = ::deleteInbox,
@@ -81,7 +97,28 @@ class MainActivity : AppCompatActivity() {
                     onSetCredentials = ::setCredentials,
                     onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
                     onResetToken = {},
-                    onOpenDeeplinkTest = ::openDeeplinkTest
+                    onOpenDeeplinkTest = ::openDeeplinkTest,
+                    onRegisterPush = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS)
+                                == PackageManager.PERMISSION_DENIED &&
+                            !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+                        ) {
+                            outputText = "Notification permission permanently denied. Opening settings..."
+                            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                putExtra(Settings.EXTRA_APP_PACKAGE, this@MainActivity.packageName)
+                            })
+                        } else {
+                            outputText = "Requesting push registration..."
+                            Optimove.getInstance().pushRequestDeviceToken()
+                            outputText = "Push registration requested"
+                        }
+                    },
+                    onUnregisterPush = {
+                        outputText = "Unregistering push..."
+                        Optimove.getInstance().pushUnregister()
+                        outputText = "Push unregistration requested"
+                    }
                 )
             }
         }
@@ -128,7 +165,21 @@ class MainActivity : AppCompatActivity() {
                 Optimove.getInstance().registerUser(userId, userEmail)
             }
         }
+        identityPrefs.edit()
+            .putString(KEY_USER_ID, userId)
+            .putString(KEY_USER_EMAIL, userEmail)
+            .apply()
     }
+
+    private fun clearIdentity() {
+        identityPrefs.edit()
+            .remove(KEY_USER_ID)
+            .remove(KEY_USER_EMAIL)
+            .apply()
+        persistedUserId = ""
+        persistedUserEmail = ""
+        outputText = "Identity cleared (saved values removed)"
+    } 
 
     private fun readInbox() {
         val items = OptimoveInApp.getInstance().inboxItems
@@ -276,5 +327,8 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "TestAppMainActvity"
         private const val PC_TAG = "OptimovePC"
         private const val WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169
+        private const val IDENTITY_PREF_NAME = "optimove_identity"
+        private const val KEY_USER_EMAIL = "user_email"
+        private const val KEY_USER_ID = "user_id"
     }
 }

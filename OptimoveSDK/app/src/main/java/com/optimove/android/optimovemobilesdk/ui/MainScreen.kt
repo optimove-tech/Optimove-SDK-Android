@@ -42,8 +42,13 @@ fun MainScreen(
     credentialsSubmitted: Boolean,
     isInterceptingInApp: Boolean,
     onReportEvent: () -> Unit,
+    userId: String,
+    userEmail: String,
+    onUserIdChange: (String) -> Unit,
+    onUserEmailChange: (String) -> Unit,
     onKillActivity: () -> Unit,
     onUpdateUserId: (userId: String, userEmail: String) -> Unit,
+    onClearIdentity: () -> Unit,
     onReadInbox: () -> Unit,
     onMarkInboxAsRead: () -> Unit,
     onDeleteInbox: () -> Unit,
@@ -53,10 +58,10 @@ fun MainScreen(
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
     onEnableInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
-    onOpenDeeplinkTest: () -> Unit
+    onOpenDeeplinkTest: () -> Unit,
+    onRegisterPush: () -> Unit,
+    onUnregisterPush: () -> Unit 
 ) {
-    var userId by remember { mutableStateOf("") }
-    var userEmail by remember { mutableStateOf("") }
     var optimoveCred by remember { mutableStateOf("") }
     var optimobileCred by remember { mutableStateOf("") }
     var prefCenterCred by remember { mutableStateOf("") }
@@ -86,7 +91,7 @@ fun MainScreen(
             Column(modifier = Modifier.padding(SectionPadding)) {
                 OutlinedTextField(
                     value = userId,
-                    onValueChange = { userId = it },
+                    onValueChange = onUserIdChange,
                     label = { Text("User ID") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -99,7 +104,7 @@ fun MainScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = userEmail,
-                    onValueChange = { userEmail = it },
+                    onValueChange = onUserEmailChange,
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -115,19 +120,28 @@ fun MainScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = { onUpdateUserId(userId, "") },
+                        onClick = { onUpdateUserId(userId, userEmail) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text("Update userId")
                     }
                     Button(
-                        onClick = { onUpdateUserId("", userEmail) },
+                        onClick = { onUpdateUserId(userId, userEmail) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text("Update email")
                     }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = onClearIdentity,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Clear saved login")
                 }
             }
         }
@@ -314,6 +328,43 @@ fun MainScreen(
         ) {
             Text("Kill Activity")
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = CardShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(modifier = Modifier.padding(SectionPadding)) {
+                Text(
+                    "Push Registration",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = onRegisterPush,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("Register Push")
+                    }
+                    Button(
+                        onClick = onUnregisterPush,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Unregister Push")
+                    }
+                }
+            }
+        }
     }
 }
