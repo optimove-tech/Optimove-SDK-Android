@@ -58,7 +58,9 @@ fun MainScreen(
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
     onEnableInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
-    onOpenDeeplinkTest: () -> Unit
+    onOpenDeeplinkTest: () -> Unit,
+    onRegisterPush: () -> Unit,
+    onUnregisterPush: () -> Unit 
 ) {
     var optimoveCred by remember { mutableStateOf("") }
     var optimobileCred by remember { mutableStateOf("") }
@@ -326,6 +328,43 @@ fun MainScreen(
         ) {
             Text("Kill Activity")
         }
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = CardShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(modifier = Modifier.padding(SectionPadding)) {
+                Text(
+                    "Push Registration",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = onRegisterPush,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("Register Push")
+                    }
+                    Button(
+                        onClick = onUnregisterPush,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Unregister Push")
+                    }
+                }
+            }
+        }
     }
 }

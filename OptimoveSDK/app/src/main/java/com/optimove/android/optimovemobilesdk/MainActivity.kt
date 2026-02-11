@@ -18,6 +18,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.provider.Settings
 import com.optimove.android.Optimove
 import com.optimove.android.main.events.OptimoveEvent
 import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface
@@ -95,7 +97,28 @@ class MainActivity : AppCompatActivity() {
                     onSetCredentials = ::setCredentials,
                     onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
                     onResetToken = {},
-                    onOpenDeeplinkTest = ::openDeeplinkTest
+                    onOpenDeeplinkTest = ::openDeeplinkTest,
+                    onRegisterPush = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS)
+                                == PackageManager.PERMISSION_DENIED &&
+                            !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+                        ) {
+                            outputText = "Notification permission permanently denied. Opening settings..."
+                            startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                putExtra(Settings.EXTRA_APP_PACKAGE, this@MainActivity.packageName)
+                            })
+                        } else {
+                            outputText = "Requesting push registration..."
+                            Optimove.getInstance().pushRequestDeviceToken()
+                            outputText = "Push registration requested"
+                        }
+                    },
+                    onUnregisterPush = {
+                        outputText = "Unregistering push..."
+                        Optimove.getInstance().pushUnregister()
+                        outputText = "Push unregistration requested"
+                    }
                 )
             }
         }
