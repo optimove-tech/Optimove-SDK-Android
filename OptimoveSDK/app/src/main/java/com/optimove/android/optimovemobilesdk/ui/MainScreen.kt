@@ -42,8 +42,13 @@ fun MainScreen(
     credentialsSubmitted: Boolean,
     isInterceptingInApp: Boolean,
     onReportEvent: () -> Unit,
+    userId: String,
+    userEmail: String,
+    onUserIdChange: (String) -> Unit,
+    onUserEmailChange: (String) -> Unit,
     onKillActivity: () -> Unit,
     onUpdateUserId: (userId: String, userEmail: String) -> Unit,
+    onClearIdentity: () -> Unit,
     onReadInbox: () -> Unit,
     onMarkInboxAsRead: () -> Unit,
     onDeleteInbox: () -> Unit,
@@ -55,8 +60,6 @@ fun MainScreen(
     onResetToken: () -> Unit,
     onOpenDeeplinkTest: () -> Unit
 ) {
-    var userId by remember { mutableStateOf("") }
-    var userEmail by remember { mutableStateOf("") }
     var optimoveCred by remember { mutableStateOf("") }
     var optimobileCred by remember { mutableStateOf("") }
     var prefCenterCred by remember { mutableStateOf("") }
@@ -86,7 +89,7 @@ fun MainScreen(
             Column(modifier = Modifier.padding(SectionPadding)) {
                 OutlinedTextField(
                     value = userId,
-                    onValueChange = { userId = it },
+                    onValueChange = onUserIdChange,
                     label = { Text("User ID") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -99,7 +102,7 @@ fun MainScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = userEmail,
-                    onValueChange = { userEmail = it },
+                    onValueChange = onUserEmailChange,
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -115,19 +118,28 @@ fun MainScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = { onUpdateUserId(userId, "") },
+                        onClick = { onUpdateUserId(userId, userEmail) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text("Update userId")
                     }
                     Button(
-                        onClick = { onUpdateUserId("", userEmail) },
+                        onClick = { onUpdateUserId(userId, userEmail) },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text("Update email")
                     }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = onClearIdentity,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Clear saved login")
                 }
             }
         }
