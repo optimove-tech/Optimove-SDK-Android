@@ -95,7 +95,12 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
             return false;
         }
 
-        return component.getClassName().equals(activity.getComponentName().getClassName());
+        ComponentName activityComponent = activity.getComponentName();
+        if (activityComponent == null) {
+            return false;
+        }
+
+        return component.getClassName().equals(activityComponent.getClassName());
     }
 
 
