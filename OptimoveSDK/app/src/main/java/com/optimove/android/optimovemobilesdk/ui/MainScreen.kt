@@ -27,8 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
 
 private val CardShape = RoundedCornerShape(12.dp)
 private val SectionPadding = 16.dp
@@ -59,12 +61,15 @@ fun MainScreen(
     onEnableInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
     onOpenDeeplinkTest: () -> Unit,
+    onSendLocation: (latitude: Double, longitude: Double) -> Unit,
     onRegisterPush: () -> Unit,
     onUnregisterPush: () -> Unit 
 ) {
     var optimoveCred by remember { mutableStateOf("") }
     var optimobileCred by remember { mutableStateOf("") }
     var prefCenterCred by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -363,6 +368,67 @@ fun MainScreen(
                     ) {
                         Text("Unregister Push")
                     }
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = CardShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(modifier = Modifier.padding(SectionPadding)) {
+                Text(
+                    "Test Geolocation",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = latitude,
+                        onValueChange = { latitude = it },
+                        label = { Text("Latitude") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    OutlinedTextField(
+                        value = longitude,
+                        onValueChange = { longitude = it },
+                        label = { Text("Longitude") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        val lat = latitude.toDoubleOrNull()
+                        val lng = longitude.toDoubleOrNull()
+                        if (lat != null && lng != null) {
+                            onSendLocation(lat, lng)
+                        }
+                    },
+                    enabled = latitude.toDoubleOrNull() != null && longitude.toDoubleOrNull() != null,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Send Location Update")
                 }
             }
         }
