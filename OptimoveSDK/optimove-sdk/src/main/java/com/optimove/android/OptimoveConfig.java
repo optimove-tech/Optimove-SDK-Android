@@ -83,6 +83,10 @@ public final class OptimoveConfig {
         PAUSED
     }
 
+    /**
+     * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
+     */
+    @Deprecated
     public enum Region {
         EU("eu-central-2"),
         US("us-east-1"),
@@ -470,12 +474,26 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
+        /**
+         * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
+         */
+        @Deprecated 
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
             if (featureSet.isEmpty()) {
                 throw new IllegalArgumentException("Feature set cannot be empty");
             }
             this.region = region.toString();
             this.baseUrlMap = UrlBuilder.defaultMapping(this.region);
+            this.featureSet = featureSet;
+            this.delayedInitialisation = true;
+        }
+
+        public Builder(@NonNull FeatureSet featureSet) {
+            if (featureSet.isEmpty()) {
+                throw new IllegalArgumentException("Feature set cannot be empty");
+            }
+            this.region = null;
+            this.baseUrlMap = null;
             this.featureSet = featureSet;
             this.delayedInitialisation = true;
         }

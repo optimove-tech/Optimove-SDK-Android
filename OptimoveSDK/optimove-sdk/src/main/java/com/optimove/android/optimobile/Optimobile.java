@@ -105,7 +105,9 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+        if (config.getBaseUrlMap() != null) {
+            urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+        }
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -561,6 +563,10 @@ public final class Optimobile {
     public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config) {
         if (!config.usesDelayedOptimobileConfiguration()) {
             throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
+        }
+
+        if (urlBuilder == null && config.getBaseUrlMap() != null) {
+            urlBuilder = new UrlBuilder(config.getBaseUrlMap());
         }
 
         flushEvents(context);
