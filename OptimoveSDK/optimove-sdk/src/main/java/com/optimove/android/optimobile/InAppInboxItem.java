@@ -127,7 +127,7 @@ public class InAppInboxItem {
         try{
             return MediaHelper.getCompletePictureUrl(this.imagePath, width);
         }
-        catch(MalformedURLException e){
+        catch(MalformedURLException | Optimobile.PartialInitialisationException e){
             return null;
         }
     }

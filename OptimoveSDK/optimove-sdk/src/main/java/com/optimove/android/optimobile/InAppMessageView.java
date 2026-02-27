@@ -292,13 +292,12 @@ class InAppMessageView extends WebViewClient {
             wv.addJavascriptInterface(this, JS_NAME);
             wv.setWebViewClient(this);
 
-            dialog.show();
-
-            setSpinnerVisibility(View.VISIBLE);
-            String iarUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.IAR, "");
+            String iarUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
             // Use for simulating a renderer process crash (triggers onRenderProcessGone())
             // String iarUrl = "chrome://crash";
 
+            dialog.show();
+            setSpinnerVisibility(View.VISIBLE);
             wv.loadUrl(iarUrl);
             state = State.LOADING;
         } catch (Exception e) {
@@ -328,20 +327,25 @@ class InAppMessageView extends WebViewClient {
         super.onReceivedHttpError(view, request, errorResponse);
 
         String url = request.getUrl().toString();
-        // Only consider handling for failures of our renderer assets
-        // 3rd-party fonts/images etc. shouldn't trigger this
-        String iarBaseUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.IAR, "");
-        if (!url.startsWith(iarBaseUrl)) {
-            return;
-        }
 
-        // Cached index page may refer to stale JS/CSS file hashes
-        // Evict the cache to allow next presentation to re-fetch
-        if (404 == errorResponse.getStatusCode()) {
-            view.clearCache(true);
-        }
+        try {
+            // Only consider handling for failures of our renderer assets
+            // 3rd-party fonts/images etc. shouldn't trigger this
+            String iarBaseUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
+            if (!url.startsWith(iarBaseUrl)) {
+                return;
+            }
 
-        closeDialog(currentActivity);
+            // Cached index page may refer to stale JS/CSS file hashes
+            // Evict the cache to allow next presentation to re-fetch
+            if (404 == errorResponse.getStatusCode()) {
+                view.clearCache(true);
+            }
+
+            closeDialog(currentActivity);
+        } catch (Optimobile.PartialInitialisationException e) {
+            Optimobile.log(TAG, "Cannot handle HTTP error: credentials not yet available");
+        }
     }
 
     @Override

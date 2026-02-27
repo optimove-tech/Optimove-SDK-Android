@@ -105,7 +105,9 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+        if (config.getBaseUrlMap() != null) {
+            urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+        }
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -503,6 +505,16 @@ public final class Optimobile {
     /**
      * package
      */
+    static String urlForService(UrlBuilder.Service service, String path) throws PartialInitialisationException {
+        if (urlBuilder == null) {
+            throw new PartialInitialisationException();
+        }
+        return urlBuilder.urlForService(service, path);
+    }
+
+    /**
+     * package
+     */
     static String getInstallId() throws UninitializedException {
         if (!initialized) {
             throw new UninitializedException();
@@ -561,6 +573,10 @@ public final class Optimobile {
     public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config) {
         if (!config.usesDelayedOptimobileConfiguration()) {
             throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
+        }
+
+        if (urlBuilder == null && config.getBaseUrlMap() != null) {
+            urlBuilder = new UrlBuilder(config.getBaseUrlMap());
         }
 
         flushEvents(context);

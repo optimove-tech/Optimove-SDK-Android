@@ -64,7 +64,7 @@ class AnalyticsUploadHelper {
 
         final OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
-        final String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
+        final String url = Optimobile.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
         boolean result = false;
         try (Response response = httpClient.postSync(url, data)) {
