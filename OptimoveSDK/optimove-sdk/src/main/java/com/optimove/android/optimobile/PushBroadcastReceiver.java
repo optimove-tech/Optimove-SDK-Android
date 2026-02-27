@@ -499,7 +499,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             this.pendingResult = pendingResult;
         }
 
-        private URL getPictureUrl() throws MalformedURLException {
+        private URL getPictureUrl() throws MalformedURLException, Optimobile.PartialInitialisationException {
             String pictureUrl = this.pushMessage.getPictureUrl();
             if (pictureUrl == null) {
                 throw new RuntimeException("Optimobile: pictureUrl cannot be null at this point");
@@ -529,6 +529,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (Optimobile.PartialInitialisationException e) {
+                Optimobile.log(TAG, "Cannot load push picture: credentials not yet available");
             }
 
             return null;

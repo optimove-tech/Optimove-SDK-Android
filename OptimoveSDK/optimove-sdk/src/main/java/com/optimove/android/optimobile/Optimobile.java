@@ -505,6 +505,16 @@ public final class Optimobile {
     /**
      * package
      */
+    static String urlForService(UrlBuilder.Service service, String path) throws PartialInitialisationException {
+        if (urlBuilder == null) {
+            throw new PartialInitialisationException();
+        }
+        return urlBuilder.urlForService(service, path);
+    }
+
+    /**
+     * package
+     */
     static String getInstallId() throws UninitializedException {
         if (!initialized) {
             throw new UninitializedException();
