@@ -205,4 +205,97 @@ public class OptimoveConfigTests {
         Assert.assertNotNull(config.getOptimoveToken());
         Assert.assertNotNull(config.getConfigFileName());
     }
+
+    @Test
+    public void shouldFailIfFeatureSetIsEmptyWithoutRegion() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> {
+                    OptimoveConfig.FeatureSet desiredFeatures = new OptimoveConfig.FeatureSet();
+                    new OptimoveConfig.Builder(desiredFeatures).build();
+                }
+        );
+
+        Assert.assertEquals("Feature set cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    public void shouldConfigureWithoutRegionAndOptimoveOnly() {
+        OptimoveConfig.FeatureSet desiredFeatures = new OptimoveConfig.FeatureSet().withOptimove();
+        OptimoveConfig config = new OptimoveConfig.Builder(desiredFeatures).build();
+
+        Assert.assertNull(config.getRegion());
+        Assert.assertNull(config.getBaseUrlMap());
+        Assert.assertNull(config.getApiKey());
+        Assert.assertNull(config.getSecretKey());
+        Assert.assertNull(config.getOptimoveToken());
+        Assert.assertNull(config.getConfigFileName());
+
+        Assert.assertTrue(config.isOptimoveConfigured());
+        Assert.assertFalse(config.isOptimobileConfigured());
+
+        Assert.assertTrue(config.usesDelayedConfiguration());
+        Assert.assertFalse(config.usesDelayedOptimobileConfiguration());
+        Assert.assertTrue(config.usesDelayedOptimoveConfiguration());
+    }
+
+    @Test
+    public void shouldConfigureWithoutRegionAndOptimobileOnly() {
+        OptimoveConfig.FeatureSet desiredFeatures = new OptimoveConfig.FeatureSet().withOptimobile();
+        OptimoveConfig config = new OptimoveConfig.Builder(desiredFeatures).build();
+
+        Assert.assertNull(config.getRegion());
+        Assert.assertNull(config.getBaseUrlMap());
+        Assert.assertNull(config.getApiKey());
+        Assert.assertNull(config.getSecretKey());
+        Assert.assertNull(config.getOptimoveToken());
+        Assert.assertNull(config.getConfigFileName());
+
+        Assert.assertFalse(config.isOptimoveConfigured());
+        Assert.assertTrue(config.isOptimobileConfigured());
+
+        Assert.assertTrue(config.usesDelayedConfiguration());
+        Assert.assertTrue(config.usesDelayedOptimobileConfiguration());
+        Assert.assertFalse(config.usesDelayedOptimoveConfiguration());
+    }
+
+    @Test
+    public void shouldConfigureWithoutRegionAndCompleteFeatureSet() {
+        OptimoveConfig.FeatureSet desiredFeatures = new OptimoveConfig.FeatureSet().withOptimobile().withOptimove();
+        OptimoveConfig config = new OptimoveConfig.Builder(desiredFeatures).build();
+
+        Assert.assertNull(config.getRegion());
+        Assert.assertNull(config.getBaseUrlMap());
+
+        Assert.assertTrue(config.isOptimoveConfigured());
+        Assert.assertTrue(config.isOptimobileConfigured());
+
+        Assert.assertTrue(config.usesDelayedConfiguration());
+        Assert.assertTrue(config.usesDelayedOptimobileConfiguration());
+        Assert.assertTrue(config.usesDelayedOptimoveConfiguration());
+    }
+
+    @Test
+    public void shouldDeriveRegionAndUrlMapFromCredentialsWhenNoRegionProvided() {
+        OptimoveConfig.FeatureSet desiredFeatures = new OptimoveConfig.FeatureSet().withOptimove().withOptimobile();
+        OptimoveConfig config = new OptimoveConfig.Builder(desiredFeatures).build();
+
+        Assert.assertNull(config.getRegion());
+        Assert.assertNull(config.getBaseUrlMap());
+
+        config.setCredentials(VALID_OPTIMOVE_CREDS, VALID_OPTIMOBILE_CREDS);
+
+        Assert.assertNotNull(config.getRegion());
+        Assert.assertNotNull(config.getBaseUrlMap());
+        Assert.assertNotNull(config.getApiKey());
+        Assert.assertNotNull(config.getSecretKey());
+        Assert.assertNotNull(config.getOptimoveToken());
+        Assert.assertNotNull(config.getConfigFileName());
+
+        String credentialRegion = config.getRegion();
+        Map<UrlBuilder.Service, String> map = config.getBaseUrlMap();
+        Assert.assertEquals("https://i-" + credentialRegion + ".app.delivery", map.get(UrlBuilder.Service.MEDIA));
+        Assert.assertEquals("https://events-" + credentialRegion + ".kumulos.com", map.get(UrlBuilder.Service.EVENTS));
+    }
+
 }

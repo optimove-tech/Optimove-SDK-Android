@@ -85,7 +85,7 @@ public final class OptimoveConfig {
 
     /**
      * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
-     */ @Deprecated
+     */ 
     public enum Region {
         EU("eu-central-2"),
         US("us-east-1"),
