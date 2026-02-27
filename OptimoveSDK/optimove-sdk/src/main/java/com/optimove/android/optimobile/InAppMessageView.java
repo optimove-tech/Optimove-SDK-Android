@@ -292,13 +292,12 @@ class InAppMessageView extends WebViewClient {
             wv.addJavascriptInterface(this, JS_NAME);
             wv.setWebViewClient(this);
 
-            dialog.show();
-
-            setSpinnerVisibility(View.VISIBLE);
             String iarUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
             // Use for simulating a renderer process crash (triggers onRenderProcessGone())
             // String iarUrl = "chrome://crash";
 
+            dialog.show();
+            setSpinnerVisibility(View.VISIBLE);
             wv.loadUrl(iarUrl);
             state = State.LOADING;
         } catch (Exception e) {
