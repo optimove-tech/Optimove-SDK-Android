@@ -85,8 +85,7 @@ public final class OptimoveConfig {
 
     /**
      * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
-     */
-    @Deprecated
+     */ @Deprecated
     public enum Region {
         EU("eu-central-2"),
         US("us-east-1"),
@@ -477,7 +476,7 @@ public final class OptimoveConfig {
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
          */
-        @Deprecated 
+        @Deprecated
         public Builder(@NonNull Region region, @NonNull FeatureSet featureSet) {
             if (featureSet.isEmpty()) {
                 throw new IllegalArgumentException("Feature set cannot be empty");
