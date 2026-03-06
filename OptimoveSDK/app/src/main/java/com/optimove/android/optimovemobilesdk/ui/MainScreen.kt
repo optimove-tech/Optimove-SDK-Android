@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.optimove.android.optimovemobilesdk.MyApplication
 
 private val CardShape = RoundedCornerShape(12.dp)
 private val SectionPadding = 16.dp
@@ -60,10 +62,16 @@ fun MainScreen(
     onResetToken: () -> Unit,
     onOpenDeeplinkTest: () -> Unit,
     onRegisterPush: () -> Unit,
-    onUnregisterPush: () -> Unit 
+    onUnregisterPush: () -> Unit,
+    isDelayedInit: Boolean,
+    onDelayedInitToggle: (Boolean) -> Unit
 ) {
-    var optimoveCred by remember { mutableStateOf("") }
-    var optimobileCred by remember { mutableStateOf("") }
+    var optimoveCred by remember {
+        mutableStateOf(if (showDelayedConfig) MyApplication.DEFAULT_OPTIMOVE_CRED else "")
+    }
+    var optimobileCred by remember {
+        mutableStateOf(if (showDelayedConfig) MyApplication.DEFAULT_OPTIMOBILE_CRED else "")
+    }
     var prefCenterCred by remember { mutableStateOf("") }
 
     Column(
@@ -364,6 +372,36 @@ fun MainScreen(
                         Text("Unregister Push")
                     }
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = CardShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Row(
+                modifier = Modifier.padding(SectionPadding).fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Delayed Initialization",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "Restart app to apply",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+                Switch(
+                    checked = isDelayedInit,
+                    onCheckedChange = onDelayedInitToggle
+                )
             }
         }
     }

@@ -3,12 +3,12 @@ apply plugin: 'com.android.library'
 group = 'com.optimove.sdk'
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion '30.0.3'
+    namespace 'com.optimove.android'
+    compileSdk 33
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdk 21
+        targetSdk 33
         versionCode Integer.parseInt("$sdk_version_code")
         versionName "$sdk_version"
         consumerProguardFiles 'optimove-proguard-rules.pro'
@@ -34,6 +34,13 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+        }
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
