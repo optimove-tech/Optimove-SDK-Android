@@ -377,6 +377,7 @@ class InAppContract {
         @Override
         public List<InAppInboxItem> call() {
             List<InAppInboxItem> inboxItems = new ArrayList<>();
+            String mediaBaseUrl = Optimobile.getMediaBaseUrl(mContext);
             try (SQLiteOpenHelper dbHelper = new InAppDbHelper(mContext)) {
                 SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -413,6 +414,7 @@ class InAppContract {
                     i.setAvailableFrom(availableFrom);
                     i.setSentAt(sentAt);
                     i.setData(data);
+                    i.setMediaBaseUrl(mediaBaseUrl);
 
                     if (inboxConfig != null) {
                         i.setTitle(inboxConfig.getString("title"));
