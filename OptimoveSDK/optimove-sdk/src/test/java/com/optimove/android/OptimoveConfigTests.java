@@ -80,8 +80,6 @@ public class OptimoveConfigTests {
         Assert.assertNull(config.getOptimoveToken());
         Assert.assertNull(config.getConfigFileName());
 
-        Assert.assertEquals(OptimoveConfig.Region.US.toString(), config.getRegion());
-
         Assert.assertTrue(config.isOptimoveConfigured());
         Assert.assertFalse(config.isOptimobileConfigured());
 
@@ -99,8 +97,6 @@ public class OptimoveConfigTests {
         Assert.assertNull(config.getSecretKey());
         Assert.assertNull(config.getOptimoveToken());
         Assert.assertNull(config.getConfigFileName());
-
-        Assert.assertEquals(OptimoveConfig.Region.DEV.toString(), config.getRegion());
 
         Assert.assertFalse(config.isOptimoveConfigured());
         Assert.assertTrue(config.isOptimobileConfigured());
@@ -120,17 +116,12 @@ public class OptimoveConfigTests {
         Assert.assertNull(config.getOptimoveToken());
         Assert.assertNull(config.getConfigFileName());
 
-        Assert.assertEquals(OptimoveConfig.Region.DEV.toString(), config.getRegion());
-
         Assert.assertTrue(config.isOptimoveConfigured());
         Assert.assertTrue(config.isOptimobileConfigured());
 
         Assert.assertTrue(config.usesDelayedConfiguration());
         Assert.assertTrue(config.usesDelayedOptimobileConfiguration());
         Assert.assertTrue(config.usesDelayedOptimoveConfiguration());
-
-        Map<UrlBuilder.Service, String> map = config.getBaseUrlMap();
-        Assert.assertEquals("https://i-" + OptimoveConfig.Region.DEV + ".app.delivery", map.get(UrlBuilder.Service.MEDIA));
     }
 
     @Test

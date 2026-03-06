@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class DestinationDeciderTests {
@@ -55,7 +55,7 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, true, false);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verifyZeroInteractions(realtimeManager);
+        verifyNoInteractions(realtimeManager);
 
     }
 
@@ -71,7 +71,7 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, false, false);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verifyZeroInteractions(realtimeManager);
+        verifyNoInteractions(realtimeManager);
     }
     @Test
     public void eventShouldntBeReportedToRealtimeIfRealtimeEnabledThroughOptistream() {
@@ -85,7 +85,7 @@ public class DestinationDeciderTests {
                 realtimeManager,
                 optistreamEventBuilder, true, true);
         destinationDecider.reportEvent(Collections.singletonList(optimoveEvent));
-        verifyZeroInteractions(realtimeManager);
+        verifyNoInteractions(realtimeManager);
     }
 
     @Test
