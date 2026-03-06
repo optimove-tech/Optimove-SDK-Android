@@ -320,6 +320,20 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         if (currentActivity == null) {
             return;
         }
-        view = new InAppMessageView(this, message, currentActivity);
+
+        String iarUrl;
+        try {
+            iarUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
+        } catch (Optimobile.PartialInitialisationException e) {
+            Optimobile.log(TAG, "Cannot present in-app message: credentials not yet available");
+            return;
+        }
+
+        view = new InAppMessageView(this, message, currentActivity, iarUrl);
+    }
+
+    @AnyThread
+    void retryPresentingMessages() {
+        Optimobile.handler.post(this::presentMessageToClient);
     }
 }

@@ -97,14 +97,14 @@ class InAppMessageView extends WebViewClient {
     private InAppMessage currentMessage;
 
     @UiThread
-    InAppMessageView(@NonNull InAppMessagePresenter presenter, @NonNull InAppMessage message, @NonNull Activity currentActivity) {
+    InAppMessageView(@NonNull InAppMessagePresenter presenter, @NonNull InAppMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl) {
         this.state = State.INITIAL;
         pageFinished = false;
         this.presenter = presenter;
         this.currentActivity = currentActivity;
         this.currentMessage = message;
 
-        showWebView(currentActivity);
+        showWebView(currentActivity, iarUrl);
     }
 
     @UiThread
@@ -240,7 +240,7 @@ class InAppMessageView extends WebViewClient {
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface", "InflateParams"})
     @UiThread
-    private void showWebView(@NonNull final Activity currentActivity) {
+    private void showWebView(@NonNull final Activity currentActivity, @NonNull String iarUrl) {
         try {
             if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 WebView.setWebContentsDebuggingEnabled(true);
@@ -291,10 +291,6 @@ class InAppMessageView extends WebViewClient {
 
             wv.addJavascriptInterface(this, JS_NAME);
             wv.setWebViewClient(this);
-
-            String iarUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
-            // Use for simulating a renderer process crash (triggers onRenderProcessGone())
-            // String iarUrl = "chrome://crash";
 
             dialog.show();
             setSpinnerVisibility(View.VISIBLE);

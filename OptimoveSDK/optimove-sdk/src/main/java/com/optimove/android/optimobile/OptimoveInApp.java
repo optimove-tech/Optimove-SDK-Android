@@ -186,6 +186,12 @@ public class OptimoveInApp {
         presenter.setDisplayMode(mode);
     }
 
+    void onCredentialsAvailable() {
+        if (presenter != null) {
+            presenter.retryPresentingMessages();
+        }
+    }
+
     //==============================================================================================
     //-- Internal Helpers
 

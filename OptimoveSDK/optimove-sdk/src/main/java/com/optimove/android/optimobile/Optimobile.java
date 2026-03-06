@@ -577,6 +577,7 @@ public final class Optimobile {
 
         if (urlBuilder == null && config.getBaseUrlMap() != null) {
             urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+            OptimoveInApp.getInstance().onCredentialsAvailable();
         }
 
         flushEvents(context);
