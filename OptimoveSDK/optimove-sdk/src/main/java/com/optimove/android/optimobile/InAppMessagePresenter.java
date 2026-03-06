@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 
 import java.util.ArrayList;
@@ -329,7 +330,8 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             return;
         }
 
-        view = new InAppMessageView(this, message, currentActivity, iarUrl);
+        String region = Optimove.getConfig().getRegion();
+        view = new InAppMessageView(this, message, currentActivity, iarUrl, region);
     }
 
     @AnyThread

@@ -40,7 +40,6 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.UiThread;
 
 import com.optimove.android.BuildConfig;
-import com.optimove.android.Optimove;
 import com.optimove.android.R;
 
 import org.json.JSONArray;
@@ -95,14 +94,17 @@ class InAppMessageView extends WebViewClient {
     private final InAppMessagePresenter presenter;
     @NonNull
     private InAppMessage currentMessage;
+    @Nullable
+    private final String region;
 
     @UiThread
-    InAppMessageView(@NonNull InAppMessagePresenter presenter, @NonNull InAppMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl) {
+    InAppMessageView(@NonNull InAppMessagePresenter presenter, @NonNull InAppMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @Nullable String region) {
         this.state = State.INITIAL;
         pageFinished = false;
         this.presenter = presenter;
         this.currentActivity = currentActivity;
         this.currentMessage = message;
+        this.region = region;
 
         showWebView(currentActivity, iarUrl);
     }
@@ -126,10 +128,12 @@ class InAppMessageView extends WebViewClient {
     private void sendCurrentMessageToClient() {
         if (state == State.READY && pageFinished) {
             JSONObject content = currentMessage.getContent();
-            try {
-                content.put("region", Optimove.getConfig().getRegion());
-            } catch (JSONException e) {
-                Log.w(TAG, "Could not pass region to In-App renderer");
+            if (region != null) {
+                try {
+                    content.put("region", region);
+                } catch (JSONException e) {
+                    Log.w(TAG, "Could not pass region to In-App renderer");
+                }
             }
 
             sendToClient(HOST_MESSAGE_TYPE_PRESENT_MESSAGE, content);
