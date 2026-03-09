@@ -1,5 +1,6 @@
 package com.optimove.android.optimovemobilesdk.ui
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -120,6 +121,7 @@ fun EmbeddedMessagingScreen(
                     val title = message.title ?: ""
                     val content = message.content ?: ""
                     val unread = message.readAt == null
+                    Log.d("EmbeddedMessagingScreen", "id: ${message.id} | containerId: ${message.containerId} | templateId: ${message.templateId} | title: ${message.title} | content: ${message.content} | media: ${message.media} | url: ${message.url} | payload: ${message.payload} | campaignKind: ${message.campaignKind} | messageLayoutType: ${message.messageLayoutType} | engagementId: ${message.engagementId} | customerId: ${message.customerId} | isVisitor: ${message.isVisitor} | createdAt: ${message.createdAt} | updatedAt: ${message.updatedAt} | executionDateTime: ${message.executionDateTime} | readAt: ${message.readAt} | expiryDate: ${message.expiryDate}")
                     val line = "$title: $content ${if (unread) "•" else ""}"
                     Text(
                         line,

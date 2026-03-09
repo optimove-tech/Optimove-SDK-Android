@@ -1,22 +1,18 @@
 package com.optimove.android.embeddedmessaging;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
+import java.util.Locale;
 
 public class EmbeddedMessage {
     private String id;
     private String containerId;
-    private int templateId;
+    private long templateId;
     private Date createdAt;
     private Date updatedAt;
     private Date readAt;
@@ -34,13 +30,15 @@ public class EmbeddedMessage {
     private int messageLayoutType;
 
     public EmbeddedMessage(JSONObject jsonMessage) throws JSONException {
+        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+
         id = jsonMessage.optString("id");
         containerId = jsonMessage.optString("containerId");
-        templateId = jsonMessage.optInt("templateId");
-        createdAt = convertLongToDate(jsonMessage.optLong("createdAt"));
-        updatedAt = convertLongToDate(jsonMessage.optLong("updatedAt"));
-        readAt = convertLongToNullableDate(jsonMessage.optLong("readAt"));
-        expiryDate = convertLongToNullableDate(jsonMessage.optLong("expiryDate"));
+        templateId = jsonMessage.optLong("templateId");
+        createdAt = parseDate(jsonMessage.optString("createdAt"), isoFormat);
+        updatedAt = parseDate(jsonMessage.optString("updatedAt"), isoFormat);
+        readAt = parseNullableDate(jsonMessage.optString("readAt"), isoFormat);
+        expiryDate = parseNullableDate(jsonMessage.optString("expiryDate"), isoFormat);
         customerId = jsonMessage.optString("customerId");
         isVisitor = jsonMessage.optBoolean("isVisitor");
         title = jsonMessage.optString("title");
@@ -50,7 +48,7 @@ public class EmbeddedMessage {
         campaignKind = jsonMessage.optInt("campaignKind");
         payload = jsonMessage.optString("payload");
         engagementId = jsonMessage.optString("engagementId");
-        executionDateTime = convertLongToDate(jsonMessage.optLong("executionDateTime"));
+        executionDateTime = parseDate(jsonMessage.optString("executionDateTime"), isoFormat);
         messageLayoutType = jsonMessage.optInt("messageLayoutType");
     }
 
@@ -62,7 +60,7 @@ public class EmbeddedMessage {
         return containerId;
     }
 
-    public int getTemplateId() {
+    public long getTemplateId() {
         return templateId;
     }
 
@@ -134,14 +132,22 @@ public class EmbeddedMessage {
         return messageLayoutType;
     }
 
-    private Date convertLongToNullableDate(long unixTimestamp) {
-        if(unixTimestamp <= 0) {
+    private static Date parseDate(String dateStr, SimpleDateFormat format) {
+        if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return new Date(0);
+        try {
+            return format.parse(dateStr);
+        } catch (ParseException e) {
+            return new Date(0);
+        }
+    }
+
+    private static Date parseNullableDate(String dateStr, SimpleDateFormat format) {
+        if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return null;
+        try {
+            return format.parse(dateStr);
+        } catch (ParseException e) {
             return null;
         }
-        return convertLongToDate(unixTimestamp);
-    }
-    private Date convertLongToDate(long unixTimestamp) {
-        return new Date(unixTimestamp);
     }
 }
 

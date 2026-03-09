@@ -12,7 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class EmbeddedMessageTests {
 
@@ -32,7 +34,7 @@ public class EmbeddedMessageTests {
             "        \"expiryDate\": \"2025-05-08T23:59:00Z\",\n" +
             "        \"containerId\": \"stuart\",\n" +
             "        \"id\": \"3842b5cd-9751-4cf1-9f9b-9636b38182c6\",\n" +
-            "        \"createdAt\": 1744278486,\n" +
+            "        \"createdAt\": \"2025-04-08T13:32:16.000+00:00\",\n" +
             "        \"updatedAt\": null,\n" +
             "        \"deletedAt\": null\n" +
             "      }";
@@ -42,8 +44,9 @@ public class EmbeddedMessageTests {
        message = new EmbeddedMessage(new JSONObject(testJSON));
     }
     @Test
-    public void shouldConvertIntsToDates(){
-        Assert.assertEquals(new Date(1744278486), message.getCreatedAt());
+    public void shouldParseDatesFromISOStrings() throws Exception {
+        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+        Assert.assertEquals(isoFormat.parse("2025-04-08T13:32:16.000+00:00"), message.getCreatedAt());
     }
 
     @Test
