@@ -1,5 +1,10 @@
 # Changelog
 
+## 7.10.2
+
+- Minor bug fixes for Embedded Messaging: correct field mapping
+
+
 ## 7.10.1
 
 - Bumped GSON version number to fix a vulnerability issue
