@@ -1,20 +1,13 @@
 package com.optimove.android.embeddedmessaging;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
 public class EmbeddedMessage {
     private String id;
@@ -38,6 +31,7 @@ public class EmbeddedMessage {
 
     public EmbeddedMessage(JSONObject jsonMessage) throws JSONException {
         SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+
         id = jsonMessage.optString("id");
         containerId = jsonMessage.optString("containerId");
         templateId = jsonMessage.optLong("templateId");
@@ -139,7 +133,7 @@ public class EmbeddedMessage {
     }
 
     private static Date parseDate(String dateStr, SimpleDateFormat format) {
-        if (dateStr == null || dateStr.isEmpty()) return new Date(0);
+        if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return new Date(0);
         try {
             return format.parse(dateStr);
         } catch (ParseException e) {
@@ -148,7 +142,7 @@ public class EmbeddedMessage {
     }
 
     private static Date parseNullableDate(String dateStr, SimpleDateFormat format) {
-        if (dateStr == null || dateStr.isEmpty()) return null;
+        if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return null;
         try {
             return format.parse(dateStr);
         } catch (ParseException e) {
