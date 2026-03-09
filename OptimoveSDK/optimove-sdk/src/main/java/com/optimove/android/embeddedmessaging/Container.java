@@ -12,7 +12,7 @@ public class Container {
     }
 
     public String getContainerId() {
-        return this.getContainerId();
+        return this.containerId;
     }
 
     public EmbeddedMessage[] getMessages() {
