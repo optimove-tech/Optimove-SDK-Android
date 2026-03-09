@@ -27,14 +27,11 @@ def apply_gradle_wrapper():
     path = os.path.join(ROOT, "gradle", "wrapper", "gradle-wrapper.properties")
     with open(path) as f:
         content = f.read()
-    if "gradle-8.11.1-bin.zip" in content:
-        return False
-    for old in ("gradle-7.2-bin.zip", "gradle-8.2-bin.zip"):
-        if old in content:
-            content = content.replace(old, "gradle-8.11.1-bin.zip")
-            with open(path, "w") as f:
-                f.write(content)
-            return True
+    if "gradle-7.2-bin.zip" in content:
+        content = content.replace("gradle-7.2-bin.zip", "gradle-8.2-bin.zip")
+        with open(path, "w") as f:
+            f.write(content)
+        return True
     return False
 
 
