@@ -1,1 +1,1 @@
-include ':optimove-sdk'
+include ':app', ':optimove-sdk'
