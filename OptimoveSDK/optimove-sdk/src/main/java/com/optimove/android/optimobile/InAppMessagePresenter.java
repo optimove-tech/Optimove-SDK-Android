@@ -306,7 +306,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                     interceptionInProgress = false;
                     messageQueue.remove(message);
                     messageQueue.add(message);
-                    setDisplayMode(OptimoveConfig.InAppDisplayMode.PAUSED);
+                    presentMessageToClient();
                 });
             }
         };
