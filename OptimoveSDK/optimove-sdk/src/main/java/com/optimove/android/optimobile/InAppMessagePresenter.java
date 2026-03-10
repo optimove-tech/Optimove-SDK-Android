@@ -296,6 +296,19 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                     presentMessageToClient();
                 });
             }
+            
+            @Override
+            public void defer() {
+                if (!processed.compareAndSet(false, true)) {
+                    return;
+                }
+                Optimobile.handler.post(() -> {
+                    interceptionInProgress = false;
+                    messageQueue.remove(message);
+                    messageQueue.add(message);
+                    setDisplayMode(OptimoveConfig.InAppDisplayMode.PAUSED);
+                });
+            }
         };
 
         long timeoutMs = messageInterceptor.getTimeoutMs();
