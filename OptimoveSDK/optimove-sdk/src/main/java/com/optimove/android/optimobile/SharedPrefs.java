@@ -7,4 +7,5 @@ final class SharedPrefs {
     static final String IN_APP_LAST_SYNC_TIME = "in_app_last_sync_time";
     static final String DEFERRED_LINK_CHECKED_KEY = "optimobile_ddl_checked";
     static final String KEY_NOTIFICATIONS_ENABLEMENT_STATUS = "notifications_enabled";
+    static final String KEY_MEDIA_BASE_URL = "media_base_url";
 }

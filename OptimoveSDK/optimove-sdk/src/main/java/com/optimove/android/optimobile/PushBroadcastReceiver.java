@@ -506,7 +506,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             }
 
             DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-            return MediaHelper.getCompletePictureUrl(pictureUrl, metrics.widthPixels);
+            String mediaBaseUrl = Optimobile.getMediaBaseUrl(this.context);
+            return MediaHelper.getCompletePictureUrl(mediaBaseUrl, pictureUrl, metrics.widthPixels);
         }
 
         @Override
@@ -514,6 +515,9 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             InputStream in;
             try {
                 URL url = this.getPictureUrl();
+                if (url == null) {
+                    return null;
+                }
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);

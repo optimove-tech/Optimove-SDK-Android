@@ -19,6 +19,7 @@ import androidx.core.app.NotificationManagerCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -105,7 +106,10 @@ public final class Optimobile {
 
         installId = initialVisitorId;
 
-        urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+        if (config.getBaseUrlMap() != null) {
+            urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+            persistMediaBaseUrl(application, config.getBaseUrlMap());
+        }
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -503,6 +507,16 @@ public final class Optimobile {
     /**
      * package
      */
+    static String urlForService(UrlBuilder.Service service, String path) throws PartialInitialisationException {
+        if (urlBuilder == null) {
+            throw new PartialInitialisationException();
+        }
+        return urlBuilder.urlForService(service, path);
+    }
+
+    /**
+     * package
+     */
     static String getInstallId() throws UninitializedException {
         if (!initialized) {
             throw new UninitializedException();
@@ -552,6 +566,23 @@ public final class Optimobile {
         });
     }
 
+    static @Nullable String getMediaBaseUrl(@NonNull Context context) {
+        if (urlBuilder != null) {
+            return urlBuilder.urlForService(UrlBuilder.Service.MEDIA, "");
+        }
+        SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
+        return prefs.getString(SharedPrefs.KEY_MEDIA_BASE_URL, null);
+    }
+
+    private static void persistMediaBaseUrl(Context context, Map<UrlBuilder.Service, String> baseUrlMap) {
+        String mediaBaseUrl = baseUrlMap.get(UrlBuilder.Service.MEDIA);
+        if (mediaBaseUrl == null) {
+            return;
+        }
+        SharedPreferences prefs = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
+        prefs.edit().putString(SharedPrefs.KEY_MEDIA_BASE_URL, mediaBaseUrl).apply();
+    }
+
     //==============================================================================================
     //-- Internal Helpers
 
@@ -561,6 +592,12 @@ public final class Optimobile {
     public static synchronized void completeDelayedConfiguration(Context context, OptimoveConfig config) {
         if (!config.usesDelayedOptimobileConfiguration()) {
             throw new IllegalStateException("Trying to complete optimobile init without using delayed configuration");
+        }
+
+        if (urlBuilder == null && config.getBaseUrlMap() != null) {
+            urlBuilder = new UrlBuilder(config.getBaseUrlMap());
+            persistMediaBaseUrl(context, config.getBaseUrlMap());
+            OptimoveInApp.getInstance().onCredentialsAvailable();
         }
 
         flushEvents(context);

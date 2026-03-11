@@ -40,10 +40,12 @@ class MainActivity : AppCompatActivity() {
     private var outputText by mutableStateOf("Welcome to the Optimove Android SDK test")
     private var credentialsSubmitted by mutableStateOf(false)
     private var isInterceptingInApp by mutableStateOf(false)
+    private var isDelayedInit by mutableStateOf(false)
     private var inAppDecisionDialog: AlertDialog? = null
     private var persistedUserId by mutableStateOf("")
     private var persistedUserEmail by mutableStateOf("")
     private lateinit var identityPrefs: SharedPreferences
+    private lateinit var qaPrefs: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +72,9 @@ class MainActivity : AppCompatActivity() {
         identityPrefs = getSharedPreferences(IDENTITY_PREF_NAME, Context.MODE_PRIVATE)
         persistedUserEmail = identityPrefs.getString(KEY_USER_EMAIL, "") ?: ""
         persistedUserId = identityPrefs.getString(KEY_USER_ID, "") ?: ""
+
+        qaPrefs = getSharedPreferences(MyApplication.PREFS_NAME, Context.MODE_PRIVATE)
+        isDelayedInit = qaPrefs.getBoolean(MyApplication.KEY_DELAYED_INIT, false)
 
         setContent {
             AppTheme {
@@ -118,6 +123,15 @@ class MainActivity : AppCompatActivity() {
                         outputText = "Unregistering push..."
                         Optimove.getInstance().pushUnregister()
                         outputText = "Push unregistration requested"
+                    },
+                    isDelayedInit = isDelayedInit,
+                    onDelayedInitToggle = { enabled ->
+                        isDelayedInit = enabled
+                        qaPrefs.edit().putBoolean(MyApplication.KEY_DELAYED_INIT, enabled).apply()
+                        outputText = if (enabled)
+                            "Delayed init enabled — restart app to apply"
+                        else
+                            "Immediate init enabled — restart app to apply"
                     }
                 )
             }
