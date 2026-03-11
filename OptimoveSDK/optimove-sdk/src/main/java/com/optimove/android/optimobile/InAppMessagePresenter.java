@@ -304,6 +304,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                 }
                 Optimobile.handler.post(() -> {
                     interceptionInProgress = false;
+                    disposeView();
                     messageQueue.remove(message);
                     messageQueue.add(message);
                 });
