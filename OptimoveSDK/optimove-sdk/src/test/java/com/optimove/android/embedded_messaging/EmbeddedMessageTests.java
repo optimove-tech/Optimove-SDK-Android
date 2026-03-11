@@ -18,26 +18,27 @@ import java.util.Locale;
 
 public class EmbeddedMessageTests {
 
-    String testJSON = " {\n" +
-            "        \"customerId\": \"adam_b@optimove.com\",\n" +
-            "        \"isVisitor\": false,\n" +
-            "        \"templateId\": 1744118753960,\n" +
-            "        \"title\": \"Testing stuart container\",\n" +
-            "        \"content\": \"here is a test template\",\n" +
-            "        \"media\": \"B04wM4Y7/yGxgri37bzmGBknvP4wgQdDy123Z9HfEUqYw9gmN.png\",\n" +
-            "        \"readAt\": null,\n" +
-            "        \"url\": \"https://google.com\",\n" +
-            "        \"engagementId\": \"0\",\n" +
-            "        \"payload\": \"{'key1': 'value1', 'key2': 'value2'}\",\n" +
-            "        \"campaignKind\": 1,\n" +
-            "        \"executionDateTime\": \"2025-04-08T13:32:16Z\",\n" +
-            "        \"expiryDate\": \"2025-05-08T23:59:00Z\",\n" +
-            "        \"containerId\": \"stuart\",\n" +
-            "        \"id\": \"3842b5cd-9751-4cf1-9f9b-9636b38182c6\",\n" +
-            "        \"createdAt\": \"2025-04-08T13:32:16.000+00:00\",\n" +
-            "        \"updatedAt\": null,\n" +
-            "        \"deletedAt\": null\n" +
-            "      }";
+    String testJSON = "{\n" +
+            "  \"customerId\": \"user-vlad\",\n" +
+            "  \"isVisitor\": false,\n" +
+            "  \"templateId\": 1772970898590,\n" +
+            "  \"title\": \"template 2\",\n" +
+            "  \"content\": \"because template 1 needs a friend\",\n" +
+            "  \"media\": \"\",\n" +
+            "  \"readAt\": \"2026-03-08T12:13:51.305+00:00\",\n" +
+            "  \"url\": \"\",\n" +
+            "  \"engagementId\": null,\n" +
+            "  \"payload\": \"{}\",\n" +
+            "  \"campaignKind\": 2,\n" +
+            "  \"executionDateTime\": \"2026-03-08T11:58:54.739155Z\",\n" +
+            "  \"messageLayoutType\": 0,\n" +
+            "  \"expiryDate\": \"2026-04-07T23:59:00Z\",\n" +
+            "  \"containerId\": \"vv-container-id\",\n" +
+            "  \"id\": \"08bdd0d1-1ad8-4680-9c22-cc29cecd8dd0\",\n" +
+            "  \"createdAt\": \"2026-03-08T11:58:54.739+00:00\",\n" +
+            "  \"updatedAt\": \"2026-03-08T12:13:50.57+00:00\",\n" +
+            "  \"deletedAt\": null\n" +
+            "}";
     EmbeddedMessage message;
     @Before
     public void setUp() throws JSONException {
@@ -45,13 +46,41 @@ public class EmbeddedMessageTests {
     }
     @Test
     public void shouldParseDatesFromISOStrings() throws Exception {
-        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-        Assert.assertEquals(isoFormat.parse("2025-04-08T13:32:16.000+00:00"), message.getCreatedAt());
+        SimpleDateFormat withMillis = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+        SimpleDateFormat noMillis = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+
+        // createdAt: milliseconds with numeric offset
+        Assert.assertEquals(withMillis.parse("2026-03-08T11:58:54.739+00:00"), message.getCreatedAt());
+
+        // updatedAt: milliseconds with numeric offset
+        Assert.assertEquals(withMillis.parse("2026-03-08T12:13:50.57+00:00"), message.getUpdatedAt());
+
+        // readAt: milliseconds with numeric offset
+        Assert.assertEquals(withMillis.parse("2026-03-08T12:13:51.305+00:00"), message.getReadAt());
+
+        // expiryDate: no fractional seconds, Z timezone
+        Assert.assertEquals(noMillis.parse("2026-04-07T23:59:00Z"), message.getExpiryDate());
+
+        // executionDateTime: non-null (microsecond precision - exact value not asserted)
+        Assert.assertNotNull(message.getExecutionDateTime());
     }
 
     @Test
-    public void shouldAllowNullReadAt() {
-        Assert.assertNull(message.getReadAt());
+    public void shouldAllowNullReadAtAndExpiryDate() throws JSONException {
+        String json = "{\n" +
+                "  \"customerId\": \"user-vlad\",\n" +
+                "  \"isVisitor\": false,\n" +
+                "  \"templateId\": 1,\n" +
+                "  \"readAt\": null,\n" +
+                "  \"expiryDate\": null,\n" +
+                "  \"payload\": \"{}\",\n" +
+                "  \"campaignKind\": 1,\n" +
+                "  \"executionDateTime\": \"2026-03-08T11:58:54.739+00:00\",\n" +
+                "  \"createdAt\": \"2026-03-08T11:58:54.739+00:00\"\n" +
+                "}";
+        EmbeddedMessage msg = new EmbeddedMessage(new JSONObject(json));
+        Assert.assertNull(msg.getReadAt());
+        Assert.assertNull(msg.getExpiryDate());
     }
 
     @Test

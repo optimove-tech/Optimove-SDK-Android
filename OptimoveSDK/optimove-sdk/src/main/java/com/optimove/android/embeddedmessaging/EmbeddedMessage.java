@@ -29,16 +29,19 @@ public class EmbeddedMessage {
     private Date executionDateTime;
     private int messageLayoutType;
 
-    public EmbeddedMessage(JSONObject jsonMessage) throws JSONException {
-        SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
+    private static final SimpleDateFormat[] ISO_DATE_FORMATS = {
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US),// millisecond precision
+        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US),// second precision
+    };
 
+    public EmbeddedMessage(JSONObject jsonMessage) throws JSONException {
         id = jsonMessage.optString("id");
         containerId = jsonMessage.optString("containerId");
         templateId = jsonMessage.optLong("templateId");
-        createdAt = parseDate(jsonMessage.optString("createdAt"), isoFormat);
-        updatedAt = parseDate(jsonMessage.optString("updatedAt"), isoFormat);
-        readAt = parseNullableDate(jsonMessage.optString("readAt"), isoFormat);
-        expiryDate = parseNullableDate(jsonMessage.optString("expiryDate"), isoFormat);
+        createdAt = parseDate(jsonMessage.optString("createdAt"));
+        updatedAt = parseDate(jsonMessage.optString("updatedAt"));
+        readAt = parseNullableDate(jsonMessage.optString("readAt"));
+        expiryDate = parseNullableDate(jsonMessage.optString("expiryDate"));
         customerId = jsonMessage.optString("customerId");
         isVisitor = jsonMessage.optBoolean("isVisitor");
         title = jsonMessage.optString("title");
@@ -48,7 +51,7 @@ public class EmbeddedMessage {
         campaignKind = jsonMessage.optInt("campaignKind");
         payload = jsonMessage.optString("payload");
         engagementId = jsonMessage.optString("engagementId");
-        executionDateTime = parseDate(jsonMessage.optString("executionDateTime"), isoFormat);
+        executionDateTime = parseDate(jsonMessage.optString("executionDateTime"));
         messageLayoutType = jsonMessage.optInt("messageLayoutType");
     }
 
@@ -132,22 +135,28 @@ public class EmbeddedMessage {
         return messageLayoutType;
     }
 
-    private static Date parseDate(String dateStr, SimpleDateFormat format) {
+    private static Date parseDate(String dateStr) {
         if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return new Date(0);
-        try {
-            return format.parse(dateStr);
-        } catch (ParseException e) {
-            return new Date(0);
+        for (SimpleDateFormat format : ISO_DATE_FORMATS) {
+            try {
+                return format.parse(dateStr);
+            } catch (ParseException e) {
+                // try next format
+            }
         }
+        return new Date(0);
     }
 
-    private static Date parseNullableDate(String dateStr, SimpleDateFormat format) {
+    private static Date parseNullableDate(String dateStr) {
         if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return null;
-        try {
-            return format.parse(dateStr);
-        } catch (ParseException e) {
-            return null;
+        for (SimpleDateFormat format : ISO_DATE_FORMATS) {
+            try {
+                return format.parse(dateStr);
+            } catch (ParseException e) {
+                // try next format
+            }
         }
+        return null;
     }
 }
 
