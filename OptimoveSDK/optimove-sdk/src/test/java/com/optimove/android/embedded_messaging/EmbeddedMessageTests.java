@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class EmbeddedMessageTests {
 
@@ -35,7 +35,7 @@ public class EmbeddedMessageTests {
             "  \"expiryDate\": \"2026-04-07T23:59:00Z\",\n" +
             "  \"containerId\": \"vv-container-id\",\n" +
             "  \"id\": \"08bdd0d1-1ad8-4680-9c22-cc29cecd8dd0\",\n" +
-            "  \"createdAt\": \"2026-03-08T11:58:54.739+00:00\",\n" +
+            "  \"createdAt\": \"2026-03-08T11:58:52.739+00:00\",\n" +
             "  \"updatedAt\": \"2026-03-08T12:13:50.57+00:00\",\n" +
             "  \"deletedAt\": null\n" +
             "}";
@@ -45,24 +45,17 @@ public class EmbeddedMessageTests {
        message = new EmbeddedMessage(new JSONObject(testJSON));
     }
     @Test
-    public void shouldParseDatesFromISOStrings() throws Exception {
-        SimpleDateFormat withMillis = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US);
-        SimpleDateFormat noMillis = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+    public void shouldParseDatesFromISOStrings() throws JSONException {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+        fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        // createdAt: milliseconds with numeric offset
-        Assert.assertEquals(withMillis.parse("2026-03-08T11:58:54.739+00:00"), message.getCreatedAt());
+        Assert.assertEquals("2026-03-08T11:58:52", fmt.format(message.getCreatedAt()));
+        Assert.assertEquals("2026-03-08T12:13:50", fmt.format(message.getUpdatedAt()));
+        Assert.assertEquals("2026-03-08T12:13:51", fmt.format(message.getReadAt()));
+        Assert.assertEquals("2026-04-07T23:59:00", fmt.format(message.getExpiryDate()));
+        Assert.assertEquals("2026-03-08T11:58:54", fmt.format(message.getExecutionDateTime()));
 
-        // updatedAt: milliseconds with numeric offset
-        Assert.assertEquals(withMillis.parse("2026-03-08T12:13:50.57+00:00"), message.getUpdatedAt());
 
-        // readAt: milliseconds with numeric offset
-        Assert.assertEquals(withMillis.parse("2026-03-08T12:13:51.305+00:00"), message.getReadAt());
-
-        // expiryDate: no fractional seconds, Z timezone
-        Assert.assertEquals(noMillis.parse("2026-04-07T23:59:00Z"), message.getExpiryDate());
-
-        // executionDateTime: non-null (microsecond precision - exact value not asserted)
-        Assert.assertNotNull(message.getExecutionDateTime());
     }
 
     @Test

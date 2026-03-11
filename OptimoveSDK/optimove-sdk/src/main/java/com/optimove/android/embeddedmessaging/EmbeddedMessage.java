@@ -51,6 +51,10 @@ public class EmbeddedMessage {
         campaignKind = jsonMessage.optInt("campaignKind");
         payload = jsonMessage.optString("payload");
         engagementId = jsonMessage.optString("engagementId");
+
+
+
+
         executionDateTime = parseDate(jsonMessage.optString("executionDateTime"));
         messageLayoutType = jsonMessage.optInt("messageLayoutType");
     }
@@ -137,6 +141,7 @@ public class EmbeddedMessage {
 
     private static Date parseDate(String dateStr) {
         if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return new Date(0);
+        dateStr = trimMicroseconds(dateStr);
         for (SimpleDateFormat format : ISO_DATE_FORMATS) {
             try {
                 return format.parse(dateStr);
@@ -149,6 +154,7 @@ public class EmbeddedMessage {
 
     private static Date parseNullableDate(String dateStr) {
         if (dateStr == null || dateStr.isEmpty() || dateStr.equals("null")) return null;
+        dateStr = trimMicroseconds(dateStr);
         for (SimpleDateFormat format : ISO_DATE_FORMATS) {
             try {
                 return format.parse(dateStr);
@@ -157,6 +163,13 @@ public class EmbeddedMessage {
             }
         }
         return null;
+    }
+
+    private static String trimMicroseconds(String dateStr) {
+        // Date has millisecond precision. Datetimes like "2026-03-06T13:02:01.364324Z" are treated as having extra 364 sec by SimpleDateFormatter.
+        // There are no easy to use parsers working with microseconds before API 26
+        // This regex turns 2026-03-06T13:02:01.364324+00:00 --> 2026-03-06T13:02:01.364+00:00
+        return dateStr.replaceFirst("(\\.\\d{3})\\d+(Z|[+-]\\d{2}:\\d{2})", "$1$2");
     }
 }
 
