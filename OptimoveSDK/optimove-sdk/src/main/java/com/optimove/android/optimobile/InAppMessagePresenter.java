@@ -298,7 +298,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             }
             
             @Override
-            public void defer() {
+            public void postpone() {
                 if (!processed.compareAndSet(false, true)) {
                     return;
                 }
