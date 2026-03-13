@@ -8,10 +8,6 @@
 
 ## 7.11.1
 
-- Fixed dismissed in-app messages re-appearing on fast consecutive app foregrounds
-
-## 7.11.1
-
 - Fix: expiryDate is always absent in EmbeddedMessage due to inconsistent format given by v2 endpoint
 
 
