@@ -32,6 +32,8 @@ public class InAppInboxItem {
     private JSONObject data;
     @Nullable
     private String imagePath;
+    @Nullable
+    private String mediaBaseUrl;
 
     public int getId() {
         return id;
@@ -113,6 +115,10 @@ public class InAppInboxItem {
         this.imagePath = imagePath;
     }
 
+    void setMediaBaseUrl(@Nullable String mediaBaseUrl) {
+        this.mediaBaseUrl = mediaBaseUrl;
+    }
+
     public @Nullable
     URL getImageUrl() {
         return this.getImageUrl(DEFAULT_IMAGE_WIDTH);
@@ -120,14 +126,13 @@ public class InAppInboxItem {
 
     public @Nullable
     URL getImageUrl(int width) {
-        if (width <= 0 || this.imagePath == null){
+        if (width <= 0 || this.imagePath == null) {
             return null;
         }
 
-        try{
-            return MediaHelper.getCompletePictureUrl(this.imagePath, width);
-        }
-        catch(MalformedURLException e){
+        try {
+            return MediaHelper.getCompletePictureUrl(this.mediaBaseUrl, this.imagePath, width);
+        } catch (MalformedURLException e) {
             return null;
         }
     }

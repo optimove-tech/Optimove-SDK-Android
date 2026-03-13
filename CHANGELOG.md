@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.11.1
+
+- Fixed dismissed in-app messages re-appearing on fast consecutive app foregrounds
+
+## 7.11.0
+
+- Updated delayed configuration to no longer require a redundant region parameter. Region is now inferred from credentials. Deprecated `OptimoveConfig.Builder(Region, FeatureSet)` — use `Builder(FeatureSet)` instead.
+
 ## 7.10.2
 
 - Minor bug fixes for Embedded Messaging: correct field mapping

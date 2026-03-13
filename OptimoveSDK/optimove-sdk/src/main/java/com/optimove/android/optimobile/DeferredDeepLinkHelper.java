@@ -261,29 +261,31 @@ public class DeferredDeepLinkHelper {
     }
 
     private void handleDeepLink(Context context, URL url, boolean wasDeferred) {
-        String slug = Uri.encode(url.getPath().replaceAll("/$|^/", ""));
-        String params = "?wasDeferred=" + (wasDeferred ? 1 : 0);
-        String query = url.getQuery();
-        if (query != null) {
-            params = params + "&" + query;
-        }
-
-        String requestUrl = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/" + slug + params);
-
-        this.makeNetworkRequest(context, requestUrl, url, wasDeferred);
+        this.makeNetworkRequest(context, url, wasDeferred);
     }
 
-    private void makeNetworkRequest(Context context, String requestUrl, URL url, boolean wasDeferred) {
+    private void makeNetworkRequest(Context context, URL url, boolean wasDeferred) {
         OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
         Optimobile.executorService.submit(new Runnable() {
             @Override
             public void run() {
-                try (Response response = httpClient.getSync(requestUrl)) {
-                    DeferredDeepLinkHelper.this.cachedLink = null;
-                    if (response.isSuccessful()) {
-                        DeferredDeepLinkHelper.this.handledSuccessResponse(context, url, wasDeferred, response);
-                    } else {
-                        DeferredDeepLinkHelper.this.handleFailedResponse(context, url, response);
+                try {
+                    String slug = Uri.encode(url.getPath().replaceAll("/$|^/", ""));
+                    String params = "?wasDeferred=" + (wasDeferred ? 1 : 0);
+                    String query = url.getQuery();
+                    if (query != null) {
+                        params = params + "&" + query;
+                    }
+
+                    String requestUrl = Optimobile.urlForService(UrlBuilder.Service.DDL, "/v1/deeplinks/" + slug + params);
+
+                    try (Response response = httpClient.getSync(requestUrl)) {
+                        DeferredDeepLinkHelper.this.cachedLink = null;
+                        if (response.isSuccessful()) {
+                            DeferredDeepLinkHelper.this.handledSuccessResponse(context, url, wasDeferred, response);
+                        } else {
+                            DeferredDeepLinkHelper.this.handleFailedResponse(context, url, response);
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 
 import java.util.ArrayList;
@@ -333,6 +334,21 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         if (currentActivity == null) {
             return;
         }
-        view = new InAppMessageView(this, message, currentActivity);
+
+        String iarUrl;
+        try {
+            iarUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
+        } catch (Optimobile.PartialInitialisationException e) {
+            Optimobile.log(TAG, "Cannot present in-app message: credentials not yet available");
+            return;
+        }
+
+        String region = Optimove.getConfig().getRegion();
+        view = new InAppMessageView(this, message, currentActivity, iarUrl, region);
+    }
+
+    @AnyThread
+    void retryPresentingMessages() {
+        Optimobile.handler.post(this::presentMessageToClient);
     }
 }

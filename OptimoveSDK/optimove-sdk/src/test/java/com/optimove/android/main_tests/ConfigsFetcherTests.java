@@ -76,13 +76,11 @@ public class ConfigsFetcherTests {
 
 
         when(httpClient.getObject(GLOBAL_CONFIG_FILE_BASE_URL, fetchedGlobalConfigClass)).thenReturn(globalBuilder);
-        when(globalBuilder.destination(any(), any(), anyString())).thenReturn(globalBuilder);
-        when(globalBuilder.destination(any(), any())).thenReturn(globalBuilder);
+        when(globalBuilder.destination(any(), any(), any(), any())).thenReturn(globalBuilder);
         when(globalBuilder.errorListener(any())).thenReturn(globalBuilder);
 
         when(httpClient.getObject(TENANT_CONFIG_FILE_BASE_URL, fetchedTenantConfigsClass)).thenReturn(tenantBuilder);
-        when(tenantBuilder.destination(any(), any(), anyString())).thenReturn(tenantBuilder);
-        when(tenantBuilder.destination(any(), any())).thenReturn(tenantBuilder);
+        when(tenantBuilder.destination(any(), any(), any())).thenReturn(tenantBuilder);
         when(tenantBuilder.errorListener(any())).thenReturn(tenantBuilder);
 
         when(localConfigKeysPreferences.edit()).thenReturn(editor);

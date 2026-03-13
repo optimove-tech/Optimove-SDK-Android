@@ -32,19 +32,22 @@ class InAppRequestService {
             params = "?after=" + sdf.format(lastSyncTime);
         }
         String encodedIdentifier = Uri.encode(userIdentifier);
-        String url = Optimobile.urlBuilder.urlForService(UrlBuilder.Service.PUSH, "/v1/users/" + encodedIdentifier + "/messages" + params);
 
         List<InAppMessage> messages = null;
-        try (Response response = httpClient.getSync(url)) {
-            if (!response.isSuccessful()) {
-                logFailedResponse(response);
-            } else {
-                messages = getMessages(response);
+        try {
+            String url = Optimobile.urlForService(UrlBuilder.Service.PUSH, "/v1/users/" + encodedIdentifier + "/messages" + params);
+
+            try (Response response = httpClient.getSync(url)) {
+                if (!response.isSuccessful()) {
+                    logFailedResponse(response);
+                } else {
+                    messages = getMessages(response);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Optimobile.PartialInitialisationException e) {
-            // noop
+            // noop -- credentials not yet available, will retry after setCredentials
         }
 
         return messages;
