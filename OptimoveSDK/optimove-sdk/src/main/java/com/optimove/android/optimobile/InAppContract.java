@@ -196,7 +196,7 @@ class InAppContract {
                     InAppMessageTable.COL_EXPIRES_AT,
                     InAppMessageTable.COL_EXPIRES_AT);
 
-            String noInboxAndMessageDismissed = String.format("(%s IS NULL AND %s IS NOT NULL)", InAppMessageTable.COL_INBOX_CONFIG_JSON, InAppMessageTable.COL_DISMISSED_AT);
+            String noInboxAndMessageDismissed = String.format("(%s IS NULL AND %s IS NOT NULL AND DATETIME(%s) <= DATETIME('now', '-1 hour'))", InAppMessageTable.COL_INBOX_CONFIG_JSON, InAppMessageTable.COL_DISMISSED_AT, InAppMessageTable.COL_DISMISSED_AT);
             String noInboxAndMessageExpired = String.format("(%s IS NULL AND %s))", InAppMessageTable.COL_INBOX_CONFIG_JSON, messageExpiredCondition);
             String inboxExpiredAndMessageDismissedOrExpired = String.format("(%s IS NOT NULL AND (DATETIME('now') > IFNULL(%s, '3970-01-01')) AND (%s IS NOT NULL OR %s)))",
                     InAppMessageTable.COL_INBOX_CONFIG_JSON,
