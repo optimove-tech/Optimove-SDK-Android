@@ -12,6 +12,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -92,10 +94,16 @@ public class HttpClient {
     public class JsonRequestBuilder extends RequestBuilder<String> {
 
         protected String json;
+        private final Map<String, String> extraHeaders = new HashMap<>();
 
         protected JsonRequestBuilder(String baseUrl, String json) {
             super(baseUrl);
             this.json = json;
+        }
+
+        public JsonRequestBuilder addHeader(String name, String value) {
+            extraHeaders.put(name, value);
+            return this;
         }
 
         @Override
@@ -107,7 +115,14 @@ public class HttpClient {
             RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),
                     json);
 
-            Request request = new Request.Builder().url(url).post(body).build();
+            Request.Builder reqBuilder = new Request.Builder().url(url).post(body)
+                    .addHeader("X-Optimove-Auth-Capable", "1");
+
+            for (Map.Entry<String, String> entry : extraHeaders.entrySet()) {
+                reqBuilder.addHeader(entry.getKey(), entry.getValue());
+            }
+
+            Request request = reqBuilder.build();
 
             okHttpClient.newCall(request).enqueue(new Callback() {
                 @Override
@@ -191,70 +206,84 @@ public class HttpClient {
     }
 
     public Response getSync(String url, int tenantId) throws IOException {
+        return getSync(url, tenantId, null);
+    }
+
+    public Response getSync(String url, int tenantId, @Nullable Map<String, String> extraHeaders) throws IOException {
         Request.Builder builder = new Request.Builder().get();
-
-        Request request = this.buildRequest(builder, url, tenantId);
-
+        Request request = this.buildRequest(builder, url, tenantId, extraHeaders);
         return this.doSyncRequest(request);
     }
 
     public Response putSync(String url, JSONArray data, int tenantId) throws IOException {
+        return putSync(url, data, tenantId, null);
+    }
+
+    public Response putSync(String url, JSONArray data, int tenantId, @Nullable Map<String, String> extraHeaders) throws IOException {
         String dataStr = data.toString();
-
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
         Request.Builder builder = new Request.Builder().put(body);
-        Request request = this.buildRequest(builder, url, tenantId);
-
+        Request request = this.buildRequest(builder, url, tenantId, extraHeaders);
         return this.doSyncRequest(request);
     }
 
     public Response putSingleSync(String url, JSONObject data, int tenantId) throws IOException {
+        return putSingleSync(url, data, tenantId, null);
+    }
+
+    public Response putSingleSync(String url, JSONObject data, int tenantId, @Nullable Map<String, String> extraHeaders) throws IOException {
         String dataStr = data.toString();
-
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
         Request.Builder builder = new Request.Builder().put(body);
-        Request request = this.buildRequest(builder, url, tenantId);
-
+        Request request = this.buildRequest(builder, url, tenantId, extraHeaders);
         return this.doSyncRequest(request);
     }
 
     public Response postSync(String url, JSONArray data, int tenantId) throws IOException {
+        return postSync(url, data, tenantId, null);
+    }
+
+    public Response postSync(String url, JSONArray data, int tenantId, @Nullable Map<String, String> extraHeaders) throws IOException {
         String dataStr = data.toString();
-
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
         Request.Builder builder = new Request.Builder().post(body);
-        Request request = this.buildRequest(builder, url, tenantId);
-
+        Request request = this.buildRequest(builder, url, tenantId, extraHeaders);
         return this.doSyncRequest(request);
     }
 
     public Response postSingleSync(String url, JSONObject data, int tenantId) throws IOException {
+        return postSingleSync(url, data, tenantId, null);
+    }
+
+    public Response postSingleSync(String url, JSONObject data, int tenantId, @Nullable Map<String, String> extraHeaders) throws IOException {
         String dataStr = data.toString();
-
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
         Request.Builder builder = new Request.Builder().post(body);
-        Request request = this.buildRequest(builder, url, tenantId);
-
+        Request request = this.buildRequest(builder, url, tenantId, extraHeaders);
         return this.doSyncRequest(request);
     }
 
     public Response deleteSync(String url, int tenantId) throws IOException {
         Request.Builder builder = new Request.Builder().delete();
-        Request request = this.buildRequest(builder, url, tenantId);
-
+        Request request = this.buildRequest(builder, url, tenantId, null);
         return this.doSyncRequest(request);
     }
 
-    private Request buildRequest(Request.Builder builder, String url, int tenantId) {
-        return builder.url(url)
+    private Request buildRequest(Request.Builder builder, String url, int tenantId,
+                                 @Nullable Map<String, String> extraHeaders) {
+        builder.url(url)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
                 .addHeader("X-Tenant-Id", String.valueOf(tenantId))
-                .build();
+                .addHeader("X-Optimove-Auth-Capable", "1");
+
+        if (extraHeaders != null) {
+            for (Map.Entry<String, String> entry : extraHeaders.entrySet()) {
+                builder.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return builder.build();
     }
 
     private Response doSyncRequest(Request request) throws IOException {

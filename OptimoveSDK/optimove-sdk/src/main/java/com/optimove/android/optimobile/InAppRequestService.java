@@ -33,6 +33,9 @@ class InAppRequestService {
         }
         String encodedIdentifier = Uri.encode(userIdentifier);
 
+        boolean isVisitor = userIdentifier != null && userIdentifier.equals(Optimobile.getInstallId());
+        String authUserId = isVisitor ? null : userIdentifier;
+
         List<InAppMessage> messages = null;
         try {
             String url = Optimobile.urlForService(UrlBuilder.Service.PUSH, "/v1/users/" + encodedIdentifier + "/messages" + params);

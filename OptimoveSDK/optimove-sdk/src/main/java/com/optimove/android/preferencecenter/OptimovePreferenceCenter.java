@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
+import com.optimove.android.auth.AuthManager;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
 
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,6 +135,12 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
+            Map<String, String> extraHeaders = resolveAuthHeaders(this.customerId);
+            if (extraHeaders == null) {
+                this.fireCallback(ResultType.ERROR, null);
+                return;
+            }
+
             Preferences preferences = null;
             ResultType resultType = ResultType.ERROR;
 
@@ -142,7 +151,7 @@ public class OptimovePreferenceCenter {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
 
-                try (Response response = httpClient.getSync(url, config.getTenantId())) {
+                try (Response response = httpClient.getSync(url, config.getTenantId(), extraHeaders)) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
                     } else {
@@ -178,6 +187,12 @@ public class OptimovePreferenceCenter {
 
         @Override
         public void run() {
+            Map<String, String> extraHeaders = resolveAuthHeaders(this.customerId);
+            if (extraHeaders == null) {
+                this.fireCallback(ResultType.ERROR);
+                return;
+            }
+
             ResultType result = ResultType.ERROR;
 
             String region = config.getRegion();
@@ -188,7 +203,7 @@ public class OptimovePreferenceCenter {
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
-                try (Response response = httpClient.putSync(url, data, config.getTenantId())) {
+                try (Response response = httpClient.putSync(url, data, config.getTenantId(), extraHeaders)) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
                     } else {
@@ -206,6 +221,25 @@ public class OptimovePreferenceCenter {
         private void fireCallback(ResultType result) {
             handler.post(() -> SetPreferencesRunnable.this.callback.run(result));
         }
+    }
+
+    /**
+     * Resolves JWT auth headers for a sync request. Returns empty map if no auth configured,
+     * a map with X-User-JWT if token was resolved, or null if token fetch failed (fail-closed).
+     */
+    @Nullable
+    private static Map<String, String> resolveAuthHeaders(@NonNull String customerId) {
+        AuthManager authManager = Optimove.getAuthManager();
+        if (authManager == null) {
+            return Collections.emptyMap();
+        }
+
+        String jwt = AuthManager.getTokenBlocking(authManager, customerId);
+        if (jwt == null) {
+            Log.e(TAG, "Auth token fetch failed. Dropping request.");
+            return null;
+        }
+        return Collections.singletonMap("X-User-JWT", jwt);
     }
 
     private static JSONArray mapPreferenceUpdatesToArray(List<PreferenceUpdate> updates) throws JSONException {

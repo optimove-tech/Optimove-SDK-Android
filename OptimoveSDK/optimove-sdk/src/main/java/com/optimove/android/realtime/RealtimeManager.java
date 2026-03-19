@@ -4,14 +4,20 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.optimove.android.auth.AuthManager;
 import com.optimove.android.main.events.core_events.SetEmailEvent;
 import com.optimove.android.main.events.core_events.SetUserIdEvent;
 import com.optimove.android.main.sdk_configs.configs.RealtimeConfigs;
 import com.optimove.android.main.tools.networking.HttpClient;
 import com.optimove.android.main.tools.opti_logger.OptiLoggerStreamsContainer;
+import com.optimove.android.optistream.OptistreamDispatcher;
 import com.optimove.android.optistream.OptistreamEvent;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,18 +31,18 @@ public final class RealtimeManager {
     @NonNull
     private final SharedPreferences realtimePreferences;
     @NonNull
-    private final HttpClient httpClient;
-    @NonNull
     private final RealtimeConfigs realtimeConfigs;
-
+    @NonNull
     private final Gson realtimeGson;
+    @NonNull
+    private final OptistreamDispatcher dispatcher;
 
     public RealtimeManager(@NonNull HttpClient httpClient, @NonNull RealtimeConfigs realtimeConfigs,
-                           @NonNull Context context) {
-        this.httpClient = httpClient;
+                           @NonNull Context context, @Nullable AuthManager authManager) {
         this.realtimePreferences = context.getSharedPreferences(REALTIME_SP_NAME, Context.MODE_PRIVATE);
         this.realtimeConfigs = realtimeConfigs;
         this.realtimeGson = new Gson();
+        this.dispatcher = new OptistreamDispatcher(httpClient, authManager);
     }
 
     public void reportEvents(List<OptistreamEvent> optistreamEvents) {
@@ -73,16 +79,37 @@ public final class RealtimeManager {
     }
 
     private void dispatchEvents(List<OptistreamEvent> optistreamEvents) {
-        httpClient.postJson(realtimeConfigs.getRealtimeGateway(), new Gson().toJson(optistreamEvents))
-                .successListener(jsonResponse ->
+        List<JSONObject> parsedEvents = new ArrayList<>();
+        try {
+            Gson gson = new Gson();
+            for (OptistreamEvent event : optistreamEvents) {
+                parsedEvents.add(new JSONObject(gson.toJson(event)));
+            }
+        } catch (JSONException e) {
+            dispatchingFailed(e, optistreamEvents);
+            return;
+        }
+
+        dispatcher.sendBatch(
+                parsedEvents,
+                realtimeConfigs.getRealtimeGateway(),
+                RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE,
+                (groupEvents, success, error) -> {
+                    if (success) {
                         realtimePreferences.edit()
                                 .remove(FAILED_SET_USER_EVENT_KEY)
                                 .remove(FAILED_SET_EMAIL_EVENT_KEY)
-                                .apply()
-                )
-                .errorListener(e -> dispatchingFailed(e, optistreamEvents))
-                .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
-                .send();
+                                .apply();
+                    } else {
+                        OptiLoggerStreamsContainer.error("RT dispatch group failed - %s",
+                                error != null ? error.getMessage() : "unknown");
+                        dispatchingFailed(
+                                error != null ? error : new Exception("Unknown"),
+                                optistreamEvents);
+                    }
+                },
+                () -> { }
+        );
     }
 
     private void dispatchingFailed(Exception e, List<OptistreamEvent> optistreamEvents) {
