@@ -150,6 +150,9 @@ public class OptimoveInApp {
 
         boolean inAppWasEnabled = isInAppEnabled();
         if (consentGiven != inAppWasEnabled) {
+            clearPresentationQueueOnUiThread();
+            InAppMessageService.clearAllMessages(application);
+            clearLastSyncTime(application);
             updateInAppEnablementFlags(consentGiven);
             toggleInAppMessageMonitoring(consentGiven);
         }
@@ -255,7 +258,16 @@ public class OptimoveInApp {
         editor.apply();
     }
 
+    private void clearPresentationQueueOnUiThread() {
+        Optimobile.handler.post(() -> {
+            if (presenter != null) {
+                presenter.cancelCurrentPresentationQueue();
+            }
+        });
+    }
+
     void handleInAppUserChange(Context context, OptimoveConfig currentConfig) {
+        clearPresentationQueueOnUiThread();
         InAppMessageService.clearAllMessages(context);
         clearLastSyncTime(context);
 

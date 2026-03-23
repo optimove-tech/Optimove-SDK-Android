@@ -126,6 +126,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     @UiThread
     void cancelCurrentPresentationQueue() {
         messageQueue.clear();
+        interceptionInProgress = false;
         disposeView();
     }
 
