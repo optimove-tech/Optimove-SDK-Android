@@ -52,6 +52,7 @@ fun MainScreen(
     userEmail: String,
     onUserIdChange: (String) -> Unit,
     onUserEmailChange: (String) -> Unit,
+    onClearAppData: () -> Unit,
     onKillActivity: () -> Unit,
     onUpdateUserId: (userId: String, userEmail: String) -> Unit,
     onClearIdentity: () -> Unit,
@@ -414,6 +415,15 @@ fun MainScreen(
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
         ) {
             Text("Open deeplink test page")
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Button(
+            onClick = onClearAppData,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Clear App Data")
         }
         Spacer(modifier = Modifier.height(4.dp))
         Button(

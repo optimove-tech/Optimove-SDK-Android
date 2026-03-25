@@ -21,6 +21,9 @@ import android.location.Location
 import android.content.SharedPreferences
 import android.os.Build
 import android.provider.Settings
+import java.io.File
+import android.os.Handler
+import android.os.Looper
 import com.optimove.android.Optimove
 import com.optimove.android.main.events.OptimoveEvent
 import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface
@@ -75,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         persistedUserId = identityPrefs.getString(KEY_USER_ID, "") ?: ""
 
         qaPrefs = getSharedPreferences(MyApplication.PREFS_NAME, Context.MODE_PRIVATE)
-        isDelayedInit = qaPrefs.getBoolean(MyApplication.KEY_DELAYED_INIT, false)
+        isDelayedInit = qaPrefs.getBoolean(MyApplication.KEY_DELAYED_INIT, true)
 
         setContent {
             AppTheme {
@@ -91,6 +94,7 @@ class MainActivity : AppCompatActivity() {
                     onUserIdChange = { persistedUserId = it },
                     onUserEmailChange = { persistedUserEmail = it },
                     onReportEvent = ::reportEvent,
+                    onClearAppData = ::clearAppData,
                     onKillActivity = ::killActivity,
                     onUpdateUserId = ::updateUserId,
                     onClearIdentity = ::clearIdentity,
@@ -167,6 +171,44 @@ class MainActivity : AppCompatActivity() {
         outputText = "Reporting Custom Event for Visitor without optional value"
         runFromWorker { Optimove.getInstance().reportEvent(SimpleCustomEvent()) }
         runFromWorker { Optimove.getInstance().reportEvent("Event_No ParaMs     ") }
+    }
+    private fun clearAppData() {
+        AlertDialog.Builder(this)
+            .setTitle("Clear App Data")
+            .setMessage(
+                "This deletes all local app data and restarts the app."
+            )
+            .setPositiveButton("Clear") { _, _ ->
+                Thread {
+                    wipePrivateAppDataFilesystem()
+                    runOnUiThread {
+                        val launch = packageManager.getLaunchIntentForPackage(packageName)
+                        if (launch != null) {
+                            launch.addFlags(
+                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            )
+                            startActivity(launch)
+                        }
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            Runtime.getRuntime().exit(0)
+                        }, 150)
+                    }
+                }.start()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun wipePrivateAppDataFilesystem() {
+        val ctx = applicationContext
+        val dataDir = File(ctx.applicationInfo.dataDir)
+        dataDir.listFiles()?.forEach { child ->
+            runCatching { child.deleteRecursively() }
+                .onFailure { Log.w(TAG, "Failed to delete ${child.path}", it) }
+        }
+        runCatching {
+            ctx.getExternalFilesDir(null)?.parentFile?.deleteRecursively()
+        }.onFailure { Log.w(TAG, "Failed to delete external app data dir", it) }
     }
 
     private fun killActivity() {
