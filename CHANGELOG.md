@@ -2,7 +2,7 @@
 
 ## 7.12.1
 
-- Fixed bug where postponed in-app message queue survived username and consent changes. In-app presentation queue on identity or in-app consent changes.
+- Fixed bug where postponed in-app message queue survived username and consent changes. In-app presentation queue now clears on identity or in-app consent changes.
 
 ## 7.12.0
 
