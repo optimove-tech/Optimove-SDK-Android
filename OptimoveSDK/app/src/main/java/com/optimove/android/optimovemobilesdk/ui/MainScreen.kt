@@ -63,7 +63,7 @@ fun MainScreen(
     onSetPreferences: () -> Unit,
     onViewEmbeddedMessaging: () -> Unit,
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
-    onEnableInAppInterceptionClicked: () -> Unit,
+    onInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
     onSendLocation: (latitude: Double, longitude: Double) -> Unit,
     onOpenDeeplinkTest: () -> Unit,
@@ -184,13 +184,18 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(4.dp))
 
         Button(
-            onClick = onEnableInAppInterceptionClicked,
-            enabled = !isInterceptingInApp,
+            onClick = onInAppInterceptionClicked,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
-            colors = if (isInterceptingInApp) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.outline) else ButtonDefaults.buttonColors()
+            colors = if (isInterceptingInApp) {
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            } else {
+                ButtonDefaults.buttonColors()
+            }
         ) {
-            Text(if (isInterceptingInApp) "Intercepting In-App (restart to disable)" else "Enable In-App Interception")
+            Text(
+                if (isInterceptingInApp) "Disable In-App Interception" else "Enable In-App Interception"
+            )
         }
         Spacer(modifier = Modifier.height(4.dp))
 

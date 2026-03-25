@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                     onSetPreferences = ::setPreferences,
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
                     onSetCredentials = ::setCredentials,
-                    onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
+                    onInAppInterceptionClicked = ::onInAppInterceptionClicked,
                     onSendLocation = { lat, lng ->
                         val location = Location("test").apply {
                             latitude = lat
@@ -336,7 +336,15 @@ class MainActivity : AppCompatActivity() {
         Thread(runnable).start()
     }
 
-    private fun enableInAppInterceptionClicked() {
+    private fun onInAppInterceptionClicked() {
+        if (isInterceptingInApp) {
+            disableInAppInterception()
+        } else {
+            showEnableInAppInterceptionDialog()
+        }
+    }
+
+    private fun showEnableInAppInterceptionDialog() {
         val options = arrayOf("Default (5000 ms)", "12,000 ms")
         var selected = 0
 
@@ -347,11 +355,20 @@ class MainActivity : AppCompatActivity() {
                 val timeoutMs = if (selected == 0) 5000L else 12000L
                 enableInAppInterception(timeoutMs)
                 isInterceptingInApp = true
+                outputText = "In-App interception enabled ($timeoutMs ms timeout per message)"
                 Toast.makeText(this, "In-App interception enabled ($timeoutMs ms)", Toast.LENGTH_SHORT).show()
                 d.dismiss()
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun disableInAppInterception() {
+        inAppDecisionDialog?.takeIf { it.isShowing }?.dismiss()
+        OptimoveInApp.getInstance().setInAppMessageInterceptor(null)
+        isInterceptingInApp = false
+        outputText = "In-App interception disabled"
+        Toast.makeText(this, "In-App interception disabled", Toast.LENGTH_SHORT).show()
     }
 
     private fun enableInAppInterception(timeoutMs: Long) {
@@ -362,9 +379,13 @@ class MainActivity : AppCompatActivity() {
                     val dataText = messageData?.toString() ?: "No data provided"
                     inAppDecisionDialog = AlertDialog.Builder(this@MainActivity)
                         .setTitle("QA: In-App Message")
-                        .setMessage("$dataText\nShow this message?")
+                        .setMessage("$dataText\nChoose Show, Postpone, or Suppress.")
                         .setPositiveButton("Show") { dialog, _ ->
                             decision.show()
+                            dialog.dismiss()
+                        }
+                        .setNeutralButton("Postpone") { dialog, _ ->
+                            decision.postpone()
                             dialog.dismiss()
                         }
                         .setNegativeButton("Suppress") { dialog, _ ->
