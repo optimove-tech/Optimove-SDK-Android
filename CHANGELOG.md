@@ -1,4 +1,9 @@
 # Changelog
+
+## 7.12.1
+
+- Fixed bug where postponed in-app message queue survived username and consent changes. In-app presentation queue now clears on identity or in-app consent changes.
+
 ## 7.12.0
 
 - Add `postpone()` to the In-App Message Interceptor API. When called, the message is not displayed and not marked as dismissed — it is moved to the back of the queue and will be re-intercepted on the next natural presentation trigger (e.g. app foreground, push tickle). Existing `show()` and `suppress()` behavior is unchanged.
