@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.content.Context
+import android.location.Location
 import android.content.SharedPreferences
 import android.os.Build
 import android.provider.Settings
@@ -101,6 +102,15 @@ class MainActivity : AppCompatActivity() {
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
                     onSetCredentials = ::setCredentials,
                     onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
+                    onSendLocation = { lat, lng ->
+                        val location = Location("test").apply {
+                            latitude = lat
+                            longitude = lng
+                            time = System.currentTimeMillis()
+                        }
+                        Optimove.getInstance().sendLocationUpdate(location)
+                        outputText = "Location sent: ($lat, $lng)"
+                        },
                     onResetToken = {},
                     onOpenDeeplinkTest = ::openDeeplinkTest,
                     onRegisterPush = {
