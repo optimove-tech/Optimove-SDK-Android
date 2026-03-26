@@ -140,6 +140,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }
 
         messageQueue.remove(0);
+        lastShownByInterceptorId = -1;
 
         presentMessageToClient();
     }
