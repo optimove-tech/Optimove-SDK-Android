@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private var isInterceptingInApp by mutableStateOf(false)
     private var isDelayedInit by mutableStateOf(false)
     private var inAppDecisionDialog: AlertDialog? = null
+    private var sessionShown = false
     private var persistedUserId by mutableStateOf("")
     private var persistedUserEmail by mutableStateOf("")
     private lateinit var identityPrefs: SharedPreferences
@@ -345,18 +346,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showEnableInAppInterceptionDialog() {
-        val options = arrayOf("Default (5000 ms)", "12,000 ms")
+        val options = arrayOf("Manual (dialog per message)", "Session mode (show first, postpone rest)")
         var selected = 0
 
         AlertDialog.Builder(this)
             .setTitle("Enable In-App Interception")
             .setSingleChoiceItems(options, 0) { _, which -> selected = which }
             .setPositiveButton("Enable") { d, _ ->
-                val timeoutMs = if (selected == 0) 5000L else 12000L
-                enableInAppInterception(timeoutMs)
+                if (selected == 0) {
+                    enableInAppInterception(5000L)
+                    outputText = "In-App interception enabled (manual mode)"
+                } else {
+                    enableSessionInterception()
+                    outputText = "In-App interception enabled (session mode: show first, postpone rest)"
+                }
                 isInterceptingInApp = true
-                outputText = "In-App interception enabled ($timeoutMs ms timeout per message)"
-                Toast.makeText(this, "In-App interception enabled ($timeoutMs ms)", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, outputText, Toast.LENGTH_SHORT).show()
                 d.dismiss()
             }
             .setNegativeButton("Cancel", null)
@@ -367,8 +372,32 @@ class MainActivity : AppCompatActivity() {
         inAppDecisionDialog?.takeIf { it.isShowing }?.dismiss()
         OptimoveInApp.getInstance().setInAppMessageInterceptor(null)
         isInterceptingInApp = false
+        sessionShown = false
         outputText = "In-App interception disabled"
         Toast.makeText(this, "In-App interception disabled", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun enableSessionInterception() {
+        sessionShown = false
+        OptimoveInApp.getInstance().setInAppMessageInterceptor(object : InAppMessageInterceptor {
+            override fun processMessage(messageData: JSONObject?, decision: InAppMessageInterceptorCallback) {
+                runOnUiThread {
+                    val dataText = messageData?.toString() ?: "No data"
+                    if (!sessionShown) {
+                        sessionShown = true
+                        Log.d(TAG, "Session interceptor: SHOW (first message) — $dataText")
+                        outputText = "Session interceptor: SHOW\n$dataText"
+                        decision.show()
+                    } else {
+                        Log.d(TAG, "Session interceptor: POSTPONE — $dataText")
+                        outputText = "Session interceptor: POSTPONE\n$dataText"
+                        decision.postpone()
+                    }
+                }
+            }
+
+            override fun getTimeoutMs(): Long = 5000L
+        })
     }
 
     private fun enableInAppInterception(timeoutMs: Long) {
