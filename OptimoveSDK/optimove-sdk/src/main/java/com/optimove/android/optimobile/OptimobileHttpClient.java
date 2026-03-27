@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+import com.optimove.android.auth.AuthManager;
 
 import org.json.JSONArray;
 
@@ -28,6 +29,7 @@ class OptimobileHttpClient {
 
     private final OkHttpClient okHttpClient;
     private @Nullable String authHeader;
+    private @Nullable AuthManager authManager;
 
     static OptimobileHttpClient getInstance() {
         if (instance != null) {
@@ -45,13 +47,15 @@ class OptimobileHttpClient {
         okHttpClient = this.buildOkHttpClient();
     }
 
+    void setAuthManager(@Nullable AuthManager authManager) {
+        this.authManager = authManager;
+    }
+
     private OkHttpClient buildOkHttpClient() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return new OkHttpClient();
         }
 
-        //ciphers available on Android 4.4 have intersections with the approved ones in MODERN_TLS, but the intersections are on bad cipher list, so,
-        //perhaps not supported by CloudFlare. On older devices allow all ciphers
         ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
                 .allEnabledCipherSuites()
                 .build();
@@ -62,29 +66,47 @@ class OptimobileHttpClient {
     }
 
     Response postSync(String url, JSONArray data) throws IOException, Optimobile.PartialInitialisationException {
+        return postSync(url, data, (String) null);
+    }
+
+    Response postSync(String url, JSONArray data, @Nullable String authUserId) throws IOException, Optimobile.PartialInitialisationException {
         String dataStr = data.toString();
-
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
         Request.Builder builder = new Request.Builder().post(body);
-        Request request = this.buildRequest(builder, url);
-
-        return this.doSyncRequest(request);
+        return this.buildAndSend(builder, url, authUserId);
     }
 
     Response getSync(String url) throws IOException, Optimobile.PartialInitialisationException {
+        return getSync(url, (String) null);
+    }
+
+    Response getSync(String url, @Nullable String authUserId) throws IOException, Optimobile.PartialInitialisationException {
         Request.Builder builder = new Request.Builder().get();
-
-        Request request = this.buildRequest(builder, url);
-
-        return this.doSyncRequest(request);
+        return this.buildAndSend(builder, url, authUserId);
     }
 
     void getAsync(String url, Callback callback) throws Optimobile.PartialInitialisationException {
         Request.Builder builder = new Request.Builder().get();
         Request request = this.buildRequest(builder, url);
-
         this.doAsyncRequest(request, callback);
+    }
+
+    private Response buildAndSend(Request.Builder builder, String url,
+                                  @Nullable String authUserId)
+            throws IOException, Optimobile.PartialInitialisationException {
+        Request request = this.buildRequest(builder, url);
+
+        if (authManager != null && authUserId != null && !authUserId.isEmpty()) {
+            String jwt = AuthManager.getTokenBlocking(authManager, authUserId);
+            if (jwt == null) {
+                throw new IOException("Auth token fetch failed for userId: " + authUserId);
+            }
+            request = request.newBuilder()
+                    .addHeader("X-User-JWT", jwt)
+                    .build();
+        }
+
+        return this.doSyncRequest(request);
     }
 
     private Request buildRequest(Request.Builder builder, String url) throws Optimobile.PartialInitialisationException {
@@ -104,6 +126,7 @@ class OptimobileHttpClient {
                 .addHeader(Optimobile.KEY_AUTH_HEADER, this.authHeader)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
+                .addHeader("X-Optimove-Auth-Capable", "1")
                 .build();
     }
 

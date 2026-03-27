@@ -4,14 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.optimove.android.auth.AuthManager;
 import com.optimove.android.main.common.LifecycleObserver;
 import com.optimove.android.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.android.main.tools.networking.HttpClient;
 import com.optimove.android.main.tools.opti_logger.OptiLoggerStreamsContainer;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,41 +22,39 @@ import java.util.concurrent.TimeUnit;
 public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     @NonNull
-    private HttpClient httpClient;
+    private final LifecycleObserver lifecycleObserver;
     @NonNull
-    private LifecycleObserver lifecycleObserver;
+    private final OptistreamPersistanceAdapter optistreamPersistanceAdapter;
     @NonNull
-    private OptistreamPersistanceAdapter optistreamPersistanceAdapter;
+    private final OptitrackConfigs optitrackConfigs;
     @NonNull
-    private OptitrackConfigs optitrackConfigs;
+    private final ScheduledExecutorService singleThreadScheduledExecutor;
     @NonNull
-    private ScheduledExecutorService singleThreadScheduledExecutor;
+    private final Gson optistreamGson;
     @NonNull
-    private Gson optistreamGson;
-
+    private final OptistreamDispatcher dispatcher;
 
     @Nullable
     private ScheduledFuture timerDispatchFuture;
-    //accessed ONLY by the single thread of the executor
     private boolean dispatchRequestWaitsForResponse = false;
     private boolean initialized = false;
 
     public final static class Constants {
         public static final int EVENT_BATCH_LIMIT = 100;
         public static final int DISPATCH_INTERVAL_IN_SECONDS = 30;
-
     }
 
     public OptistreamHandler(@NonNull HttpClient httpClient,
                              @NonNull LifecycleObserver lifecycleObserver,
                              @NonNull OptistreamPersistanceAdapter optistreamPersistanceAdapter,
-                             @NonNull OptitrackConfigs optitrackConfigs) {
-        this.httpClient = httpClient;
+                             @NonNull OptitrackConfigs optitrackConfigs,
+                             @Nullable AuthManager authManager) {
         this.lifecycleObserver = lifecycleObserver;
         this.optistreamPersistanceAdapter = optistreamPersistanceAdapter;
         this.optitrackConfigs = optitrackConfigs;
         this.singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         this.optistreamGson = new Gson();
+        this.dispatcher = new OptistreamDispatcher(httpClient, authManager);
     }
 
     private synchronized void ensureInit() {
@@ -92,7 +91,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
 
     private void dispatchBulkIfExists(){
         if (dispatchRequestWaitsForResponse) {
-            return; //protects from sending same events twice
+            return;
         }
         OptistreamDbHelper.EventsBulk eventsBulk = optistreamPersistanceAdapter.getFirstEvents(Constants.EVENT_BATCH_LIMIT);
         if (eventsBulk == null) {
@@ -102,20 +101,23 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         List<String> eventJsons = eventsBulk.getEventJsons();
         if (eventJsons != null && !eventJsons.isEmpty()) {
             try {
-                JSONArray jsonArrayToDispatch = new JSONArray();
-                for (String eventJson: eventJsons) {
-                    jsonArrayToDispatch.put(new JSONObject(eventJson));
+                List<JSONObject> parsedEvents = new ArrayList<>();
+                for (String eventJson : eventJsons) {
+                    parsedEvents.add(new JSONObject(eventJson));
                 }
                 dispatchRequestWaitsForResponse = true;
-                httpClient.postJson(optitrackConfigs.getOptitrackEndpoint(), jsonArrayToDispatch.toString())
-                        .errorListener(error -> {
-                            OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
-                                    error.getMessage());
-                            // some error occurred, try again in the next dispatch
-                            dispatchRequestWaitsForResponse = false;
-                            scheduleTheNextDispatch();
-                        })
-                        .successListener(response -> {
+
+                dispatcher.sendBatch(
+                        parsedEvents,
+                        optitrackConfigs.getOptitrackEndpoint(),
+                        null,
+                        (groupEvents, success, error) -> {
+                            if (!success) {
+                                OptiLoggerStreamsContainer.error("Events dispatch group failed - %s",
+                                        error != null ? error.getMessage() : "unknown");
+                            }
+                        },
+                        () -> {
                             try {
                                 singleThreadScheduledExecutor.submit(() -> {
                                     optistreamPersistanceAdapter.removeEvents(eventsBulk.getLastId());
@@ -123,17 +125,17 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                                     dispatchBulkIfExists();
                                 });
                             } catch (Throwable throwable) {
+                                dispatchRequestWaitsForResponse = false;
                                 OptiLoggerStreamsContainer.error("Error while submitting a command - %s", throwable.getMessage());
                             }
-                        })
-                        .send();
+                        }
+                );
             } catch (Throwable e) {
                 dispatchRequestWaitsForResponse = false;
                 OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
                         e.getMessage());
             }
         } else {
-            // Schedule another dispatch all if we are done dispatching
             dispatchRequestWaitsForResponse = false;
             scheduleTheNextDispatch();
         }
