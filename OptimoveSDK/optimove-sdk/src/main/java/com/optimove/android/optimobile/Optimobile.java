@@ -258,6 +258,12 @@ public final class Optimobile {
      * @param context
      */
     public static void pushRequestDeviceToken(Context context) {
+        // Check if SDK is initialized before using executorService
+        if (!initialized || executorService == null) {
+            log(TAG, "Optimobile SDK not initialized, skipping push token request");
+            return;
+        }
+
         PushRegistration.RegisterTask task = new PushRegistration.RegisterTask(context);
         executorService.submit(task);
     }
@@ -268,6 +274,12 @@ public final class Optimobile {
      * @param context
      */
     public static void pushUnregister(Context context) {
+        // Check if SDK is initialized before using executorService
+        if (!initialized || executorService == null) {
+            log(TAG, "Optimobile SDK not initialized, skipping push unregister");
+            return;
+        }
+
         PushRegistration.UnregisterTask task = new PushRegistration.UnregisterTask(context);
         executorService.submit(task);
     }
@@ -536,6 +548,12 @@ public final class Optimobile {
             throw new IllegalArgumentException("Optimobile.trackEvent expects a non-empty event type");
         }
 
+        // Check if SDK is properly initialized
+        if (!initialized) {
+            log(TAG, "Optimobile SDK not initialized, skipping event tracking: " + eventType);
+            return;
+        }
+
         Runnable trackingTask = new AnalyticsContract.TrackEventRunnable(context, eventType, timestamp, properties, immediateFlush);
         executorService.submit(trackingTask);
     }
@@ -549,12 +567,24 @@ public final class Optimobile {
     }
 
     private static void flushEvents(@NonNull final Context context) {
+        // Check if SDK is initialized before using executorService
+        if (!initialized || executorService == null) {
+            log(TAG, "Optimobile SDK not initialized, skipping event flush");
+            return;
+        }
+
         Runnable flushingTask = new AnalyticsContract.FlushEventsRunnable(context);
         executorService.submit(flushingTask);
     }
 
     private static void maybeTriggerInAppSync(Context context) {
         if (!OptimoveInApp.getInstance().isInAppEnabled()) {
+            return;
+        }
+
+        // Check if SDK is initialized before using executorService
+        if (!initialized || executorService == null) {
+            log(TAG, "Optimobile SDK not initialized, skipping in-app sync");
             return;
         }
 

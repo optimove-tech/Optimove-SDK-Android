@@ -96,7 +96,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             this.onBackgroundPush(context, pushMessage);
         }
 
-        if (pushMessage.hasTitleAndMessage() && NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+        // Don't show notifications for tickle pushes - they should remain silent even if they have title/message content
+        if (pushMessage.hasTitleAndMessage() && NotificationManagerCompat.from(context).areNotificationsEnabled() && pushMessage.getTickleId() == -1) {
             processPushMessage(context, pushMessage);
         }
     }
@@ -149,6 +150,12 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         int tickleId = pushMessage.getTickleId();
         if (tickleId == -1) {
+            return;
+        }
+
+        // Check if SDK is initialized before using executorService
+        if (!Optimobile.isInitialized() || Optimobile.executorService == null) {
+            Optimobile.log(TAG, "Optimobile SDK not initialized, skipping in-app sync");
             return;
         }
 
