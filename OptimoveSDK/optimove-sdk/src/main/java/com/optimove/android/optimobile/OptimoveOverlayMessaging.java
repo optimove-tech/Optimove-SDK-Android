@@ -15,18 +15,19 @@ public class OptimoveOverlayMessaging {
     private final OverlayMessagingSessionManager sessionManager;
     private final OverlayMessagingManager manager;
 
-    @Nullable
-    private OverlayMessagingInterceptor interceptor;
+    public interface OverlayMessagingInterceptorCallback {
+        @UiThread void show();
+        @UiThread void discard();
+        @UiThread void hold();
+    }
 
     public interface OverlayMessagingInterceptor {
         @UiThread
-        OverlayMessagingInterceptorOutcome onMessageLoaded(@NonNull OverlayMessagingMessage message);
-    }
+        void onMessageLoaded(@NonNull OverlayMessagingMessage message, @NonNull OverlayMessagingInterceptorCallback callback);
 
-    public enum OverlayMessagingInterceptorOutcome {
-        SHOW,
-        DISCARD,
-        HOLD
+        default long getTimeoutMs() {
+            return 5000L;
+        }
     }
 
     private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthMinutes) {
@@ -47,7 +48,7 @@ public class OptimoveOverlayMessaging {
     }
 
     public void setInterceptor(@Nullable OverlayMessagingInterceptor interceptor) {
-        this.interceptor = interceptor;
+        manager.setInterceptor(interceptor);
     }
 
     @UiThread
