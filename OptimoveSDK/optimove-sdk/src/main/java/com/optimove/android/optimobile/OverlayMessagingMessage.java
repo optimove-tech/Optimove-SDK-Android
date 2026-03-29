@@ -2,12 +2,18 @@ package com.optimove.android.optimobile;
 
 import androidx.annotation.NonNull;
 
-public class OverlayMessagingMessage {
-    public final long id;
-    public final String html;
+import org.json.JSONObject;
 
-    OverlayMessagingMessage(long id, @NonNull String html) {
+class OverlayMessagingMessage {
+    final long id;
+    final JSONObject content;
+
+    OverlayMessagingMessage(long id, @NonNull JSONObject content) {
         this.id = id;
-        this.html = html;
+        this.content = content;
+    }
+
+    public JSONObject getContent() {
+        return content;
     }
 }

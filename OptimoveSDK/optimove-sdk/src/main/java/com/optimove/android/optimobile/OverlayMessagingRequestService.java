@@ -73,7 +73,13 @@ class OverlayMessagingRequestService {
             JSONObject json = new JSONObject(response.body().string());
             long id = json.getLong("id");
             String html = json.getString("html");
-            return new OverlayMessagingMessage(id, html);
+
+            // TODO: this should be under message content in response already
+            JSONObject content = new JSONObject();
+            content.put("ver", 1);
+            content.put("html", html);
+
+            return new OverlayMessagingMessage(id, content);
         } catch (NullPointerException | JSONException | IOException e) {
             Optimobile.log(TAG, e.getMessage());
             return null;

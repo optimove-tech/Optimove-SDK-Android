@@ -64,7 +64,7 @@ class InAppMessageView extends BaseMessageView {
         for (ExecutableAction action : actions) {
             switch (action.getType()) {
                 case BUTTON_ACTION_CLOSE_MESSAGE:
-                    closeCurrentMessage();
+                    closeCurrentMessage(MessageCloseSource.CLICK);
                     break;
                 case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
                     Optimobile.trackEventImmediately(currentActivity, action.getEventType(), action.getConversionEventData());
@@ -258,7 +258,7 @@ class InAppMessageView extends BaseMessageView {
     }
 
     @Override
-    protected void onMessageCloseRequested() {
+    protected void onMessageCloseRequested(MessageCloseSource source) {
         // this happens when we told IAR to close message
         // TODO: the split keeps existing behaviour, but simpler would be to run this when message closed by client as well (or was there a reason?)
         InAppMessageService.handleMessageClosed(currentActivity, currentMessage);

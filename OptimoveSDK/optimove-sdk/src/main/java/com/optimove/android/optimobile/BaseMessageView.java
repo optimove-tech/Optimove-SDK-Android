@@ -51,6 +51,11 @@ import java.util.List;
 
 abstract class BaseMessageView extends WebViewClient {
 
+    protected enum MessageCloseSource {
+        HARDWARE,
+        CLICK
+    }
+
     private enum State {
         INITIAL,
         LOADING,
@@ -232,7 +237,7 @@ abstract class BaseMessageView extends WebViewClient {
             dialog.setContentView(inflater.inflate(R.layout.optimobile_dialog_view, null), paramsWebView);
             dialog.setOnKeyListener((dialog, keyCode, event) -> {
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() != KeyEvent.ACTION_DOWN) {
-                    closeCurrentMessage();
+                    closeCurrentMessage(MessageCloseSource.HARDWARE);
                 }
                 return true;
             });
@@ -271,10 +276,10 @@ abstract class BaseMessageView extends WebViewClient {
         }
     }
 
-    protected void closeCurrentMessage() {
+    protected void closeCurrentMessage(MessageCloseSource source) {
         sendToClient(HOST_MESSAGE_TYPE_CLOSE_MESSAGE, null);
 
-        onMessageCloseRequested();
+        onMessageCloseRequested(source);
     }
 
     @Override
@@ -478,7 +483,7 @@ abstract class BaseMessageView extends WebViewClient {
 
     abstract protected void onMessageClosedByClient();
 
-    abstract protected void onMessageCloseRequested();
+    abstract protected void onMessageCloseRequested(MessageCloseSource source);
 
     abstract protected void onMessageOpened();
 
