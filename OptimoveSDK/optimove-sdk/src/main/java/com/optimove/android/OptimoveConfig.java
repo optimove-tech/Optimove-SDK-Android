@@ -73,6 +73,8 @@ public final class OptimoveConfig {
 
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
+    private @Nullable Integer overlayMessagingSessionLengthMinutes;
+
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
@@ -109,6 +111,7 @@ public final class OptimoveConfig {
             OPTIMOBILE,
             PREFERENCE_CENTER,
             EMBEDDED_MESSAGING,
+            OVERLAY_MESSAGING,
         }
 
         Set<Feature> features = new HashSet<>();
@@ -133,6 +136,12 @@ public final class OptimoveConfig {
 
         public FeatureSet withEmbeddedMessaging() {
             features.add(Feature.EMBEDDED_MESSAGING);
+
+            return this;
+        }
+
+        public FeatureSet withOverlayMessaging() {
+            features.add(Feature.OVERLAY_MESSAGING);
 
             return this;
         }
@@ -415,6 +424,14 @@ public final class OptimoveConfig {
         return this.embeddedMessagingConfig;
     }
 
+    public boolean isOverlayMessagingEnabled() {
+        return this.featureSet.has(FeatureSet.Feature.OVERLAY_MESSAGING);
+    }
+
+    public int getOverlayMessagingSessionLengthMinutes() {
+        return this.overlayMessagingSessionLengthMinutes;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
@@ -473,6 +490,8 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
+
+        private @Nullable Integer overlayMessagingSessionLengthMinutes;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -575,6 +594,18 @@ public final class OptimoveConfig {
             return this;
         }
 
+        public Builder enableOverlayMessaging(int sessionLengthMinutes) {
+            if (sessionLengthMinutes <= 0) {
+                throw new IllegalArgumentException("OverlayMessaging: sessionLengthMinutes must be greater than 0");
+            }
+            if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+                throw new IllegalArgumentException("OverlayMmessaging: optimobile feature required");
+            }
+            this.overlayMessagingSessionLengthMinutes = sessionLengthMinutes;
+            this.featureSet.withOverlayMessaging();
+            return this;
+        }
+
         /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
@@ -664,6 +695,8 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
+
+            newConfig.overlayMessagingSessionLengthMinutes = this.overlayMessagingSessionLengthMinutes;
 
             return newConfig;
         }

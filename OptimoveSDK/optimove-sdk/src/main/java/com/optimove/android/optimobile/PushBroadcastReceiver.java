@@ -90,6 +90,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         this.pushTrackDelivered(context, pushMessage);
 
+        this.maybeTriggerOverlayMessagingSync(context, pushMessage);
+
         this.maybeTriggerInAppSync(context, pushMessage);
 
         if (pushMessage.runBackgroundHandler()) {
@@ -100,6 +102,19 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             processPushMessage(context, pushMessage);
         }
     }
+
+    protected void maybeTriggerOverlayMessagingSync(Context context, PushMessage pushMessage) {
+        if (!OptimoveOverlayMessaging.getInstance().isOverlayMessagingEnabled()) {
+            return;
+        }
+        // TODO -- where in PushMessage does it actually sit?
+        if (!pushMessage.getTitle().equals("OM")){
+            return;
+        }
+
+        Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onPushTriggerReceived());
+    }
+
 
     private void processPushMessage(Context context, PushMessage pushMessage) {
         Notification.Builder builder = getNotificationBuilder(context, pushMessage);
