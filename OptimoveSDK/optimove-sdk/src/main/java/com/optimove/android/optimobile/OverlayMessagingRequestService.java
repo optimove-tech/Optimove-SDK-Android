@@ -16,7 +16,7 @@ class OverlayMessagingRequestService {
 
     private static final String TAG = OverlayMessagingRequestService.class.getName();
 
-    static @Nullable OverlayMessagingMessage readOverlayMessage(Context c, OverlayMessagingManager.MessageType type) {
+    static @Nullable OverlayMessagingMessage readOverlayMessage(Context c, OverlayMessagingMessage.MessageType type) {
         OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
         String userIdentifier = Optimobile.getCurrentUserIdentifier(c);
 
@@ -28,7 +28,7 @@ class OverlayMessagingRequestService {
             int tenantId = 3013;
             String brandId = "9abb8d6d-62ed-42d1-97d1-c82d15f9c1fc";
 
-            String messageType = type == OverlayMessagingManager.MessageType.SESSION ? "session-start" : "immediate";
+            String messageType = type == OverlayMessagingMessage.MessageType.SESSION ? "session-start" : "immediate";
 
             String url = String.format(
                     "http://optimobile-overlay-srv-%s.optimove.net/mobile/%s/messages?tenantId=%s&brandId=%s&messageType=%s",
@@ -39,7 +39,7 @@ class OverlayMessagingRequestService {
                     logFailedResponse(response);
                     return null;
                 }
-                return buildMessage(response);
+                return buildMessage(response, type);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,7 +68,7 @@ class OverlayMessagingRequestService {
         }
     }
 
-    private static @Nullable OverlayMessagingMessage buildMessage(Response response) {
+    private static @Nullable OverlayMessagingMessage buildMessage(Response response, OverlayMessagingMessage.MessageType type) {
         try {
             JSONObject json = new JSONObject(response.body().string());
             long id = json.getLong("id");
@@ -79,7 +79,7 @@ class OverlayMessagingRequestService {
             content.put("ver", 1);
             content.put("html", html);
 
-            return new OverlayMessagingMessage(id, content);
+            return new OverlayMessagingMessage(id, content, type);
         } catch (NullPointerException | JSONException | IOException e) {
             Optimobile.log(TAG, e.getMessage());
             return null;

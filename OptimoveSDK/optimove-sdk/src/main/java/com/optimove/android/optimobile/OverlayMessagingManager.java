@@ -21,11 +21,6 @@ class OverlayMessagingManager {
     private static final int SESSION_SLOT_CAPACITY = 1;
     private static final int IMMEDIATE_SLOT_CAPACITY = 1;
 
-    enum MessageType {
-        SESSION,
-        IMMEDIATE
-    }
-
     enum InterceptorOutcome {
         SHOW,
         DISCARD,
@@ -63,7 +58,7 @@ class OverlayMessagingManager {
     }
 
     @UiThread
-    void onTriggerReceived(MessageType type) {
+    void onTriggerReceived(OverlayMessagingMessage.MessageType type) {
         switch (type) {
             case SESSION:
                 if (sessionSlotCount >= SESSION_SLOT_CAPACITY) return;
@@ -79,7 +74,7 @@ class OverlayMessagingManager {
     }
 
     @UiThread
-    void onSlotCleared(MessageType type) {
+    void onSlotCleared(OverlayMessagingMessage.MessageType type) {
         switch (type) {
             case SESSION:
                 sessionSlotCount = Math.max(0, sessionSlotCount - 1);
@@ -90,7 +85,7 @@ class OverlayMessagingManager {
         }
     }
 
-    private void loadMessage(MessageType type) {
+    private void loadMessage(OverlayMessagingMessage.MessageType type) {
         Optimobile.executorService.submit(() -> {
             OverlayMessagingMessage message = OverlayMessagingRequestService.readOverlayMessage(context, type);
             Optimobile.handler.post(() -> onMessageLoaded(type, message));
@@ -98,17 +93,17 @@ class OverlayMessagingManager {
     }
 
     @UiThread
-    private void onMessageLoaded(MessageType type, @Nullable OverlayMessagingMessage message) {
+    private void onMessageLoaded(OverlayMessagingMessage.MessageType type, @Nullable OverlayMessagingMessage message) {
         if (message == null) {
             onSlotCleared(type);
             return;
         }
 
-        processMessage(type, message);
+        processMessage(message);
     }
 
     @UiThread
-    private void processMessage(MessageType type, OverlayMessagingMessage message) {
+    private void processMessage(OverlayMessagingMessage message) {
         if (interceptor == null) {
             displayQueue.add(message);
             // TODO: notify OverlayMessagingView to display next message
@@ -121,25 +116,25 @@ class OverlayMessagingManager {
             @Override
             public void show() {
                 if (!processed.compareAndSet(false, true)) return;
-                Optimobile.handler.post(() -> handleInterceptorOutcome(type, message, InterceptorOutcome.SHOW));
+                Optimobile.handler.post(() -> handleInterceptorOutcome(message, InterceptorOutcome.SHOW));
             }
 
             @Override
             public void discard() {
                 if (!processed.compareAndSet(false, true)) return;
-                Optimobile.handler.post(() -> handleInterceptorOutcome(type, message, InterceptorOutcome.DISCARD));
+                Optimobile.handler.post(() -> handleInterceptorOutcome(message, InterceptorOutcome.DISCARD));
             }
 
             @Override
             public void hold() {
                 if (!processed.compareAndSet(false, true)) return;
-                Optimobile.handler.post(() -> handleInterceptorOutcome(type, message, InterceptorOutcome.HOLD));
+                Optimobile.handler.post(() -> handleInterceptorOutcome(message, InterceptorOutcome.HOLD));
             }
         };
 
         interceptorExecutor.schedule(() -> {
             if (!processed.compareAndSet(false, true)) return;
-            Optimobile.handler.post(() -> handleInterceptorOutcome(type, message, InterceptorOutcome.TIMEOUT));
+            Optimobile.handler.post(() -> handleInterceptorOutcome(message, InterceptorOutcome.TIMEOUT));
         }, interceptor.getTimeoutMs(), TimeUnit.MILLISECONDS);
 
         interceptor.onMessageLoaded(message, callback);
@@ -147,7 +142,6 @@ class OverlayMessagingManager {
 
     @UiThread
     private void handleInterceptorOutcome(
-            @NonNull MessageType type,
             @NonNull OverlayMessagingMessage message,
             @NonNull InterceptorOutcome outcome) {
         switch (outcome) {
@@ -157,15 +151,15 @@ class OverlayMessagingManager {
                 trackInterceptedEvent(message.id, outcome);
                 break;
             case DISCARD:
-                onSlotCleared(type);
+                onSlotCleared(message.type);
                 trackInterceptedEvent(message.id, outcome);
                 break;
             case HOLD:
-                onSlotCleared(type);
+                onSlotCleared(message.type);
                 trackInterceptedEvent(message.id, outcome);
                 break;
             case TIMEOUT:
-                onSlotCleared(type);
+                onSlotCleared(message.type);
                 trackInterceptedEvent(message.id, outcome);
                 break;
         }

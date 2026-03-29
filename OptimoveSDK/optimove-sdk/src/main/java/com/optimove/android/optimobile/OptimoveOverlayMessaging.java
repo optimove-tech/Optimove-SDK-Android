@@ -33,7 +33,7 @@ public class OptimoveOverlayMessaging {
     private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthMinutes) {
         this.manager = new OverlayMessagingManager(application);
         OverlayMessagingSessionManager.Listener sessionListener = () ->
-                manager.onTriggerReceived(OverlayMessagingManager.MessageType.SESSION);
+                manager.onTriggerReceived(OverlayMessagingMessage.MessageType.SESSION);
         this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthMinutes, sessionListener);
     }
 
@@ -61,7 +61,7 @@ public class OptimoveOverlayMessaging {
 
     @UiThread
     void onPushTriggerReceived() {
-        manager.onTriggerReceived(OverlayMessagingManager.MessageType.IMMEDIATE);
+        manager.onTriggerReceived(OverlayMessagingMessage.MessageType.IMMEDIATE);
     }
 
     static void initialize(@NonNull Application application, long sessionLengthMinutes) {
