@@ -1,5 +1,6 @@
 package com.optimove.android.optimobile;
 
+import android.app.Activity;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -16,7 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class OverlayMessagingManager {
+class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener {
 
     private static final int SESSION_SLOT_CAPACITY = 1;
     private static final int IMMEDIATE_SLOT_CAPACITY = 1;
@@ -44,13 +45,19 @@ class OverlayMessagingManager {
 
     @Nullable
     private OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor;
+    @Nullable
+    private OverlayMessagingView currentView;
+    @Nullable
+    private Activity currentActivity;
 
     private int sessionSlotCount = 0;
     private int immediateSlotCount = 0;
 
     OverlayMessagingManager(Context context) {
         this.context = context.getApplicationContext();
+        OptimobileInitProvider.getAppStateWatcher().registerListener(this);
     }
+
 
     @UiThread
     void setInterceptor(@Nullable OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor) {
@@ -106,7 +113,7 @@ class OverlayMessagingManager {
     private void processMessage(OverlayMessagingMessage message) {
         if (interceptor == null) {
             displayQueue.add(message);
-            // TODO: notify OverlayMessagingView to display next message
+            maybeShowNext();
             return;
         }
 
@@ -147,22 +154,66 @@ class OverlayMessagingManager {
         switch (outcome) {
             case SHOW:
                 displayQueue.add(message);
-                // TODO: notify OverlayMessagingView to display next message
-                trackInterceptedEvent(message.id, outcome);
+                maybeShowNext();
+                trackInterceptedEvent(message.getId(), outcome);
                 break;
             case DISCARD:
-                onSlotCleared(message.type);
-                trackInterceptedEvent(message.id, outcome);
+                onSlotCleared(message.getType());
+                trackInterceptedEvent(message.getId(), outcome);
                 break;
             case HOLD:
-                onSlotCleared(message.type);
-                trackInterceptedEvent(message.id, outcome);
+                onSlotCleared(message.getType());
+                trackInterceptedEvent(message.getId(), outcome);
                 break;
             case TIMEOUT:
-                onSlotCleared(message.type);
-                trackInterceptedEvent(message.id, outcome);
+                onSlotCleared(message.getType());
+                trackInterceptedEvent(message.getId(), outcome);
                 break;
         }
+    }
+
+    @UiThread
+    private void maybeShowNext() {
+        OverlayMessagingMessage next = displayQueue.peek();
+
+        if (next == null) {
+            if (currentView != null) {
+                currentView.dispose();
+                currentView = null;
+            }
+            return;
+        }
+
+        if (currentView != null) {
+            currentView.showMessage(next);
+            return;
+        }
+
+        if (currentActivity == null) {
+            return;
+        }
+
+        String iarUrl;
+        try {
+            iarUrl = Optimobile.urlForService(UrlBuilder.Service.IAR, "");
+        } catch (Optimobile.PartialInitialisationException e) {
+            return;
+        }
+
+        currentView = new OverlayMessagingView(next, currentActivity, iarUrl, new OverlayMessagingView.Listener() {
+            @Override
+            public void onMessageClosed(OverlayMessagingMessage closedMessage) {
+                displayQueue.poll();
+                onSlotCleared(closedMessage.getType());
+                maybeShowNext();
+            }
+
+            @Override
+            public void onViewError(OverlayMessagingMessage failedMessage) {
+                currentView.dispose();
+                currentView = null;
+            }
+        });
     }
 
     private void trackInterceptedEvent(long messageId, @NonNull InterceptorOutcome outcome) {
@@ -175,4 +226,40 @@ class OverlayMessagingManager {
             e.printStackTrace();
         }
     }
+
+    //==============================================================================================
+    //-- AppStateChangedListener
+
+    @Override
+    @UiThread
+    public void activityAvailable(@NonNull Activity activity) {
+        if (currentActivity != activity) {
+            if (currentView != null) {
+                currentView.dispose();
+                currentView = null;
+            }
+            currentActivity = activity;
+        }
+        maybeShowNext();
+    }
+
+    @Override
+    @UiThread
+    public void activityUnavailable(@NonNull Activity activity) {
+        if (activity != currentActivity) {
+            return;
+        }
+        currentActivity = null;
+        if (currentView != null) {
+            currentView.dispose();
+            currentView = null;
+        }
+    }
+
+    @Override
+    public void appEnteredForeground() { /* noop */ }
+
+    @Override
+    public void appEnteredBackground() { /* noop */ }
+
 }

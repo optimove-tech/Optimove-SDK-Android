@@ -20,28 +20,37 @@ class OverlayMessagingView extends BaseMessageView {
     private static final String BUTTON_ACTION_CLOSE_MESSAGE = "closeMessage";
     private static final String BUTTON_ACTION_OPEN_URL = "openUrl";
 
+    interface Listener {
+        @UiThread void onMessageClosed(OverlayMessagingMessage message);
+        @UiThread void onViewError(OverlayMessagingMessage message);
+    }
+
     @NonNull
     private OverlayMessagingMessage currentMessage;
+    @NonNull
+    private final Listener listener;
 
     @UiThread
     OverlayMessagingView(@NonNull OverlayMessagingMessage message,
-                     @NonNull Activity currentActivity,
-                     @NonNull String iarUrl) {
+                         @NonNull Activity currentActivity,
+                         @NonNull String iarUrl,
+                         @NonNull Listener listener) {
         super(currentActivity);
 
         this.currentMessage = message;
+        this.listener = listener;
 
         showWebView(currentActivity, iarUrl);
     }
 
-//    @UiThread
-//    void showMessage(@NonNull OverlayMessagingMessage message) {
-//        if (currentMessage.getInAppId() == message.getInAppId()) {
-//            return;
-//        }
-//        currentMessage = message;
-//        sendCurrentMessageToClient();
-//    }
+    @UiThread
+    void showMessage(@NonNull OverlayMessagingMessage message) {
+        if (currentMessage.getId() == message.getId()) {
+            return;
+        }
+        currentMessage = message;
+        sendCurrentMessageToClient();
+    }
 
     @UiThread
     private void executeActions(Activity currentActivity, List<ExecutableAction> actions) {
@@ -142,7 +151,12 @@ class OverlayMessagingView extends BaseMessageView {
 
     @Override
     protected void onMessageClosedByClient() {
-        // TODO: free slot, present next message if have
+        listener.onMessageClosed(currentMessage);
+    }
+
+    @Override
+    protected void onViewError() {
+        listener.onViewError(currentMessage);
     }
 
     @Override

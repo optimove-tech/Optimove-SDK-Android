@@ -258,6 +258,11 @@ class InAppMessageView extends BaseMessageView {
     }
 
     @Override
+    protected void onViewError() {
+        presenter.onViewError();
+    }
+
+    @Override
     protected void onMessageCloseRequested(MessageCloseSource source) {
         // this happens when we told IAR to close message
         // TODO: the split keeps existing behaviour, but simpler would be to run this when message closed by client as well (or was there a reason?)

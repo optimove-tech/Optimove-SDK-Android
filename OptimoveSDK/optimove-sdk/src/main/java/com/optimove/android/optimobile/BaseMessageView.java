@@ -98,6 +98,7 @@ abstract class BaseMessageView extends WebViewClient {
 
     @UiThread
     void dispose() {
+        if (state == State.DISPOSED) return;
         closeDialog(currentActivity);
         state = State.DISPOSED;
     }
@@ -314,7 +315,7 @@ abstract class BaseMessageView extends WebViewClient {
                 view.clearCache(true);
             }
 
-            closeDialog(currentActivity);
+            onViewError();
         } catch (Optimobile.PartialInitialisationException e) {
             Optimobile.log(TAG, "Cannot handle HTTP error: credentials not yet available");
         }
@@ -323,12 +324,12 @@ abstract class BaseMessageView extends WebViewClient {
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
         handler.cancel();
-        closeDialog(currentActivity);
+        onViewError();
     }
 
     @Override
     public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
-        closeDialog(currentActivity);
+        onViewError();
 
         // Allow app to keep running, don't terminate
         return true;
@@ -350,7 +351,7 @@ abstract class BaseMessageView extends WebViewClient {
             return;
         }
 
-        closeDialog(currentActivity);
+        onViewError();
     }
 
     @Override
@@ -488,4 +489,7 @@ abstract class BaseMessageView extends WebViewClient {
     abstract protected void onMessageOpened();
 
     abstract protected void onExecuteActions(JSONObject data);
+
+    @UiThread
+    abstract protected void onViewError();
 }

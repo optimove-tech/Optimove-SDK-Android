@@ -142,6 +142,11 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     }
 
     @UiThread
+    void onViewError() {
+        disposeView();
+    }
+
+    @UiThread
     private void disposeView() {
         if (view == null) {
             return;
