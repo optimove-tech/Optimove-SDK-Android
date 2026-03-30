@@ -73,6 +73,7 @@ public final class OptimoveConfig {
 
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
+    private boolean overlayMessagingEnabled;
     private @Nullable Integer overlayMessagingSessionLengthMinutes;
 
     public enum InAppConsentStrategy {
@@ -111,7 +112,6 @@ public final class OptimoveConfig {
             OPTIMOBILE,
             PREFERENCE_CENTER,
             EMBEDDED_MESSAGING,
-            OVERLAY_MESSAGING,
         }
 
         Set<Feature> features = new HashSet<>();
@@ -140,11 +140,6 @@ public final class OptimoveConfig {
             return this;
         }
 
-        public FeatureSet withOverlayMessaging() {
-            features.add(Feature.OVERLAY_MESSAGING);
-
-            return this;
-        }
 
 
         boolean has(Feature feature) {
@@ -425,7 +420,7 @@ public final class OptimoveConfig {
     }
 
     public boolean isOverlayMessagingEnabled() {
-        return this.featureSet.has(FeatureSet.Feature.OVERLAY_MESSAGING);
+        return this.overlayMessagingEnabled;
     }
 
     public int getOverlayMessagingSessionLengthMinutes() {
@@ -602,7 +597,6 @@ public final class OptimoveConfig {
                 throw new IllegalArgumentException("OverlayMmessaging: optimobile feature required");
             }
             this.overlayMessagingSessionLengthMinutes = sessionLengthMinutes;
-            this.featureSet.withOverlayMessaging();
             return this;
         }
 
@@ -660,6 +654,10 @@ public final class OptimoveConfig {
         }
 
         public OptimoveConfig build() {
+            if (this.consentStrategy != null && this.overlayMessagingSessionLengthMinutes != null) {
+                throw new IllegalStateException("enableInAppMessaging and enableOverlayMessaging are mutually exclusive");
+            }
+
             OptimoveConfig newConfig = new OptimoveConfig();
             newConfig.setFeatureSet(this.featureSet);
             newConfig.setDelayedInitialisation(delayedInitialisation);
@@ -696,6 +694,7 @@ public final class OptimoveConfig {
 
             newConfig.setMinLogLevel(this.minLogLevel);
 
+            newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthMinutes != null;
             newConfig.overlayMessagingSessionLengthMinutes = this.overlayMessagingSessionLengthMinutes;
 
             return newConfig;
