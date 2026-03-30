@@ -104,6 +104,13 @@ abstract class BaseMessageView extends WebViewClient {
     }
 
     @UiThread
+    void handleViewError(){
+        dispose();
+
+        onViewError();
+    }
+
+    @UiThread
     protected void sendCurrentMessageToClient() {
         if (state == State.READY && pageFinished) {
             JSONObject content = this.getCurrentMessageContent();
@@ -315,7 +322,7 @@ abstract class BaseMessageView extends WebViewClient {
                 view.clearCache(true);
             }
 
-            onViewError();
+            handleViewError();
         } catch (Optimobile.PartialInitialisationException e) {
             Optimobile.log(TAG, "Cannot handle HTTP error: credentials not yet available");
         }
@@ -324,12 +331,12 @@ abstract class BaseMessageView extends WebViewClient {
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
         handler.cancel();
-        onViewError();
+        handleViewError();
     }
 
     @Override
     public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
-        onViewError();
+        handleViewError();
 
         // Allow app to keep running, don't terminate
         return true;
@@ -351,7 +358,7 @@ abstract class BaseMessageView extends WebViewClient {
             return;
         }
 
-        onViewError();
+        handleViewError();
     }
 
     @Override
