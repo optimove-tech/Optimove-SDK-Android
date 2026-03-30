@@ -143,21 +143,12 @@ abstract class BaseMessageView extends WebViewClient {
 
         String script = "window.postHostMessage(" + j.toString() + ")";
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            wv.evaluateJavascript(script, null);
-        } else {
-            wv.loadUrl("javascript:" + script);
-        }
+        wv.evaluateJavascript(script, null);
     }
 
     @UiThread
-    @SuppressWarnings("deprecation")
     private void setStatusBarColorForDialog(Activity currentActivity) {
         if (currentActivity == null) {
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
         }
 
@@ -184,7 +175,6 @@ abstract class BaseMessageView extends WebViewClient {
     }
 
     @UiThread
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void unsetStatusBarColorForDialog(Activity dialogActivity) {
         if (dialogActivity == null) {
             return;
@@ -207,9 +197,8 @@ abstract class BaseMessageView extends WebViewClient {
         if (dialog != null) {
             dialog.setOnKeyListener(null);
             dialog.dismiss();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                unsetStatusBarColorForDialog(dialogActivity);
-            }
+            
+            unsetStatusBarColorForDialog(dialogActivity);
         }
 
         if (null != wv) {
@@ -225,7 +214,7 @@ abstract class BaseMessageView extends WebViewClient {
     @UiThread
     protected void showWebView(@NonNull final Activity currentActivity, @NonNull String iarUrl) {
         try {
-            if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (BuildConfig.DEBUG) {
                 WebView.setWebContentsDebuggingEnabled(true);
             }
 
@@ -268,9 +257,9 @@ abstract class BaseMessageView extends WebViewClient {
 
             WebSettings settings = wv.getSettings();
             settings.setJavaScriptEnabled(true);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                settings.setMediaPlaybackRequiresUserGesture(false);
-            }
+
+            settings.setMediaPlaybackRequiresUserGesture(false);
+
 
             wv.addJavascriptInterface(this, JS_NAME);
             wv.setWebViewClient(this);
@@ -302,7 +291,6 @@ abstract class BaseMessageView extends WebViewClient {
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
         super.onReceivedHttpError(view, request, errorResponse);
 
@@ -362,7 +350,7 @@ abstract class BaseMessageView extends WebViewClient {
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError rerr) {
         onReceivedError(view, rerr.getErrorCode(), rerr.getDescription().toString(), req.getUrl().toString());
     }
@@ -439,7 +427,7 @@ abstract class BaseMessageView extends WebViewClient {
         }
 
         List<Rect> cutoutBoundingRectangles = displayCutout.getBoundingRects();
-        if (cutoutBoundingRectangles.size() == 0) {
+        if (cutoutBoundingRectangles.isEmpty()) {
             return;
         }
 
