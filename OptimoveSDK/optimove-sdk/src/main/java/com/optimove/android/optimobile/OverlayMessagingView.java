@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ class OverlayMessagingView extends BaseMessageView {
 
     interface Listener {
         @UiThread void onMessageClosed(OverlayMessagingMessage message);
+        @UiThread void onClicked(OverlayMessagingMessage message, JSONObject props);
+        @UiThread void onDismissed(OverlayMessagingMessage message);
         @UiThread void onViewError(OverlayMessagingMessage message);
     }
 
@@ -58,6 +61,7 @@ class OverlayMessagingView extends BaseMessageView {
         for (ExecutableAction action : actions) {
             switch (action.getType()) {
                 case BUTTON_ACTION_CLOSE_MESSAGE:
+                    fireClickedEvent(true);
                     closeCurrentMessage(MessageCloseSource.CLICK);
                     break;
             }
@@ -67,11 +71,21 @@ class OverlayMessagingView extends BaseMessageView {
         for (ExecutableAction action : actions) {
             switch (action.getType()) {
                 case BUTTON_ACTION_OPEN_URL:
-                    //presenter.cancelCurrentPresentationQueue();
-
+                    // TODO: this should close current message?
+                    fireClickedEvent(false);
                     this.openUrl(currentActivity, action.getUrl());
                     return;
             }
+        }
+    }
+
+    private void fireClickedEvent(boolean closing) {
+        try {
+            JSONObject props = new JSONObject();
+            props.put("closing", closing);
+            listener.onClicked(currentMessage, props);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -119,26 +133,13 @@ class OverlayMessagingView extends BaseMessageView {
 
     private static class ExecutableAction {
         String type;
-
         String url;
 
-        void setType(String type) {
-            this.type = type;
-        }
+        void setType(String type) { this.type = type; }
+        void setUrl(String url) { this.url = url; }
 
-        void setUrl(String url) {
-            this.url = url;
-        }
-
-
-        String getType() {
-            return type;
-        }
-
-        String getUrl() {
-            return url;
-        }
-
+        String getType() { return type; }
+        String getUrl() { return url; }
     }
 
 
@@ -150,22 +151,26 @@ class OverlayMessagingView extends BaseMessageView {
     }
 
     @Override
+    protected void onViewError() {
+        listener.onViewError(currentMessage);
+    }
+
+
+    @Override
     protected void onMessageClosedByClient() {
         listener.onMessageClosed(currentMessage);
     }
 
     @Override
-    protected void onViewError() {
-        listener.onViewError(currentMessage);
-    }
-
-    @Override
     protected void onMessageCloseRequested(MessageCloseSource source) {
-        // TODO: do we need to differentiate these?
-        // 1. back button -> dismissed
-        // 2. close action -> clicked
-
-        //TODO: report event
+        switch (source) {
+            case CLICK:
+                // event already tracked when closing click action executed
+                break;
+            case HARDWARE:
+                listener.onDismissed(currentMessage);
+                break;
+        }
     }
 
     @Override

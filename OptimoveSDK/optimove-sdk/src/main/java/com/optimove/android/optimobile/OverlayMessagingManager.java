@@ -209,11 +209,40 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             }
 
             @Override
+            public void onClicked(OverlayMessagingMessage message, JSONObject props) {
+                trackClickedEvent(message.getId(), props);
+            }
+
+            @Override
+            public void onDismissed(OverlayMessagingMessage message) {
+                trackDismissedEvent(message.getId());
+            }
+
+            @Override
             public void onViewError(OverlayMessagingMessage failedMessage) {
                 currentView.dispose();
                 currentView = null;
             }
         });
+    }
+
+    private void trackClickedEvent(long messageId, JSONObject props) {
+        try {
+            props.put("id", messageId);
+            Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_OM_CLICKED, props);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void trackDismissedEvent(long messageId) {
+        try {
+            JSONObject props = new JSONObject();
+            props.put("id", messageId);
+            Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_OM_DISMISSED, props);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void trackInterceptedEvent(long messageId, @NonNull InterceptorOutcome outcome) {
