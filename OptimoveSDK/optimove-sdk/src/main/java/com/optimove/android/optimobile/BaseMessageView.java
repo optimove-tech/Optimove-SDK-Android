@@ -257,6 +257,8 @@ abstract class BaseMessageView extends WebViewClient {
 
             WebSettings settings = wv.getSettings();
             settings.setJavaScriptEnabled(true);
+            settings.setAllowFileAccess(false);
+            settings.setAllowContentAccess(false);
 
             settings.setMediaPlaybackRequiresUserGesture(false);
 
