@@ -25,14 +25,14 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     enum InterceptorOutcome {
         SHOW,
         DISCARD,
-        HOLD,
+        DEFER,
         TIMEOUT;
 
         String toEventValue() {
             switch (this) {
                 case SHOW:    return "shown";
                 case DISCARD: return "discarded";
-                case HOLD:    return "held";
+                case DEFER:   return "deferred";
                 case TIMEOUT: return "timeout";
                 default:      throw new IllegalStateException("Unhandled outcome: " + this);
             }
@@ -133,9 +133,9 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             }
 
             @Override
-            public void hold() {
+            public void defer() {
                 if (!processed.compareAndSet(false, true)) return;
-                Optimobile.handler.post(() -> handleInterceptorOutcome(message, InterceptorOutcome.HOLD));
+                Optimobile.handler.post(() -> handleInterceptorOutcome(message, InterceptorOutcome.DEFER));
             }
         };
 
@@ -158,13 +158,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 trackInterceptedEvent(message.getId(), outcome);
                 break;
             case DISCARD:
-                onSlotCleared(message.getType());
-                trackInterceptedEvent(message.getId(), outcome);
-                break;
-            case HOLD:
-                onSlotCleared(message.getType());
-                trackInterceptedEvent(message.getId(), outcome);
-                break;
+            case DEFER:
             case TIMEOUT:
                 onSlotCleared(message.getType());
                 trackInterceptedEvent(message.getId(), outcome);

@@ -35,6 +35,9 @@ class OverlayMessagingRequestService {
                     region, encodedIdentifier, tenantId, brandId, messageType);
 
             try (Response response = httpClient.getSync(url)) {
+                if (response.code() == 204) {
+                    return null;
+                }
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
                     return null;

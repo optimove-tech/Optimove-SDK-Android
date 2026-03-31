@@ -40,6 +40,7 @@ fun MainScreen(
     outputText: String,
     showPreferenceCenter: Boolean,
     showEmbeddedMessaging: Boolean,
+    showOverlayMessaging: Boolean,
     showDelayedConfig: Boolean,
     credentialsSubmitted: Boolean,
     isInterceptingInApp: Boolean,
@@ -57,6 +58,7 @@ fun MainScreen(
     onGetPreferences: () -> Unit,
     onSetPreferences: () -> Unit,
     onViewEmbeddedMessaging: () -> Unit,
+    onViewOverlayMessaging: () -> Unit,
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
     onEnableInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
@@ -255,6 +257,17 @@ fun MainScreen(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text("View Embedded Messaging")
+            }
+        }
+
+        if (showOverlayMessaging) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(
+                onClick = onViewOverlayMessaging,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Overlay Messaging")
             }
         }
 

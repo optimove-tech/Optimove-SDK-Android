@@ -1,8 +1,6 @@
 package com.optimove.android.optimobile;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +16,7 @@ public class OptimoveOverlayMessaging {
     public interface OverlayMessagingInterceptorCallback {
         @UiThread void show();
         @UiThread void discard();
-        @UiThread void hold();
+        @UiThread void defer();
     }
 
     public interface OverlayMessagingInterceptor {

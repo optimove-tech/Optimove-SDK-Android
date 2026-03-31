@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         val config = Optimove.getConfig()
         val showPreferenceCenter = config.isPreferenceCenterConfigured
         val showEmbeddedMessaging = config.isEmbeddedMessagingConfigured
+        val showOverlayMessaging = config.isOverlayMessagingEnabled
         val showDelayedConfig = config.usesDelayedConfiguration()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
                     outputText = outputText,
                     showPreferenceCenter = showPreferenceCenter,
                     showEmbeddedMessaging = showEmbeddedMessaging,
+                    showOverlayMessaging = showOverlayMessaging,
                     showDelayedConfig = showDelayedConfig,
                     credentialsSubmitted = credentialsSubmitted,
                     isInterceptingInApp = isInterceptingInApp,
@@ -99,6 +101,7 @@ class MainActivity : AppCompatActivity() {
                     onGetPreferences = ::getPreferences,
                     onSetPreferences = ::setPreferences,
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
+                    onViewOverlayMessaging = ::viewOverlayMessaging,
                     onSetCredentials = ::setCredentials,
                     onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
                     onResetToken = {},
@@ -220,6 +223,9 @@ class MainActivity : AppCompatActivity() {
         items.forEach { OptimoveInApp.getInstance().deleteMessageFromInbox(it) }
     }
 
+
+
+
     private fun getPreferences() {
         OptimovePreferenceCenter.getInstance().getPreferencesAsync { result, preferences ->
             when (result) {
@@ -262,6 +268,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun viewEmbeddedMessaging() {
         startActivity(Intent(this, EmbeddedMessagingActivity::class.java))
+    }
+
+    private fun viewOverlayMessaging() {
+        startActivity(Intent(this, OverlayMessagingActivity::class.java))
     }
 
     private fun openDeeplinkTest() {
