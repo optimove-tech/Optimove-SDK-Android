@@ -403,6 +403,9 @@ abstract class BaseMessageView extends WebViewClient {
             case "COMMAND":
                 onCommand(data);
                 return;
+            case "PRESENTATION_ERROR":
+                currentActivity.runOnUiThread(this::handleViewError);
+                return;
             default:
                 Log.d(TAG, "Unknown message type: " + messageType);
         }
