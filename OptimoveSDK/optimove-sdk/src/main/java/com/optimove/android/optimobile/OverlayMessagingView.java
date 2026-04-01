@@ -5,25 +5,44 @@ import android.content.Intent;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class OverlayMessagingView extends BaseMessageView {
 
-    private static final String TAG = OverlayMessagingView.class.getName();
+    private static final String SDK_ACTION_OPEN_DEEP_LINK = "OPEN_DEEP_LINK";
 
-    private static final String BUTTON_ACTION_CLOSE_MESSAGE = "closeMessage";
-    private static final String BUTTON_ACTION_OPEN_URL = "openUrl";
+    private static class RendererCommand {
+        final boolean close;
+        @Nullable final List<OverlayMessagingRendererEvent> events;
+        @Nullable final JSONArray sdkActions;
+
+        private RendererCommand(boolean close, @Nullable List<OverlayMessagingRendererEvent> events, @Nullable JSONArray sdkActions) {
+            this.close = close;
+            this.events = events;
+            this.sdkActions = sdkActions;
+        }
+
+        @Nullable
+        static RendererCommand parse(@Nullable JSONObject data) {
+            if (data == null) return null;
+            List<OverlayMessagingRendererEvent> events = OverlayMessagingRendererEvent.parseAll(data.optJSONArray("events"));
+            return new RendererCommand(
+                data.optBoolean("close", false),
+                events.isEmpty() ? null : events,
+                data.optJSONArray("executeSdkActions")
+            );
+        }
+    }
 
     interface Listener {
         @UiThread void onMessageClosed(OverlayMessagingMessage message);
-        @UiThread void onClicked(OverlayMessagingMessage message, JSONObject props);
+        @UiThread void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events);
         @UiThread void onDismissed(OverlayMessagingMessage message);
         @UiThread void onViewError(OverlayMessagingMessage message);
     }
@@ -55,91 +74,11 @@ class OverlayMessagingView extends BaseMessageView {
         sendCurrentMessageToClient();
     }
 
-    @UiThread
-    private void executeActions(Activity currentActivity, List<ExecutableAction> actions) {
-        // Handle 'secondary' actions
-        for (ExecutableAction action : actions) {
-            switch (action.getType()) {
-                case BUTTON_ACTION_CLOSE_MESSAGE:
-                    fireClickedEvent(true);
-                    closeCurrentMessage(MessageCloseSource.CLICK);
-                    break;
-            }
-        }
-
-        // Handle 'terminating' actions
-        for (ExecutableAction action : actions) {
-            switch (action.getType()) {
-                case BUTTON_ACTION_OPEN_URL:
-                    // TODO: this should close current message?
-                    fireClickedEvent(false);
-                    this.openUrl(currentActivity, action.getUrl());
-                    return;
-            }
-        }
-    }
-
-    private void fireClickedEvent(boolean closing) {
-        try {
-            JSONObject props = new JSONObject();
-            props.put("closing", closing);
-            listener.onClicked(currentMessage, props);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     private void openUrl(Activity currentActivity, String uri) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
         if (browserIntent.resolveActivity(currentActivity.getPackageManager()) != null) {
             currentActivity.startActivity(browserIntent);
         }
-    }
-
-    private List<ExecutableAction> parseButtonActionData(@NonNull JSONObject data) {
-        List<ExecutableAction> actions = new ArrayList<>();
-        JSONArray rawActions = data.optJSONArray("actions");
-
-        if (null == rawActions) {
-            return actions;
-        }
-
-        for (int i = 0; i < rawActions.length(); i++) {
-            JSONObject rawAction = rawActions.optJSONObject(i);
-
-            String actionType = rawAction.optString("type");
-            JSONObject rawActionData = rawAction.optJSONObject("data");
-
-            ExecutableAction action = new ExecutableAction();
-            action.setType(actionType);
-
-            switch (actionType) {
-                case BUTTON_ACTION_OPEN_URL:
-                    if (null == rawActionData) {
-                        continue;
-                    }
-                    String url = rawActionData.optString("url");
-                    action.setUrl(url);
-                    break;
-                default:
-                    break;
-            }
-            actions.add(action);
-        }
-
-        return actions;
-    }
-
-    private static class ExecutableAction {
-        String type;
-        String url;
-
-        void setType(String type) { this.type = type; }
-        void setUrl(String url) { this.url = url; }
-
-        String getType() { return type; }
-        String getUrl() { return url; }
     }
 
 
@@ -155,7 +94,6 @@ class OverlayMessagingView extends BaseMessageView {
         listener.onViewError(currentMessage);
     }
 
-
     @Override
     protected void onMessageClosedByClient() {
         listener.onMessageClosed(currentMessage);
@@ -164,8 +102,8 @@ class OverlayMessagingView extends BaseMessageView {
     @Override
     protected void onMessageCloseRequested(MessageCloseSource source) {
         switch (source) {
-            case CLICK:
-                // event already tracked when closing click action executed
+            case CLIENT:
+                // events already tracked when COMMAND handled
                 break;
             case HARDWARE:
                 listener.onDismissed(currentMessage);
@@ -180,13 +118,41 @@ class OverlayMessagingView extends BaseMessageView {
 
     @Override
     protected void onExecuteActions(JSONObject data) {
-        if (null == data) {
+        // noop: OM uses COMMAND, not EXECUTE_ACTIONS
+    }
+
+    @Override
+    protected void onCommand(JSONObject data) {
+        RendererCommand command = RendererCommand.parse(data);
+        if (command == null) {
             return;
         }
 
-        List<ExecutableAction> actions = this.parseButtonActionData(data);
-        currentActivity.runOnUiThread(() -> this.executeActions(currentActivity, actions));
+        currentActivity.runOnUiThread(() -> {
+            if (command.events != null) {
+                listener.onEvents(currentMessage, command.events);
+            }
+
+            if (command.close) {
+                closeCurrentMessage(MessageCloseSource.CLIENT);
+            }
+
+            if (command.sdkActions == null) {
+                return;
+            }
+            for (int i = 0; i < command.sdkActions.length(); i++) {
+                JSONObject action = command.sdkActions.optJSONObject(i);
+                if (action == null) continue;
+                String type = action.optString("type");
+                JSONObject actionData = action.optJSONObject("data");
+                switch (type) {
+                    case SDK_ACTION_OPEN_DEEP_LINK:
+                        if (actionData != null) {
+                            openUrl(currentActivity, actionData.optString("url"));
+                        }
+                        break;
+                }
+            }
+        });
     }
-
-
 }

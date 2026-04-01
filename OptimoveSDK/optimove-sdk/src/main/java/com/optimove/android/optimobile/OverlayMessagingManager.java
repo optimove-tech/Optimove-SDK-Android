@@ -10,6 +10,8 @@ import androidx.annotation.UiThread;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Executors;
@@ -68,12 +70,16 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     void onTriggerReceived(OverlayMessagingMessage.MessageType type) {
         switch (type) {
             case SESSION:
-                if (sessionSlotCount >= SESSION_SLOT_CAPACITY) return;
+                if (sessionSlotCount >= SESSION_SLOT_CAPACITY) {
+                    return;
+                }
                 sessionSlotCount++;
                 loadMessage(type);
                 break;
             case IMMEDIATE:
-                if (immediateSlotCount >= IMMEDIATE_SLOT_CAPACITY) return;
+                if (immediateSlotCount >= IMMEDIATE_SLOT_CAPACITY) {
+                    return;
+                }
                 immediateSlotCount++;
                 loadMessage(type);
                 break;
@@ -203,8 +209,8 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             }
 
             @Override
-            public void onClicked(OverlayMessagingMessage message, JSONObject props) {
-                trackClickedEvent(message.getId(), props);
+            public void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events) {
+                trackOverlayMessagingRendererEvents(message.getId(), events);
             }
 
             @Override
@@ -220,12 +226,15 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
         });
     }
 
-    private void trackClickedEvent(long messageId, JSONObject props) {
-        try {
-            props.put("id", messageId);
-            Optimobile.trackEventImmediately(context, AnalyticsContract.EVENT_TYPE_OM_CLICKED, props);
-        } catch (JSONException e) {
-            e.printStackTrace();
+    private void trackOverlayMessagingRendererEvents(long messageId, List<OverlayMessagingRendererEvent> events) {
+        for (OverlayMessagingRendererEvent event : events) {
+            try {
+                JSONObject data = event.data != null ? event.data : new JSONObject();
+                data.put("id", messageId);
+                Optimobile.trackEvent(context, event.type, data, System.currentTimeMillis(), event.immediateFlush);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -64,7 +64,7 @@ class InAppMessageView extends BaseMessageView {
         for (ExecutableAction action : actions) {
             switch (action.getType()) {
                 case BUTTON_ACTION_CLOSE_MESSAGE:
-                    closeCurrentMessage(MessageCloseSource.CLICK);
+                    closeCurrentMessage(MessageCloseSource.CLIENT);
                     break;
                 case BUTTON_ACTION_TRACK_CONVERSION_EVENT:
                     Optimobile.trackEventImmediately(currentActivity, action.getEventType(), action.getConversionEventData());
@@ -260,6 +260,11 @@ class InAppMessageView extends BaseMessageView {
     @Override
     protected void onViewError() {
         presenter.onViewError();
+    }
+
+    @Override
+    protected void onCommand(JSONObject data) {
+        // noop: in-app uses EXECUTE_ACTIONS, not COMMAND
     }
 
     @Override

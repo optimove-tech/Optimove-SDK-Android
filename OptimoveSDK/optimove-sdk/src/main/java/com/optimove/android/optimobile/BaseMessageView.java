@@ -53,7 +53,7 @@ abstract class BaseMessageView extends WebViewClient {
 
     protected enum MessageCloseSource {
         HARDWARE,
-        CLICK
+        CLIENT
     }
 
     private enum State {
@@ -399,7 +399,9 @@ abstract class BaseMessageView extends WebViewClient {
                 return;
             case "EXECUTE_ACTIONS":
                 onExecuteActions(data);
-
+                return;
+            case "COMMAND":
+                onCommand(data);
                 return;
             default:
                 Log.d(TAG, "Unknown message type: " + messageType);
@@ -486,6 +488,8 @@ abstract class BaseMessageView extends WebViewClient {
     abstract protected void onMessageOpened();
 
     abstract protected void onExecuteActions(JSONObject data);
+
+    abstract protected void onCommand(JSONObject data);
 
     @UiThread
     abstract protected void onViewError();
