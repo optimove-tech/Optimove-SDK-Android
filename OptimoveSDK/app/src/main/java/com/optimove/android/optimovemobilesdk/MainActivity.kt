@@ -17,13 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.content.Context
-import android.location.Location
 import android.content.SharedPreferences
 import android.os.Build
 import android.provider.Settings
-import java.io.File
-import android.os.Handler
-import android.os.Looper
 import com.optimove.android.Optimove
 import com.optimove.android.main.events.OptimoveEvent
 import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface
@@ -78,7 +74,7 @@ class MainActivity : AppCompatActivity() {
         persistedUserId = identityPrefs.getString(KEY_USER_ID, "") ?: ""
 
         qaPrefs = getSharedPreferences(MyApplication.PREFS_NAME, Context.MODE_PRIVATE)
-        isDelayedInit = qaPrefs.getBoolean(MyApplication.KEY_DELAYED_INIT, true)
+        isDelayedInit = qaPrefs.getBoolean(MyApplication.KEY_DELAYED_INIT, false)
 
         setContent {
             AppTheme {
@@ -94,7 +90,6 @@ class MainActivity : AppCompatActivity() {
                     onUserIdChange = { persistedUserId = it },
                     onUserEmailChange = { persistedUserEmail = it },
                     onReportEvent = ::reportEvent,
-                    onClearAppData = ::clearAppData,
                     onKillActivity = ::killActivity,
                     onUpdateUserId = ::updateUserId,
                     onClearIdentity = ::clearIdentity,
@@ -105,16 +100,7 @@ class MainActivity : AppCompatActivity() {
                     onSetPreferences = ::setPreferences,
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
                     onSetCredentials = ::setCredentials,
-                    onInAppInterceptionClicked = ::onInAppInterceptionClicked,
-                    onSendLocation = { lat, lng ->
-                        val location = Location("test").apply {
-                            latitude = lat
-                            longitude = lng
-                            time = System.currentTimeMillis()
-                        }
-                        Optimove.getInstance().sendLocationUpdate(location)
-                        outputText = "Location sent: ($lat, $lng)"
-                        },
+                    onEnableInAppInterceptionClicked = ::enableInAppInterceptionClicked,
                     onResetToken = {},
                     onOpenDeeplinkTest = ::openDeeplinkTest,
                     onRegisterPush = {
@@ -171,44 +157,6 @@ class MainActivity : AppCompatActivity() {
         outputText = "Reporting Custom Event for Visitor without optional value"
         runFromWorker { Optimove.getInstance().reportEvent(SimpleCustomEvent()) }
         runFromWorker { Optimove.getInstance().reportEvent("Event_No ParaMs     ") }
-    }
-    private fun clearAppData() {
-        AlertDialog.Builder(this)
-            .setTitle("Clear App Data")
-            .setMessage(
-                "This deletes all local app data and restarts the app."
-            )
-            .setPositiveButton("Clear") { _, _ ->
-                Thread {
-                    wipePrivateAppDataFilesystem()
-                    runOnUiThread {
-                        val launch = packageManager.getLaunchIntentForPackage(packageName)
-                        if (launch != null) {
-                            launch.addFlags(
-                                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            )
-                            startActivity(launch)
-                        }
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            Runtime.getRuntime().exit(0)
-                        }, 150)
-                    }
-                }.start()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun wipePrivateAppDataFilesystem() {
-        val ctx = applicationContext
-        val dataDir = File(ctx.applicationInfo.dataDir)
-        dataDir.listFiles()?.forEach { child ->
-            runCatching { child.deleteRecursively() }
-                .onFailure { Log.w(TAG, "Failed to delete ${child.path}", it) }
-        }
-        runCatching {
-            ctx.getExternalFilesDir(null)?.parentFile?.deleteRecursively()
-        }.onFailure { Log.w(TAG, "Failed to delete external app data dir", it) }
     }
 
     private fun killActivity() {
@@ -336,15 +284,7 @@ class MainActivity : AppCompatActivity() {
         Thread(runnable).start()
     }
 
-    private fun onInAppInterceptionClicked() {
-        if (isInterceptingInApp) {
-            disableInAppInterception()
-        } else {
-            showEnableInAppInterceptionDialog()
-        }
-    }
-
-    private fun showEnableInAppInterceptionDialog() {
+    private fun enableInAppInterceptionClicked() {
         val options = arrayOf("Default (5000 ms)", "12,000 ms")
         var selected = 0
 
@@ -355,20 +295,11 @@ class MainActivity : AppCompatActivity() {
                 val timeoutMs = if (selected == 0) 5000L else 12000L
                 enableInAppInterception(timeoutMs)
                 isInterceptingInApp = true
-                outputText = "In-App interception enabled ($timeoutMs ms timeout per message)"
                 Toast.makeText(this, "In-App interception enabled ($timeoutMs ms)", Toast.LENGTH_SHORT).show()
                 d.dismiss()
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    private fun disableInAppInterception() {
-        inAppDecisionDialog?.takeIf { it.isShowing }?.dismiss()
-        OptimoveInApp.getInstance().setInAppMessageInterceptor(null)
-        isInterceptingInApp = false
-        outputText = "In-App interception disabled"
-        Toast.makeText(this, "In-App interception disabled", Toast.LENGTH_SHORT).show()
     }
 
     private fun enableInAppInterception(timeoutMs: Long) {
@@ -379,13 +310,9 @@ class MainActivity : AppCompatActivity() {
                     val dataText = messageData?.toString() ?: "No data provided"
                     inAppDecisionDialog = AlertDialog.Builder(this@MainActivity)
                         .setTitle("QA: In-App Message")
-                        .setMessage("$dataText\nChoose Show, Postpone, or Suppress.")
+                        .setMessage("$dataText\nShow this message?")
                         .setPositiveButton("Show") { dialog, _ ->
                             decision.show()
-                            dialog.dismiss()
-                        }
-                        .setNeutralButton("Postpone") { dialog, _ ->
-                            decision.postpone()
                             dialog.dismiss()
                         }
                         .setNegativeButton("Suppress") { dialog, _ ->

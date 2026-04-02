@@ -7,6 +7,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.AuthJwtResolver;
+import com.optimove.android.AuthManager;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
@@ -142,7 +144,15 @@ public class OptimovePreferenceCenter {
                 String encodedCustomerId = URLEncoder.encode(this.customerId, "UTF-8");
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
 
-                try (Response response = httpClient.getSync(url, config.getTenantId())) {
+                String jwt = null;
+                if (Optimove.getConfig().getAuthTokenProvider() != null) {
+                    jwt = AuthJwtResolver.blockingJwt(
+                            new AuthManager(Optimove.getConfig().getAuthTokenProvider()),
+                            this.customerId,
+                            30_000L);
+                }
+
+                try (Response response = httpClient.getSync(url, config.getTenantId(), jwt)) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
                     } else {
@@ -188,7 +198,15 @@ public class OptimovePreferenceCenter {
                 String url = "https://preference-center-" + region + ".optimove.net/api/v1/preferences?customerId=" + encodedCustomerId + "&brandGroupId=" + config.getBrandGroupId();
                 JSONArray data = mapPreferenceUpdatesToArray(updates);
 
-                try (Response response = httpClient.putSync(url, data, config.getTenantId())) {
+                String jwt = null;
+                if (Optimove.getConfig().getAuthTokenProvider() != null) {
+                    jwt = AuthJwtResolver.blockingJwt(
+                            new AuthManager(Optimove.getConfig().getAuthTokenProvider()),
+                            this.customerId,
+                            30_000L);
+                }
+
+                try (Response response = httpClient.putSync(url, data, config.getTenantId(), jwt)) {
                     if (!response.isSuccessful()) {
                         logFailedResponse(response);
                     } else {
