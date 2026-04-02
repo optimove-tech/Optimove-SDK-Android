@@ -1,9 +1,9 @@
 # Changelog
 
-
-## 7.12.2
-
--  Introduces a lastShownByInterceptorId field that tracks which message was last shown through the interceptor, preventing duplicate interception of the same head message.
+## 7.13.0
+- Added Federated JWT authentication; OptimoveConfig.Builder.enableAuth(AuthTokenProvider) supplies tokens; the SDK adds X-User-JWT for user-identified Optistream, realtime, Preference Center, Embedded Messaging, Optimobile analytics, and in-app network calls.
+- Added Auth-capable signaling; Outbound SDK requests sent through HttpClient and OptimobileHttpClient include X-Optimove-Auth-Capable: 1 so backends can detect JWT-capable SDK versions.
+- Optistream and realtime paths now group events by customer identity so each request can carry a single JWT. Optimobile analytics drains queued events per stored user id (install/visitor-scoped batches do not attach a user JWT).
 
 ## 7.12.1
 
