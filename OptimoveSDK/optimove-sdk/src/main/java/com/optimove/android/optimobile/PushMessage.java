@@ -18,6 +18,7 @@ public final class PushMessage implements Parcelable {
 
     public static final String EXTRAS_KEY = "com.optimove.push.message";
     private static final int DEEP_LINK_TYPE_IN_APP = 1;
+    private static final int DEEP_LINK_TYPE_OVERLAY_MESSAGE = 2;
     public static final String TAG = PushMessage.class.getName();
 
     private final int id;
@@ -31,6 +32,7 @@ public final class PushMessage implements Parcelable {
     Uri url;
     private final boolean runBackgroundHandler;
     private final int tickleId;
+    private final boolean isOverlayMessagingTrigger;
     private final @Nullable
     String pictureUrl;
     private @Nullable
@@ -59,6 +61,7 @@ public final class PushMessage implements Parcelable {
         this.message = message;
         this.data = data;
         this.tickleId = this.getTickleId(data);
+        this.isOverlayMessagingTrigger = this.isOverlayMessagingTrigger(data);
         this.timeSent = timeSent;
         this.url = url;
         this.runBackgroundHandler = runBackgroundHandler;
@@ -90,6 +93,7 @@ public final class PushMessage implements Parcelable {
             url = Uri.parse(urlString);
         }
         tickleId = in.readInt();
+        isOverlayMessagingTrigger = false;
         pictureUrl = in.readString();
 
         String buttonsString = in.readString();
@@ -140,6 +144,22 @@ public final class PushMessage implements Parcelable {
             Optimobile.log(TAG, e.toString());
             return -1;
         }
+    }
+
+    boolean isOverlayMessagingTrigger(JSONObject data) {
+        JSONObject deepLink = data.optJSONObject("k.deepLink");
+
+        if (deepLink == null) {
+            return false;
+        }
+
+        int linkType = deepLink.optInt("type", -1);
+
+        if (linkType != DEEP_LINK_TYPE_OVERLAY_MESSAGE) {
+            return false;
+        }
+
+        return true;
     }
 
     public static final Creator<PushMessage> CREATOR = new Creator<PushMessage>() {
@@ -213,6 +233,10 @@ public final class PushMessage implements Parcelable {
 
     int getTickleId() {
         return tickleId;
+    }
+
+    boolean isOverlayMessagingTrigger() {
+        return isOverlayMessagingTrigger;
     }
 
     public boolean runBackgroundHandler() {

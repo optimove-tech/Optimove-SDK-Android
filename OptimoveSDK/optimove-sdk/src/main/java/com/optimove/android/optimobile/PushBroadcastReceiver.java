@@ -107,8 +107,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         if (!OptimoveOverlayMessaging.getInstance().isOverlayMessagingEnabled()) {
             return;
         }
-        // TODO -- where in PushMessage does it actually sit?
-        if (!pushMessage.getTitle().equals("OM")){
+
+        if (!pushMessage.isOverlayMessagingTrigger()){
             return;
         }
 
