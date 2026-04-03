@@ -232,6 +232,10 @@ public class OptimoveEmbeddedMessaging {
                     postBody.put(cm.toJSONObject());
                 }
                 String jwt = super.resolveJwt(this.customerId);
+                if (AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), this.customerId, jwt)) {
+                    this.fireCallback(ResultType.ERROR, null);
+                    return;
+                }
                 result = super.postSync(url, postBody, true, jwt);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -269,6 +273,11 @@ public class OptimoveEmbeddedMessaging {
                 postData.put(request.toJSONObject());
                 String url = super.getBaseUrl("events/report");
                 String jwt = super.resolveJwt(request.getCustomerId());
+                if (AuthJwtResolver.isMissingRequiredJwt(
+                        Optimove.getConfig().getAuthTokenProvider(), request.getCustomerId(), jwt)) {
+                    this.fireCallback(ResultType.ERROR);
+                    return;
+                }
                 result = super.postSync(url, postData, false, jwt);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());

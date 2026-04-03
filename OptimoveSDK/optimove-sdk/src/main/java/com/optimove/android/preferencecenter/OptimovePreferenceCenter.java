@@ -151,6 +151,10 @@ public class OptimovePreferenceCenter {
                             this.customerId,
                             30_000L);
                 }
+                if (AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), this.customerId, jwt)) {
+                    this.fireCallback(ResultType.ERROR, null);
+                    return;
+                }
 
                 try (Response response = httpClient.getSync(url, config.getTenantId(), jwt)) {
                     if (!response.isSuccessful()) {
@@ -204,6 +208,10 @@ public class OptimovePreferenceCenter {
                             new AuthManager(Optimove.getConfig().getAuthTokenProvider()),
                             this.customerId,
                             30_000L);
+                }
+                if (AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), this.customerId, jwt)) {
+                    this.fireCallback(ResultType.ERROR);
+                    return;
                 }
 
                 try (Response response = httpClient.putSync(url, data, config.getTenantId(), jwt)) {

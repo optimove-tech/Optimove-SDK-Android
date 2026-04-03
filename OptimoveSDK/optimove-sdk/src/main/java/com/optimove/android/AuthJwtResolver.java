@@ -11,6 +11,24 @@ public final class AuthJwtResolver {
     private AuthJwtResolver() {
     }
 
+    /**
+     * When federated auth is configured and {@code userId} is non-empty, a JWT is required before sending
+     * user-identified requests. Returns true if {@code jwt} is missing after {@link #blockingJwt} (failure,
+     * timeout, or empty token).
+     */
+    public static boolean isMissingRequiredJwt(
+            @Nullable AuthTokenProvider provider,
+            @Nullable String userId,
+            @Nullable String jwt) {
+        if (provider == null) {
+            return false;
+        }
+        if (userId == null || userId.trim().isEmpty()) {
+            return false;
+        }
+        return jwt == null || jwt.isEmpty();
+    }
+
     @Nullable
     public static String blockingJwt(@Nullable AuthManager authManager, @Nullable String userId, long timeoutMs) {
         if (authManager == null || userId == null || userId.isEmpty()) {

@@ -49,6 +49,9 @@ class InAppRequestService {
                         associatedUserId,
                         30_000L);
             }
+            if (AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), associatedUserId, jwt)) {
+                return null;
+            }
 
             try (Response response = httpClient.getSync(url, jwt)) {
                 if (!response.isSuccessful()) {

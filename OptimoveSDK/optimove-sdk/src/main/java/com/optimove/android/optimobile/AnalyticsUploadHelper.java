@@ -99,6 +99,10 @@ class AnalyticsUploadHelper {
             if (authManager != null && !visitorBatch) {
                 jwt = AuthJwtResolver.blockingJwt(authManager, uidKey, 30_000L);
             }
+            if (!visitorBatch
+                    && AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), uidKey, jwt)) {
+                return false;
+            }
             try (Response response = httpClient.postSync(url, data, jwt)) {
                 if (!response.isSuccessful()) {
                     int code = response.code();
