@@ -11,6 +11,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.AuthManager;
+import com.optimove.android.AuthTokenProvider;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 import com.optimove.android.main.common.EventHandlerFactory;
 import com.optimove.android.main.common.EventHandlerProvider;
@@ -103,6 +105,8 @@ final public class Optimove {
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
         this.lifecycleObserver = new LifecycleObserver();
+        AuthTokenProvider authTokenProvider = config.getAuthTokenProvider();
+        AuthManager authManager = authTokenProvider != null ? new AuthManager(authTokenProvider) : null;
         this.eventHandlerProvider = new EventHandlerProvider(EventHandlerFactory.builder()
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance())
@@ -110,6 +114,7 @@ final public class Optimove {
                 .optistreamDbHelper(new OptistreamDbHelper(context))
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
+                .authManager(authManager)
                 .build());
 
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,

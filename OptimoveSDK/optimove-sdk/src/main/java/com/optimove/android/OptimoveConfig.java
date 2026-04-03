@@ -73,6 +73,8 @@ public final class OptimoveConfig {
 
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
+    private @Nullable AuthTokenProvider authTokenProvider;
+
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
         EXPLICIT_BY_USER
@@ -198,6 +200,10 @@ public final class OptimoveConfig {
 
     private void setMinLogLevel(@Nullable LogLevel minLogLevel) {
         this.minLogLevel = minLogLevel;
+    }
+
+    private void setAuthTokenProvider(@Nullable AuthTokenProvider authTokenProvider) {
+        this.authTokenProvider = authTokenProvider;
     }
 
     void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
@@ -415,6 +421,10 @@ public final class OptimoveConfig {
         return this.embeddedMessagingConfig;
     }
 
+    public @Nullable AuthTokenProvider getAuthTokenProvider() {
+        return this.authTokenProvider;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
@@ -473,6 +483,8 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
+
+        private @Nullable AuthTokenProvider authTokenProvider;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -576,6 +588,24 @@ public final class OptimoveConfig {
         }
 
         /**
+         * Enables JWT-based federated authentication for user-identified SDK traffic.
+         * <p>
+         * When set, the SDK will call {@link AuthTokenProvider#getToken(String, AuthTokenProvider.Callback)} to obtain
+         * a JWT per request context; the token is sent as the {@code X-User-JWT} header.
+         * <p>
+         * <b>Threading:</b> the provider may be invoked from a background thread; the {@link AuthTokenProvider.Callback}
+         * may complete on any thread.
+         *
+         * @param provider non-null implementation that fetches JWTs for a given user id
+         * @return this builder
+         */
+        @NonNull
+        public Builder enableAuth(@NonNull AuthTokenProvider provider) {
+            this.authTokenProvider = provider;
+            return this;
+        }
+
+        /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
          * <p>
@@ -664,6 +694,8 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
+
+            newConfig.setAuthTokenProvider(this.authTokenProvider);
 
             return newConfig;
         }

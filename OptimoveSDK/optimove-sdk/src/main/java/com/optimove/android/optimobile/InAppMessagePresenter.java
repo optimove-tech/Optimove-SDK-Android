@@ -40,7 +40,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     private InAppMessageView view;
 
     private boolean interceptionInProgress = false;
-    private int lastShownByInterceptorId = -1;
 
     InAppMessagePresenter(Context context, @NonNull OptimoveConfig.InAppDisplayMode defaultDisplayMode) {
         this.context = context.getApplicationContext();
@@ -128,7 +127,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
     void cancelCurrentPresentationQueue() {
         messageQueue.clear();
         interceptionInProgress = false;
-        lastShownByInterceptorId = -1;
         disposeView();
     }
 
@@ -140,7 +138,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
         }
 
         messageQueue.remove(0);
-        lastShownByInterceptorId = -1;
 
         presentMessageToClient();
     }
@@ -170,7 +167,7 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                 return;
             }
 
-            if (messageInterceptor != null && currentMessage.getInAppId() != lastShownByInterceptorId) {
+            if (messageInterceptor != null) {
                 interceptionInProgress = true;
                 applyMessageInterception(currentMessage);
                 return;
@@ -188,11 +185,9 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             if (interceptionInProgress) {
                 return;
             }
-            if (currentMessage.getInAppId() != lastShownByInterceptorId) {
-                interceptionInProgress = true;
-                applyMessageInterception(currentMessage);
-                return;
-            }
+            interceptionInProgress = true;
+            applyMessageInterception(currentMessage);
+            return;
         }
 
         showMessageDirectly(currentMessage);
@@ -283,7 +278,6 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
                 }
                 Optimobile.handler.post(() -> {
                     interceptionInProgress = false;
-                    lastShownByInterceptorId = message.getInAppId();
                     if (view != null) {
                         view.showMessage(message);
                     } else {

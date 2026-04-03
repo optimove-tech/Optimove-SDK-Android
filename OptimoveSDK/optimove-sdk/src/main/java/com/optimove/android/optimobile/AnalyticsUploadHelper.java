@@ -9,12 +9,19 @@ import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
+import com.optimove.android.AuthJwtResolver;
+import com.optimove.android.AuthManager;
+import com.optimove.android.Optimove;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import okhttp3.Response;
 
@@ -27,26 +34,32 @@ class AnalyticsUploadHelper {
         FAILED_NO_RETRY
     }
 
-    /**
-     * package
-     */
+    private static final class AnalyticsEventRow {
+        final long id;
+        final JSONObject event;
+
+        AnalyticsEventRow(long id, JSONObject event) {
+            this.id = id;
+            this.event = event;
+        }
+    }
+
     @WorkerThread
     Result flushEvents(Context context) {
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-            Pair<ArrayList<JSONObject>, Long> eventsResult = this.getBatchOfEvents(db, 0L);
-            ArrayList<JSONObject> events = eventsResult.first;
-            long maxEventId = eventsResult.second;
-
-            while (!events.isEmpty()) {
-                if (!this.flushBatchToNetwork(context, events, maxEventId)) {
+            long cursor = 0L;
+            while (true) {
+                Pair<List<AnalyticsEventRow>, Long> batch = this.getBatchOfEvents(db, cursor);
+                List<AnalyticsEventRow> rows = batch.first;
+                if (rows.isEmpty()) {
+                    break;
+                }
+                if (!this.flushBatchToNetwork(context, rows)) {
                     return Result.FAILED_RETRY_LATER;
                 }
-
-                eventsResult = this.getBatchOfEvents(db, maxEventId);
-                events = eventsResult.first;
-                maxEventId = eventsResult.second;
+                cursor = batch.second;
             }
         } catch (SQLiteException e) {
             e.printStackTrace();
@@ -58,48 +71,107 @@ class AnalyticsUploadHelper {
         return Result.SUCCESS;
     }
 
-    private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) throws Optimobile.PartialInitialisationException {
-        // Pack into JSON
-        JSONArray data = new JSONArray(events);
+    private boolean flushBatchToNetwork(Context context, List<AnalyticsEventRow> rows) throws Optimobile.PartialInitialisationException {
+        Map<String, List<AnalyticsEventRow>> groups = new LinkedHashMap<>();
+        for (AnalyticsEventRow row : rows) {
+            String key = analyticsUserKey(row.event);
+            groups.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
+        }
+
+        AuthManager authManager = null;
+        if (Optimove.getConfig().getAuthTokenProvider() != null) {
+            authManager = new AuthManager(Optimove.getConfig().getAuthTokenProvider());
+        }
 
         final OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
-
         final String url = Optimobile.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
-        boolean result = false;
-        try (Response response = httpClient.postSync(url, data)) {
-            if (response.isSuccessful()) {
-                result = true;
+        final String installId = Optimobile.getInstallId();
+
+        for (List<AnalyticsEventRow> group : groups.values()) {
+            JSONArray data = new JSONArray();
+            for (AnalyticsEventRow r : group) {
+                data.put(r.event);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            String jwt = null;
+            String uidKey = group.isEmpty() ? "" : analyticsUserKey(group.get(0).event);
+            boolean visitorBatch = uidKey.isEmpty() || installId.equals(uidKey);
+            if (authManager != null && !visitorBatch) {
+                jwt = AuthJwtResolver.blockingJwt(authManager, uidKey, 30_000L);
+            }
+            if (!visitorBatch
+                    && AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), uidKey, jwt)) {
+                return false;
+            }
+            try (Response response = httpClient.postSync(url, data, jwt)) {
+                if (!response.isSuccessful()) {
+                    int code = response.code();
+                    boolean authNotConfigured = Optimove.getConfig().getAuthTokenProvider() == null
+                            && code == 401
+                            && !visitorBatch;
+                    if (authNotConfigured) {
+                        List<Long> ids = new ArrayList<>(group.size());
+                        for (AnalyticsEventRow r : group) {
+                            ids.add(r.id);
+                        }
+                        deletePersistedEventsByIds(context, ids);
+                        continue;
+                    }
+                    return false;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            List<Long> ids = new ArrayList<>(group.size());
+            for (AnalyticsEventRow r : group) {
+                ids.add(r.id);
+            }
+            deletePersistedEventsByIds(context, ids);
         }
-
-        // Clean up batch from DB
-        if (result) {
-            deletePersistedEvents(context, maxEventId);
-        }
-
-        return result;
+        return true;
     }
 
-    private void deletePersistedEvents(Context context, long maxEventId){
+    private static String analyticsUserKey(JSONObject event) {
+        try {
+            if (!event.has("userId") || event.isNull("userId")) {
+                return "";
+            }
+            String u = event.optString("userId", "");
+            return u == null ? "" : u.trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private void deletePersistedEventsByIds(Context context, List<Long> ids) {
+        if (ids.isEmpty()) {
+            return;
+        }
         try (SQLiteOpenHelper dbHelper = new AnalyticsDbHelper(context)) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+            StringBuilder ph = new StringBuilder();
+            String[] args = new String[ids.size()];
+            for (int i = 0; i < ids.size(); i++) {
+                if (i > 0) {
+                    ph.append(',');
+                }
+                ph.append('?');
+                args[i] = String.valueOf(ids.get(i));
+            }
             db.delete(
                     AnalyticsContract.AnalyticsEvent.TABLE_NAME,
-                    AnalyticsContract.AnalyticsEvent.COL_ID + " <= ?",
-                    new String[]{String.valueOf(maxEventId)});
+                    AnalyticsContract.AnalyticsEvent.COL_ID + " IN (" + ph + ")",
+                    args);
 
-            Optimobile.log(TAG, "Deleted persistent events up to " + maxEventId + " (inclusive)");
+            Optimobile.log(TAG, "Deleted persistent analytics events: " + ids.size());
         } catch (SQLiteException e) {
-            Optimobile.log(TAG, "Failed to delete persistent events up to " + maxEventId + " (inclusive)");
+            Optimobile.log(TAG, "Failed to delete persistent analytics events");
             e.printStackTrace();
         }
     }
 
-    private Pair<ArrayList<JSONObject>, Long> getBatchOfEvents(SQLiteDatabase db, long minEventId) {
+    private Pair<List<AnalyticsEventRow>, Long> getBatchOfEvents(SQLiteDatabase db, long minEventId) {
         String[] projection = {
                 AnalyticsContract.AnalyticsEvent.COL_ID,
                 AnalyticsContract.AnalyticsEvent.COL_HAPPENED_AT_MILLIS,
@@ -125,8 +197,8 @@ class AnalyticsUploadHelper {
                 String.valueOf(100)
         );
 
-        ArrayList<JSONObject> events = new ArrayList<>();
-        long maxEventId = -1L;
+        List<AnalyticsEventRow> rows = new ArrayList<>();
+        long maxEventId = minEventId;
 
         while (cursor.moveToNext()) {
             JSONObject event = new JSONObject();
@@ -152,16 +224,16 @@ class AnalyticsUploadHelper {
 
                 event.put("userId", userId);
 
-                events.add(event);
-
-                maxEventId = cursor.getLong(cursor.getColumnIndex(AnalyticsContract.AnalyticsEvent.COL_ID));
+                long rowId = cursor.getLong(cursor.getColumnIndex(AnalyticsContract.AnalyticsEvent.COL_ID));
+                rows.add(new AnalyticsEventRow(rowId, event));
+                maxEventId = Math.max(maxEventId, rowId);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         cursor.close();
 
-        return new Pair<>(events, maxEventId);
+        return new Pair<>(rows, maxEventId);
     }
 
 }

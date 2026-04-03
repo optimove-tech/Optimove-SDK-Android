@@ -7,6 +7,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.AuthJwtResolver;
+import com.optimove.android.AuthManager;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
@@ -229,7 +231,12 @@ public class OptimoveEmbeddedMessaging {
                 for (ContainerRequestOptions cm : requestBody) {
                     postBody.put(cm.toJSONObject());
                 }
-                result = super.postSync(url, postBody, true);
+                String jwt = super.resolveJwt(this.customerId);
+                if (AuthJwtResolver.isMissingRequiredJwt(Optimove.getConfig().getAuthTokenProvider(), this.customerId, jwt)) {
+                    this.fireCallback(ResultType.ERROR, null);
+                    return;
+                }
+                result = super.postSync(url, postBody, true, jwt);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
@@ -265,7 +272,13 @@ public class OptimoveEmbeddedMessaging {
                 JSONArray postData = new JSONArray();
                 postData.put(request.toJSONObject());
                 String url = super.getBaseUrl("events/report");
-                result = super.postSync(url, postData, false);
+                String jwt = super.resolveJwt(request.getCustomerId());
+                if (AuthJwtResolver.isMissingRequiredJwt(
+                        Optimove.getConfig().getAuthTokenProvider(), request.getCustomerId(), jwt)) {
+                    this.fireCallback(ResultType.ERROR);
+                    return;
+                }
+                result = super.postSync(url, postData, false, jwt);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
@@ -286,10 +299,21 @@ public class OptimoveEmbeddedMessaging {
             this.config = config;
         }
 
-        public EmbeddedMessagingResult postSync(String url, JSONArray postData, boolean expectResponse) {
+        @Nullable
+        protected String resolveJwt(@Nullable String userId) {
+            if (userId == null || Optimove.getConfig().getAuthTokenProvider() == null) {
+                return null;
+            }
+            return AuthJwtResolver.blockingJwt(
+                    new AuthManager(Optimove.getConfig().getAuthTokenProvider()),
+                    userId,
+                    30_000L);
+        }
+
+        public EmbeddedMessagingResult postSync(String url, JSONArray postData, boolean expectResponse, @Nullable String userJwt) {
             HttpClient httpClient = HttpClient.getInstance();
 
-            try (Response response = httpClient.postSync(url, postData, config.getTenantId())) {
+            try (Response response = httpClient.postSync(url, postData, config.getTenantId(), userJwt)) {
                 return handleResponse(response, expectResponse);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());

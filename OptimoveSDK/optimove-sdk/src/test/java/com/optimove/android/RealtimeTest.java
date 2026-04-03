@@ -78,6 +78,7 @@ public class RealtimeTest {
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
+        when(builder.userJwt(any())).thenReturn(builder);
 
         when(userInfo.getUserId()).thenReturn(userId);
         when(userInfo.getEmail()).thenReturn(userEmail);
