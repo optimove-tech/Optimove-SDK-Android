@@ -11,7 +11,8 @@ import java.util.List;
 class OverlayMessagingRendererEvent {
     final String type;
     final boolean immediateFlush;
-    @Nullable final JSONObject data;
+    @Nullable
+    final JSONObject data;
 
     private OverlayMessagingRendererEvent(String type, boolean immediateFlush, @Nullable JSONObject data) {
         this.type = type;
@@ -27,9 +28,9 @@ class OverlayMessagingRendererEvent {
             JSONObject obj = raw.optJSONObject(i);
             if (obj == null) continue;
             result.add(new OverlayMessagingRendererEvent(
-                obj.optString("type"),
-                obj.optBoolean("immediateFlush", true),
-                obj.optJSONObject("data")
+                    obj.optString("type"),
+                    obj.optBoolean("immediateFlush", true),
+                    obj.optJSONObject("data")
             ));
         }
         return result;

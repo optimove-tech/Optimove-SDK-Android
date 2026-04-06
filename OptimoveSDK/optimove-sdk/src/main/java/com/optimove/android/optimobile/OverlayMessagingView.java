@@ -19,8 +19,10 @@ class OverlayMessagingView extends BaseMessageView {
 
     private static class RendererCommand {
         final boolean close;
-        @Nullable final List<OverlayMessagingRendererEvent> events;
-        @Nullable final JSONArray sdkActions;
+        @Nullable
+        final List<OverlayMessagingRendererEvent> events;
+        @Nullable
+        final JSONArray sdkActions;
 
         private RendererCommand(boolean close, @Nullable List<OverlayMessagingRendererEvent> events, @Nullable JSONArray sdkActions) {
             this.close = close;
@@ -32,19 +34,22 @@ class OverlayMessagingView extends BaseMessageView {
         static RendererCommand parse(@Nullable JSONObject data) {
             if (data == null) return null;
             List<OverlayMessagingRendererEvent> events = OverlayMessagingRendererEvent.parseAll(data.optJSONArray("events"));
-            return new RendererCommand(
-                data.optBoolean("close", false),
-                events.isEmpty() ? null : events,
-                data.optJSONArray("executeSdkActions")
-            );
+            return new RendererCommand(data.optBoolean("close", false), events.isEmpty() ? null : events, data.optJSONArray("executeSdkActions"));
         }
     }
 
     interface Listener {
-        @UiThread void onMessageClosed(OverlayMessagingMessage message);
-        @UiThread void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events);
-        @UiThread void onDismissed(OverlayMessagingMessage message);
-        @UiThread void onViewError(OverlayMessagingMessage message);
+        @UiThread
+        void onMessageClosed(OverlayMessagingMessage message);
+
+        @UiThread
+        void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events);
+
+        @UiThread
+        void onDismissed(OverlayMessagingMessage message);
+
+        @UiThread
+        void onViewError(OverlayMessagingMessage message);
     }
 
     @NonNull
@@ -53,10 +58,7 @@ class OverlayMessagingView extends BaseMessageView {
     private final Listener listener;
 
     @UiThread
-    OverlayMessagingView(@NonNull OverlayMessagingMessage message,
-                         @NonNull Activity currentActivity,
-                         @NonNull String iarUrl,
-                         @NonNull Listener listener) {
+    OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull Listener listener) {
         super(currentActivity);
 
         this.currentMessage = message;

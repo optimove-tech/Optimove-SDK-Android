@@ -35,7 +35,9 @@ import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
 class OverlayMessagingActivity : AppCompatActivity() {
 
     private var isInterceptorSet by mutableStateOf(false)
-    private var pendingCallback by mutableStateOf<OptimoveOverlayMessaging.OverlayMessagingInterceptorCallback?>(null)
+    private var pendingCallback by mutableStateOf<OptimoveOverlayMessaging.OverlayMessagingInterceptorCallback?>(
+        null
+    )
     private var timeoutSeconds by mutableStateOf("30")
     private var lastOutcome by mutableStateOf<String?>(null)
     private val handler = Handler(Looper.getMainLooper())
@@ -122,7 +124,10 @@ class OverlayMessagingActivity : AppCompatActivity() {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Button(
-                                onClick = { pendingCallback?.show(); pendingCallback = null; lastOutcome = "show" },
+                                onClick = {
+                                    pendingCallback?.show(); pendingCallback = null; lastOutcome =
+                                    "show"
+                                },
                                 enabled = hasMessage,
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp)
@@ -130,7 +135,10 @@ class OverlayMessagingActivity : AppCompatActivity() {
                                 Text("Show")
                             }
                             Button(
-                                onClick = { pendingCallback?.discard(); pendingCallback = null; lastOutcome = "discard" },
+                                onClick = {
+                                    pendingCallback?.discard(); pendingCallback =
+                                    null; lastOutcome = "discard"
+                                },
                                 enabled = hasMessage,
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
@@ -141,7 +149,10 @@ class OverlayMessagingActivity : AppCompatActivity() {
                                 Text("Discard")
                             }
                             Button(
-                                onClick = { pendingCallback?.defer(); pendingCallback = null; lastOutcome = "defer" },
+                                onClick = {
+                                    pendingCallback?.defer(); pendingCallback = null; lastOutcome =
+                                    "defer"
+                                },
                                 enabled = hasMessage,
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp),
@@ -167,19 +178,22 @@ class OverlayMessagingActivity : AppCompatActivity() {
 
     private fun setInterceptor() {
         val timeoutMs = (timeoutSeconds.toLongOrNull() ?: 30L) * 1000L
-        OptimoveOverlayMessaging.getInstance().setInterceptor(object : OptimoveOverlayMessaging.OverlayMessagingInterceptor {
-            override fun onMessageLoaded(
-                message: com.optimove.android.optimobile.OverlayMessagingMessage,
-                callback: OptimoveOverlayMessaging.OverlayMessagingInterceptorCallback
-            ) {
-                runOnUiThread {
-                    pendingCallback = callback
-                    handler.postDelayed({ pendingCallback = null; lastOutcome = "timeout" }, timeoutMs)
+        OptimoveOverlayMessaging.getInstance()
+            .setInterceptor(object : OptimoveOverlayMessaging.OverlayMessagingInterceptor {
+                override fun onMessageLoaded(
+                    message: com.optimove.android.optimobile.OverlayMessagingMessage,
+                    callback: OptimoveOverlayMessaging.OverlayMessagingInterceptorCallback
+                ) {
+                    runOnUiThread {
+                        pendingCallback = callback
+                        handler.postDelayed(
+                            { pendingCallback = null; lastOutcome = "timeout" }, timeoutMs
+                        )
+                    }
                 }
-            }
 
-            override fun getTimeoutMs(): Long = timeoutMs
-        })
+                override fun getTimeoutMs(): Long = timeoutMs
+            })
         isInterceptorSet = true
     }
 

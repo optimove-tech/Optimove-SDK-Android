@@ -26,8 +26,7 @@ class OverlayMessagingRequestService {
         try {
             String messageType = type == OverlayMessagingMessage.MessageType.SESSION ? "session" : "immediate";
 
-            String url = Optimobile.urlForService(UrlBuilder.Service.OVERLAY_MESSAGING,
-                    "/api/v1/users/" + encodedIdentifier + "/messages/mobile?messageType=" + messageType);
+            String url = Optimobile.urlForService(UrlBuilder.Service.OVERLAY_MESSAGING, "/api/v1/users/" + encodedIdentifier + "/messages/mobile?messageType=" + messageType);
 
             try (Response response = httpClient.getSync(url)) {
 

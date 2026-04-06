@@ -8,8 +8,7 @@ import org.json.JSONObject;
 public class OverlayMessagingMessage {
 
     public enum MessageType {
-        SESSION,
-        IMMEDIATE
+        SESSION, IMMEDIATE
     }
 
     private final long id;

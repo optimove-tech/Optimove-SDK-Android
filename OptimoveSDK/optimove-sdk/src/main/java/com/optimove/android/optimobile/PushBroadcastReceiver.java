@@ -108,7 +108,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (!pushMessage.isOverlayMessagingTrigger()){
+        if (!pushMessage.isOverlayMessagingTrigger()) {
             return;
         }
 

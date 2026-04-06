@@ -14,9 +14,14 @@ public class OptimoveOverlayMessaging {
     private final OverlayMessagingManager manager;
 
     public interface OverlayMessagingInterceptorCallback {
-        @UiThread void show();
-        @UiThread void discard();
-        @UiThread void defer();
+        @UiThread
+        void show();
+
+        @UiThread
+        void discard();
+
+        @UiThread
+        void defer();
     }
 
     public interface OverlayMessagingInterceptor {

@@ -25,18 +25,20 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     private static final int IMMEDIATE_SLOT_CAPACITY = 1;
 
     enum InterceptorOutcome {
-        SHOW,
-        DISCARD,
-        DEFER,
-        TIMEOUT;
+        SHOW, DISCARD, DEFER, TIMEOUT;
 
         String toEventValue() {
             switch (this) {
-                case SHOW:    return "shown";
-                case DISCARD: return "discarded";
-                case DEFER:   return "deferred";
-                case TIMEOUT: return "timeout";
-                default:      throw new IllegalStateException("Unhandled outcome: " + this);
+                case SHOW:
+                    return "shown";
+                case DISCARD:
+                    return "discarded";
+                case DEFER:
+                    return "deferred";
+                case TIMEOUT:
+                    return "timeout";
+                default:
+                    throw new IllegalStateException("Unhandled outcome: " + this);
             }
         }
     }
@@ -154,9 +156,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     }
 
     @UiThread
-    private void handleInterceptorOutcome(
-            @NonNull OverlayMessagingMessage message,
-            @NonNull InterceptorOutcome outcome) {
+    private void handleInterceptorOutcome(@NonNull OverlayMessagingMessage message, @NonNull InterceptorOutcome outcome) {
         switch (outcome) {
             case SHOW:
                 displayQueue.add(message);

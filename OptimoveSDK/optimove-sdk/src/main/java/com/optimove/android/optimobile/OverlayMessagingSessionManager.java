@@ -90,7 +90,6 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
     }
 
 
-
     @Override
     public void activityAvailable(@NonNull Activity activity) { /* noop */ }
 
