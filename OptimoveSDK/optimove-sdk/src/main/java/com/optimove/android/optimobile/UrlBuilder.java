@@ -1,7 +1,6 @@
 package com.optimove.android.optimobile;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,24 +51,14 @@ public class UrlBuilder {
         baseUrlMap.put(Service.MEDIA, "https://i-" + region + ".app.delivery");
 
         // TODO: http -> https
-        String omRegion = mapRegionForOverlayMessaging(region);
-        if (omRegion != null) {
-            baseUrlMap.put(Service.OVERLAY_MESSAGING, "http://optimobile-overlay-srv-" + omRegion + ".optimove.net");
-        }
+        // TODO: use region once cnmaes ok
+        baseUrlMap.put(Service.OVERLAY_MESSAGING, "http://optimobile-overlay-srv-" + "dev" + ".optimove.net");
+
 
         return baseUrlMap;
     }
 
 
-    // TODO:  region. mapping? crashing app?
-    @Nullable
-    private static String mapRegionForOverlayMessaging(@NonNull String region) {
-        switch (region) {
-            case "eu-central-2": return "eu";
-            case "us-east-1":    return "us";
-            case "uk-1":         return "dev";
-            default:             return null;
-        }
-    }
+
 
 }

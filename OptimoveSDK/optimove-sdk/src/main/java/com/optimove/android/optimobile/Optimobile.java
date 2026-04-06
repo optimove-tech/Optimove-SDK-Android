@@ -117,7 +117,6 @@ public final class Optimobile {
 
         OptimoveInApp.initialize(application, config);
 
-        //TODO: move to optimove?
         if (config.isOverlayMessagingEnabled()) {
             OptimoveOverlayMessaging.initialize(application, config.getOverlayMessagingSessionLengthHours());
         }
