@@ -104,7 +104,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     }
 
     protected void maybeTriggerOverlayMessagingSync(Context context, PushMessage pushMessage) {
-        if (!OptimoveOverlayMessaging.getInstance().isOverlayMessagingEnabled()) {
+        if (!Optimove.getConfig().isOverlayMessagingEnabled()) {
             return;
         }
 

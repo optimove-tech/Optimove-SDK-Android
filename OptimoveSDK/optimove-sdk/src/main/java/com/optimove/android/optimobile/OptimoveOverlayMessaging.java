@@ -65,8 +65,4 @@ public class OptimoveOverlayMessaging {
     static void initialize(@NonNull Application application, long sessionLengthHours) {
         shared = new OptimoveOverlayMessaging(application, sessionLengthHours);
     }
-
-    boolean isOverlayMessagingEnabled() {
-        return shared != null;
-    }
 }
