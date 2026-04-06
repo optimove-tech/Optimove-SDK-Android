@@ -1,5 +1,8 @@
 # Changelog
 
+## 7.12.3
+
+-  Wraps `isLaunchActivity()` in try/catch and safely returns false on failure to prevent crashes.
 
 ## 7.12.2
 
