@@ -74,7 +74,7 @@ public final class OptimoveConfig {
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
     private boolean overlayMessagingEnabled;
-    private @Nullable Integer overlayMessagingSessionLengthMinutes;
+    private @Nullable Integer overlayMessagingSessionLengthHours;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -423,8 +423,8 @@ public final class OptimoveConfig {
         return this.overlayMessagingEnabled;
     }
 
-    public int getOverlayMessagingSessionLengthMinutes() {
-        return this.overlayMessagingSessionLengthMinutes;
+    public int getOverlayMessagingSessionLengthHours() {
+        return this.overlayMessagingSessionLengthHours;
     }
 
     private boolean hasFinishedInitialisation() {
@@ -486,7 +486,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        private @Nullable Integer overlayMessagingSessionLengthMinutes;
+        private @Nullable Integer overlayMessagingSessionLengthHours;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -589,14 +589,14 @@ public final class OptimoveConfig {
             return this;
         }
 
-        public Builder enableOverlayMessaging(int sessionLengthMinutes) {
-            if (sessionLengthMinutes <= 0) {
-                throw new IllegalArgumentException("OverlayMessaging: sessionLengthMinutes must be greater than 0");
+        public Builder enableOverlayMessaging(int sessionLengthHours) {
+            if (sessionLengthHours <= 0) {
+                throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must be greater than 0");
             }
             if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
-                throw new IllegalArgumentException("OverlayMmessaging: optimobile feature required");
+                throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");
             }
-            this.overlayMessagingSessionLengthMinutes = sessionLengthMinutes;
+            this.overlayMessagingSessionLengthHours = sessionLengthHours;
             return this;
         }
 
@@ -654,10 +654,6 @@ public final class OptimoveConfig {
         }
 
         public OptimoveConfig build() {
-            if (this.consentStrategy != null && this.overlayMessagingSessionLengthMinutes != null) {
-                throw new IllegalStateException("enableInAppMessaging and enableOverlayMessaging are mutually exclusive");
-            }
-
             OptimoveConfig newConfig = new OptimoveConfig();
             newConfig.setFeatureSet(this.featureSet);
             newConfig.setDelayedInitialisation(delayedInitialisation);
@@ -694,8 +690,8 @@ public final class OptimoveConfig {
 
             newConfig.setMinLogLevel(this.minLogLevel);
 
-            newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthMinutes != null;
-            newConfig.overlayMessagingSessionLengthMinutes = this.overlayMessagingSessionLengthMinutes;
+            newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthHours != null;
+            newConfig.overlayMessagingSessionLengthHours = this.overlayMessagingSessionLengthHours;
 
             return newConfig;
         }

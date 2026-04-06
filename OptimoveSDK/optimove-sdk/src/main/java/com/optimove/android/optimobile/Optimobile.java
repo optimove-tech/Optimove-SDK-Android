@@ -119,7 +119,7 @@ public final class Optimobile {
 
         //TODO: move to optimove?
         if (config.isOverlayMessagingEnabled()) {
-            OptimoveOverlayMessaging.initialize(application, config.getOverlayMessagingSessionLengthMinutes());
+            OptimoveOverlayMessaging.initialize(application, config.getOverlayMessagingSessionLengthHours());
         }
 
         if (config.getDeferredDeepLinkHandler() != null) {

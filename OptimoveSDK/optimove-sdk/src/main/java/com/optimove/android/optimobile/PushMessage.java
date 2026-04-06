@@ -93,7 +93,7 @@ public final class PushMessage implements Parcelable {
             url = Uri.parse(urlString);
         }
         tickleId = in.readInt();
-        isOverlayMessagingTrigger = false;
+        isOverlayMessagingTrigger = (in.readInt() == 1);
         pictureUrl = in.readString();
 
         String buttonsString = in.readString();
@@ -193,6 +193,7 @@ public final class PushMessage implements Parcelable {
         dest.writeString(dataString);
         dest.writeString(urlString);
         dest.writeInt(tickleId);
+        dest.writeInt(isOverlayMessagingTrigger ? 1 : 0);
         dest.writeString(pictureUrl);
         dest.writeString(buttonsString);
         dest.writeString(sound);

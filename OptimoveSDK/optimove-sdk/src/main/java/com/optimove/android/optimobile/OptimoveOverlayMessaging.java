@@ -28,11 +28,11 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthMinutes) {
+    private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthHours) {
         this.manager = new OverlayMessagingManager(application);
         OverlayMessagingSessionManager.Listener sessionListener = () ->
                 manager.onTriggerReceived(OverlayMessagingMessage.MessageType.SESSION);
-        this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthMinutes, sessionListener);
+        this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthHours, sessionListener);
     }
 
     //==============================================================================================
@@ -62,8 +62,8 @@ public class OptimoveOverlayMessaging {
         manager.onTriggerReceived(OverlayMessagingMessage.MessageType.IMMEDIATE);
     }
 
-    static void initialize(@NonNull Application application, long sessionLengthMinutes) {
-        shared = new OptimoveOverlayMessaging(application, sessionLengthMinutes);
+    static void initialize(@NonNull Application application, long sessionLengthHours) {
+        shared = new OptimoveOverlayMessaging(application, sessionLengthHours);
     }
 
     boolean isOverlayMessagingEnabled() {

@@ -2,6 +2,7 @@ package com.optimove.android.optimobile;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -23,25 +24,22 @@ class OverlayMessagingRequestService {
         String encodedIdentifier = Uri.encode(userIdentifier);
 
         try {
-            //TODO: derive region, tenantId, brandId from credentials + take from urlBuilder
-            String region = "dev";
-            int tenantId = 3013;
-            String brandId = "9abb8d6d-62ed-42d1-97d1-c82d15f9c1fc";
+            String messageType = type == OverlayMessagingMessage.MessageType.SESSION ? "session" : "immediate";
 
-            String messageType = type == OverlayMessagingMessage.MessageType.SESSION ? "session-start" : "immediate";
-
-            String url = String.format(
-                    "http://optimobile-overlay-srv-%s.optimove.net/mobile/%s/messages?tenantId=%s&brandId=%s&messageType=%s",
-                    region, encodedIdentifier, tenantId, brandId, messageType);
+            String url = Optimobile.urlForService(UrlBuilder.Service.OVERLAY_MESSAGING,
+                    "/api/v1/users/" + encodedIdentifier + "/messages/mobile?messageType=" + messageType);
 
             try (Response response = httpClient.getSync(url)) {
-                if (response.code() == 204) {
-                    return null;
-                }
+
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
                     return null;
                 }
+
+                if (response.code() == 204) {
+                    return null;
+                }
+
                 return buildMessage(response, type);
             }
         } catch (IOException e) {
@@ -75,14 +73,10 @@ class OverlayMessagingRequestService {
         try {
             JSONObject json = new JSONObject(response.body().string());
             long id = json.getLong("id");
-            String html = json.getString("html");
+            JSONObject content = json.getJSONObject("content");
+            JSONObject data = json.optJSONObject("data");
 
-            // TODO: this should be under message content in response already
-            JSONObject content = new JSONObject();
-            content.put("ver", 1);
-            content.put("html", html);
-
-            return new OverlayMessagingMessage(id, content, type);
+            return new OverlayMessagingMessage(id, content, data, type);
         } catch (NullPointerException | JSONException | IOException e) {
             Optimobile.log(TAG, e.getMessage());
             return null;

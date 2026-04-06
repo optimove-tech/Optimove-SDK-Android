@@ -34,9 +34,9 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
         }
     };
 
-    OverlayMessagingSessionManager(@NonNull Context context, long sessionLengthMinutes, @NonNull Listener listener) {
+    OverlayMessagingSessionManager(@NonNull Context context, long sessionLengthHours, @NonNull Listener listener) {
         this.handler = new Handler(Looper.getMainLooper());
-        this.sessionLengthMs = sessionLengthMinutes * 60_000L;
+        this.sessionLengthMs = sessionLengthHours * 3_600_000L;
         this.listener = listener;
         this.prefs = context.getApplicationContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
 
@@ -76,6 +76,7 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
     }
 
     private void scheduleNextTick() {
+
         long lastSessionStart = prefs.getLong(KEY_LAST_SESSION_START, 0L);
         long nextSessionAt = lastSessionStart + sessionLengthMs + SCHEDULE_BUFFER_MS;
         long delay = Math.max(0, nextSessionAt - System.currentTimeMillis());
