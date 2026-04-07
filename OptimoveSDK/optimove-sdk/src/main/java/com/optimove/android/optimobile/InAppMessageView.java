@@ -40,7 +40,7 @@ class InAppMessageView extends BaseMessageView {
                      @NonNull Activity currentActivity,
                      @NonNull String iarUrl,
                      @Nullable String region) {
-        super(currentActivity);
+        super(currentActivity, true);
 
         this.presenter = presenter;
         this.currentMessage = message;

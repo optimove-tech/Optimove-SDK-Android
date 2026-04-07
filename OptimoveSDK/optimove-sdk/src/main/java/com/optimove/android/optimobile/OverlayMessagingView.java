@@ -59,7 +59,7 @@ class OverlayMessagingView extends BaseMessageView {
 
     @UiThread
     OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull Listener listener) {
-        super(currentActivity);
+        super(currentActivity, false);
 
         this.currentMessage = message;
         this.listener = listener;

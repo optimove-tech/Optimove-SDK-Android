@@ -86,14 +86,16 @@ abstract class BaseMessageView extends WebViewClient {
     private int prevStatusBarColor;
     private boolean prevFlagTranslucentStatus;
     private boolean prevFlagDrawsSystemBarBackgrounds;
+    private final boolean manageStatusBarColor;
 
 
     @UiThread
-    BaseMessageView(@NonNull Activity currentActivity) {
+    BaseMessageView(@NonNull Activity currentActivity, boolean manageStatusBarColor) {
         this.state = State.INITIAL;
         pageFinished = false;
 
         this.currentActivity = currentActivity;
+        this.manageStatusBarColor = manageStatusBarColor;
     }
 
     @UiThread
@@ -197,8 +199,10 @@ abstract class BaseMessageView extends WebViewClient {
         if (dialog != null) {
             dialog.setOnKeyListener(null);
             dialog.dismiss();
-            
-            unsetStatusBarColorForDialog(dialogActivity);
+
+            if (manageStatusBarColor) {
+                unsetStatusBarColorForDialog(dialogActivity);
+            }
         }
 
         if (null != wv) {
@@ -284,7 +288,9 @@ abstract class BaseMessageView extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         view.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-        setStatusBarColorForDialog(currentActivity);
+        if (manageStatusBarColor) {
+            setStatusBarColorForDialog(currentActivity);
+        }
         pageFinished = true;
 
         sendCurrentMessageToClient();
