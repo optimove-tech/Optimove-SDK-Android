@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,8 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
 import com.optimove.android.optimovemobilesdk.MyApplication
 
 private val CardShape = RoundedCornerShape(12.dp)
@@ -49,6 +53,7 @@ fun MainScreen(
     userEmail: String,
     onUserIdChange: (String) -> Unit,
     onUserEmailChange: (String) -> Unit,
+    onClearAppData: () -> Unit,
     onKillActivity: () -> Unit,
     onUpdateUserId: (userId: String, userEmail: String) -> Unit,
     onClearIdentity: () -> Unit,
@@ -60,8 +65,9 @@ fun MainScreen(
     onViewEmbeddedMessaging: () -> Unit,
     onViewOverlayMessaging: () -> Unit,
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
-    onEnableInAppInterceptionClicked: () -> Unit,
+    onInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
+    onSendLocation: (latitude: Double, longitude: Double) -> Unit,
     onOpenDeeplinkTest: () -> Unit,
     onRegisterPush: () -> Unit,
     onUnregisterPush: () -> Unit,
@@ -75,6 +81,9 @@ fun MainScreen(
         mutableStateOf(if (showDelayedConfig) MyApplication.DEFAULT_OPTIMOBILE_CRED else "")
     }
     var prefCenterCred by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
+    var showGeolocationDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -177,13 +186,18 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(4.dp))
 
         Button(
-            onClick = onEnableInAppInterceptionClicked,
-            enabled = !isInterceptingInApp,
+            onClick = onInAppInterceptionClicked,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
-            colors = if (isInterceptingInApp) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.outline) else ButtonDefaults.buttonColors()
+            colors = if (isInterceptingInApp) {
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            } else {
+                ButtonDefaults.buttonColors()
+            }
         ) {
-            Text(if (isInterceptingInApp) "Intercepting In-App (restart to disable)" else "Enable In-App Interception")
+            Text(
+                if (isInterceptingInApp) "Disable In-App Interception" else "Enable In-App Interception"
+            )
         }
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -330,7 +344,87 @@ fun MainScreen(
                 }
             }
         }
-
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(
+            onClick = { showGeolocationDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("Test Geolocation")
+        }
+        if (showGeolocationDialog) {
+            val latError = latitudeValidationMessage(latitude)
+            val lngError = longitudeValidationMessage(longitude)
+            val latParsed = parseLatitude(latitude)
+            val lngParsed = parseLongitude(longitude)
+            val canSendLocation = latParsed != null && lngParsed != null
+            AlertDialog(
+                onDismissRequest = { showGeolocationDialog = false },
+                title = { Text("Test Geolocation") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = latitude,
+                            onValueChange = { latitude = it },
+                            label = { Text("Latitude") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            isError = latError != null,
+                            supportingText = {
+                                if (latError != null) {
+                                    Text(latError, color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                cursorColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        OutlinedTextField(
+                            value = longitude,
+                            onValueChange = { longitude = it },
+                            label = { Text("Longitude") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            isError = lngError != null,
+                            supportingText = {
+                                if (lngError != null) {
+                                    Text(lngError, color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                cursorColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val lat = latParsed
+                            val lng = lngParsed
+                            if (lat != null && lng != null) {
+                                onSendLocation(lat, lng)
+                                showGeolocationDialog = false
+                            }
+                        },
+                        enabled = canSendLocation
+                    ) {
+                        Text("Send Location Update")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showGeolocationDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Button(
             onClick = onOpenDeeplinkTest,
@@ -339,6 +433,15 @@ fun MainScreen(
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
         ) {
             Text("Open deeplink test page")
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Button(
+            onClick = onClearAppData,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Clear App Data")
         }
         Spacer(modifier = Modifier.height(4.dp))
         Button(
@@ -418,4 +521,32 @@ fun MainScreen(
             }
         }
     }
+}
+
+private fun parseLatitude(value: String): Double? {
+    if (value.isBlank()) return null
+    val v = value.toDoubleOrNull() ?: return null
+    if (v.isNaN() || v.isInfinite()) return null
+    return if (v in -90.0..90.0) v else null
+}
+
+private fun parseLongitude(value: String): Double? {
+    if (value.isBlank()) return null
+    val v = value.toDoubleOrNull() ?: return null
+    if (v.isNaN() || v.isInfinite()) return null
+    return if (v in -180.0..180.0) v else null
+}
+
+private fun latitudeValidationMessage(value: String): String? {
+    if (value.isBlank()) return null
+    val v = value.toDoubleOrNull() ?: return "Enter a valid number"
+    if (v.isNaN() || v.isInfinite()) return "Enter a valid number"
+    return if (v in -90.0..90.0) null else "Latitude must be between -90 and 90"
+}
+
+private fun longitudeValidationMessage(value: String): String? {
+    if (value.isBlank()) return null
+    val v = value.toDoubleOrNull() ?: return "Enter a valid number"
+    if (v.isNaN() || v.isInfinite()) return "Enter a valid number"
+    return if (v in -180.0..180.0) null else "Longitude must be between -180 and 180"
 }
