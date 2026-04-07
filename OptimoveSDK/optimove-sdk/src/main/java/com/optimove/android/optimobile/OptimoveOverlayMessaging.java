@@ -2,16 +2,22 @@ package com.optimove.android.optimobile;
 
 import android.app.Application;
 
+import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+
+import com.optimove.android.OptimoveConfig;
 
 public class OptimoveOverlayMessaging {
 
     private static OptimoveOverlayMessaging shared;
 
-    private final OverlayMessagingSessionManager sessionManager;
+    @Nullable
+    private OverlayMessagingSessionManager sessionManager;
     private final OverlayMessagingManager manager;
+    private final Application application;
+    private final long sessionLengthHours;
 
     public interface OverlayMessagingInterceptorCallback {
         @UiThread
@@ -34,7 +40,12 @@ public class OptimoveOverlayMessaging {
     }
 
     private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthHours) {
+        this.application = application;
+        this.sessionLengthHours = sessionLengthHours;
         this.manager = new OverlayMessagingManager(application);
+    }
+
+    private void startSessionManager() {
         OverlayMessagingSessionManager.Listener sessionListener = () ->
                 manager.onTriggerReceived(OverlayMessagingMessage.MessageType.SESSION);
         this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthHours, sessionListener);
@@ -56,7 +67,9 @@ public class OptimoveOverlayMessaging {
 
     @UiThread
     public void resetSession() {
-        sessionManager.resetSession();
+        if (sessionManager != null) {
+            sessionManager.resetSession();
+        }
     }
 
     //==============================================================================================
@@ -67,7 +80,15 @@ public class OptimoveOverlayMessaging {
         manager.onTriggerReceived(OverlayMessagingMessage.MessageType.IMMEDIATE);
     }
 
-    static void initialize(@NonNull Application application, long sessionLengthHours) {
-        shared = new OptimoveOverlayMessaging(application, sessionLengthHours);
+    static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
+        shared = new OptimoveOverlayMessaging(application, config.getOverlayMessagingSessionLengthHours());
+        if (!config.usesDelayedOptimobileConfiguration()) {
+            shared.startSessionManager();
+        }
+    }
+
+    @AnyThread
+    void onCredentialsAvailable() {
+        Optimobile.handler.post(this::startSessionManager);
     }
 }
