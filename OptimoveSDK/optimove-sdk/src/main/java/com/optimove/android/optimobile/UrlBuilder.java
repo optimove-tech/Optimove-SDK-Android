@@ -14,6 +14,7 @@ public class UrlBuilder {
         IAR,
         MEDIA,
         PUSH,
+        OVERLAY_MESSAGING
     }
 
     private final Map<Service, String> baseUrlMap;
@@ -37,7 +38,11 @@ public class UrlBuilder {
     public static Map<Service, String> defaultMapping(@NonNull String region) {
         Map<Service, String> baseUrlMap = new HashMap<>(Service.values().length);
 
-        baseUrlMap.put(Service.IAR, "https://iar.app.delivery");
+        //baseUrlMap.put(Service.IAR, "https://iar.app.delivery");
+        // TODO
+        baseUrlMap.put(Service.IAR, "https://optimobile-iar-dev.optimove.net");
+
+
 
         baseUrlMap.put(Service.PUSH, "https://push-" + region + ".kumulos.com");
         baseUrlMap.put(Service.CRM, "https://crm-" + region + ".kumulos.com");
@@ -45,7 +50,15 @@ public class UrlBuilder {
         baseUrlMap.put(Service.DDL, "https://links-" + region + ".kumulos.com");
         baseUrlMap.put(Service.MEDIA, "https://i-" + region + ".app.delivery");
 
+        // TODO: http -> https
+        // TODO: use region once cnmaes ok
+        baseUrlMap.put(Service.OVERLAY_MESSAGING, "http://optimobile-overlay-srv-" + "dev" + ".optimove.net");
+
+
         return baseUrlMap;
     }
+
+
+
 
 }

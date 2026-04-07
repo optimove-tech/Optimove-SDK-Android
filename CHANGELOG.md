@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.13.0
+
+- Implementation for Overlay Messaging channel. Check optimove developer docs for more.
+
 
 ## 7.12.2
 
@@ -9,17 +13,16 @@
 
 - Fixed bug where postponed in-app message queue survived username and consent changes. In-app presentation queue now clears on identity or in-app consent changes.
 
+
 ## 7.12.0
 
 - Add `postpone()` to the In-App Message Interceptor API. When called, the message is not displayed and not marked as dismissed — it is moved to the back of the queue and will be re-intercepted on the next natural presentation trigger (e.g. app foreground, push tickle). Existing `show()` and `suppress()` behavior is unchanged.
 
 - Fixed dismissed in-app messages re-appearing on fast consecutive app foregrounds
 
-
 ## 7.11.1
 
 - Fix: expiryDate is always absent in EmbeddedMessage due to inconsistent format given by v2 endpoint
-
 
 ## 7.11.0
 
@@ -28,7 +31,6 @@
 ## 7.10.2
 
 - Minor bug fixes for Embedded Messaging: correct field mapping
-
 
 ## 7.10.1
 
@@ -49,7 +51,8 @@
 
 ## 7.8.0
 
-Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage: 
+Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage:
+
 ```java
 OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
   // Example: decide based on your own logic
