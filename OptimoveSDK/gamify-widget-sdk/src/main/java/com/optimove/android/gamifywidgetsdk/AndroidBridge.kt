@@ -1,6 +1,5 @@
 package com.optimove.android.gamifywidgetsdk
 
-import android.util.Log
 import android.webkit.JavascriptInterface
 
 /**
@@ -18,20 +17,13 @@ internal class AndroidBridge(
 
     @JavascriptInterface
     fun closeWidget() {
-        Log.d(TAG, "closeWidget called")
         onClose()
     }
 
     @JavascriptInterface
     fun receiveMessage(json: String) {
-        Log.d(TAG, "receiveMessage: $json")
         if (json.contains("\"type\":\"READY\"")) {
-            Log.d(TAG, "READY received — sending INIT")
             onReady()
         }
-    }
-
-    companion object {
-        private const val TAG = "GamifyBridge"
     }
 }
