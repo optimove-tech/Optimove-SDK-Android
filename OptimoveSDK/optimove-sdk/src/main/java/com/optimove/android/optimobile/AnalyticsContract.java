@@ -46,7 +46,6 @@ final class AnalyticsContract {
     static final String EVENT_TYPE_MESSAGE_READ = "k.message.read";
     static final String MESSAGE_DELETED_FROM_INBOX = "k.message.inbox.deleted";
     static final String EVENT_TYPE_OM_INTERCEPTED = "optimove.om.intercepted";
-    static final String EVENT_TYPE_OM_CLICKED = "optimove.om.clicked";
     static final String EVENT_TYPE_OM_DISMISSED = "optimove.om.dismissed";
     static final String EVENT_TYPE_DEEP_LINK_MATCHED = "k.deepLink.matched";
     static final String EVENT_TYPE_LOCATION_UPDATED = "k.engage.locationUpdated";
