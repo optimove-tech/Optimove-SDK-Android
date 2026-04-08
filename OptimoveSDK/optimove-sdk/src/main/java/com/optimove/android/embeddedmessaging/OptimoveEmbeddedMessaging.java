@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
+import com.optimove.android.auth.AuthManager;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
 
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -129,7 +131,7 @@ public class OptimoveEmbeddedMessaging {
                 new Date(), UUID.randomUUID().toString(), EventType.DELETED, context, userId,
                 userInfo.getVisitorId());
 
-        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, embeddedMessagesDeleteHandler);
+        Runnable task = new EventReportEmbeddedMessagesRunnable(config, userId, request, embeddedMessagesDeleteHandler);
         executorService.submit(task);
     }
 
@@ -158,7 +160,7 @@ public class OptimoveEmbeddedMessaging {
         EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
                 new Date(), UUID.randomUUID().toString(), EventType.CLICKED, context, userId,
                 userInfo.getVisitorId());
-        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, embeddedMessagesMetricsHandler);
+        Runnable task = new EventReportEmbeddedMessagesRunnable(config, userId, request, embeddedMessagesMetricsHandler);
         executorService.submit(task);
     }
 
@@ -188,7 +190,7 @@ public class OptimoveEmbeddedMessaging {
                 new Date(), UUID.randomUUID().toString(), isRead ? EventType.READ : EventType.UNREAD,
                 context, userId, userInfo.getVisitorId());
         Runnable task = new EventReportEmbeddedMessagesRunnable(
-                config, request, embeddedMessagesStatusHandler);
+                config, userId, request, embeddedMessagesStatusHandler);
         executorService.submit(task);
     }
 
@@ -210,7 +212,7 @@ public class OptimoveEmbeddedMessaging {
 
         GetEmbeddedMessagesRunnable(
                 EmbeddedMessagingConfig config, String customerId, EmbeddedMessagesGetHandler callback, ContainerRequestOptions[] requestBody) {
-            super(config);
+            super(config, customerId);
             this.customerId = customerId;
             this.callback = callback;
             this.requestBody = requestBody;
@@ -250,9 +252,10 @@ public class OptimoveEmbeddedMessaging {
 
         EventReportEmbeddedMessagesRunnable(
                 EmbeddedMessagingConfig config,
+                String customerId,
                 EmbeddedMessageEventRequest request,
                 EmbeddedMessagesSetHandler callback) {
-            super(config);
+            super(config, customerId);
             this.callback = callback;
             this.request = request;
         }
@@ -281,21 +284,43 @@ public class OptimoveEmbeddedMessaging {
 
     class EmbeddedMessagesRunnableBase {
         protected EmbeddedMessagingConfig config;
+        protected String customerId;
 
-        public EmbeddedMessagesRunnableBase(EmbeddedMessagingConfig config) {
+        public EmbeddedMessagesRunnableBase(EmbeddedMessagingConfig config, String customerId) {
             this.config = config;
+            this.customerId = customerId;
         }
 
         public EmbeddedMessagingResult postSync(String url, JSONArray postData, boolean expectResponse) {
+            Map<String, String> extraHeaders = resolveAuthHeaders();
+            if (extraHeaders == null) {
+                return new EmbeddedMessagingResult(ResultType.ERROR, null);
+            }
+
             HttpClient httpClient = HttpClient.getInstance();
 
-            try (Response response = httpClient.postSync(url, postData, config.getTenantId())) {
+            try (Response response = httpClient.postSync(url, postData, config.getTenantId(), extraHeaders)) {
                 return handleResponse(response, expectResponse);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
                 return new EmbeddedMessagingResult(ResultType.ERROR, null);
             }
+        }
+
+        @Nullable
+        private Map<String, String> resolveAuthHeaders() {
+            AuthManager authManager = Optimove.getAuthManager();
+            if (authManager == null || customerId == null || customerId.isEmpty()) {
+                return Collections.emptyMap();
+            }
+
+            String jwt = AuthManager.getTokenBlocking(authManager, customerId);
+            if (jwt == null) {
+                Log.e(TAG, "Auth token fetch failed. Dropping request.");
+                return null;
+            }
+            return Collections.singletonMap("X-User-JWT", jwt);
         }
         protected String getBaseUrl(String endpoint) {
             String region = config.getRegion();

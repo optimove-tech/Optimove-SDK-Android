@@ -7,6 +7,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.auth.AuthTokenProvider;
 import com.optimove.android.embeddedmessaging.EmbeddedMessagingConfig;
 import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
@@ -72,6 +73,8 @@ public final class OptimoveConfig {
     private @Nullable Config preferenceCenterConfig;
 
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
+
+    private @Nullable AuthTokenProvider authTokenProvider;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -415,6 +418,14 @@ public final class OptimoveConfig {
         return this.embeddedMessagingConfig;
     }
 
+    public @Nullable AuthTokenProvider getAuthTokenProvider() {
+        return authTokenProvider;
+    }
+
+    private void setAuthTokenProvider(@Nullable AuthTokenProvider provider) {
+        this.authTokenProvider = provider;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
@@ -473,6 +484,7 @@ public final class OptimoveConfig {
         private DeferredDeepLinkHandlerInterface deferredDeepLinkHandler;
 
         private @Nullable LogLevel minLogLevel;
+        private @Nullable AuthTokenProvider authTokenProvider;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -575,6 +587,11 @@ public final class OptimoveConfig {
             return this;
         }
 
+        public Builder enableAuth(@NonNull AuthTokenProvider provider) {
+            this.authTokenProvider = provider;
+            return this;
+        }
+
         /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
@@ -664,6 +681,7 @@ public final class OptimoveConfig {
             newConfig.setDeferredDeepLinkHandler(this.deferredDeepLinkHandler);
 
             newConfig.setMinLogLevel(this.minLogLevel);
+            newConfig.setAuthTokenProvider(this.authTokenProvider);
 
             return newConfig;
         }
