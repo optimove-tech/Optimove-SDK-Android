@@ -9,14 +9,14 @@ class AndroidBridgeTest {
     @Test
     fun `closeWidget invokes onClose callback`() {
         val onClose = mock<() -> Unit>()
-        val bridge = AndroidBridge(onClose)
+        val bridge = AndroidBridge(onClose = onClose, onReady = {})
         bridge.closeWidget()
         verify(onClose).invoke()
     }
 
     @Test
     fun `receiveMessage does not throw`() {
-        val bridge = AndroidBridge(onClose = {})
+        val bridge = AndroidBridge(onClose = {}, onReady = {})
         bridge.receiveMessage("""{"type":"TEST"}""")
     }
 }
