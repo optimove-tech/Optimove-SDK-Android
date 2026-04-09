@@ -1,6 +1,9 @@
 package com.optimove.android.gamifywidgetsdk
 
+import android.util.Log
 import android.webkit.JavascriptInterface
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  * Native bridge exposed to the widget's JavaScript as `window.AndroidBridge`.
@@ -22,8 +25,16 @@ internal class AndroidBridge(
 
     @JavascriptInterface
     fun receiveMessage(json: String) {
-        if (json.contains("\"type\":\"READY\"")) {
-            onReady()
+        try {
+            if (JSONObject(json).getString("type") == "READY") {
+                onReady()
+            }
+        } catch (e: JSONException) {
+            Log.d(TAG, "Incorrect message format: $json")
         }
+    }
+
+    companion object {
+        private const val TAG = "GamifyWidget"
     }
 }
