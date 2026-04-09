@@ -16,6 +16,7 @@ import android.util.Log
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.json.JSONException
 import org.json.JSONObject
 
 internal class WidgetBottomSheet : BottomSheetDialogFragment() {
@@ -120,8 +121,18 @@ internal class WidgetBottomSheet : BottomSheetDialogFragment() {
      */
     private fun sendInit() {
         val initJson = buildInitJson()
-        Log.d(TAG, "sending INIT: $initJson")
+        Log.d(TAG, "sending INIT: ${redactedLog(initJson)}")
         webView.evaluateJavascript("window.postMessage($initJson, '*');", null)
+    }
+
+    private fun redactedLog(json: String): String {
+        return try {
+            val obj = JSONObject(json)
+            if (obj.has("token")) obj.put("token", "[REDACTED]")
+            obj.toString()
+        } catch (_: JSONException) {
+            "[unparseable]"
+        }
     }
 
     private fun buildInitJson(): String {
