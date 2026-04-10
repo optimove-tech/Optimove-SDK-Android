@@ -19,6 +19,7 @@ import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -85,17 +86,24 @@ public class SessionHelper implements AppStateWatcher.AppStateChangedListener {
     }
 
     private boolean isLaunchActivity(Context context, Activity activity) {
-        String packageName = context.getPackageName();
-        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        if (launchIntent == null) {
+        try {
+            String packageName = context.getPackageName();
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+            if (launchIntent == null) {
+                return false;
+            }
+            ComponentName component = launchIntent.getComponent();
+            if (component == null) {
+                return false;
+            }
+            ComponentName activityComponent = activity.getComponentName();
+            if (activityComponent == null) {
+                return false;
+            }
+            return Objects.equals(component.getClassName(), activityComponent.getClassName());
+        } catch (RuntimeException e) {
             return false;
         }
-        ComponentName component = launchIntent.getComponent();
-        if (component == null) {
-            return false;
-        }
-
-        return component.getClassName().equals(activity.getComponentName().getClassName());
     }
 
 
