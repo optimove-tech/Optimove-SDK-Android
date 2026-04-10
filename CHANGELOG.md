@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.13.0
+
+- Added Gamify Widget SDK module: a WebView-based bottom sheet that loads Optimove widget URLs and communicates with the widget via a JavaScript bridge
+
 ## 7.12.3
 
 -  Wraps `isLaunchActivity()` in try/catch and safely returns false on failure to prevent crashes.

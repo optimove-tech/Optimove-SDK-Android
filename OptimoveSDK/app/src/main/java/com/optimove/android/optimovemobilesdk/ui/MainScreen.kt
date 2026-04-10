@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -70,7 +69,8 @@ fun MainScreen(
     onRegisterPush: () -> Unit,
     onUnregisterPush: () -> Unit,
     isDelayedInit: Boolean,
-    onDelayedInitToggle: (Boolean) -> Unit
+    onDelayedInitToggle: (Boolean) -> Unit,
+    onOpenGamifyWidget: () -> Unit
 ) {
     var optimoveCred by remember {
         mutableStateOf(if (showDelayedConfig) MyApplication.DEFAULT_OPTIMOVE_CRED else "")
@@ -330,6 +330,14 @@ fun MainScreen(
                     }
                 }
             }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Button(
+            onClick = onOpenGamifyWidget,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("Open Gamify Widget")
         }
         Spacer(modifier = Modifier.height(12.dp))
         Button(
