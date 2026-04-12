@@ -222,6 +222,10 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             public void onViewError(OverlayMessagingMessage failedMessage) {
                 currentView.dispose();
                 currentView = null;
+                // Immediate messages are short-lived. In case of an error we dont want them to stay on queue and surface later
+                displayQueue.poll();
+                onSlotCleared(failedMessage.getType());
+                maybeShowNext();
             }
         });
     }
