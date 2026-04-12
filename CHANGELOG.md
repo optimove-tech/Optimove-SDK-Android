@@ -4,15 +4,17 @@
 
 - Implementation for Overlay Messaging channel. Check optimove developer docs for more.
 
+## 7.12.3
+
+- Wraps `isLaunchActivity()` in try/catch and safely returns false on failure to prevent crashes.
 
 ## 7.12.2
 
--  Introduces a lastShownByInterceptorId field that tracks which message was last shown through the interceptor, preventing duplicate interception of the same head message.
+- Introduces a lastShownByInterceptorId field that tracks which message was last shown through the interceptor, preventing duplicate interception of the same head message.
 
 ## 7.12.1
 
 - Fixed bug where postponed in-app message queue survived username and consent changes. In-app presentation queue now clears on identity or in-app consent changes.
-
 
 ## 7.12.0
 

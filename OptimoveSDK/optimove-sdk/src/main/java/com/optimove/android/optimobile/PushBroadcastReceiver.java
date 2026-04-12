@@ -347,7 +347,12 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
      * @return
      */
     protected Intent getPushOpenActivityIntent(Context context, PushMessage pushMessage) {
-        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        Intent launchIntent;
+        try {
+            launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        } catch (RuntimeException e) {
+            return null;
+        }
 
         if (null == launchIntent) {
             return null;
