@@ -30,11 +30,11 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
         String toEventValue() {
             switch (this) {
                 case SHOW:
-                    return "shown";
+                    return "show";
                 case DISCARD:
-                    return "discarded";
+                    return "discard";
                 case DEFER:
-                    return "deferred";
+                    return "defer";
                 case TIMEOUT:
                     return "timeout";
                 default:
