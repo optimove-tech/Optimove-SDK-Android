@@ -38,9 +38,8 @@ public class UrlBuilder {
     public static Map<Service, String> defaultMapping(@NonNull String region) {
         Map<Service, String> baseUrlMap = new HashMap<>(Service.values().length);
 
-        //baseUrlMap.put(Service.IAR, "https://iar.app.delivery");
-        // TODO
-        baseUrlMap.put(Service.IAR, "https://optimobile-iar-dev.optimove.net");
+       baseUrlMap.put(Service.IAR, "https://iar.app.delivery");
+
 
 
 
