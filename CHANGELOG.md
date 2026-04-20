@@ -1,8 +1,8 @@
 # Changelog
 
-## 7.13.0
+## 7.12.4
 
-- Added Gamify Widget SDK module: a WebView-based bottom sheet that loads Optimove widget URLs and communicates with the widget via a JavaScript bridge
+- Replaces `WeakDeepLinkHandler` with `LifecycleBoundDeepLinkHandler`, which holds a strong reference to the delegate but binds to the Activity that was current when setDeepLinkHandler was called. When that Activity is destroyed, the handler and lifecycle callback are automatically cleaned up.
 
 ## 7.12.3
 
