@@ -1,1 +1,2 @@
-include ':optimove-sdk', ':gamify-widget-sdk', ':app'
+include ':optimove-sdk'
+include ':app'

@@ -35,7 +35,6 @@ import com.optimove.android.preferencecenter.OptimovePreferenceCenter
 import com.optimove.android.preferencecenter.PreferenceUpdate
 import com.optimove.android.preferencecenter.Topic
 import com.optimove.android.optimovemobilesdk.ui.MainScreen
-
 import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
 import org.json.JSONObject
 
@@ -147,8 +146,7 @@ class MainActivity : AppCompatActivity() {
                             "Delayed init enabled — restart app to apply"
                         else
                             "Immediate init enabled — restart app to apply"
-                    },
-                    onOpenGamifyWidget = ::openGamifyWidget
+                    }
                 )
             }
         }
@@ -316,10 +314,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun viewEmbeddedMessaging() {
         startActivity(Intent(this, EmbeddedMessagingActivity::class.java))
-    }
-
-    private fun openGamifyWidget() {
-        startActivity(Intent(this, GamifyWidgetActivity::class.java))
     }
 
     private fun openDeeplinkTest() {
