@@ -331,7 +331,7 @@ public class OptimoveInApp {
 
         private final Application application;
         private final Context appContext;
-        private final Activity boundActivity;
+        private Activity boundActivity;
         private InAppDeepLinkHandlerInterface delegate;
         private Runnable onCleared;
 
@@ -350,6 +350,7 @@ public class OptimoveInApp {
             application.unregisterActivityLifecycleCallbacks(this);
             this.delegate = null;
             this.onCleared = null;
+            this.boundActivity = null;
         }
 
         @Override
@@ -369,6 +370,7 @@ public class OptimoveInApp {
             if (boundActivity != null && boundActivity == activity) {
                 application.unregisterActivityLifecycleCallbacks(this);
                 delegate = null;
+                boundActivity = null;
                 Runnable callback = onCleared;
                 onCleared = null;
                 if (callback != null) {
