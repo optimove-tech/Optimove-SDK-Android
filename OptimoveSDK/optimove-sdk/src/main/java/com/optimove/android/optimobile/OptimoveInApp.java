@@ -342,7 +342,6 @@ public class OptimoveInApp {
             this.appContext = application.getApplicationContext();
             this.delegate = delegate;
             this.onCleared = onCleared;
-            this.boundActivity = OptimobileInitProvider.getAppStateWatcher().getCurrentActivity();
             application.registerActivityLifecycleCallbacks(this);
         }
 
@@ -366,6 +365,13 @@ public class OptimoveInApp {
         }
 
         @Override
+        public void onActivityResumed(@NonNull Activity activity) {
+            if (boundActivity == null && delegate != null) {
+                boundActivity = activity;
+            }
+        }
+
+        @Override
         public void onActivityDestroyed(@NonNull Activity activity) {
             if (boundActivity != null && boundActivity == activity) {
                 application.unregisterActivityLifecycleCallbacks(this);
@@ -381,7 +387,6 @@ public class OptimoveInApp {
 
         @Override public void onActivityCreated(@NonNull Activity a, @Nullable Bundle s) {}
         @Override public void onActivityStarted(@NonNull Activity a) {}
-        @Override public void onActivityResumed(@NonNull Activity a) {}
         @Override public void onActivityPaused(@NonNull Activity a) {}
         @Override public void onActivityStopped(@NonNull Activity a) {}
         @Override public void onActivitySaveInstanceState(@NonNull Activity a, @NonNull Bundle o) {}
