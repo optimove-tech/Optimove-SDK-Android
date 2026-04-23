@@ -13,7 +13,9 @@ import org.json.JSONObject;
 import java.util.List;
 
 import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +58,8 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
     private int sessionSlotCount = 0;
     private int immediateSlotCount = 0;
+    // Prevents re-processing the same message when triggers arrive before backend events propagate
+    private final Set<Long> seenMessageIds = new HashSet<>();
 
     OverlayMessagingManager(Context context) {
         this.context = context.getApplicationContext();
@@ -109,11 +113,12 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
     @UiThread
     private void onMessageLoaded(OverlayMessagingMessage.MessageType type, @Nullable OverlayMessagingMessage message) {
-        if (message == null) {
+        if (message == null || seenMessageIds.contains(message.getId())) {
             onSlotCleared(type);
             return;
         }
 
+        seenMessageIds.add(message.getId());
         processMessage(message);
     }
 
@@ -163,9 +168,13 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 maybeShowNext();
                 trackInterceptedEvent(message.getId(), outcome);
                 break;
-            case DISCARD:
             case DEFER:
             case TIMEOUT:
+                seenMessageIds.remove(message.getId());
+                onSlotCleared(message.getType());
+                trackInterceptedEvent(message.getId(), outcome);
+                break;
+            case DISCARD:
                 onSlotCleared(message.getType());
                 trackInterceptedEvent(message.getId(), outcome);
                 break;
