@@ -35,6 +35,7 @@ import com.optimove.android.preferencecenter.OptimovePreferenceCenter
 import com.optimove.android.preferencecenter.PreferenceUpdate
 import com.optimove.android.preferencecenter.Topic
 import com.optimove.android.optimovemobilesdk.ui.MainScreen
+
 import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
 import org.json.JSONObject
 
@@ -127,7 +128,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         Optimove.getInstance().sendLocationUpdate(location)
                         outputText = "Location sent: ($lat, $lng)"
-                        },
+                    },
                     onResetToken = {},
                     onOpenDeeplinkTest = ::openDeeplinkTest,
                     onRegisterPush = {
@@ -157,9 +158,14 @@ class MainActivity : AppCompatActivity() {
                     onDelayedInitToggle = { enabled ->
                         isDelayedInit = enabled
                         qaPrefs.edit().putBoolean(MyApplication.KEY_DELAYED_INIT, enabled).apply()
-                        outputText = if (enabled) "Delayed init enabled — restart app to apply"
-                        else "Immediate init enabled — restart app to apply"
-                    })
+
+                        outputText = if (enabled)
+                            "Delayed init enabled — restart app to apply"
+                        else
+                            "Immediate init enabled — restart app to apply"
+                    },
+                    onOpenGamifyWidget = ::openGamifyWidget
+                )
             }
         }
     }
@@ -184,6 +190,7 @@ class MainActivity : AppCompatActivity() {
         runFromWorker { Optimove.getInstance().reportEvent(SimpleCustomEvent()) }
         runFromWorker { Optimove.getInstance().reportEvent("Event_No ParaMs     ") }
     }
+
     private fun clearAppData() {
         AlertDialog.Builder(this)
             .setTitle("Clear App Data")
@@ -329,8 +336,14 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, EmbeddedMessagingActivity::class.java))
     }
 
+
     private fun viewOverlayMessaging() {
         startActivity(Intent(this, OverlayMessagingActivity::class.java))
+    }
+
+    private fun openGamifyWidget() {
+        startActivity(Intent(this, GamifyWidgetActivity::class.java))
+
     }
 
     private fun openDeeplinkTest() {
@@ -377,7 +390,11 @@ class MainActivity : AppCompatActivity() {
                 isInterceptingInApp = true
 
                 outputText = "In-App interception enabled ($timeoutMs ms timeout per message)"
-                Toast.makeText(this, "In-App interception enabled ($timeoutMs ms)", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "In-App interception enabled ($timeoutMs ms)",
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 d.dismiss()
             }.setNegativeButton("Cancel", null).show()
