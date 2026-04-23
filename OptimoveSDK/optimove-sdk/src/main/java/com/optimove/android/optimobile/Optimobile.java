@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import com.optimove.android.BuildConfig;
 import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
+import com.optimove.android.auth.AuthManager;
 
 import android.location.Location;
 
@@ -141,6 +142,10 @@ public final class Optimobile {
         }
     }
 
+
+    public static void setAuthManager(@Nullable AuthManager authManager) {
+        OptimobileHttpClient.getInstance().setAuthManager(authManager);
+    }
 
     //==============================================================================================
     //-- Getters/setters

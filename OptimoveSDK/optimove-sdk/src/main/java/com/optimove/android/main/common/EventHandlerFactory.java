@@ -2,6 +2,9 @@ package com.optimove.android.main.common;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
+import com.optimove.android.auth.AuthManager;
 import com.optimove.android.main.event_handlers.DestinationDecider;
 import com.optimove.android.main.event_handlers.EventDecorator;
 import com.optimove.android.main.event_handlers.EventMemoryBuffer;
@@ -28,17 +31,19 @@ public class EventHandlerFactory {
     private OptistreamDbHelper optistreamDbHelper;
     private LifecycleObserver lifecycleObserver;
     private Context context;
+    private @Nullable AuthManager authManager;
 
     private EventHandlerFactory(HttpClient httpClient, UserInfo userInfo,
                                 int maximumBufferSize, OptistreamDbHelper optistreamDbHelper,
-                                LifecycleObserver lifecycleObserver, Context context) {
+                                LifecycleObserver lifecycleObserver, Context context,
+                                @Nullable AuthManager authManager) {
         this.httpClient = httpClient;
         this.userInfo = userInfo;
         this.maximumBufferSize = maximumBufferSize;
         this.optistreamDbHelper = optistreamDbHelper;
         this.lifecycleObserver = lifecycleObserver;
         this.context = context;
-
+        this.authManager = authManager;
     }
 
     public EventMemoryBuffer getEventBuffer() {
@@ -58,11 +63,11 @@ public class EventHandlerFactory {
     }
 
     public RealtimeManager getRealtimeMananger(RealtimeConfigs realtimeConfigs) {
-        return new RealtimeManager(httpClient, realtimeConfigs, context);
+        return new RealtimeManager(httpClient, realtimeConfigs, context, authManager);
     }
 
     public OptistreamHandler getOptistreamHandler(OptitrackConfigs optitrackConfigs) {
-        return new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper, optitrackConfigs);
+        return new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper, optitrackConfigs, authManager);
     }
 
     public DestinationDecider getDestinationDecider(Map<String, EventConfigs> eventConfigs,
@@ -109,6 +114,7 @@ public class EventHandlerFactory {
     }
 
     public interface Build {
+        Build authManager(@Nullable AuthManager authManager);
         EventHandlerFactory build();
     }
 
@@ -121,6 +127,7 @@ public class EventHandlerFactory {
         private OptistreamDbHelper optistreamDbHelper;
         private LifecycleObserver lifecycleObserver;
         private Context context;
+        private @Nullable AuthManager authManager;
 
         @Override
         public HttpClientStep userInfo(UserInfo userInfo) {
@@ -159,9 +166,15 @@ public class EventHandlerFactory {
         }
 
         @Override
+        public Build authManager(@Nullable AuthManager authManager) {
+            this.authManager = authManager;
+            return this;
+        }
+
+        @Override
         public EventHandlerFactory build() {
             return new EventHandlerFactory(httpClient, userInfo, maximumBufferSize, optistreamDbHelper,
-                    lifecycleObserver, context);
+                    lifecycleObserver, context, authManager);
         }
     }
 

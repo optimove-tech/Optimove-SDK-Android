@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Pair;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import org.json.JSONArray;
@@ -59,28 +60,42 @@ class AnalyticsUploadHelper {
     }
 
     private boolean flushBatchToNetwork(Context context, ArrayList<JSONObject> events, long maxEventId) throws Optimobile.PartialInitialisationException {
-        // Pack into JSON
         JSONArray data = new JSONArray(events);
 
         final OptimobileHttpClient httpClient = OptimobileHttpClient.getInstance();
 
         final String url = Optimobile.urlForService(UrlBuilder.Service.EVENTS, "/v1/app-installs/" + Optimobile.getInstallId() + "/events");
 
+        String batchUserId = extractUserIdFromBatch(events);
+        boolean isVisitorBatch = batchUserId != null && batchUserId.equals(Optimobile.getInstallId());
+        String authUserId = isVisitorBatch ? null : batchUserId;
+
         boolean result = false;
-        try (Response response = httpClient.postSync(url, data)) {
+        try (Response response = httpClient.postSync(url, data, authUserId)) {
             if (response.isSuccessful()) {
                 result = true;
+            } else if (response.code() == 401) {
+                deletePersistedEvents(context, maxEventId);
+                return true;
             }
         } catch (IOException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("Auth token fetch failed")) {
+                deletePersistedEvents(context, maxEventId);
+                return true;
+            }
             e.printStackTrace();
         }
 
-        // Clean up batch from DB
         if (result) {
             deletePersistedEvents(context, maxEventId);
         }
 
         return result;
+    }
+
+    private static @Nullable String extractUserIdFromBatch(ArrayList<JSONObject> events) {
+        if (events.isEmpty()) return null;
+        return events.get(0).optString("userId", null);
     }
 
     private void deletePersistedEvents(Context context, long maxEventId){
@@ -100,6 +115,43 @@ class AnalyticsUploadHelper {
     }
 
     private Pair<ArrayList<JSONObject>, Long> getBatchOfEvents(SQLiteDatabase db, long minEventId) {
+        String sortBy = AnalyticsContract.AnalyticsEvent.COL_ID + " ASC";
+
+        // Peek at the oldest event to determine which user_identifier to batch
+        String peekSelection = AnalyticsContract.AnalyticsEvent.COL_ID + " > ?";
+        String[] peekParams = new String[]{String.valueOf(minEventId)};
+
+        Cursor peekCursor = db.query(
+                AnalyticsContract.AnalyticsEvent.TABLE_NAME,
+                new String[]{AnalyticsContract.AnalyticsEvent.COL_USER_IDENTIFIER},
+                peekSelection, peekParams, null, null, sortBy, "1");
+
+        String batchUserIdentifier = null;
+        boolean hasPeek = false;
+        if (peekCursor.moveToFirst()) {
+            hasPeek = true;
+            int idx = peekCursor.getColumnIndex(AnalyticsContract.AnalyticsEvent.COL_USER_IDENTIFIER);
+            batchUserIdentifier = peekCursor.isNull(idx) ? null : peekCursor.getString(idx);
+        }
+        peekCursor.close();
+
+        if (!hasPeek) {
+            return new Pair<>(new ArrayList<>(), -1L);
+        }
+
+        // Fetch up to 100 events with the same user_identifier
+        String selection;
+        String[] params;
+        if (batchUserIdentifier != null) {
+            selection = AnalyticsContract.AnalyticsEvent.COL_ID + " > ? AND "
+                    + AnalyticsContract.AnalyticsEvent.COL_USER_IDENTIFIER + " = ?";
+            params = new String[]{String.valueOf(minEventId), batchUserIdentifier};
+        } else {
+            selection = AnalyticsContract.AnalyticsEvent.COL_ID + " > ? AND "
+                    + AnalyticsContract.AnalyticsEvent.COL_USER_IDENTIFIER + " IS NULL";
+            params = new String[]{String.valueOf(minEventId)};
+        }
+
         String[] projection = {
                 AnalyticsContract.AnalyticsEvent.COL_ID,
                 AnalyticsContract.AnalyticsEvent.COL_HAPPENED_AT_MILLIS,
@@ -108,11 +160,6 @@ class AnalyticsUploadHelper {
                 AnalyticsContract.AnalyticsEvent.COL_PROPERTIES,
                 AnalyticsContract.AnalyticsEvent.COL_USER_IDENTIFIER
         };
-
-        String sortBy = AnalyticsContract.AnalyticsEvent.COL_ID + " ASC";
-
-        String selection = AnalyticsContract.AnalyticsEvent.COL_ID + " > ?";
-        String[] params = new String[]{String.valueOf(minEventId)};
 
         Cursor cursor = db.query(
                 AnalyticsContract.AnalyticsEvent.TABLE_NAME,
