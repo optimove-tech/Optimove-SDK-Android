@@ -197,6 +197,11 @@ class OverlayMessagingActivity : AppCompatActivity() {
         isInterceptorSet = true
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        unsetInterceptor()
+    }
+
     private fun unsetInterceptor() {
         OptimoveOverlayMessaging.getInstance().setInterceptor(null)
         isInterceptorSet = false
