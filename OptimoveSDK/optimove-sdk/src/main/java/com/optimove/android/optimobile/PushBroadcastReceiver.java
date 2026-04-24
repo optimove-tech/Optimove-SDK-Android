@@ -551,7 +551,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
                 Notification notification = this.builder.build();
                 PushBroadcastReceiver.this.showNotification(this.context, this.pushMessage, notification);
 
-                pendingResult.finish();
+                finishPendingResultSafely(pendingResult);
                 return;
             }
 
@@ -563,7 +563,15 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
                     .build();
 
             PushBroadcastReceiver.this.showNotification(this.context, this.pushMessage, notification);
+            finishPendingResultSafely(pendingResult);
+        }
+    }
+
+    private void finishPendingResultSafely(PendingResult pendingResult) {
+        try {
             pendingResult.finish();
+        } catch (IllegalStateException e) {
+            Optimobile.log(TAG, "PushBroadcastReceiver Broadcast already finished");
         }
     }
 
