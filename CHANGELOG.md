@@ -2,7 +2,7 @@
 
 ## 7.12.5
 
-- Wrap pendingResult.finish() in PushBroadcastReceiver with try-cache
+- Wrap `pendingResult.finish()` in PushBroadcastReceiver in try/catch to prevent crash.
 
 ## 7.12.4
 
