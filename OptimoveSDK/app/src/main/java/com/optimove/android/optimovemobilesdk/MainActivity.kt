@@ -56,7 +56,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         OptimoveInApp.getInstance().setDeepLinkHandler(object : InAppDeepLinkHandlerInterface {
-            override fun handle(context: android.content.Context, buttonPress: InAppDeepLinkHandlerInterface.InAppButtonPress) {
+            override fun handle(
+                context: android.content.Context,
+                buttonPress: InAppDeepLinkHandlerInterface.InAppButtonPress
+            ) {
                 Log.d(TAG, "DeepLink handler invoked")
                 startActivity(Intent(this@MainActivity, MainActivity::class.java))
             }
@@ -65,10 +68,18 @@ class MainActivity : AppCompatActivity() {
         val config = Optimove.getConfig()
         val showPreferenceCenter = config.isPreferenceCenterConfigured
         val showEmbeddedMessaging = config.isEmbeddedMessagingConfigured
+        val showOverlayMessaging = config.isOverlayMessagingEnabled
         val showDelayedConfig = config.usesDelayedConfiguration()
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_EXTERNAL_PERMISSION_REQUEST_CODE)
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                WRITE_EXTERNAL_PERMISSION_REQUEST_CODE
+            )
         }
 
         Optimove.getInstance().seeIntent(intent, savedInstanceState)
@@ -87,6 +98,7 @@ class MainActivity : AppCompatActivity() {
                     outputText = outputText,
                     showPreferenceCenter = showPreferenceCenter,
                     showEmbeddedMessaging = showEmbeddedMessaging,
+                    showOverlayMessaging = showOverlayMessaging,
                     showDelayedConfig = showDelayedConfig,
                     credentialsSubmitted = credentialsSubmitted,
                     isInterceptingInApp = isInterceptingInApp,
@@ -105,6 +117,7 @@ class MainActivity : AppCompatActivity() {
                     onGetPreferences = ::getPreferences,
                     onSetPreferences = ::setPreferences,
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
+                    onViewOverlayMessaging = ::viewOverlayMessaging,
                     onSetCredentials = ::setCredentials,
                     onInAppInterceptionClicked = ::onInAppInterceptionClicked,
                     onSendLocation = { lat, lng ->
@@ -115,16 +128,18 @@ class MainActivity : AppCompatActivity() {
                         }
                         Optimove.getInstance().sendLocationUpdate(location)
                         outputText = "Location sent: ($lat, $lng)"
-                        },
+                    },
                     onResetToken = {},
                     onOpenDeeplinkTest = ::openDeeplinkTest,
                     onRegisterPush = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                            ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS)
-                                == PackageManager.PERMISSION_DENIED &&
-                            !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(
+                                this@MainActivity, Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_DENIED && !shouldShowRequestPermissionRationale(
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )
                         ) {
-                            outputText = "Notification permission permanently denied. Opening settings..."
+                            outputText =
+                                "Notification permission permanently denied. Opening settings..."
                             startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                                 putExtra(Settings.EXTRA_APP_PACKAGE, this@MainActivity.packageName)
                             })
@@ -143,6 +158,7 @@ class MainActivity : AppCompatActivity() {
                     onDelayedInitToggle = { enabled ->
                         isDelayedInit = enabled
                         qaPrefs.edit().putBoolean(MyApplication.KEY_DELAYED_INIT, enabled).apply()
+
                         outputText = if (enabled)
                             "Delayed init enabled — restart app to apply"
                         else
@@ -174,6 +190,7 @@ class MainActivity : AppCompatActivity() {
         runFromWorker { Optimove.getInstance().reportEvent(SimpleCustomEvent()) }
         runFromWorker { Optimove.getInstance().reportEvent("Event_No ParaMs     ") }
     }
+
     private fun clearAppData() {
         AlertDialog.Builder(this)
             .setTitle("Clear App Data")
@@ -224,30 +241,27 @@ class MainActivity : AppCompatActivity() {
                 outputText = "Calling setUserId"
                 Optimove.getInstance().setUserId(userId)
             }
+
             userId.isEmpty() -> {
                 outputText = "Calling setUserEmail"
                 Optimove.getInstance().setUserEmail(userEmail)
             }
+
             else -> {
                 outputText = "Calling registerUser"
                 Optimove.getInstance().registerUser(userId, userEmail)
             }
         }
-        identityPrefs.edit()
-            .putString(KEY_USER_ID, userId)
-            .putString(KEY_USER_EMAIL, userEmail)
+        identityPrefs.edit().putString(KEY_USER_ID, userId).putString(KEY_USER_EMAIL, userEmail)
             .apply()
     }
 
     private fun clearIdentity() {
-        identityPrefs.edit()
-            .remove(KEY_USER_ID)
-            .remove(KEY_USER_EMAIL)
-            .apply()
+        identityPrefs.edit().remove(KEY_USER_ID).remove(KEY_USER_EMAIL).apply()
         persistedUserId = ""
         persistedUserEmail = ""
         outputText = "Identity cleared (saved values removed)"
-    } 
+    }
 
     private fun readInbox() {
         val items = OptimoveInApp.getInstance().inboxItems
@@ -274,18 +288,21 @@ class MainActivity : AppCompatActivity() {
         items.forEach { OptimoveInApp.getInstance().deleteMessageFromInbox(it) }
     }
 
+
     private fun getPreferences() {
         OptimovePreferenceCenter.getInstance().getPreferencesAsync { result, preferences ->
             when (result) {
-                OptimovePreferenceCenter.ResultType.ERROR_USER_NOT_SET,
-                OptimovePreferenceCenter.ResultType.ERROR,
-                OptimovePreferenceCenter.ResultType.ERROR_CREDENTIALS_NOT_SET -> Log.d(PC_TAG, result.toString())
+                OptimovePreferenceCenter.ResultType.ERROR_USER_NOT_SET, OptimovePreferenceCenter.ResultType.ERROR, OptimovePreferenceCenter.ResultType.ERROR_CREDENTIALS_NOT_SET -> Log.d(
+                    PC_TAG, result.toString()
+                )
+
                 OptimovePreferenceCenter.ResultType.SUCCESS -> preferences?.let { prefs ->
                     Log.d(PC_TAG, "configured: ${prefs.configuredChannels}")
                     prefs.customerPreferences.forEach { topic ->
                         Log.d(PC_TAG, "${topic.id} ${topic.name} ${topic.subscribedChannels}")
                     }
                 }
+
                 else -> Log.d(PC_TAG, "unknown res type")
             }
         }
@@ -294,9 +311,10 @@ class MainActivity : AppCompatActivity() {
     private fun setPreferences() {
         OptimovePreferenceCenter.getInstance().getPreferencesAsync { result, preferences ->
             when (result) {
-                OptimovePreferenceCenter.ResultType.ERROR_USER_NOT_SET,
-                OptimovePreferenceCenter.ResultType.ERROR,
-                OptimovePreferenceCenter.ResultType.ERROR_CREDENTIALS_NOT_SET -> Log.d(PC_TAG, result.toString())
+                OptimovePreferenceCenter.ResultType.ERROR_USER_NOT_SET, OptimovePreferenceCenter.ResultType.ERROR, OptimovePreferenceCenter.ResultType.ERROR_CREDENTIALS_NOT_SET -> Log.d(
+                    PC_TAG, result.toString()
+                )
+
                 OptimovePreferenceCenter.ResultType.SUCCESS -> preferences?.let { prefs ->
                     Log.d(PC_TAG, "loaded prefs for set: good")
                     val configuredChannels: List<Channel> = prefs.configuredChannels
@@ -305,10 +323,10 @@ class MainActivity : AppCompatActivity() {
                         PreferenceUpdate(topic.id, configuredChannels.subList(0, 1))
                     }
                     OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync(
-                        { setResult -> Log.d(PC_TAG, setResult.toString()) },
-                        updates
+                        { setResult -> Log.d(PC_TAG, setResult.toString()) }, updates
                     )
                 }
+
                 else -> Log.d(PC_TAG, "unknown res type")
             }
         }
@@ -318,12 +336,22 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, EmbeddedMessagingActivity::class.java))
     }
 
+
+    private fun viewOverlayMessaging() {
+        startActivity(Intent(this, OverlayMessagingActivity::class.java))
+    }
+
     private fun openGamifyWidget() {
         startActivity(Intent(this, GamifyWidgetActivity::class.java))
+
     }
 
     private fun openDeeplinkTest() {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(DeeplinkTargetActivity.DEEPLINK_TEST_URI)))
+        startActivity(
+            Intent(
+                Intent.ACTION_VIEW, Uri.parse(DeeplinkTargetActivity.DEEPLINK_TEST_URI)
+            )
+        )
     }
 
     private fun setCredentials(optimove: String?, optimobile: String?, prefCenter: String?) {
@@ -354,19 +382,22 @@ class MainActivity : AppCompatActivity() {
         val options = arrayOf("Default (5000 ms)", "12,000 ms")
         var selected = 0
 
-        AlertDialog.Builder(this)
-            .setTitle("Enable In-App Interception")
+        AlertDialog.Builder(this).setTitle("Enable In-App Interception")
             .setSingleChoiceItems(options, 0) { _, which -> selected = which }
             .setPositiveButton("Enable") { d, _ ->
                 val timeoutMs = if (selected == 0) 5000L else 12000L
                 enableInAppInterception(timeoutMs)
                 isInterceptingInApp = true
+
                 outputText = "In-App interception enabled ($timeoutMs ms timeout per message)"
-                Toast.makeText(this, "In-App interception enabled ($timeoutMs ms)", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "In-App interception enabled ($timeoutMs ms)",
+                    Toast.LENGTH_SHORT
+                ).show()
+
                 d.dismiss()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            }.setNegativeButton("Cancel", null).show()
     }
 
     private fun disableInAppInterception() {
@@ -379,10 +410,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun enableInAppInterception(timeoutMs: Long) {
         OptimoveInApp.getInstance().setInAppMessageInterceptor(object : InAppMessageInterceptor {
-            override fun processMessage(messageData: JSONObject?, decision: InAppMessageInterceptorCallback) {
+            override fun processMessage(
+                messageData: JSONObject?, decision: InAppMessageInterceptorCallback
+            ) {
                 runOnUiThread {
                     inAppDecisionDialog?.takeIf { it.isShowing }?.dismiss()
                     val dataText = messageData?.toString() ?: "No data provided"
+
                     inAppDecisionDialog = AlertDialog.Builder(this@MainActivity)
                         .setTitle("QA: In-App Message")
                         .setMessage("$dataText\nChoose Show, Postpone, or Suppress.")
@@ -400,6 +434,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         .setOnCancelListener { decision.suppress() }
                         .create()
+
                     inAppDecisionDialog?.show()
                 }
             }
@@ -411,8 +446,7 @@ class MainActivity : AppCompatActivity() {
     private class SimpleCustomEvent : OptimoveEvent() {
         override fun getName(): String = "Simple cUSTOM_Event     "
         override fun getParameters(): Map<String, Any> = mapOf(
-            "strinG_param" to "  some_string  ",
-            "number_param" to 42
+            "strinG_param" to "  some_string  ", "number_param" to 42
         )
     }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.13.0
+
+- Implementation for Overlay Messaging channel. Check optimove developer docs for more.
+
 ## 7.12.5
 
 - Wrap `pendingResult.finish()` in PushBroadcastReceiver in try/catch to prevent crash.
@@ -10,11 +14,11 @@
 
 ## 7.12.3
 
--  Wraps `isLaunchActivity()` in try/catch and safely returns false on failure to prevent crashes.
+- Wraps `isLaunchActivity()` in try/catch and safely returns false on failure to prevent crashes.
 
 ## 7.12.2
 
--  Introduces a lastShownByInterceptorId field that tracks which message was last shown through the interceptor, preventing duplicate interception of the same head message.
+- Introduces a lastShownByInterceptorId field that tracks which message was last shown through the interceptor, preventing duplicate interception of the same head message.
 
 ## 7.12.1
 
@@ -26,11 +30,9 @@
 
 - Fixed dismissed in-app messages re-appearing on fast consecutive app foregrounds
 
-
 ## 7.11.1
 
 - Fix: expiryDate is always absent in EmbeddedMessage due to inconsistent format given by v2 endpoint
-
 
 ## 7.11.0
 
@@ -39,7 +41,6 @@
 ## 7.10.2
 
 - Minor bug fixes for Embedded Messaging: correct field mapping
-
 
 ## 7.10.1
 
@@ -60,7 +61,8 @@
 
 ## 7.8.0
 
-Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage: 
+Add In-App Message Interceptor API `OptimoveInApp.getInstance().setInAppMessageInterceptor`, basic usage:
+
 ```java
 OptimoveInApp.getInstance().setInAppMessageInterceptor((message, decision) -> {
   // Example: decide based on your own logic

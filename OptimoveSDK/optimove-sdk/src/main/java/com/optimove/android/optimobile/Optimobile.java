@@ -117,6 +117,10 @@ public final class Optimobile {
 
         OptimoveInApp.initialize(application, config);
 
+        if (config.isOverlayMessagingEnabled()) {
+            OptimoveOverlayMessaging.initialize(application, config);
+        }
+
         if (config.getDeferredDeepLinkHandler() != null) {
             deepLinkHelper = new DeferredDeepLinkHelper();
         }
@@ -598,6 +602,9 @@ public final class Optimobile {
             urlBuilder = new UrlBuilder(config.getBaseUrlMap());
             persistMediaBaseUrl(context, config.getBaseUrlMap());
             OptimoveInApp.getInstance().onCredentialsAvailable();
+            if (config.isOverlayMessagingEnabled()) {
+                OptimoveOverlayMessaging.getInstance().onCredentialsAvailable();
+            }
         }
 
         flushEvents(context);

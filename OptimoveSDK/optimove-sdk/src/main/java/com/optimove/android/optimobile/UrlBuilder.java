@@ -14,6 +14,7 @@ public class UrlBuilder {
         IAR,
         MEDIA,
         PUSH,
+        OVERLAY_MESSAGING
     }
 
     private final Map<Service, String> baseUrlMap;
@@ -39,13 +40,15 @@ public class UrlBuilder {
 
         baseUrlMap.put(Service.IAR, "https://iar.app.delivery");
 
+
         baseUrlMap.put(Service.PUSH, "https://push-" + region + ".kumulos.com");
         baseUrlMap.put(Service.CRM, "https://crm-" + region + ".kumulos.com");
         baseUrlMap.put(Service.EVENTS, "https://events-" + region + ".kumulos.com");
         baseUrlMap.put(Service.DDL, "https://links-" + region + ".kumulos.com");
         baseUrlMap.put(Service.MEDIA, "https://i-" + region + ".app.delivery");
 
+        baseUrlMap.put(Service.OVERLAY_MESSAGING, "https://optimobile-overlay-srv-" + region + ".optimove.net");
+
         return baseUrlMap;
     }
-
 }
