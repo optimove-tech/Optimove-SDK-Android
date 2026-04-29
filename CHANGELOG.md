@@ -4,6 +4,10 @@
 
 - Implementation for Overlay Messaging channel. Check optimove developer docs for more.
 
+## 7.12.5
+
+- Wrap `pendingResult.finish()` in PushBroadcastReceiver in try/catch to prevent crash.
+
 ## 7.12.4
 
 - Replaces `WeakDeepLinkHandler` with `LifecycleBoundDeepLinkHandler`, which holds a strong reference to the delegate but binds to the Activity that was current when setDeepLinkHandler was called. When that Activity is destroyed, the handler and lifecycle callback are automatically cleaned up.
