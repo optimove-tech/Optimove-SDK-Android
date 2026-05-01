@@ -2,9 +2,12 @@ package com.optimove.android.optimobile;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
+
+import com.optimove.android.AuthJwtResolver;
+import com.optimove.android.AuthManager;
+import com.optimove.android.Optimove;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,7 +31,17 @@ class OverlayMessagingRequestService {
 
             String url = Optimobile.urlForService(UrlBuilder.Service.OVERLAY_MESSAGING, "/api/v1/users/" + encodedIdentifier + "/messages/mobile?messageType=" + messageType);
 
-            try (Response response = httpClient.getSync(url)) {
+            String jwt = null;
+            String associatedUserId = Optimobile.getAssociatedUserIdentifier(c);
+            AuthManager authManager = Optimove.getAuthManager();
+            if (authManager != null && associatedUserId != null) {
+                jwt = AuthJwtResolver.blockingJwt(authManager, associatedUserId, 30_000L);
+            }
+            if (AuthJwtResolver.isMissingRequiredJwt(authManager, associatedUserId, jwt)) {
+                return null;
+            }
+
+            try (Response response = httpClient.getSync(url, jwt)) {
 
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
