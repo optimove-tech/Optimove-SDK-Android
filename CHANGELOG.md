@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.14.0
+
+- - Adds federated JWT authentication to the Android SDK. When enableAuth() is used, the SDK fetches JWTs from a client-provided closure and attaches them via X-User-JWT on all user-identified requests.
+
 ## 7.13.0
 
 - Implementation for Overlay Messaging channel. Check optimove developer docs for more.

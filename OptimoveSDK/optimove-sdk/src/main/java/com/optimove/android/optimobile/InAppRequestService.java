@@ -3,6 +3,10 @@ package com.optimove.android.optimobile;
 import android.content.Context;
 import android.net.Uri;
 
+import com.optimove.android.AuthJwtResolver;
+import com.optimove.android.AuthManager;
+import com.optimove.android.Optimove;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -37,7 +41,17 @@ class InAppRequestService {
         try {
             String url = Optimobile.urlForService(UrlBuilder.Service.PUSH, "/v1/users/" + encodedIdentifier + "/messages" + params);
 
-            try (Response response = httpClient.getSync(url)) {
+            String jwt = null;
+            String associatedUserId = Optimobile.getAssociatedUserIdentifier(c);
+            AuthManager authManager = Optimove.getAuthManager();
+            if (authManager != null && associatedUserId != null) {
+                jwt = AuthJwtResolver.blockingJwt(authManager, associatedUserId, 30_000L);
+            }
+            if (AuthJwtResolver.isMissingRequiredJwt(authManager, associatedUserId, jwt)) {
+                return null;
+            }
+
+            try (Response response = httpClient.getSync(url, jwt)) {
                 if (!response.isSuccessful()) {
                     logFailedResponse(response);
                 } else {

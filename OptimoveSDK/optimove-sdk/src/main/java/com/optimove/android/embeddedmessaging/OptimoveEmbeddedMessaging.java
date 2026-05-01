@@ -7,6 +7,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.AuthJwtResolver;
+import com.optimove.android.AuthManager;
 import com.optimove.android.Optimove;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.tools.networking.HttpClient;
@@ -101,7 +103,7 @@ public class OptimoveEmbeddedMessaging {
             handler.post(() -> embeddedMessagesGetHandler.run(ResultType.ERROR_USER_NOT_SET, null));
             return;
         }
-        Runnable task = new GetEmbeddedMessagesRunnable(config, userId, embeddedMessagesGetHandler, containerRequestOptions);
+        Runnable task = new GetEmbeddedMessagesRunnable(config, userId, userInfo.getUserId(), embeddedMessagesGetHandler, containerRequestOptions);
         executorService.submit(task);
     }
 
@@ -129,7 +131,7 @@ public class OptimoveEmbeddedMessaging {
                 new Date(), UUID.randomUUID().toString(), EventType.DELETED, context, userId,
                 userInfo.getVisitorId());
 
-        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, embeddedMessagesDeleteHandler);
+        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, userInfo.getUserId(), embeddedMessagesDeleteHandler);
         executorService.submit(task);
     }
 
@@ -158,7 +160,7 @@ public class OptimoveEmbeddedMessaging {
         EmbeddedMessageEventRequest request = new EmbeddedMessageEventRequest(
                 new Date(), UUID.randomUUID().toString(), EventType.CLICKED, context, userId,
                 userInfo.getVisitorId());
-        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, embeddedMessagesMetricsHandler);
+        Runnable task = new EventReportEmbeddedMessagesRunnable(config, request, userInfo.getUserId(), embeddedMessagesMetricsHandler);
         executorService.submit(task);
     }
 
@@ -188,7 +190,7 @@ public class OptimoveEmbeddedMessaging {
                 new Date(), UUID.randomUUID().toString(), isRead ? EventType.READ : EventType.UNREAD,
                 context, userId, userInfo.getVisitorId());
         Runnable task = new EventReportEmbeddedMessagesRunnable(
-                config, request, embeddedMessagesStatusHandler);
+                config, request, userInfo.getUserId(), embeddedMessagesStatusHandler);
         executorService.submit(task);
     }
 
@@ -206,12 +208,16 @@ public class OptimoveEmbeddedMessaging {
     class GetEmbeddedMessagesRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
         private final EmbeddedMessagesGetHandler callback;
         private final String customerId;
+        @Nullable
+        private final String authId;
         private final ContainerRequestOptions[] requestBody;
 
         GetEmbeddedMessagesRunnable(
-                EmbeddedMessagingConfig config, String customerId, EmbeddedMessagesGetHandler callback, ContainerRequestOptions[] requestBody) {
+                EmbeddedMessagingConfig config, String customerId, @Nullable String authId,
+                EmbeddedMessagesGetHandler callback, ContainerRequestOptions[] requestBody) {
             super(config);
             this.customerId = customerId;
+            this.authId = authId;
             this.callback = callback;
             this.requestBody = requestBody;
         }
@@ -229,7 +235,12 @@ public class OptimoveEmbeddedMessaging {
                 for (ContainerRequestOptions cm : requestBody) {
                     postBody.put(cm.toJSONObject());
                 }
-                result = super.postSync(url, postBody, true);
+                String jwt = super.resolveJwt(this.authId);
+                if (AuthJwtResolver.isMissingRequiredJwt(Optimove.getAuthManager(), this.authId, jwt)) {
+                    this.fireCallback(ResultType.ERROR, null);
+                    return;
+                }
+                result = super.postSync(url, postBody, true, jwt);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
@@ -245,16 +256,19 @@ public class OptimoveEmbeddedMessaging {
 
     class EventReportEmbeddedMessagesRunnable extends EmbeddedMessagesRunnableBase implements Runnable {
         private final EmbeddedMessagesSetHandler callback;
-
         private final EmbeddedMessageEventRequest request;
+        @Nullable
+        private final String authId;
 
         EventReportEmbeddedMessagesRunnable(
                 EmbeddedMessagingConfig config,
                 EmbeddedMessageEventRequest request,
+                @Nullable String authId,
                 EmbeddedMessagesSetHandler callback) {
             super(config);
             this.callback = callback;
             this.request = request;
+            this.authId = authId;
         }
 
         @Override
@@ -265,7 +279,13 @@ public class OptimoveEmbeddedMessaging {
                 JSONArray postData = new JSONArray();
                 postData.put(request.toJSONObject());
                 String url = super.getBaseUrl("events/report");
-                result = super.postSync(url, postData, false);
+                String jwt = super.resolveJwt(this.authId);
+                if (AuthJwtResolver.isMissingRequiredJwt(
+                        Optimove.getAuthManager(), this.authId, jwt)) {
+                    this.fireCallback(ResultType.ERROR);
+                    return;
+                }
+                result = super.postSync(url, postData, false, jwt);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
                 e.printStackTrace();
@@ -286,10 +306,19 @@ public class OptimoveEmbeddedMessaging {
             this.config = config;
         }
 
-        public EmbeddedMessagingResult postSync(String url, JSONArray postData, boolean expectResponse) {
+        @Nullable
+        protected String resolveJwt(@Nullable String userId) {
+            AuthManager authManager = Optimove.getAuthManager();
+            if (userId == null || authManager == null) {
+                return null;
+            }
+            return AuthJwtResolver.blockingJwt(authManager, userId, 30_000L);
+        }
+
+        public EmbeddedMessagingResult postSync(String url, JSONArray postData, boolean expectResponse, @Nullable String userJwt) {
             HttpClient httpClient = HttpClient.getInstance();
 
-            try (Response response = httpClient.postSync(url, postData, config.getTenantId())) {
+            try (Response response = httpClient.postSync(url, postData, config.getTenantId(), userJwt)) {
                 return handleResponse(response, expectResponse);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
