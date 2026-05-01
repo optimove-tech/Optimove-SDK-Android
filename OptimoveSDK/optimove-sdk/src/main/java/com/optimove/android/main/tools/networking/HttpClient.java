@@ -113,7 +113,8 @@ public class HttpClient {
                     json);
 
             Request.Builder rb = new Request.Builder().url(url).post(body)
-                    .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE);
+                    .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE)
+                    .addHeader(OptimoveAuthHeaders.PLATFORM, OptimoveAuthHeaders.PLATFORM_VALUE);
             if (userJwt != null && !userJwt.isEmpty()) {
                 rb.addHeader(OptimoveAuthHeaders.USER_JWT, userJwt);
             }
@@ -179,7 +180,8 @@ public class HttpClient {
             }
 
             Request.Builder rb = new Request.Builder().url(url).get()
-                    .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE);
+                    .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE)
+                    .addHeader(OptimoveAuthHeaders.PLATFORM, OptimoveAuthHeaders.PLATFORM_VALUE);
             if (userJwt != null && !userJwt.isEmpty()) {
                 rb.addHeader(OptimoveAuthHeaders.USER_JWT, userJwt);
             }
@@ -291,7 +293,8 @@ public class HttpClient {
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
                 .addHeader("X-Tenant-Id", String.valueOf(tenantId))
-                .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE);
+                .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE)
+                .addHeader(OptimoveAuthHeaders.PLATFORM, OptimoveAuthHeaders.PLATFORM_VALUE);
         if (userJwt != null && !userJwt.isEmpty()) {
             builder.addHeader(OptimoveAuthHeaders.USER_JWT, userJwt);
         }

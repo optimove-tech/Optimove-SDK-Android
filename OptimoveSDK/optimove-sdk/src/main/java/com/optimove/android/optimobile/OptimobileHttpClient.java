@@ -110,7 +110,8 @@ class OptimobileHttpClient {
                 .addHeader(Optimobile.KEY_AUTH_HEADER, this.authHeader)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
-                .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE);
+                .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE)
+                .addHeader(OptimoveAuthHeaders.PLATFORM, OptimoveAuthHeaders.PLATFORM_VALUE);
         if (userJwt != null && !userJwt.isEmpty()) {
             builder.addHeader(OptimoveAuthHeaders.USER_JWT, userJwt);
         }
