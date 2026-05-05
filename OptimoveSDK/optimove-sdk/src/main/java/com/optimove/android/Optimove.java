@@ -292,9 +292,6 @@ final public class Optimove {
         return currentConfig;
     }
 
-    /**
-     * Returns the shared {@link AuthManager} instance, or {@code null} if federated auth is not configured.
-     */
     @Nullable
     public static AuthManager getAuthManager() {
         return authManager;

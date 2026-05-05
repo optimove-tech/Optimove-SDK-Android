@@ -40,7 +40,7 @@ public final class RealtimeManager {
     private final AuthManager authManager;
 
     public RealtimeManager(@NonNull HttpClient httpClient, @NonNull RealtimeConfigs realtimeConfigs,
-                           @NonNull Context context, @Nullable AuthManager authManager) {
+        @NonNull Context context, @Nullable AuthManager authManager) {
         this.httpClient = httpClient;
         this.realtimePreferences = context.getSharedPreferences(REALTIME_SP_NAME, Context.MODE_PRIVATE);
         this.realtimeConfigs = realtimeConfigs;

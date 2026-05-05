@@ -56,13 +56,6 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
     public OptistreamHandler(@NonNull HttpClient httpClient,
                              @NonNull LifecycleObserver lifecycleObserver,
                              @NonNull OptistreamPersistanceAdapter optistreamPersistanceAdapter,
-                             @NonNull OptitrackConfigs optitrackConfigs) {
-        this(httpClient, lifecycleObserver, optistreamPersistanceAdapter, optitrackConfigs, null);
-    }
-
-    public OptistreamHandler(@NonNull HttpClient httpClient,
-                             @NonNull LifecycleObserver lifecycleObserver,
-                             @NonNull OptistreamPersistanceAdapter optistreamPersistanceAdapter,
                              @NonNull OptitrackConfigs optitrackConfigs,
                              @Nullable AuthManager authManager) {
         this.httpClient = httpClient;
@@ -178,8 +171,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                         if (error != null || token == null) {
                             OptiLoggerStreamsContainer.error("Optistream auth token failed - %s",
                                     error != null ? error.getMessage() : "null token");
-                            dispatchRequestWaitsForResponse = false;
-                            scheduleTheNextDispatch();
+                            sendCustomerGroups(groups, index + 1);
                             return;
                         }
                         postGroupJson(group, groups, index, token);
