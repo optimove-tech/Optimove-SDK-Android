@@ -74,7 +74,7 @@ public class OptitrackTests {
         OptistreamPersistanceAdapter optistreamPersistanceAdapter = new MockedOptistreamPersistency();
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
-                optistreamPersistanceAdapter, optitrackConfigs);
+                optistreamPersistanceAdapter, optitrackConfigs, null);
 
         for (int i = 0; i < numOfEvents; i++) {
             optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(false, "some_name_" + i)));
@@ -96,7 +96,7 @@ public class OptitrackTests {
         OptistreamPersistanceAdapter optistreamPersistanceAdapter = new MockedOptistreamPersistency();
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
-                optistreamPersistanceAdapter, optitrackConfigs);
+                optistreamPersistanceAdapter, optitrackConfigs, null);
         applyHttpRandomDelaySuccessInvocation(maxResponseTime);
 
         //generating numOfEvents events with random realtime
@@ -149,7 +149,7 @@ public class OptitrackTests {
         OptistreamEvent regularEvent = getRegularEvent(true, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
+                , optitrackConfigs, null);
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
         verify(optistreamDbHelper, timeout(1000)).insertEvent(regularEventJson);
     }
@@ -165,7 +165,7 @@ public class OptitrackTests {
                 new OptistreamPersistanceAdapter.EventsBulk(Collections.emptyList()));
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
+                , optitrackConfigs, null);
         optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(true, "some_name")));
 
         verify(optistreamDbHelper, timeout(1000)).removeEventsByIds(anyList());
@@ -176,7 +176,7 @@ public class OptitrackTests {
         OptistreamEvent regularEvent = getRegularEvent(true, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
+                , optitrackConfigs, null);
         OptistreamPersistanceAdapter.EventsBulk eventBulk = new OptistreamPersistanceAdapter.EventsBulk(
                 Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L, regularEventJson)));
         when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(eventBulk);
@@ -197,7 +197,7 @@ public class OptitrackTests {
         OptistreamEvent regularEvent = getRegularEvent(false, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
+                , optitrackConfigs, null);
         OptistreamPersistanceAdapter.EventsBulk eventBulk = new OptistreamPersistanceAdapter.EventsBulk(
                 Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L, regularEventJson)));
         when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(eventBulk);
