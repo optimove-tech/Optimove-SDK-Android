@@ -75,7 +75,12 @@ class AnalyticsUploadHelper {
         Map<String, List<AnalyticsEventRow>> groups = new LinkedHashMap<>();
         for (AnalyticsEventRow row : rows) {
             String key = analyticsUserKey(row.event);
-            groups.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
+            List<AnalyticsEventRow> group = groups.get(key);
+            if (group == null) {
+                group = new ArrayList<>();
+                groups.put(key, group);
+            }
+            group.add(row);
         }
 
         AuthManager authManager = Optimove.getAuthManager();
@@ -135,8 +140,7 @@ class AnalyticsUploadHelper {
             if (!event.has("userId") || event.isNull("userId")) {
                 return "";
             }
-            String u = event.optString("userId", "");
-            return u == null ? "" : u.trim();
+            return event.optString("userId", "").trim();
         } catch (Exception e) {
             return "";
         }

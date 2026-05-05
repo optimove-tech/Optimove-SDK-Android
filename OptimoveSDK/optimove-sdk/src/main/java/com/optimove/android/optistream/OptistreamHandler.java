@@ -163,22 +163,21 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         List<OptistreamPersistanceAdapter.QueuedEvent> group = groups.get(index);
         String customerKey = group.isEmpty() ? "" : customerKeyFromJson(group.get(0).getEventJson());
 
-        Runnable postOnExecutor = () -> postGroupJson(group, groups, index, null);
-
-        if (authManager != null && !customerKey.isEmpty()) {
-            authManager.getToken(customerKey, (token, error) ->
-                    singleThreadScheduledExecutor.submit(() -> {
-                        if (error != null || token == null) {
-                            OptiLoggerStreamsContainer.error("Optistream auth token failed - %s",
-                                    error != null ? error.getMessage() : "null token");
-                            sendCustomerGroups(groups, index + 1);
-                            return;
-                        }
-                        postGroupJson(group, groups, index, token);
-                    }));
-        } else {
-            postOnExecutor.run();
+        if (authManager == null || customerKey.isEmpty()) {
+            postGroupJson(group, groups, index, null);
+            return;
         }
+
+        authManager.getToken(customerKey, (token, error) ->
+                singleThreadScheduledExecutor.submit(() -> {
+                    if (error != null || token == null) {
+                        OptiLoggerStreamsContainer.error("Optistream auth token failed - %s",
+                                error != null ? error.getMessage() : "null token");
+                        sendCustomerGroups(groups, index + 1);
+                        return;
+                    }
+                    postGroupJson(group, groups, index, token);
+                }));
     }
 
     private void postGroupJson(List<OptistreamPersistanceAdapter.QueuedEvent> group,

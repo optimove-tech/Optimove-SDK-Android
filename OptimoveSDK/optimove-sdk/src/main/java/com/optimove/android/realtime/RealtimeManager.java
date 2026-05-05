@@ -136,18 +136,18 @@ public final class RealtimeManager {
                         .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
                         .send();
             });
-        } else {
-            httpClient.postJson(realtimeConfigs.getRealtimeGateway(), realtimeGson.toJson(group))
-                .userJwt(null)
-                .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1))
-                .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group))
-                .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
-                .send();
-        }
+    } else {
+        httpClient.postJson(realtimeConfigs.getRealtimeGateway(), realtimeGson.toJson(group))
+            .userJwt(null)
+            .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1))
+            .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group))
+            .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
+            .send();
+    }
     }
 
     private void onRealtimeRequestFailed(
-            @NonNull Exception e,
+            @NonNull Exception e, 
             @NonNull List<List<OptistreamEvent>> groups,
             int index,
             @NonNull List<OptistreamEvent> group) {
