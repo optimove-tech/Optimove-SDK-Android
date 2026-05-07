@@ -127,6 +127,7 @@ public final class RealtimeManager {
             authManager.getToken(key, (token, error) -> {
                 if (error != null || token == null) {
                     dispatchingFailed(error != null ? error : new Exception("null token"), group);
+                    dispatchGroupAtIndex(groups, index + 1);
                     return;
                 }
                 httpClient.postJson(realtimeConfigs.getRealtimeGateway(), realtimeGson.toJson(group))
