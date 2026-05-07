@@ -137,14 +137,15 @@ public final class RealtimeManager {
                         .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
                         .send();
             });
-    } else {
+            return;
+        }
+
         httpClient.postJson(realtimeConfigs.getRealtimeGateway(), realtimeGson.toJson(group))
-            .userJwt(null)
-            .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1))
-            .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group))
-            .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
-            .send();
-    }
+                .userJwt(null)
+                .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1))
+                .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group))
+                .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
+                .send();
     }
 
     private void onRealtimeRequestFailed(
