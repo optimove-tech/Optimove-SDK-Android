@@ -159,14 +159,12 @@ public class OptimoveInApp {
     }
 
     /**
-     * Allows setting the handler you want to use for in-app deep-link buttons.
+     * Sets the handler invoked when the user taps an in-app message deep-link button.
+     * 
+     * Register from {@link Application}, not an {@link android.app.Activity}.
+     * Pass {@code null} to clear (e.g. on logout).
      *
-     * <p>The handler is held with a strong reference for the life of the app process.
-     * Pass {@code null} to clear it (e.g. on logout). Avoid capturing {@link android.app.Activity}
-     * instances in the handler; use the {@code context} passed to
-     * {@link InAppDeepLinkHandlerInterface#handle}.
-     *
-     * @param handler handler implementation, or {@code null} to remove
+     * @param handler the handler, or {@code null} to clear
      */
     public void setDeepLinkHandler(@Nullable InAppDeepLinkHandlerInterface handler) {
         this.inAppDeepLinkHandler = handler;
