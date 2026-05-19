@@ -1,10 +1,8 @@
 package com.optimove.android.optimobile;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,9 +21,6 @@ public class OptimoveInApp {
     private static OptimoveInApp shared;
     @NonNull
     private final Application application;
-
-    @Nullable
-    private LifecycleBoundDeepLinkHandler lifecycleBoundHandler = null;
 
     @Nullable
     private InAppMessageInterceptor inAppMessageInterceptor = null;
@@ -166,26 +161,15 @@ public class OptimoveInApp {
     /**
      * Allows setting the handler you want to use for in-app deep-link buttons.
      *
-     * The handler is held with a strong reference but automatically cleared when the current
-     * foreground Activity is destroyed, preventing Activity memory leaks.
+     * <p>The handler is held with a strong reference for the life of the app process.
+     * Pass {@code null} to clear it (e.g. on logout). Avoid capturing {@link android.app.Activity}
+     * instances in the handler; use the {@code context} passed to
+     * {@link InAppDeepLinkHandlerInterface#handle}.
      *
-     * @param handler
+     * @param handler handler implementation, or {@code null} to remove
      */
     public void setDeepLinkHandler(@Nullable InAppDeepLinkHandlerInterface handler) {
-        if (lifecycleBoundHandler != null) {
-            lifecycleBoundHandler.unregister();
-            lifecycleBoundHandler = null;
-        }
-
-        if (handler == null) {
-            this.inAppDeepLinkHandler = null;
-        } else {
-            lifecycleBoundHandler = new LifecycleBoundDeepLinkHandler(application, handler, () -> {
-                this.inAppDeepLinkHandler = null;
-                this.lifecycleBoundHandler = null;
-            });
-            this.inAppDeepLinkHandler = lifecycleBoundHandler;
-        }
+        this.inAppDeepLinkHandler = handler;
     }
 
     /**
@@ -322,73 +306,5 @@ public class OptimoveInApp {
         }
 
         Optimobile.handler.post(inboxUpdatedHandler);
-    }
-
-    static final class LifecycleBoundDeepLinkHandler
-            implements InAppDeepLinkHandlerInterface, Application.ActivityLifecycleCallbacks {
-
-        private static final String TAG = "OptimoveInApp";
-
-        private final Application application;
-        private final Context appContext;
-        private Activity boundActivity;
-        private InAppDeepLinkHandlerInterface delegate;
-        private Runnable onCleared;
-
-        LifecycleBoundDeepLinkHandler(@NonNull Application application,
-                                      @NonNull InAppDeepLinkHandlerInterface delegate,
-                                      @NonNull Runnable onCleared) {
-            this.application = application;
-            this.appContext = application.getApplicationContext();
-            this.delegate = delegate;
-            this.onCleared = onCleared;
-            application.registerActivityLifecycleCallbacks(this);
-        }
-
-        void unregister() {
-            application.unregisterActivityLifecycleCallbacks(this);
-            this.delegate = null;
-            this.onCleared = null;
-            this.boundActivity = null;
-        }
-
-        @Override
-        public void handle(Context context, InAppButtonPress buttonPress) {
-            InAppDeepLinkHandlerInterface handler = delegate;
-            if (handler == null) return;
-
-            try {
-                handler.handle(appContext, buttonPress);
-            } catch (Throwable t) {
-                android.util.Log.e(TAG, "DeepLinkHandler error", t);
-            }
-        }
-
-        @Override
-        public void onActivityResumed(@NonNull Activity activity) {
-            if (boundActivity == null && delegate != null) {
-                boundActivity = activity;
-            }
-        }
-
-        @Override
-        public void onActivityDestroyed(@NonNull Activity activity) {
-            if (boundActivity != null && boundActivity == activity) {
-                application.unregisterActivityLifecycleCallbacks(this);
-                delegate = null;
-                boundActivity = null;
-                Runnable callback = onCleared;
-                onCleared = null;
-                if (callback != null) {
-                    callback.run();
-                }
-            }
-        }
-
-        @Override public void onActivityCreated(@NonNull Activity a, @Nullable Bundle s) {}
-        @Override public void onActivityStarted(@NonNull Activity a) {}
-        @Override public void onActivityPaused(@NonNull Activity a) {}
-        @Override public void onActivityStopped(@NonNull Activity a) {}
-        @Override public void onActivitySaveInstanceState(@NonNull Activity a, @NonNull Bundle o) {}
     }
 }

@@ -1,9 +1,11 @@
 # Changelog
 
+## 7.13.1
+- Removes `WeakDeepLinkHandler` (7.8.1) and `LifecycleBoundDeepLinkHandler` (7.12.4).
+
 ## 7.13.0
 
 - Implementation for Overlay Messaging channel. Check optimove developer docs for more.
-
 ## 7.12.5
 
 - Wrap `pendingResult.finish()` in PushBroadcastReceiver in try/catch to prevent crash.
