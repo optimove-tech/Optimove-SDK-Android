@@ -1,13 +1,18 @@
 # Changelog
 
+## 7.13.2
+
+- Fix: in-app delivery underreporing.
+
 ## 7.13.1
 
 - Fix: Restored process-scoped storage for the in-app deep-link handler (pre-7.8.1 behaviour). Removed `WeakDeepLinkHandler` (7.8.1) and `LifecycleBoundDeepLinkHandler` (7.12.4). The handler is held until you call `setDeepLinkHandler(null)`. Fixes intermittent failures of in-app message deep-link buttons.
 
 **Recommended Integration:**
+
 - Register with `OptimoveInApp.setDeepLinkHandler(...)` from `Application`, not from a single `Activity`
 - Do **not** capture `Activity` in the handler; use the `context` passed to `InAppDeepLinkHandlerInterface.handle()`.
-- Call `setDeepLinkHandler(null)` only to explicitly unregister (e.g. logout). 
+- Call `setDeepLinkHandler(null)` only to explicitly unregister (e.g. logout).
 
 ## 7.13.0
 
