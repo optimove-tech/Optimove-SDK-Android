@@ -16,7 +16,7 @@ import java.util.List;
 class OverlayMessagingView extends BaseMessageView {
 
     private static final String SDK_ACTION_OPEN_DEEP_LINK = "OPEN_DEEP_LINK";
-    private static final String SDK_ACTION_RUN_HANDLER = "RUN_HANDLER";
+    private static final String SDK_ACTION_RUN_HANDLER = "RUN_ACTION_HANDLER";
 
     private static class RendererCommand {
         final boolean close;
@@ -157,10 +157,9 @@ class OverlayMessagingView extends BaseMessageView {
                     case SDK_ACTION_RUN_HANDLER:
                         OverlayMessagingActionHandlerInterface handler = OptimoveOverlayMessaging.getInstance().actionHandler;
                         if (handler != null) {
-                            String data = actionData != null ? actionData.optString("data", null) : null;
                             handler.handle(currentActivity.getApplicationContext(),
                                     new OverlayMessagingActionHandlerInterface.OverlayAction(
-                                            OverlayMessagingActionHandlerInterface.OverlayActionType.BUTTON_CLICK, data));
+                                            OverlayMessagingActionHandlerInterface.OverlayActionType.BUTTON_CLICK, actionData != null ? actionData.optString("data", null) : null));
                         }
                         break;
 
