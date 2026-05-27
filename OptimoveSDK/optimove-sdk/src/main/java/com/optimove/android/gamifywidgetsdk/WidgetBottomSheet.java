@@ -27,7 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-class WidgetBottomSheet extends BottomSheetDialogFragment {
+public class WidgetBottomSheet extends BottomSheetDialogFragment {
 
     private static final String TAG = "GamifyWidget";
     static final String FRAGMENT_TAG = "WidgetBottomSheet";
