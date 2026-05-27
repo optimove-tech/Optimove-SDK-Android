@@ -59,7 +59,7 @@ class GamifyWidgetActivity : AppCompatActivity() {
 
     private fun openWidget() {
         val widgetUrl = "${env.baseUrl}/$tenant/$userId"
-        GamifyWidgetSDK.init(widgetUrl = widgetUrl)
+        GamifyWidgetSDK.init(widgetUrl)
         GamifyWidgetSDK.open(supportFragmentManager)
     }
 
