@@ -18,6 +18,8 @@ public class OptimoveOverlayMessaging {
     private final OverlayMessagingManager manager;
     private final Application application;
     private final long sessionLengthHours;
+    @Nullable
+    OverlayMessagingActionHandlerInterface actionHandler = null;
 
     public interface OverlayMessagingInterceptorCallback {
         @UiThread
@@ -70,6 +72,10 @@ public class OptimoveOverlayMessaging {
         if (sessionManager != null) {
             sessionManager.resetSession();
         }
+    }
+
+    public void setActionHandler(@Nullable OverlayMessagingActionHandlerInterface handler) {
+        this.actionHandler = handler;
     }
 
     //==============================================================================================
