@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.14.0
+
+- Add handler to process overlay actions with customer-set data.
+
 ## 7.13.2
 
 - Fix: in-app delivery underreporing.
