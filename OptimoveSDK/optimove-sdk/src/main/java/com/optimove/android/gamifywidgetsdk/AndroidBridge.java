@@ -10,13 +10,11 @@ import org.json.JSONObject;
  * Native bridge exposed to the widget's JavaScript as `window.AndroidBridge`.
  *
  * The widget calls:
- *   window.AndroidBridge.closeWidget()        — to dismiss the bottom sheet
+ *   window.AndroidBridge.closeWidget()        — to dismiss the dialog
  *   window.AndroidBridge.receiveMessage(json) — generic widget → SDK messages,
  *       including the READY handshake (type = "READY")
  */
 class AndroidBridge {
-
-    private static final String TAG = "GamifyWidget";
 
     private final Runnable onClose;
     private final Runnable onReady;
@@ -38,7 +36,7 @@ class AndroidBridge {
                 onReady.run();
             }
         } catch (JSONException e) {
-            Log.d(TAG, "Incorrect message format: " + json);
+            Log.d(GamifyWidgetSDK.TAG, "Incorrect message format: " + json);
         }
     }
 }

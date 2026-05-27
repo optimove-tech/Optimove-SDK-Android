@@ -1,28 +1,39 @@
 package com.optimove.android.gamifywidgetsdk;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
 
 public class GamifyWidgetSDKTest {
 
-    @Before
-    public void setUp() {
-        GamifyWidgetSDK.init("");
+    @Test
+    public void getInstance_throwsWhenNotInitialized() throws Exception {
+        resetShared();
+        assertThrows(IllegalStateException.class, GamifyWidgetSDK::getInstance);
     }
 
     @Test
-    public void init_storesWidgetUrl() {
-        String url = "https://gamify-widget.vercel.app";
-        GamifyWidgetSDK.init(url);
-        assertEquals(url, GamifyWidgetSDK.getWidgetUrl());
+    public void initialize_createsInstance() throws Exception {
+        resetShared();
+        GamifyWidgetSDK.initialize("https://example.com");
+        assertNotNull(GamifyWidgetSDK.getInstance());
     }
 
     @Test
-    public void init_overwritesPreviousUrl() {
-        GamifyWidgetSDK.init("https://first.example.com");
-        GamifyWidgetSDK.init("https://second.example.com");
-        assertEquals("https://second.example.com", GamifyWidgetSDK.getWidgetUrl());
+    public void initialize_replacesPreviousInstance() throws Exception {
+        resetShared();
+        GamifyWidgetSDK.initialize("https://first.example.com");
+        GamifyWidgetSDK.initialize("https://second.example.com");
+        assertSame(GamifyWidgetSDK.getInstance(), GamifyWidgetSDK.getInstance());
+    }
+
+    private static void resetShared() throws Exception {
+        Field f = GamifyWidgetSDK.class.getDeclaredField("shared");
+        f.setAccessible(true);
+        f.set(null, null);
     }
 }
