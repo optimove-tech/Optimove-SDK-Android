@@ -1,5 +1,9 @@
 -keep class com.optimove.android.main.sdk_configs.** { <fields>; }
 -keep class com.optimove.android.optistream.OptistreamEvent { <fields>; }
+-keep class com.optimove.android.gamifywidgetsdk.GamifyWidgetSDK { public *; }
+-keepclassmembers class com.optimove.android.gamifywidgetsdk.AndroidBridge {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonDeserializer
