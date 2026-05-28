@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.14.0
+
+- Added `GamifyWidgetSDK` (`com.optimove.android.gamifywidgetsdk`) to the published `optimove-android` artifact. Provides `initialize(widgetUrl)` and `getInstance().open(activity, userId?, token?)` to render the gamify widget in a `Dialog`. Previously the module existed in the repo but wasn't bundled into the released AAR.
+
 ## 7.13.2
 
 - Fix: in-app delivery underreporing.
