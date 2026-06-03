@@ -16,7 +16,6 @@ import java.util.List;
 class OverlayMessagingView extends BaseMessageView {
 
     private static final String SDK_ACTION_OPEN_DEEP_LINK = "OPEN_DEEP_LINK";
-    private static final String SDK_ACTION_RUN_HANDLER = "RUN_ACTION_HANDLER";
 
     private static class RendererCommand {
         final boolean close;
