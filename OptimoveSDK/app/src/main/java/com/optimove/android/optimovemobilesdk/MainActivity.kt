@@ -32,6 +32,7 @@ import com.optimove.android.optimobile.InAppMessageInterceptorCallback
 import com.optimove.android.optimobile.OptimoveInApp
 import com.optimove.android.optimobile.OptimoveOverlayMessaging
 import com.optimove.android.optimobile.OverlayMessagingActionHandlerInterface
+import com.optimove.android.optimobile.OverlayMessagingMessage
 import com.optimove.android.preferencecenter.Channel
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter
 import com.optimove.android.preferencecenter.PreferenceUpdate
@@ -68,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         OptimoveOverlayMessaging.getInstance().setActionHandler(object : OverlayMessagingActionHandlerInterface {
-            override fun handle(context: android.content.Context, action: OverlayMessagingActionHandlerInterface.OverlayAction) {
+            override fun handle(context: android.content.Context, message: OverlayMessagingMessage, action: OverlayMessagingActionHandlerInterface.OverlayAction) {
                 Log.d(OVERLAY_TAG, "type=${action.type} data=${action.data}")
             }
         })
