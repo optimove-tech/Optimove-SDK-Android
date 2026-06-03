@@ -7,19 +7,17 @@ import androidx.annotation.Nullable;
 import org.json.JSONObject;
 
 public interface OverlayMessagingActionHandlerInterface {
-    void handle(Context context, OverlayAction action);
+    void handle(Context context, OverlayMessagingMessage message, OverlayAction action);
 
     enum OverlayActionType {
         DEEP_LINK_BUTTON_CLICK
     }
 
     class OverlayAction {
-        public final OverlayMessagingMessage message;
         private final OverlayActionType type;
         @Nullable private final JSONObject data;
 
-        OverlayAction(OverlayMessagingMessage message, OverlayActionType type, @Nullable JSONObject data) {
-            this.message = message;
+        OverlayAction(OverlayActionType type, @Nullable JSONObject data) {
             this.type = type;
             this.data = data;
         }

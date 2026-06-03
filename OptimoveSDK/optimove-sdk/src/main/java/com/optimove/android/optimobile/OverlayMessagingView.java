@@ -153,9 +153,9 @@ class OverlayMessagingView extends BaseMessageView {
                 if (handler == null) {
                     openUrl(currentActivity, actionData.optString("url"));
                 } else {
-                    handler.handle(currentActivity.getApplicationContext(),
+                    handler.handle(currentActivity.getApplicationContext(), currentMessage,
                             new OverlayMessagingActionHandlerInterface.OverlayAction(
-                                    currentMessage, OverlayMessagingActionHandlerInterface.OverlayActionType.DEEP_LINK_BUTTON_CLICK, actionData));
+                                    OverlayMessagingActionHandlerInterface.OverlayActionType.DEEP_LINK_BUTTON_CLICK, actionData));
                 }
             }
         });
