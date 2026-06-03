@@ -149,6 +149,7 @@ class OverlayMessagingView extends BaseMessageView {
                 JSONObject actionData = action.optJSONObject("data");
                 switch (type) {
                     case SDK_ACTION_OPEN_DEEP_LINK:
+                        if (actionData == null) break;
                         OverlayMessagingActionHandlerInterface handler = OptimoveOverlayMessaging.getInstance().actionHandler;
                         if (handler == null) {
                             openUrl(currentActivity, actionData.optString("url"));
