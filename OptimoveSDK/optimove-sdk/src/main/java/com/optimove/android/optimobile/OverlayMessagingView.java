@@ -147,14 +147,17 @@ class OverlayMessagingView extends BaseMessageView {
                 if (action == null) continue;
                 String type = action.optString("type");
                 JSONObject actionData = action.optJSONObject("data");
-                if (!SDK_ACTION_OPEN_DEEP_LINK.equals(type)) continue;
-                OverlayMessagingActionHandlerInterface handler = OptimoveOverlayMessaging.getInstance().actionHandler;
-                if (handler == null) {
-                    openUrl(currentActivity, actionData.optString("url"));
-                } else {
-                    handler.handle(currentActivity.getApplicationContext(), currentMessage,
-                            new OverlayMessagingActionHandlerInterface.OverlayAction(
-                                    OverlayMessagingActionHandlerInterface.OverlayActionType.DEEP_LINK_BUTTON_CLICK, actionData));
+                switch (type) {
+                    case SDK_ACTION_OPEN_DEEP_LINK:
+                        OverlayMessagingActionHandlerInterface handler = OptimoveOverlayMessaging.getInstance().actionHandler;
+                        if (handler == null) {
+                            openUrl(currentActivity, actionData.optString("url"));
+                        } else {
+                            handler.handle(currentActivity.getApplicationContext(), currentMessage,
+                                    new OverlayMessagingActionHandlerInterface.OverlayAction(
+                                            OverlayMessagingActionHandlerInterface.OverlayActionType.DEEP_LINK_BUTTON_CLICK, actionData));
+                        }
+                        break;
                 }
             }
         });
