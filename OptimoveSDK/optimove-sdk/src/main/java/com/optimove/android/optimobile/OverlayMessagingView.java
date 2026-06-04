@@ -49,22 +49,22 @@ class OverlayMessagingView extends BaseMessageView {
 
         @UiThread
         void onViewError(OverlayMessagingMessage message);
+
+        @UiThread
+        void onLinkAction(OverlayMessagingMessage message, JSONObject data);
     }
 
     @NonNull
     private OverlayMessagingMessage currentMessage;
     @NonNull
     private final Listener listener;
-    @NonNull
-    private final OverlayActionDispatcher actionDispatcher;
 
     @UiThread
-    OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull OverlayActionDispatcher actionDispatcher, @NonNull Listener listener) {
+    OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull Listener listener) {
         super(currentActivity, false);
 
         this.currentMessage = message;
         this.listener = listener;
-        this.actionDispatcher = actionDispatcher;
 
         showWebView(currentActivity, iarUrl);
     }
@@ -144,9 +144,7 @@ class OverlayMessagingView extends BaseMessageView {
                 switch (type) {
                     case SDK_ACTION_OPEN_DEEP_LINK:
                         if (actionData == null) break;
-                        actionDispatcher.dispatch(
-                                OverlayActionDispatcher.ActionType.LINK_ACTION,
-                                currentActivity, currentMessage, actionData);
+                        listener.onLinkAction(currentMessage, actionData);
                         break;
                 }
             }

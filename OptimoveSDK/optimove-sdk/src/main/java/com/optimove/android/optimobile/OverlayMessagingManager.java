@@ -215,7 +215,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             return;
         }
 
-        currentView = new OverlayMessagingView(next, currentActivity, iarUrl, actionDispatcher, new OverlayMessagingView.Listener() {
+        currentView = new OverlayMessagingView(next, currentActivity, iarUrl, new OverlayMessagingView.Listener() {
             @Override
             public void onMessageClosed(OverlayMessagingMessage closedMessage) {
                 displayQueue.poll();
@@ -241,6 +241,12 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 displayQueue.poll();
                 onSlotCleared(failedMessage.getType());
                 maybeShowNext();
+            }
+
+            @Override
+            public void onLinkAction(OverlayMessagingMessage message, JSONObject data) {
+                if (currentActivity == null) return;
+                actionDispatcher.dispatch(OverlayActionDispatcher.ActionType.LINK_ACTION, currentActivity, message, data);
             }
         });
     }
