@@ -1,8 +1,6 @@
 package com.optimove.android.optimobile;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -80,14 +78,6 @@ class OverlayMessagingView extends BaseMessageView {
         sendCurrentMessageToClient();
     }
 
-    private void openUrl(Activity currentActivity, String uri) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        if (browserIntent.resolveActivity(currentActivity.getPackageManager()) != null) {
-            currentActivity.startActivity(browserIntent);
-        }
-    }
-
-
     // - Implementations for abstracts
 
     @Override
@@ -154,12 +144,9 @@ class OverlayMessagingView extends BaseMessageView {
                 switch (type) {
                     case SDK_ACTION_OPEN_DEEP_LINK:
                         if (actionData == null) break;
-                        boolean consumed = actionDispatcher.dispatch(
+                        actionDispatcher.dispatch(
                                 OverlayActionDispatcher.ActionType.LINK_ACTION,
-                                currentActivity.getApplicationContext(), currentMessage, actionData);
-                        if (!consumed) {
-                            openUrl(currentActivity, actionData.optString("url"));
-                        }
+                                currentActivity, currentMessage, actionData);
                         break;
                 }
             }

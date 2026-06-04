@@ -1,9 +1,11 @@
 package com.optimove.android.optimobile;
 
-public final class LinkActionPayload {
-    public final String url;
+import androidx.annotation.NonNull;
 
-    LinkActionPayload(String url) {
+public final class LinkActionPayload {
+    @NonNull public final String url;
+
+    LinkActionPayload(@NonNull String url) {
         this.url = url;
     }
 }

@@ -3,6 +3,7 @@ package com.optimove.android.optimobile;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.json.JSONObject;
@@ -15,6 +16,7 @@ class OverlayActionDispatcher {
         LINK_ACTION
     }
 
+    private final OverlayMessagingActionHandler defaultHandler = new OverlayMessagingActionHandler() {};
     @Nullable
     private OverlayMessagingActionHandler handler;
 
@@ -22,18 +24,16 @@ class OverlayActionDispatcher {
         this.handler = handler;
     }
 
-    /** Returns true if consumed (SDK must not run its default). */
-    boolean dispatch(ActionType type, Context context, OverlayMessagingMessage message, JSONObject data) {
-        if (handler == null) return false;
+    void dispatch(ActionType type, @NonNull Context context, @NonNull OverlayMessagingMessage message, @NonNull JSONObject data) {
+        OverlayMessagingActionHandler h = handler != null ? handler : defaultHandler;
         try {
             switch (type) {
                 case LINK_ACTION:
-                    return handler.onLinkAction(context, message, new LinkActionPayload(data.optString("url")));
+                    h.onLinkAction(context, message, new LinkActionPayload(data.optString("url")));
+                    break;
             }
         } catch (Exception e) {
             Log.e(TAG, "Overlay action handler threw", e);
-            return true; // fail-closed
         }
-        return false;
     }
 }
