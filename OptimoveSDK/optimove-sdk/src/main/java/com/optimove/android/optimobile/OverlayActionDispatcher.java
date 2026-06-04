@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 
 import org.json.JSONObject;
 
@@ -20,16 +21,19 @@ class OverlayActionDispatcher {
     @Nullable
     private OverlayMessagingActionHandler handler;
 
+    @UiThread
     void setHandler(@Nullable OverlayMessagingActionHandler handler) {
         this.handler = handler;
     }
 
+    @UiThread
     void dispatch(ActionType type, @NonNull Context context, @NonNull OverlayMessagingMessage message, @NonNull JSONObject data) {
         OverlayMessagingActionHandler h = handler != null ? handler : defaultHandler;
         try {
             switch (type) {
                 case LINK_ACTION:
-                    h.onLinkAction(context, message, new LinkActionPayload(data.optString("url")));
+                    String url = data.isNull("url") ? "" : data.optString("url", "");
+                    h.onLinkAction(context, message, new LinkActionPayload(url));
                     break;
             }
         } catch (Exception e) {
