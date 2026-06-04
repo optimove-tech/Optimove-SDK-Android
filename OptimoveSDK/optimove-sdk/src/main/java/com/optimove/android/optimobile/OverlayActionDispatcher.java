@@ -17,23 +17,21 @@ class OverlayActionDispatcher {
         LINK_ACTION
     }
 
-    private final OverlayMessagingActionHandler defaultHandler = new OverlayMessagingActionHandler() {};
-    @Nullable
-    private OverlayMessagingActionHandler handler;
+    @NonNull
+    private OverlayMessagingActionHandler handler = new OverlayMessagingActionHandler() {};
 
     @UiThread
     void setHandler(@Nullable OverlayMessagingActionHandler handler) {
-        this.handler = handler;
+        this.handler = handler != null ? handler : new OverlayMessagingActionHandler() {};
     }
 
     @UiThread
     void dispatch(ActionType type, @NonNull Context context, @NonNull OverlayMessagingMessage message, @NonNull JSONObject data) {
-        OverlayMessagingActionHandler h = handler != null ? handler : defaultHandler;
         try {
             switch (type) {
                 case LINK_ACTION:
                     String url = data.isNull("url") ? "" : data.optString("url", "");
-                    h.onLinkAction(context, message, new LinkActionPayload(url));
+                    handler.onLinkAction(context, message, new LinkActionPayload(url));
                     break;
             }
         } catch (Exception e) {
