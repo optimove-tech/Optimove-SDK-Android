@@ -72,8 +72,8 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    public void setActionHandler(OverlayMessagingActionHandlerInterface.OverlayActionType type, @Nullable OverlayMessagingActionHandlerInterface handler) {
-        manager.setActionHandler(type, handler);
+    public void setActionHandler(@Nullable OverlayMessagingActionHandler handler) {
+        manager.setActionHandler(handler);
     }
 
     //==============================================================================================
