@@ -1,5 +1,7 @@
 package com.optimove.android.optimovemobilesdk
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -29,11 +31,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.optimove.android.optimobile.LinkActionPayload
 import com.optimove.android.optimobile.OptimoveOverlayMessaging
+import com.optimove.android.optimobile.OverlayMessagingActionHandler
+import com.optimove.android.optimobile.OverlayMessagingMessage
 import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
 
 class OverlayMessagingActivity : AppCompatActivity() {
 
+    private var isActionHandlerSet by mutableStateOf(false)
+    private var lastActionUrl by mutableStateOf<String?>(null)
     private var isInterceptorSet by mutableStateOf(false)
     private var pendingCallback by mutableStateOf<OptimoveOverlayMessaging.OverlayMessagingInterceptorCallback?>(
         null
@@ -58,6 +65,43 @@ class OverlayMessagingActivity : AppCompatActivity() {
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Text("Reset Session")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { setActionHandler() },
+                            enabled = !isActionHandlerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Set Action Handler")
+                        }
+                        Button(
+                            onClick = { unsetActionHandler() },
+                            enabled = isActionHandlerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("Unset Action Handler")
+                        }
+                    }
+
+                    if (lastActionUrl != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Last link action: $lastActionUrl",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -197,9 +241,30 @@ class OverlayMessagingActivity : AppCompatActivity() {
         isInterceptorSet = true
     }
 
+    private fun setActionHandler() {
+        OptimoveOverlayMessaging.getInstance().setActionHandler(object : OverlayMessagingActionHandler() {
+            override fun onLinkAction(context: android.content.Context, message: OverlayMessagingMessage, payload: LinkActionPayload) {
+                runOnUiThread { lastActionUrl = payload.url }
+                startActivity(
+                    Intent(this@OverlayMessagingActivity, DeeplinkTargetActivity::class.java).apply {
+                        data = Uri.parse(payload.url)
+                    }
+                )
+            }
+        })
+        isActionHandlerSet = true
+    }
+
+    private fun unsetActionHandler() {
+        OptimoveOverlayMessaging.getInstance().setActionHandler(null)
+        isActionHandlerSet = false
+        lastActionUrl = null
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unsetInterceptor()
+        unsetActionHandler()
     }
 
     private fun unsetInterceptor() {

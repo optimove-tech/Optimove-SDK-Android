@@ -61,9 +61,9 @@ public class OptimoveOverlayMessaging {
         return shared;
     }
 
-    @UiThread
+    @AnyThread
     public void setInterceptor(@Nullable OverlayMessagingInterceptor interceptor) {
-        manager.setInterceptor(interceptor);
+        Optimobile.handler.post(() -> manager.setInterceptor(interceptor));
     }
 
     @UiThread
@@ -73,9 +73,9 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    @UiThread
+    @AnyThread
     public void setActionHandler(@Nullable OverlayMessagingActionHandler handler) {
-        manager.setActionHandler(handler);
+        Optimobile.handler.post(() -> manager.setActionHandler(handler));
     }
 
     //==============================================================================================

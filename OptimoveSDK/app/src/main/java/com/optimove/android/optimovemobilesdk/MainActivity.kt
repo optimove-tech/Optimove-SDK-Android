@@ -31,7 +31,8 @@ import com.optimove.android.optimobile.InAppMessageInterceptor
 import com.optimove.android.optimobile.InAppMessageInterceptorCallback
 import com.optimove.android.optimobile.OptimoveInApp
 import com.optimove.android.optimobile.OptimoveOverlayMessaging
-import com.optimove.android.optimobile.OverlayMessagingActionHandlerInterface
+import com.optimove.android.optimobile.LinkActionPayload
+import com.optimove.android.optimobile.OverlayMessagingActionHandler
 import com.optimove.android.optimobile.OverlayMessagingMessage
 import com.optimove.android.preferencecenter.Channel
 import com.optimove.android.preferencecenter.OptimovePreferenceCenter
@@ -68,9 +69,9 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        OptimoveOverlayMessaging.getInstance().setActionHandler(object : OverlayMessagingActionHandlerInterface {
-            override fun handle(context: android.content.Context, message: OverlayMessagingMessage, action: OverlayMessagingActionHandlerInterface.OverlayAction) {
-                Log.d(OVERLAY_TAG, "type=${action.type} data=${action.data}")
+        OptimoveOverlayMessaging.getInstance().setActionHandler(object : OverlayMessagingActionHandler() {
+            override fun onLinkAction(context: android.content.Context, message: OverlayMessagingMessage, payload: LinkActionPayload) {
+                Log.d(OVERLAY_TAG, "onLinkAction url=${payload.url}")
             }
         })
 
