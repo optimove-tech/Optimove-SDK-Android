@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -15,7 +17,12 @@ import java.util.List;
 
 class OverlayMessagingView extends BaseMessageView {
 
+    private static final String TAG = "OverlayMessagingView";
     private static final String SDK_ACTION_OPEN_DEEP_LINK = "OPEN_DEEP_LINK";
+
+    interface ActionHandlerLookup {
+        @Nullable OverlayMessagingActionHandlerInterface get(OverlayMessagingActionHandlerInterface.OverlayActionType type);
+    }
 
     private static class RendererCommand {
         final boolean close;
@@ -56,13 +63,16 @@ class OverlayMessagingView extends BaseMessageView {
     private OverlayMessagingMessage currentMessage;
     @NonNull
     private final Listener listener;
+    @NonNull
+    private final ActionHandlerLookup actionHandlerLookup;
 
     @UiThread
-    OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull Listener listener) {
+    OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull ActionHandlerLookup actionHandlerLookup, @NonNull Listener listener) {
         super(currentActivity, false);
 
         this.currentMessage = message;
         this.listener = listener;
+        this.actionHandlerLookup = actionHandlerLookup;
 
         showWebView(currentActivity, iarUrl);
     }
@@ -150,13 +160,16 @@ class OverlayMessagingView extends BaseMessageView {
                 switch (type) {
                     case SDK_ACTION_OPEN_DEEP_LINK:
                         if (actionData == null) break;
-                        OverlayMessagingActionHandlerInterface handler = OptimoveOverlayMessaging.getInstance().actionHandler;
+                        OverlayMessagingActionHandlerInterface handler = actionHandlerLookup.get(
+                                OverlayMessagingActionHandlerInterface.OverlayActionType.LINK_ACTION);
                         if (handler == null) {
                             openUrl(currentActivity, actionData.optString("url"));
                         } else {
-                            handler.handle(currentActivity.getApplicationContext(), currentMessage,
-                                    new OverlayMessagingActionHandlerInterface.OverlayAction(
-                                            OverlayMessagingActionHandlerInterface.OverlayActionType.DEEP_LINK_BUTTON_CLICK, actionData));
+                            try {
+                                handler.handle(currentActivity.getApplicationContext(), currentMessage, actionData);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Overlay action handler failed", e);
+                            }
                         }
                         break;
                 }

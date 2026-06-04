@@ -18,8 +18,6 @@ public class OptimoveOverlayMessaging {
     private final OverlayMessagingManager manager;
     private final Application application;
     private final long sessionLengthHours;
-    @Nullable
-    OverlayMessagingActionHandlerInterface actionHandler = null;
 
     public interface OverlayMessagingInterceptorCallback {
         @UiThread
@@ -74,8 +72,8 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    public void setActionHandler(@Nullable OverlayMessagingActionHandlerInterface handler) {
-        this.actionHandler = handler;
+    public void setActionHandler(OverlayMessagingActionHandlerInterface.OverlayActionType type, @Nullable OverlayMessagingActionHandlerInterface handler) {
+        manager.setActionHandler(type, handler);
     }
 
     //==============================================================================================

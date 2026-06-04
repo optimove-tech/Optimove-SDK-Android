@@ -10,6 +10,7 @@ import androidx.annotation.UiThread;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.EnumMap;
 import java.util.List;
 
 import java.util.ArrayDeque;
@@ -51,6 +52,8 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
     @Nullable
     private OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor;
+    private final EnumMap<OverlayMessagingActionHandlerInterface.OverlayActionType, OverlayMessagingActionHandlerInterface> actionHandlers =
+            new EnumMap<>(OverlayMessagingActionHandlerInterface.OverlayActionType.class);
     @Nullable
     private OverlayMessagingView currentView;
     @Nullable
@@ -70,6 +73,15 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @UiThread
     void setInterceptor(@Nullable OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor) {
         this.interceptor = interceptor;
+    }
+
+    @UiThread
+    void setActionHandler(OverlayMessagingActionHandlerInterface.OverlayActionType type, @Nullable OverlayMessagingActionHandlerInterface handler) {
+        if (handler != null) {
+            actionHandlers.put(type, handler);
+        } else {
+            actionHandlers.remove(type);
+        }
     }
 
     @UiThread
@@ -209,7 +221,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             return;
         }
 
-        currentView = new OverlayMessagingView(next, currentActivity, iarUrl, new OverlayMessagingView.Listener() {
+        currentView = new OverlayMessagingView(next, currentActivity, iarUrl, actionHandlers::get, new OverlayMessagingView.Listener() {
             @Override
             public void onMessageClosed(OverlayMessagingMessage closedMessage) {
                 displayQueue.poll();
