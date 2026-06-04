@@ -206,6 +206,8 @@ abstract class BaseMessageView extends WebViewClient {
         }
 
         if (null != wv) {
+            wv.removeJavascriptInterface(JS_NAME);
+            wv.setWebViewClient(new WebViewClient());
             wv.destroy();
         }
 
