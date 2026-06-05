@@ -264,7 +264,7 @@ class OverlayMessagingActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unsetInterceptor()
-        unsetActionHandler()
+        if (isActionHandlerSet) unsetActionHandler()
     }
 
     private fun unsetInterceptor() {
