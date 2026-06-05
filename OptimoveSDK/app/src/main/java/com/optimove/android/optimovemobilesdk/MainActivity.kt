@@ -452,6 +452,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "TestAppMainActvity"
+        private const val OVERLAY_TAG = "OverlayMessaging"
         private const val PC_TAG = "OptimovePC"
         private const val WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169
         private const val IDENTITY_PREF_NAME = "optimove_identity"
