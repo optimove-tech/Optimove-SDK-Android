@@ -3,6 +3,7 @@ package com.optimove.android.optimovemobilesdk
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.setContent
@@ -244,6 +245,7 @@ class OverlayMessagingActivity : AppCompatActivity() {
     private fun setActionHandler() {
         OptimoveOverlayMessaging.getInstance().setActionHandler(object : OverlayMessagingActionHandler() {
             override fun onLinkAction(context: android.content.Context, message: OverlayMessagingMessage, payload: LinkActionPayload) {
+                Log.d(TAG, "Custom handler called: url=${payload.url}")
                 runOnUiThread { lastActionUrl = payload.url }
                 startActivity(
                     Intent(this@OverlayMessagingActivity, DeeplinkTargetActivity::class.java).apply {
@@ -253,6 +255,10 @@ class OverlayMessagingActivity : AppCompatActivity() {
             }
         })
         isActionHandlerSet = true
+    }
+
+    companion object {
+        private const val TAG = "OverlayMessaging"
     }
 
     private fun unsetActionHandler() {
