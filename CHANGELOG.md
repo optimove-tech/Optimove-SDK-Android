@@ -1,8 +1,8 @@
 # Changelog
 
-- ## 7.15.2
+## 7.15.1
 
-- Fix: Push notification sounds now respect per-channel silent settings. Manual ringtone playback limited to custom sounds only. Fixes sound bypass on devices where users had silenced notification channels.
+- Fix: Push notification sounds now respect per-channel silent settings across all Android OEMs. Manual ringtone playback limited to custom sounds only; default notification sounds now handled by the Android notification channel system. Fixes sound bypass on devices where users had silenced notification channels.
 
 ## 7.15.0
 

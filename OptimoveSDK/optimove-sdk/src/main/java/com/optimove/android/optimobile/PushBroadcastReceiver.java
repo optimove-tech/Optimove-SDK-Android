@@ -391,14 +391,24 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         if (null == channel) {
             channel = new NotificationChannel(DEFAULT_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setSound(null, null);
+            Uri defaultSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            channel.setSound(defaultSound, audioAttributes);
             channel.setVibrationPattern(new long[]{0, 250, 250, 250});
             notificationManager.createNotificationChannel(channel);
         }
 
         if (null == importantChannel) {
             channel = new NotificationChannel(IMPORTANT_CHANNEL_ID, "Important", NotificationManager.IMPORTANCE_HIGH);
-            channel.setSound(null, null);
+            Uri defaultSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            channel.setSound(defaultSound, audioAttributes);
             channel.setVibrationPattern(new long[]{0, 250, 250, 250});
             notificationManager.createNotificationChannel(channel);
         }
