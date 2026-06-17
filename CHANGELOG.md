@@ -1,5 +1,9 @@
 # Changelog
 
+- ## 7.15.2
+
+- Fix: Push notification sounds now respect per-channel silent settings. Manual ringtone playback limited to custom sounds only. Fixes sound bypass on devices where users had silenced notification channels.
+
 ## 7.15.0
 
 - Add handler to process overlay actions with customer-set data.
