@@ -217,11 +217,9 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
             this.channelSetup(notificationManager);
 
-            if (notificationManager.getNotificationChannel(pushMessage.getChannel()) == null) {
-                notificationBuilder = new Notification.Builder(context, DEFAULT_CHANNEL_ID);
-            } else {
-                notificationBuilder = new Notification.Builder(context, pushMessage.getChannel());
-            }
+            NotificationChannel channel = resolveNotificationChannel(notificationManager, pushMessage);
+            String channelId = (channel != null) ? channel.getId() : DEFAULT_CHANNEL_ID;
+            notificationBuilder = new Notification.Builder(context, channelId);
         } else {
             notificationBuilder = new Notification.Builder(context);
         }
@@ -405,6 +403,22 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
+    @Nullable
+    private NotificationChannel resolveNotificationChannel(NotificationManager notificationManager, PushMessage pushMessage) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return null;
+        }
+
+        String requestedChannelId = pushMessage.getChannel();
+        NotificationChannel channel = notificationManager.getNotificationChannel(requestedChannelId);
+
+        if (channel == null) {
+            channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
+        }
+
+        return channel;
+    }
+
     private void maybeAddSound(Context context, Notification.Builder notificationBuilder, @Nullable NotificationManager notificationManager, PushMessage pushMessage) {
         String soundFileName = pushMessage.getSound();
 
@@ -425,7 +439,11 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        NotificationChannel channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
+        NotificationChannel channel = resolveNotificationChannel(notificationManager, pushMessage);
+        if (channel == null) {
+            return;
+        }
+
         if (channel.getSound() != null) {
             return;
         }
