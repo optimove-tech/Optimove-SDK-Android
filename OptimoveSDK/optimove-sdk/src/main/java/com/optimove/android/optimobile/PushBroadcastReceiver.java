@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -419,6 +420,42 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         return channel;
     }
 
+    private boolean shouldPlaySoundManually(Context context, NotificationManager notificationManager, NotificationChannel channel) {
+        if (channel == null) {
+            return false;
+        }
+
+        if (channel.getImportance() <= NotificationManager.IMPORTANCE_LOW) {
+            return false;
+        }
+
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null && audioManager.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
+            return false;
+        }
+
+        int filter = notificationManager.getCurrentInterruptionFilter();
+        boolean inDnD = false;
+        switch (filter) {
+            case NotificationManager.INTERRUPTION_FILTER_ALL:
+                inDnD = false;
+                break;
+            case NotificationManager.INTERRUPTION_FILTER_PRIORITY:
+                inDnD = !channel.canBypassDnd();
+                break;
+            case NotificationManager.INTERRUPTION_FILTER_UNKNOWN:
+            case NotificationManager.INTERRUPTION_FILTER_ALARMS:
+            case NotificationManager.INTERRUPTION_FILTER_NONE:
+                inDnD = true;
+        }
+
+        if (inDnD) {
+            return false;
+        }
+
+        return true;
+    }
+
     private void maybeAddSound(Context context, Notification.Builder notificationBuilder, @Nullable NotificationManager notificationManager, PushMessage pushMessage) {
         String soundFileName = pushMessage.getSound();
 
@@ -440,34 +477,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         NotificationChannel channel = resolveNotificationChannel(notificationManager, pushMessage);
-        if (channel == null) {
-            return;
-        }
-
-        if (channel.getSound() != null) {
-            return;
-        }
-
-        if (channel.getImportance() <= NotificationManager.IMPORTANCE_LOW) {
-            return;
-        }
-
-        int filter = notificationManager.getCurrentInterruptionFilter();
-        boolean inDnD = false;
-        switch (filter) {
-            case NotificationManager.INTERRUPTION_FILTER_ALL:
-                inDnD = false;
-                break;
-            case NotificationManager.INTERRUPTION_FILTER_PRIORITY:
-                inDnD = !channel.canBypassDnd();
-                break;
-            case NotificationManager.INTERRUPTION_FILTER_UNKNOWN:
-            case NotificationManager.INTERRUPTION_FILTER_ALARMS:
-            case NotificationManager.INTERRUPTION_FILTER_NONE:
-                inDnD = true;
-        }
-
-        if (inDnD) {
+        if (!shouldPlaySoundManually(context, notificationManager, channel)) {
             return;
         }
 
@@ -475,7 +485,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             Ringtone r = RingtoneManager.getRingtone(context, ringtoneSound);
             r.play();
         } catch (Exception e) {
-            e.printStackTrace();
+            Optimobile.log(TAG, "Failed to play notification sound: " + e.getMessage());
         }
     }
 
