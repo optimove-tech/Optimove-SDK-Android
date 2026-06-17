@@ -459,16 +459,24 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     private void maybeAddSound(Context context, Notification.Builder notificationBuilder, @Nullable NotificationManager notificationManager, PushMessage pushMessage) {
         String soundFileName = pushMessage.getSound();
 
-        Uri ringtoneSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        if (soundFileName != null) {
-            int resourceId = context.getResources().getIdentifier(soundFileName, "raw", context.getPackageName());
-            if (resourceId != 0) {
-                ringtoneSound = Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + soundFileName);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Uri ringtoneSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            if (soundFileName != null) {
+                int resourceId = context.getResources().getIdentifier(soundFileName, "raw", context.getPackageName());
+                if (resourceId != 0) {
+                    ringtoneSound = Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + soundFileName);
+                }
             }
+            notificationBuilder.setSound(ringtoneSound);
+            return;
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            notificationBuilder.setSound(ringtoneSound);
+        if (soundFileName == null) {
+            return;
+        }
+
+        int resourceId = context.getResources().getIdentifier(soundFileName, "raw", context.getPackageName());
+        if (resourceId == 0) {
             return;
         }
 
@@ -481,8 +489,9 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
+        Uri customSoundUri = Uri.parse("android.resource://" + context.getPackageName() + "/raw/" + soundFileName);
         try {
-            Ringtone r = RingtoneManager.getRingtone(context, ringtoneSound);
+            Ringtone r = RingtoneManager.getRingtone(context, customSoundUri);
             r.play();
         } catch (Exception e) {
             Optimobile.log(TAG, "Failed to play notification sound: " + e.getMessage());
