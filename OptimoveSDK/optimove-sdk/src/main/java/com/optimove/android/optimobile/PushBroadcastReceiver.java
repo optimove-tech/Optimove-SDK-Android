@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -55,6 +56,8 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
     static final String DEFAULT_CHANNEL_ID = "optimobile_ch_general";
     static final String IMPORTANT_CHANNEL_ID = "optimobile_ch_important";
+    static final String DEFAULT_CHANNEL_ID_V2 = "optimobile_ch_general_v2";
+    static final String IMPORTANT_CHANNEL_ID_V2 = "optimobile_ch_important_v2";
     protected static final String OPTIMOBILE_NOTIFICATION_TAG = "optimobile";
 
     @Override
@@ -219,7 +222,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             this.channelSetup(notificationManager);
 
             NotificationChannel channel = resolveNotificationChannel(notificationManager, pushMessage);
-            String channelId = (channel != null) ? channel.getId() : DEFAULT_CHANNEL_ID;
+            String channelId = (channel != null) ? channel.getId() : DEFAULT_CHANNEL_ID_V2;
             notificationBuilder = new Notification.Builder(context, channelId);
         } else {
             notificationBuilder = new Notification.Builder(context);
@@ -382,36 +385,82 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void channelSetup(NotificationManager notificationManager) {
+        ensureNotificationChannels(notificationManager);
+    }
+
+    static void ensureNotificationChannels(NotificationManager notificationManager) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
         }
 
-        NotificationChannel channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
-        NotificationChannel importantChannel = notificationManager.getNotificationChannel(IMPORTANT_CHANNEL_ID);
+        ensureMigratedChannel(
+                notificationManager,
+                DEFAULT_CHANNEL_ID,
+                DEFAULT_CHANNEL_ID_V2,
+                "General",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        ensureMigratedChannel(
+                notificationManager,
+                IMPORTANT_CHANNEL_ID,
+                IMPORTANT_CHANNEL_ID_V2,
+                "Important",
+                NotificationManager.IMPORTANCE_HIGH);
+    }
 
-        if (null == channel) {
-            channel = new NotificationChannel(DEFAULT_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_DEFAULT);
-            Uri defaultSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
-                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
-                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build();
-            channel.setSound(defaultSound, audioAttributes);
-            channel.setVibrationPattern(new long[]{0, 250, 250, 250});
-            notificationManager.createNotificationChannel(channel);
+    private static void ensureMigratedChannel(
+            NotificationManager notificationManager,
+            String legacyChannelId,
+            String channelId,
+            String name,
+            int defaultImportance) {
+        if (notificationManager.getNotificationChannel(channelId) != null) {
+            return;
         }
 
-        if (null == importantChannel) {
-            channel = new NotificationChannel(IMPORTANT_CHANNEL_ID, "Important", NotificationManager.IMPORTANCE_HIGH);
-            Uri defaultSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
-                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
-                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build();
-            channel.setSound(defaultSound, audioAttributes);
-            channel.setVibrationPattern(new long[]{0, 250, 250, 250});
-            notificationManager.createNotificationChannel(channel);
+        NotificationChannel legacyChannel = notificationManager.getNotificationChannel(legacyChannelId);
+        if (isUserMutedChannel(legacyChannel)) {
+            createMutedNotificationChannel(notificationManager, channelId, name);
+        } else {
+            createAudibleNotificationChannel(notificationManager, channelId, name, defaultImportance);
         }
+    }
+
+    private static boolean isUserMutedChannel(@Nullable NotificationChannel channel) {
+        if (channel == null) {
+            return false;
+        }
+
+        return channel.getImportance() == NotificationManager.IMPORTANCE_NONE
+                || channel.getImportance() <= NotificationManager.IMPORTANCE_LOW;
+    }
+
+    private static void createAudibleNotificationChannel(
+            NotificationManager notificationManager,
+            String channelId,
+            String name,
+            int importance) {
+        NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+        Uri defaultSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        channel.setSound(defaultSound, audioAttributes);
+        channel.setVibrationPattern(new long[]{0, 250, 250, 250});
+        notificationManager.createNotificationChannel(channel);
+    }
+
+    private static void createMutedNotificationChannel(
+            NotificationManager notificationManager,
+            String channelId,
+            String name) {
+        NotificationChannel channel = new NotificationChannel(
+                channelId,
+                name,
+                NotificationManager.IMPORTANCE_LOW);
+        channel.setSound(null, null);
+        channel.enableVibration(false);
+        notificationManager.createNotificationChannel(channel);
     }
 
     @Nullable
@@ -421,13 +470,30 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         String requestedChannelId = pushMessage.getChannel();
-        NotificationChannel channel = notificationManager.getNotificationChannel(requestedChannelId);
+        String channelId = mapToV2ChannelId(requestedChannelId);
+        NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+
+        if (channel == null && !channelId.equals(requestedChannelId)) {
+            channel = notificationManager.getNotificationChannel(requestedChannelId);
+        }
 
         if (channel == null) {
-            channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
+            channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID_V2);
         }
 
         return channel;
+    }
+
+    private static String mapToV2ChannelId(String channelId) {
+        if (DEFAULT_CHANNEL_ID.equals(channelId) || DEFAULT_CHANNEL_ID_V2.equals(channelId)) {
+            return DEFAULT_CHANNEL_ID_V2;
+        }
+
+        if (IMPORTANT_CHANNEL_ID.equals(channelId) || IMPORTANT_CHANNEL_ID_V2.equals(channelId)) {
+            return IMPORTANT_CHANNEL_ID_V2;
+        }
+
+        return channelId;
     }
 
     private boolean shouldPlaySoundManually(Context context, NotificationManager notificationManager, NotificationChannel channel) {
