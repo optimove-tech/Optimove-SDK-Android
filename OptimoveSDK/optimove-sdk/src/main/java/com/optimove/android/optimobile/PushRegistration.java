@@ -2,7 +2,6 @@ package com.optimove.android.optimobile;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -28,8 +27,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
-
-import static com.optimove.android.optimobile.PushBroadcastReceiver.DEFAULT_CHANNEL_ID;
 
 final class PushRegistration {
 
@@ -92,15 +89,7 @@ final class PushRegistration {
         private void createChannelToRequestPermission(Context context) {
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationChannel channel = notificationManager.getNotificationChannel(DEFAULT_CHANNEL_ID);
-
-            if (null == channel) {
-                channel =
-                        new NotificationChannel(DEFAULT_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_DEFAULT);
-                channel.setSound(null, null);
-                channel.setVibrationPattern(new long[]{0, 250, 250, 250});
-                notificationManager.createNotificationChannel(channel);
-            }
+            PushBroadcastReceiver.ensureNotificationChannels(notificationManager);
         }
 
         private void requestPermission() {
