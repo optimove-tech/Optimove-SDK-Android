@@ -289,8 +289,11 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
 
         if (isMIUI(context)) {
+            PendingIntent launchPendingIntent = launchIntent != null
+                    ? PendingIntent.getActivity(context, (int) pushMessage.getTimeSent() - 1, launchIntent, flags)
+                    : null;
             pushOpenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            pushOpenIntent.putExtra(PushOpenInvisibleActivity.MIUI_LAUNCH_INTENT, launchIntent);
+            pushOpenIntent.putExtra(PushOpenInvisibleActivity.MIUI_LAUNCH_PENDING_INTENT, launchPendingIntent);
             return PendingIntent.getActivity(context, (int) pushMessage.getTimeSent(), pushOpenIntent, flags);
         }
 
