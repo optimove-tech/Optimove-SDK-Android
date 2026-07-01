@@ -1,5 +1,11 @@
 # Changelog
 
+
+## 7.15.2
+
+- Fixed crash on MIUI/HyperOS devices running Android 16 when tapping push notifications (SecurityException in PushOpenInvisibleActivity caused by Android 16 Intent Redirect Hardening). The MIUI launch intent is now dispatched via PendingIntent.send() rather than startActivity() on an unparceled nested intent.
+
+
 ## 7.15.1
 
 - Fix: Push notification sounds now respect per-channel silent settings across all Android OEMs. Manual ringtone playback limited to custom sounds only; default notification sounds now handled by the Android notification channel system. Fixes sound bypass on devices where users had silenced notification channels.
