@@ -17,7 +17,7 @@ public class OptimoveOverlayMessaging {
     private OverlayMessagingSessionManager sessionManager;
     private final OverlayMessagingManager manager;
     private final Application application;
-    private final double sessionLengthHours;
+    private final long sessionLengthMinutes;
 
     public interface OverlayMessagingInterceptorCallback {
         @UiThread
@@ -39,16 +39,16 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    private OptimoveOverlayMessaging(@NonNull Application application, double sessionLengthHours) {
+    private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthMinutes) {
         this.application = application;
-        this.sessionLengthHours = sessionLengthHours;
+        this.sessionLengthMinutes = sessionLengthMinutes;
         this.manager = new OverlayMessagingManager(application);
     }
 
     private void startSessionManager() {
         OverlayMessagingSessionManager.Listener sessionListener = () ->
                 manager.onTriggerReceived(OverlayMessagingMessage.MessageType.SESSION);
-        this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthHours, sessionListener);
+        this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthMinutes, sessionListener);
     }
 
     //==============================================================================================
@@ -87,7 +87,7 @@ public class OptimoveOverlayMessaging {
     }
 
     static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
-        shared = new OptimoveOverlayMessaging(application, config.getOverlayMessagingSessionLengthHours());
+        shared = new OptimoveOverlayMessaging(application, config.getOverlayMessagingSessionLengthMinutes());
         if (!config.usesDelayedOptimobileConfiguration()) {
             shared.startSessionManager();
         }

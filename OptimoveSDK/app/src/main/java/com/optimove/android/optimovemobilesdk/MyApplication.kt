@@ -26,7 +26,7 @@ class MyApplication : Application() {
                 .enableEmbeddedMessaging("embedded_config_string")
                 .setPushSmallIconId(R.drawable.small_icon)
                 .setPushAccentColor(Color.parseColor("#FF0000"))
-                .enableOverlayMessaging(1.0)
+                .enableOverlayMessaging(1)
                 .build()
         } else {
             OptimoveConfig.Builder(
@@ -36,7 +36,7 @@ class MyApplication : Application() {
                 .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
                 .setPushSmallIconId(R.drawable.small_icon)
                 .setPushAccentColor(Color.parseColor("#FF0000"))
-                .enableOverlayMessaging(1.0)
+                .enableOverlayMessaging(1)
                 .build()
         }
 
