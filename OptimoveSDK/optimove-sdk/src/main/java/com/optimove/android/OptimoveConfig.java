@@ -74,7 +74,7 @@ public final class OptimoveConfig {
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
     private boolean overlayMessagingEnabled;
-    private @Nullable Integer overlayMessagingSessionLengthHours;
+    private @Nullable Double overlayMessagingSessionLengthHours;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -423,7 +423,7 @@ public final class OptimoveConfig {
         return this.overlayMessagingEnabled;
     }
 
-    public int getOverlayMessagingSessionLengthHours() {
+    public double getOverlayMessagingSessionLengthHours() {
         return this.overlayMessagingSessionLengthHours;
     }
 
@@ -486,7 +486,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        private @Nullable Integer overlayMessagingSessionLengthHours;
+        private @Nullable Double overlayMessagingSessionLengthHours;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -589,9 +589,9 @@ public final class OptimoveConfig {
             return this;
         }
 
-        public Builder enableOverlayMessaging(int sessionLengthHours) {
-            if (sessionLengthHours <= 0) {
-                throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must be greater than 0");
+        public Builder enableOverlayMessaging(double sessionLengthHours) {
+            if (sessionLengthHours < 0.25) {
+                throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must be at least 0.25 (15 minutes)");
             }
             if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
                 throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");

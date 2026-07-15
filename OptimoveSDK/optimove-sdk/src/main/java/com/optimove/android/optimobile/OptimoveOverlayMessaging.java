@@ -17,7 +17,7 @@ public class OptimoveOverlayMessaging {
     private OverlayMessagingSessionManager sessionManager;
     private final OverlayMessagingManager manager;
     private final Application application;
-    private final long sessionLengthHours;
+    private final double sessionLengthHours;
 
     public interface OverlayMessagingInterceptorCallback {
         @UiThread
@@ -39,7 +39,7 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthHours) {
+    private OptimoveOverlayMessaging(@NonNull Application application, double sessionLengthHours) {
         this.application = application;
         this.sessionLengthHours = sessionLengthHours;
         this.manager = new OverlayMessagingManager(application);
