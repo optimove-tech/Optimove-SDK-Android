@@ -589,6 +589,10 @@ public final class OptimoveConfig {
             return this;
         }
 
+        /**
+         * @param sessionLengthHours length of an overlay messaging session, in whole hours. Minimum 1.
+         * @see #enableOverlayMessagingMinutes(int) to set a session length below 1 hour.
+         */
         public Builder enableOverlayMessaging(int sessionLengthHours) {
             if (sessionLengthHours <= 0) {
                 throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must be greater than 0");
@@ -600,6 +604,9 @@ public final class OptimoveConfig {
             return this;
         }
 
+        /**
+         * @param sessionLengthMinutes length of an overlay messaging session, in whole minutes. Minimum 15.
+         */
         public Builder enableOverlayMessagingMinutes(int sessionLengthMinutes) {
             if (sessionLengthMinutes < 15) {
                 throw new IllegalArgumentException("OverlayMessaging: sessionLengthMinutes must be at least 15");
