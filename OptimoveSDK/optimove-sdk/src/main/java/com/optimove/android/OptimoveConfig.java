@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -148,6 +149,25 @@ public final class OptimoveConfig {
 
         boolean isEmpty() {
             return features.isEmpty();
+        }
+    }
+
+    /**
+     * Length of an overlay messaging session, expressed as a duration + unit pair.
+     *
+     * @see Builder#enableOverlayMessaging(OverlaySessionSettings)
+     */
+    public static final class OverlaySessionSettings {
+        private final long duration;
+        private final TimeUnit durationUnit;
+
+        public OverlaySessionSettings(long duration, @NonNull TimeUnit durationUnit) {
+            this.duration = duration;
+            this.durationUnit = durationUnit;
+        }
+
+        long durationInMinutes() {
+            return durationUnit.toMinutes(duration);
         }
     }
 
@@ -591,7 +611,7 @@ public final class OptimoveConfig {
 
         /**
          * @param sessionLengthHours length of an overlay messaging session, in whole hours. Minimum 1.
-         * @see #enableOverlayMessagingMinutes(int) to set a session length below 1 hour.
+         * @see #enableOverlayMessaging(OverlaySessionSettings) to set a session length below 1 hour.
          */
         public Builder enableOverlayMessaging(int sessionLengthHours) {
             if (sessionLengthHours <= 0) {
@@ -605,16 +625,17 @@ public final class OptimoveConfig {
         }
 
         /**
-         * @param sessionLengthMinutes length of an overlay messaging session, in whole minutes. Minimum 15.
+         * @param sessionSettings length of an overlay messaging session. Minimum 15 minutes.
          */
-        public Builder enableOverlayMessagingMinutes(int sessionLengthMinutes) {
+        public Builder enableOverlayMessaging(@NonNull OverlaySessionSettings sessionSettings) {
+            long sessionLengthMinutes = sessionSettings.durationInMinutes();
             if (sessionLengthMinutes < 15) {
-                throw new IllegalArgumentException("OverlayMessaging: sessionLengthMinutes must be at least 15");
+                throw new IllegalArgumentException("OverlayMessaging: session length must be at least 15 minutes");
             }
             if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
                 throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");
             }
-            this.overlayMessagingSessionLengthMinutes = sessionLengthMinutes;
+            this.overlayMessagingSessionLengthMinutes = (int) sessionLengthMinutes;
             return this;
         }
 
