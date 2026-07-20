@@ -250,6 +250,10 @@ public final class Optimobile {
 
         if (isNewUserIdentifier) {
             OptimoveInApp.getInstance().handleInAppUserChange(context, Optimove.getConfig());
+
+            if (Optimove.getConfig().isOverlayMessagingEnabled()) {
+                OptimoveOverlayMessaging.getInstance().resetSession();
+            }
         }
     }
 
