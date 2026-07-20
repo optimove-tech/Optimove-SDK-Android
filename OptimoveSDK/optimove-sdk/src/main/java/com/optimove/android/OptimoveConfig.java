@@ -153,21 +153,21 @@ public final class OptimoveConfig {
     }
 
     /**
-     * Length of an overlay messaging session, expressed as a duration + unit pair.
+     * Settings for overlay messaging, currently just the session duration.
      *
-     * @see Builder#enableOverlayMessaging(OverlaySessionSettings)
+     * @see Builder#enableOverlayMessaging(OverlaySettings)
      */
-    public static final class OverlaySessionSettings {
-        private final long duration;
-        private final TimeUnit durationUnit;
+    public static final class OverlaySettings {
+        private final long sessionDuration;
+        private final TimeUnit sessionDurationUnit;
 
-        public OverlaySessionSettings(long duration, @NonNull TimeUnit durationUnit) {
-            this.duration = duration;
-            this.durationUnit = durationUnit;
+        public OverlaySettings(long sessionDuration, @NonNull TimeUnit sessionDurationUnit) {
+            this.sessionDuration = sessionDuration;
+            this.sessionDurationUnit = sessionDurationUnit;
         }
 
-        long durationInMinutes() {
-            return durationUnit.toMinutes(duration);
+        long sessionDurationInMinutes() {
+            return sessionDurationUnit.toMinutes(sessionDuration);
         }
     }
 
@@ -611,7 +611,7 @@ public final class OptimoveConfig {
 
         /**
          * @param sessionLengthHours length of an overlay messaging session, in whole hours. Minimum 1.
-         * @see #enableOverlayMessaging(OverlaySessionSettings) to set a session length below 1 hour.
+         * @see #enableOverlayMessaging(OverlaySettings) to set a session length below 1 hour.
          */
         public Builder enableOverlayMessaging(int sessionLengthHours) {
             if (sessionLengthHours <= 0) {
@@ -625,10 +625,10 @@ public final class OptimoveConfig {
         }
 
         /**
-         * @param sessionSettings length of an overlay messaging session. Minimum 15 minutes.
+         * @param overlaySettings overlay messaging settings. Session length must be at least 15 minutes.
          */
-        public Builder enableOverlayMessaging(@NonNull OverlaySessionSettings sessionSettings) {
-            long sessionLengthMinutes = sessionSettings.durationInMinutes();
+        public Builder enableOverlayMessaging(@NonNull OverlaySettings overlaySettings) {
+            long sessionLengthMinutes = overlaySettings.sessionDurationInMinutes();
             if (sessionLengthMinutes < 15) {
                 throw new IllegalArgumentException("OverlayMessaging: session length must be at least 15 minutes");
             }
