@@ -111,11 +111,9 @@ class InAppMessageService {
     }
 
     private static void trackDeliveredEvents(Context context, List<Integer> deliveredIds) {
-
-        JSONObject params = new JSONObject();
-
         for (Integer deliveredId : deliveredIds) {
             try {
+                JSONObject params = new JSONObject();
                 params.put("type", AnalyticsContract.MESSAGE_TYPE_IN_APP);
                 params.put("id", deliveredId);
 

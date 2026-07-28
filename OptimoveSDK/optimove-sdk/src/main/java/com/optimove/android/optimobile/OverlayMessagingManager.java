@@ -51,6 +51,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
     @Nullable
     private OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor;
+    private final OverlayActionDispatcher actionDispatcher = new OverlayActionDispatcher();
     @Nullable
     private OverlayMessagingView currentView;
     @Nullable
@@ -70,6 +71,11 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @UiThread
     void setInterceptor(@Nullable OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor) {
         this.interceptor = interceptor;
+    }
+
+    @UiThread
+    void setActionHandler(@Nullable OverlayMessagingActionHandler handler) {
+        actionDispatcher.setHandler(handler);
     }
 
     @UiThread
@@ -235,6 +241,12 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 displayQueue.poll();
                 onSlotCleared(failedMessage.getType());
                 maybeShowNext();
+            }
+
+            @Override
+            public void onLinkAction(OverlayMessagingMessage message, JSONObject data) {
+                if (currentActivity == null) return;
+                actionDispatcher.dispatch(OverlayActionDispatcher.ActionType.LINK_ACTION, currentActivity, message, data);
             }
         });
     }

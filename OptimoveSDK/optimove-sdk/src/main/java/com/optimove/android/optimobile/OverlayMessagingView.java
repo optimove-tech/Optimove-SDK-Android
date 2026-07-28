@@ -1,8 +1,6 @@
 package com.optimove.android.optimobile;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +14,7 @@ import java.util.List;
 class OverlayMessagingView extends BaseMessageView {
 
     private static final String SDK_ACTION_OPEN_DEEP_LINK = "OPEN_DEEP_LINK";
+
 
     private static class RendererCommand {
         final boolean close;
@@ -50,6 +49,9 @@ class OverlayMessagingView extends BaseMessageView {
 
         @UiThread
         void onViewError(OverlayMessagingMessage message);
+
+        @UiThread
+        void onLinkAction(OverlayMessagingMessage message, JSONObject data);
     }
 
     @NonNull
@@ -75,14 +77,6 @@ class OverlayMessagingView extends BaseMessageView {
         currentMessage = message;
         sendCurrentMessageToClient();
     }
-
-    private void openUrl(Activity currentActivity, String uri) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-        if (browserIntent.resolveActivity(currentActivity.getPackageManager()) != null) {
-            currentActivity.startActivity(browserIntent);
-        }
-    }
-
 
     // - Implementations for abstracts
 
@@ -149,9 +143,8 @@ class OverlayMessagingView extends BaseMessageView {
                 JSONObject actionData = action.optJSONObject("data");
                 switch (type) {
                     case SDK_ACTION_OPEN_DEEP_LINK:
-                        if (actionData != null) {
-                            openUrl(currentActivity, actionData.optString("url"));
-                        }
+                        if (actionData == null) break;
+                        listener.onLinkAction(currentMessage, actionData);
                         break;
                 }
             }

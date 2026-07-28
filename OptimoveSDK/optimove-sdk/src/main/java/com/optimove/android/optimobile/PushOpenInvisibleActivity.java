@@ -1,6 +1,7 @@
 package com.optimove.android.optimobile;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -10,16 +11,20 @@ import android.os.Bundle;
  */
 public class PushOpenInvisibleActivity extends Activity {
 
-    static final String MIUI_LAUNCH_INTENT = "MIUI_LAUNCH_INTENT";
+    static final String MIUI_LAUNCH_PENDING_INTENT = "MIUI_LAUNCH_PENDING_INTENT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.forwardPushOpen(getIntent());
 
-        Intent miuiLaunchIntent = getIntent().getParcelableExtra(MIUI_LAUNCH_INTENT);
-        if (null != miuiLaunchIntent) {
-            startActivity(miuiLaunchIntent);
+        PendingIntent miuiLaunchPendingIntent = getIntent().getParcelableExtra(MIUI_LAUNCH_PENDING_INTENT);
+        if (null != miuiLaunchPendingIntent) {
+            try {
+                miuiLaunchPendingIntent.send();
+            } catch (PendingIntent.CanceledException e) {
+                Optimobile.log(e.toString());
+            }
         }
 
         finish();

@@ -1,8 +1,40 @@
 # Changelog
 
-## 7.14.0
+## 7.16.0
 
 - - Adds federated JWT authentication to the Android SDK. When enableAuth() is used, the SDK fetches JWTs from a client-provided closure and attaches them via X-User-JWT on all user-identified requests.
+
+## 7.15.2
+
+- Fixed crash on MIUI/HyperOS devices running Android 16 when tapping push notifications (SecurityException in PushOpenInvisibleActivity caused by Android 16 Intent Redirect Hardening). The MIUI launch intent is now dispatched via PendingIntent.send() rather than startActivity() on an unparceled nested intent.
+
+
+## 7.15.1
+
+- Fix: Push notification sounds now respect per-channel silent settings across all Android OEMs. Manual ringtone playback limited to custom sounds only; default notification sounds now handled by the Android notification channel system. Fixes sound bypass on devices where users had silenced notification channels.
+
+## 7.15.0
+
+- Add handler to process overlay actions with customer-set data.
+
+## 7.14.0
+
+- Added `GamifyWidgetSDK` (`com.optimove.android.gamifywidgetsdk`) to the published `optimove-android` artifact. Provides `initialize(widgetUrl)` and `getInstance().open(activity, userId?, token?)` to render the gamify widget in a `Dialog`. Previously the module existed in the repo but wasn't bundled into the released AAR.
+
+## 7.13.2
+
+- Fix: in-app delivery underreporing.
+
+## 7.13.1
+
+- Fix: Restored process-scoped storage for the in-app deep-link handler (pre-7.8.1 behaviour). Removed `WeakDeepLinkHandler` (7.8.1) and `LifecycleBoundDeepLinkHandler` (7.12.4). The handler is held until you call `setDeepLinkHandler(null)`. Fixes intermittent failures of in-app message deep-link buttons.
+
+**Recommended Integration:**
+
+- Register with `OptimoveInApp.setDeepLinkHandler(...)` from `Application`, not from a single `Activity`
+- Do **not** capture `Activity` in the handler; use the `context` passed to `InAppDeepLinkHandlerInterface.handle()`.
+- Call `setDeepLinkHandler(null)` only to explicitly unregister (e.g. logout).
+>>>>>>> master
 
 ## 7.13.0
 
