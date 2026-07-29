@@ -30,6 +30,7 @@ class WidgetDialog {
     private final String widgetUrl;
     @Nullable private final String userId;
     @Nullable private final String token;
+    private final boolean enableInitHandshake;
     private final Runnable onDismissed;
     private final Dialog dialog;
 
@@ -37,16 +38,34 @@ class WidgetDialog {
     private ProgressBar progressBar;
     private TextView errorView;
 
+    /**
+     * Loyalty widget dialog — READY → INIT handshake with optional userId/token.
+     */
     @SuppressLint("InflateParams")
     WidgetDialog(@NonNull Activity activity,
                  @NonNull String widgetUrl,
                  @Nullable String userId,
                  @Nullable String token,
                  @NonNull Runnable onDismissed) {
+        this(activity, widgetUrl, userId, token, true, onDismissed);
+    }
+
+    /**
+     * Generic WebView dialog. Adact campaigns use {@code enableInitHandshake = false}
+     * (identity is passed via URL query params, not INIT).
+     */
+    @SuppressLint("InflateParams")
+    WidgetDialog(@NonNull Activity activity,
+                 @NonNull String widgetUrl,
+                 @Nullable String userId,
+                 @Nullable String token,
+                 boolean enableInitHandshake,
+                 @NonNull Runnable onDismissed) {
         this.activity = activity;
         this.widgetUrl = widgetUrl;
         this.userId = userId;
         this.token = token;
+        this.enableInitHandshake = enableInitHandshake;
         this.onDismissed = onDismissed;
         this.dialog = new Dialog(activity, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
 
@@ -71,10 +90,14 @@ class WidgetDialog {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
 
+        Runnable onReady = enableInitHandshake
+                ? () -> activity.runOnUiThread(this::sendInit)
+                : null;
+
         webView.addJavascriptInterface(
                 new AndroidBridge(
                         () -> activity.runOnUiThread(this::dismiss),
-                        () -> activity.runOnUiThread(this::sendInit)),
+                        onReady),
                 "AndroidBridge");
 
         webView.setWebViewClient(new WebViewClient() {
@@ -103,7 +126,7 @@ class WidgetDialog {
         dialog.show();
     }
 
-    private void dismiss() {
+    void dismiss() {
         if (dialog.isShowing()) {
             dialog.dismiss();
         }
@@ -117,8 +140,8 @@ class WidgetDialog {
     }
 
     /**
-     * Called when the widget fires its READY signal. Posts INIT back via window.postMessage
-     * so the widget bridge picks up the userId/token.
+     * Called when the loyalty widget fires its READY signal. Posts INIT back via
+     * window.postMessage so the widget bridge picks up the userId/token.
      */
     private void sendInit() {
         String initJson = buildInitJson();
