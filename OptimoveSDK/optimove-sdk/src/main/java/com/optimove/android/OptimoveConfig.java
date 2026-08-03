@@ -73,6 +73,7 @@ public final class OptimoveConfig {
 
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
+    private @Nullable AuthTokenProvider authTokenProvider;
     private boolean overlayMessagingEnabled;
     private @Nullable Integer overlayMessagingSessionLengthHours;
 
@@ -202,6 +203,10 @@ public final class OptimoveConfig {
 
     private void setMinLogLevel(@Nullable LogLevel minLogLevel) {
         this.minLogLevel = minLogLevel;
+    }
+
+    private void setAuthTokenProvider(@Nullable AuthTokenProvider authTokenProvider) {
+        this.authTokenProvider = authTokenProvider;
     }
 
     void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
@@ -419,6 +424,10 @@ public final class OptimoveConfig {
         return this.embeddedMessagingConfig;
     }
 
+    public @Nullable AuthTokenProvider getAuthTokenProvider() {
+        return this.authTokenProvider;
+    }
+
     public boolean isOverlayMessagingEnabled() {
         return this.overlayMessagingEnabled;
     }
@@ -486,6 +495,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
+        private @Nullable AuthTokenProvider authTokenProvider;
         private @Nullable Integer overlayMessagingSessionLengthHours;
 
         /**
@@ -601,6 +611,24 @@ public final class OptimoveConfig {
         }
 
         /**
+         * Enables JWT-based federated authentication for user-identified SDK traffic.
+         * <p>
+         * When set, the SDK will call {@link AuthTokenProvider#getToken(String, AuthTokenProvider.Callback)} to obtain
+         * a JWT per request context; the token is sent as the {@code X-User-JWT} header.
+         * <p>
+         * <b>Threading:</b> the provider may be invoked from a background thread; the {@link AuthTokenProvider.Callback}
+         * may complete on any thread.
+         *
+         * @param provider non-null implementation that fetches JWTs for a given user id
+         * @return this builder
+         */
+        @NonNull
+        public Builder enableAuth(@NonNull AuthTokenProvider provider) {
+            this.authTokenProvider = provider;
+            return this;
+        }
+
+        /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
          * <p>
@@ -690,6 +718,7 @@ public final class OptimoveConfig {
 
             newConfig.setMinLogLevel(this.minLogLevel);
 
+            newConfig.setAuthTokenProvider(this.authTokenProvider);
             newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthHours != null;
             newConfig.overlayMessagingSessionLengthHours = this.overlayMessagingSessionLengthHours;
 

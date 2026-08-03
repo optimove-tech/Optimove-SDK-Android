@@ -15,40 +15,45 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val useDelayed = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_DELAYED_INIT, false)
+        val qaPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val useDelayed = qaPrefs.getBoolean(KEY_DELAYED_INIT, false)
+        val useAuth = qaPrefs.getBoolean(KEY_AUTH_ENABLED, false)
 
-        val config = if (useDelayed) {
+        val builder = if (useDelayed) {
             OptimoveConfig.Builder(
                 OptimoveConfig.FeatureSet().withOptimove().withOptimobile()
             )
-                .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-                .enableEmbeddedMessaging("embedded_config_string")
-                .setPushSmallIconId(R.drawable.small_icon)
-                .setPushAccentColor(Color.parseColor("#FF0000"))
-                .enableOverlayMessaging(1)
-                .build()
         } else {
             OptimoveConfig.Builder(
                 DEFAULT_OPTIMOVE_CRED,
                 DEFAULT_OPTIMOBILE_CRED
             )
-                .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-                .setPushSmallIconId(R.drawable.small_icon)
-                .setPushAccentColor(Color.parseColor("#FF0000"))
-                .enableOverlayMessaging(1)
-                .build()
         }
 
-        Optimove.initialize(this, config)
+        builder.enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
+//            .enableEmbeddedMessaging("embedded_config_string")
+            .enablePreferenceCenter(DEFAULT_PREFERENCE_CENTER_CRED)
+            .setPushSmallIconId(R.drawable.small_icon)
+            .setPushAccentColor(Color.parseColor("#FF0000"))
+            .enableOverlayMessaging(1)
+
+        if (useAuth) {
+            QAJWTSigner.initialize(this)
+            builder.enableAuth(AuthDebugState)
+        }
+
+        Optimove.initialize(this, builder.build())
         Optimove.enableStagingRemoteLogs()
     }
 
     companion object {
         const val PREFS_NAME = "optimove_qa_settings"
         const val KEY_DELAYED_INIT = "delayed_init"
+        const val KEY_AUTH_ENABLED = "auth_enabled"
+
         const val DEFAULT_OPTIMOVE_CRED = "optimove_creds"
         const val DEFAULT_OPTIMOBILE_CRED = "optimobile_creds"
+        const val DEFAULT_PREFERENCE_CENTER_CRED = "pref_center_creds"
 
         fun askForOverlayPermissions() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return

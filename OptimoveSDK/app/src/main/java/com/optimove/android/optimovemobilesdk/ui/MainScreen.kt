@@ -59,8 +59,7 @@ fun MainScreen(
     onReadInbox: () -> Unit,
     onMarkInboxAsRead: () -> Unit,
     onDeleteInbox: () -> Unit,
-    onGetPreferences: () -> Unit,
-    onSetPreferences: () -> Unit,
+    onViewPreferenceCenter: () -> Unit,
     onViewEmbeddedMessaging: () -> Unit,
     onViewOverlayMessaging: () -> Unit,
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
@@ -72,6 +71,9 @@ fun MainScreen(
     onUnregisterPush: () -> Unit,
     isDelayedInit: Boolean,
     onDelayedInitToggle: (Boolean) -> Unit,
+    isAuthEnabled: Boolean,
+    onAuthToggle: (Boolean) -> Unit,
+    onOpenAuthDebug: () -> Unit,
     onOpenGamifyWidget: () -> Unit
 ) {
     var optimoveCred by remember {
@@ -80,7 +82,9 @@ fun MainScreen(
     var optimobileCred by remember {
         mutableStateOf(if (showDelayedConfig) MyApplication.DEFAULT_OPTIMOBILE_CRED else "")
     }
-    var prefCenterCred by remember { mutableStateOf("") }
+    var prefCenterCred by remember {
+        mutableStateOf(if (showDelayedConfig) MyApplication.DEFAULT_PREFERENCE_CENTER_CRED else "")
+    }
     var latitude by remember { mutableStateOf("") }
     var longitude by remember { mutableStateOf("") }
     var showGeolocationDialog by remember { mutableStateOf(false) }
@@ -243,23 +247,13 @@ fun MainScreen(
 
         if (showPreferenceCenter) {
             Spacer(modifier = Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = onGetPreferences,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text("Get Prefs", style = MaterialTheme.typography.labelLarge)
-                }
-                Button(
-                    onClick = onSetPreferences,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text("Set Prefs", style = MaterialTheme.typography.labelLarge)
-                }
+            Button(
+                onClick = onViewPreferenceCenter,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+            ) {
+                Text("View Preference Center", style = MaterialTheme.typography.labelLarge)
             }
         }
 
@@ -526,6 +520,47 @@ fun MainScreen(
                     checked = isDelayedInit,
                     onCheckedChange = onDelayedInitToggle
                 )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = CardShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(modifier = Modifier.padding(SectionPadding)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Auth (JWT Provider)",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "Restart app to apply",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                    Switch(
+                        checked = isAuthEnabled,
+                        onCheckedChange = onAuthToggle
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = onOpenAuthDebug,
+                    enabled = isAuthEnabled,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("JWT Provider Debug")
+                }
             }
         }
     }

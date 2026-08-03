@@ -5,7 +5,6 @@ import com.optimove.android.main.common.LifecycleObserver;
 import com.optimove.android.main.common.UserInfo;
 import com.optimove.android.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.android.main.tools.networking.HttpClient;
-import com.optimove.android.optistream.OptistreamDbHelper;
 import com.optimove.android.optistream.OptistreamEvent;
 import com.optimove.android.optistream.OptistreamHandler;
 import com.optimove.android.optistream.OptistreamPersistanceAdapter;
@@ -24,13 +23,18 @@ import org.mockito.verification.VerificationMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyList;
 import java.util.Map;
 
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -52,7 +56,7 @@ public class OptitrackTests {
     @Mock
     HttpClient httpClient;
     @Mock
-    OptistreamDbHelper optistreamDbHelper;
+    OptistreamPersistanceAdapter optistreamDbHelper;
 
     @Before
     public void setUp() {
@@ -62,6 +66,8 @@ public class OptitrackTests {
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
+        when(builder.userJwt(any())).thenReturn(builder);
+        when(delayedResponseBuilder.userJwt(any())).thenReturn(delayedResponseBuilder);
     }
 
     @Test
@@ -71,7 +77,7 @@ public class OptitrackTests {
         OptistreamPersistanceAdapter optistreamPersistanceAdapter = new MockedOptistreamPersistency();
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
-                optistreamPersistanceAdapter, optitrackConfigs);
+                optistreamPersistanceAdapter, optitrackConfigs, null);
 
         for (int i = 0; i < numOfEvents; i++) {
             optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(false, "some_name_" + i)));
@@ -81,8 +87,7 @@ public class OptitrackTests {
 
         OptistreamPersistanceAdapter.EventsBulk eventsBulk = optistreamPersistanceAdapter.getFirstEvents(numOfEvents);
 
-        List<String> dbEventJsons = eventsBulk.getEventJsons();
-        Assert.assertEquals(dbEventJsons.size(), numOfEvents);
+        Assert.assertEquals(eventsBulk.getEvents().size(), numOfEvents);
 
     }
 
@@ -93,7 +98,7 @@ public class OptitrackTests {
         OptistreamPersistanceAdapter optistreamPersistanceAdapter = new MockedOptistreamPersistency();
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
-                optistreamPersistanceAdapter, optitrackConfigs);
+                optistreamPersistanceAdapter, optitrackConfigs, null);
         applyHttpRandomDelaySuccessInvocation(maxResponseTime);
 
         //generating numOfEvents events with random realtime
@@ -146,7 +151,7 @@ public class OptitrackTests {
         OptistreamEvent regularEvent = getRegularEvent(true, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
+                , optitrackConfigs, null);
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
         verify(optistreamDbHelper, timeout(1000)).insertEvent(regularEventJson);
     }
@@ -154,18 +159,37 @@ public class OptitrackTests {
     @Test
     public void eventsShouldBeRemovedWhenDispatchSucceed() {
         Gson gson = new Gson();
-        String lastId = "some_id";
-        OptistreamDbHelper.EventsBulk eventBulk = new OptistreamDbHelper.EventsBulk(lastId,
-                Collections.singletonList(gson.toJson(getRegularEvent(false, "some_name"))));
+        OptistreamPersistanceAdapter.EventsBulk eventBulk = new OptistreamPersistanceAdapter.EventsBulk(
+                Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L,
+                        gson.toJson(getRegularEvent(false, "some_name")))));
         applyHttpSuccessInvocation();
         when(optistreamDbHelper.getFirstEvents(OptistreamHandler.Constants.EVENT_BATCH_LIMIT)).thenReturn(eventBulk,
-                new OptistreamDbHelper.EventsBulk(null, new ArrayList<>()));
+                new OptistreamPersistanceAdapter.EventsBulk(Collections.emptyList()));
 
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
+                , optitrackConfigs, null);
         optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(true, "some_name")));
 
-        verify(optistreamDbHelper, timeout(1000)).removeEvents(lastId);
+        verify(optistreamDbHelper, timeout(1000)).removeEventsByIds(anyList());
+    }
+
+    @Test
+    public void tokenFetchFailureDoesNotSpinTheDispatchLoop() {
+        AuthManager failingAuth = new AuthManager((uid, cb) ->
+                cb.onComplete(null, new RuntimeException("provider down")));
+        // queued event with a non-empty "customer" so the token path is taken
+        OptistreamPersistanceAdapter.EventsBulk bulk = new OptistreamPersistanceAdapter.EventsBulk(
+                Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L,
+                        "{\"customer\":\"c1\",\"event\":\"some_name\"}")));
+        when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(bulk);
+
+        OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
+                optistreamDbHelper, optitrackConfigs, failingAuth);
+        optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(true, "some_name")));
+
+        verify(optistreamDbHelper, after(1500).atMost(2)).getFirstEvents(anyInt());
+        verify(httpClient, never()).postJson(anyString(), anyString());
+        verify(optistreamDbHelper, never()).removeEventsByIds(anyList());
     }
 
     @Test
@@ -173,9 +197,9 @@ public class OptitrackTests {
         OptistreamEvent regularEvent = getRegularEvent(true, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
-        OptistreamDbHelper.EventsBulk eventBulk = new OptistreamDbHelper.EventsBulk("1",
-                Collections.singletonList(regularEventJson));
+                , optitrackConfigs, null);
+        OptistreamPersistanceAdapter.EventsBulk eventBulk = new OptistreamPersistanceAdapter.EventsBulk(
+                Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L, regularEventJson)));
         when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(eventBulk);
 
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
@@ -194,9 +218,9 @@ public class OptitrackTests {
         OptistreamEvent regularEvent = getRegularEvent(false, "some_name");
         String regularEventJson = new Gson().toJson(regularEvent);
         OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver, optistreamDbHelper
-                , optitrackConfigs);
-        OptistreamDbHelper.EventsBulk eventBulk = new OptistreamDbHelper.EventsBulk("1",
-                Collections.singletonList(regularEventJson));
+                , optitrackConfigs, null);
+        OptistreamPersistanceAdapter.EventsBulk eventBulk = new OptistreamPersistanceAdapter.EventsBulk(
+                Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L, regularEventJson)));
         when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(eventBulk);
 
         optistreamHandler.reportEvents(Collections.singletonList(regularEvent));
@@ -266,25 +290,18 @@ public class OptitrackTests {
         }
 
         @Override
-        public void removeEvents(String lastId) {
-            // lastId is an index in this case
-            for (int i = 0; i < Integer.valueOf(lastId); i++) {
-                optistreamEventsEntries.remove(0);
-            }
+        public void removeEventsByIds(List<Long> rowIds) {
+            optistreamEventsEntries.removeIf(entry -> rowIds.contains((long) entry.id));
         }
 
         @Override
         public OptistreamPersistanceAdapter.EventsBulk getFirstEvents(int numberOfEvents) {
-            List<String> optistreamEvents = new ArrayList<>();
-            String lastId = "";
-            for (int i = 0; i < numberOfEvents; i++) {
-                if (i < optistreamEventsEntries.size()) {
-                    optistreamEvents.add(optistreamEventsEntries.get(i)
-                            .getOptistreamEventData());
-                    lastId = String.valueOf(optistreamEventsEntries.get(i).id);
-                }
+            List<OptistreamPersistanceAdapter.QueuedEvent> queued = new ArrayList<>();
+            for (int i = 0; i < numberOfEvents && i < optistreamEventsEntries.size(); i++) {
+                OptistreamEventEntry entry = optistreamEventsEntries.get(i);
+                queued.add(new OptistreamPersistanceAdapter.QueuedEvent(entry.id, entry.getOptistreamEventData()));
             }
-            return new OptistreamPersistanceAdapter.EventsBulk(lastId, optistreamEvents);
+            return new OptistreamPersistanceAdapter.EventsBulk(queued);
         }
     }
 

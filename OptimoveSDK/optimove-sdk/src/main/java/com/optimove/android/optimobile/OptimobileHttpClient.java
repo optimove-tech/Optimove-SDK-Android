@@ -6,6 +6,7 @@ import android.util.Base64;
 import androidx.annotation.Nullable;
 
 import com.optimove.android.Optimove;
+import com.optimove.android.OptimoveAuthHeaders;
 import com.optimove.android.OptimoveConfig;
 
 import org.json.JSONArray;
@@ -49,7 +50,6 @@ class OptimobileHttpClient {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return new OkHttpClient();
         }
-
         //ciphers available on Android 4.4 have intersections with the approved ones in MODERN_TLS, but the intersections are on bad cipher list, so,
         //perhaps not supported by CloudFlare. On older devices allow all ciphers
         ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
@@ -62,32 +62,38 @@ class OptimobileHttpClient {
     }
 
     Response postSync(String url, JSONArray data) throws IOException, Optimobile.PartialInitialisationException {
+        return postSync(url, data, null);
+    }
+
+    Response postSync(String url, JSONArray data, @Nullable String userJwt) throws IOException, Optimobile.PartialInitialisationException {
         String dataStr = data.toString();
-
         RequestBody body = RequestBody.create(dataStr, MediaType.parse("application/json; charset=utf-8"));
-
         Request.Builder builder = new Request.Builder().post(body);
-        Request request = this.buildRequest(builder, url);
-
+        Request request = this.buildRequest(builder, url, userJwt);
         return this.doSyncRequest(request);
     }
 
     Response getSync(String url) throws IOException, Optimobile.PartialInitialisationException {
+        return getSync(url, null);
+    }
+
+    Response getSync(String url, @Nullable String userJwt) throws IOException, Optimobile.PartialInitialisationException {
         Request.Builder builder = new Request.Builder().get();
-
-        Request request = this.buildRequest(builder, url);
-
+        Request request = this.buildRequest(builder, url, userJwt);
         return this.doSyncRequest(request);
     }
 
     void getAsync(String url, Callback callback) throws Optimobile.PartialInitialisationException {
-        Request.Builder builder = new Request.Builder().get();
-        Request request = this.buildRequest(builder, url);
+        getAsync(url, callback, null);
+    }
 
+    void getAsync(String url, Callback callback, @Nullable String userJwt) throws Optimobile.PartialInitialisationException {
+        Request.Builder builder = new Request.Builder().get();
+        Request request = this.buildRequest(builder, url, userJwt);
         this.doAsyncRequest(request, callback);
     }
 
-    private Request buildRequest(Request.Builder builder, String url) throws Optimobile.PartialInitialisationException {
+    private Request buildRequest(Request.Builder builder, String url, @Nullable String userJwt) throws Optimobile.PartialInitialisationException {
         if (this.authHeader == null) {
             OptimoveConfig config = Optimove.getConfig();
 
@@ -100,11 +106,16 @@ class OptimobileHttpClient {
             this.authHeader = buildBasicAuthHeader(apiKey, secretKey);
         }
 
-        return builder.url(url)
+        builder.url(url)
                 .addHeader(Optimobile.KEY_AUTH_HEADER, this.authHeader)
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
-                .build();
+                .addHeader(OptimoveAuthHeaders.AUTH_CAPABLE, OptimoveAuthHeaders.AUTH_CAPABLE_VALUE)
+                .addHeader(OptimoveAuthHeaders.PLATFORM, OptimoveAuthHeaders.PLATFORM_VALUE);
+        if (userJwt != null && !userJwt.isEmpty()) {
+            builder.addHeader(OptimoveAuthHeaders.USER_JWT, userJwt);
+        }
+        return builder.build();
     }
 
     private Response doSyncRequest(Request request) throws IOException {

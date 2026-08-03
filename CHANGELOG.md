@@ -1,10 +1,12 @@
 # Changelog
 
+## 7.16.0
+
+- Adds federated JWT authentication to the Android SDK. When enableAuth() is used, the SDK fetches JWTs from a client-provided closure and attaches them via X-User-JWT on all user-identified requests.
 
 ## 7.15.2
 
 - Fixed crash on MIUI/HyperOS devices running Android 16 when tapping push notifications (SecurityException in PushOpenInvisibleActivity caused by Android 16 Intent Redirect Hardening). The MIUI launch intent is now dispatched via PendingIntent.send() rather than startActivity() on an unparceled nested intent.
-
 
 ## 7.15.1
 
@@ -31,6 +33,7 @@
 - Register with `OptimoveInApp.setDeepLinkHandler(...)` from `Application`, not from a single `Activity`
 - Do **not** capture `Activity` in the handler; use the `context` passed to `InAppDeepLinkHandlerInterface.handle()`.
 - Call `setDeepLinkHandler(null)` only to explicitly unregister (e.g. logout).
+
 
 ## 7.13.0
 

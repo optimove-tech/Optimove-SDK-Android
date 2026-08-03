@@ -218,6 +218,14 @@ public final class Optimobile {
         }
     }
 
+    @Nullable
+    public static String getAssociatedUserIdentifier(@NonNull Context context) {
+        synchronized (userIdLocker) {
+            SharedPreferences preferences = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
+            return preferences.getString(SharedPrefs.KEY_USER_IDENTIFIER, null);
+        }
+    }
+
     private static void associateUserWithInstallImpl(Context context, @NonNull final String userIdentifier, @Nullable final JSONObject attributes) {
         if (TextUtils.isEmpty(userIdentifier)) {
             throw new IllegalArgumentException("Optimobile.associateUserWithInstall requires a non-empty user identifier");

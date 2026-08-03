@@ -30,10 +30,6 @@ import com.optimove.android.optimobile.InAppDeepLinkHandlerInterface
 import com.optimove.android.optimobile.InAppMessageInterceptor
 import com.optimove.android.optimobile.InAppMessageInterceptorCallback
 import com.optimove.android.optimobile.OptimoveInApp
-import com.optimove.android.preferencecenter.Channel
-import com.optimove.android.preferencecenter.OptimovePreferenceCenter
-import com.optimove.android.preferencecenter.PreferenceUpdate
-import com.optimove.android.preferencecenter.Topic
 import com.optimove.android.optimovemobilesdk.ui.MainScreen
 
 import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
@@ -46,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private var credentialsSubmitted by mutableStateOf(false)
     private var isInterceptingInApp by mutableStateOf(false)
     private var isDelayedInit by mutableStateOf(false)
+    private var isAuthEnabled by mutableStateOf(false)
     private var inAppDecisionDialog: AlertDialog? = null
     private var persistedUserId by mutableStateOf("")
     private var persistedUserEmail by mutableStateOf("")
@@ -91,6 +88,7 @@ class MainActivity : AppCompatActivity() {
 
         qaPrefs = getSharedPreferences(MyApplication.PREFS_NAME, Context.MODE_PRIVATE)
         isDelayedInit = qaPrefs.getBoolean(MyApplication.KEY_DELAYED_INIT, true)
+        isAuthEnabled = qaPrefs.getBoolean(MyApplication.KEY_AUTH_ENABLED, false)
 
         setContent {
             AppTheme {
@@ -114,8 +112,7 @@ class MainActivity : AppCompatActivity() {
                     onReadInbox = ::readInbox,
                     onMarkInboxAsRead = ::markInboxAsRead,
                     onDeleteInbox = ::deleteInbox,
-                    onGetPreferences = ::getPreferences,
-                    onSetPreferences = ::setPreferences,
+                    onViewPreferenceCenter = ::viewPreferenceCenter,
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
                     onViewOverlayMessaging = ::viewOverlayMessaging,
                     onSetCredentials = ::setCredentials,
@@ -164,6 +161,17 @@ class MainActivity : AppCompatActivity() {
                         else
                             "Immediate init enabled — restart app to apply"
                     },
+                    isAuthEnabled = isAuthEnabled,
+                    onAuthToggle = { enabled ->
+                        isAuthEnabled = enabled
+                        qaPrefs.edit().putBoolean(MyApplication.KEY_AUTH_ENABLED, enabled).apply()
+
+                        outputText = if (enabled)
+                            "Auth enabled — restart app to apply"
+                        else
+                            "Auth disabled — restart app to apply"
+                    },
+                    onOpenAuthDebug = ::openAuthDebug,
                     onOpenGamifyWidget = ::openGamifyWidget
                 )
             }
@@ -289,47 +297,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun getPreferences() {
-        OptimovePreferenceCenter.getInstance().getPreferencesAsync { result, preferences ->
-            when (result) {
-                OptimovePreferenceCenter.ResultType.ERROR_USER_NOT_SET, OptimovePreferenceCenter.ResultType.ERROR, OptimovePreferenceCenter.ResultType.ERROR_CREDENTIALS_NOT_SET -> Log.d(
-                    PC_TAG, result.toString()
-                )
-
-                OptimovePreferenceCenter.ResultType.SUCCESS -> preferences?.let { prefs ->
-                    Log.d(PC_TAG, "configured: ${prefs.configuredChannels}")
-                    prefs.customerPreferences.forEach { topic ->
-                        Log.d(PC_TAG, "${topic.id} ${topic.name} ${topic.subscribedChannels}")
-                    }
-                }
-
-                else -> Log.d(PC_TAG, "unknown res type")
-            }
-        }
+    private fun viewPreferenceCenter() {
+        startActivity(Intent(this, PreferenceCenterActivity::class.java))
     }
 
-    private fun setPreferences() {
-        OptimovePreferenceCenter.getInstance().getPreferencesAsync { result, preferences ->
-            when (result) {
-                OptimovePreferenceCenter.ResultType.ERROR_USER_NOT_SET, OptimovePreferenceCenter.ResultType.ERROR, OptimovePreferenceCenter.ResultType.ERROR_CREDENTIALS_NOT_SET -> Log.d(
-                    PC_TAG, result.toString()
-                )
-
-                OptimovePreferenceCenter.ResultType.SUCCESS -> preferences?.let { prefs ->
-                    Log.d(PC_TAG, "loaded prefs for set: good")
-                    val configuredChannels: List<Channel> = prefs.configuredChannels
-                    val topics = prefs.customerPreferences
-                    val updates = topics.map { topic ->
-                        PreferenceUpdate(topic.id, configuredChannels.subList(0, 1))
-                    }
-                    OptimovePreferenceCenter.getInstance().setCustomerPreferencesAsync(
-                        { setResult -> Log.d(PC_TAG, setResult.toString()) }, updates
-                    )
-                }
-
-                else -> Log.d(PC_TAG, "unknown res type")
-            }
-        }
+    private fun openAuthDebug() {
+        startActivity(Intent(this, AuthDebugActivity::class.java))
     }
 
     private fun viewEmbeddedMessaging() {
@@ -453,7 +426,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "TestAppMainActvity"
         private const val OVERLAY_TAG = "OverlayMessaging"
-        private const val PC_TAG = "OptimovePC"
         private const val WRITE_EXTERNAL_PERMISSION_REQUEST_CODE = 169
         private const val IDENTITY_PREF_NAME = "optimove_identity"
         private const val KEY_USER_EMAIL = "user_email"
