@@ -30,8 +30,11 @@ import java.util.Map;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -84,8 +87,7 @@ public class OptitrackTests {
 
         OptistreamPersistanceAdapter.EventsBulk eventsBulk = optistreamPersistanceAdapter.getFirstEvents(numOfEvents);
 
-        List<String> dbEventJsons = eventsBulk.getEventJsons();
-        Assert.assertEquals(dbEventJsons.size(), numOfEvents);
+        Assert.assertEquals(eventsBulk.getEvents().size(), numOfEvents);
 
     }
 
@@ -169,6 +171,25 @@ public class OptitrackTests {
         optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(true, "some_name")));
 
         verify(optistreamDbHelper, timeout(1000)).removeEventsByIds(anyList());
+    }
+
+    @Test
+    public void tokenFetchFailureDoesNotSpinTheDispatchLoop() {
+        AuthManager failingAuth = new AuthManager((uid, cb) ->
+                cb.onComplete(null, new RuntimeException("provider down")));
+        // queued event with a non-empty "customer" so the token path is taken
+        OptistreamPersistanceAdapter.EventsBulk bulk = new OptistreamPersistanceAdapter.EventsBulk(
+                Collections.singletonList(new OptistreamPersistanceAdapter.QueuedEvent(1L,
+                        "{\"customer\":\"c1\",\"event\":\"some_name\"}")));
+        when(optistreamDbHelper.getFirstEvents(anyInt())).thenReturn(bulk);
+
+        OptistreamHandler optistreamHandler = new OptistreamHandler(httpClient, lifecycleObserver,
+                optistreamDbHelper, optitrackConfigs, failingAuth);
+        optistreamHandler.reportEvents(Collections.singletonList(getRegularEvent(true, "some_name")));
+
+        verify(optistreamDbHelper, after(1500).atMost(2)).getFirstEvents(anyInt());
+        verify(httpClient, never()).postJson(anyString(), anyString());
+        verify(optistreamDbHelper, never()).removeEventsByIds(anyList());
     }
 
     @Test
@@ -266,15 +287,6 @@ public class OptitrackTests {
             optistreamEventsEntries.add(new OptistreamEventEntry(currentLastId, eventJson));
             currentLastId++;
             return true;
-        }
-
-        @Override
-        public void removeEvents(String lastId) {
-            for (int i = 0; i < Integer.parseInt(lastId); i++) {
-                if (!optistreamEventsEntries.isEmpty()) {
-                    optistreamEventsEntries.remove(0);
-                }
-            }
         }
 
         @Override

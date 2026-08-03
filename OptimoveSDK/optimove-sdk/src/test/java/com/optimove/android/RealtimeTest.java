@@ -23,6 +23,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -291,6 +292,32 @@ public class RealtimeTest {
         inOrder.verify(editor, timeout(500)).putString(FAILED_SET_USER_EVENT_KEY, expectedJson);
         inOrder.verify(editor, timeout(500)).apply();
         verify(httpClient, never()).postJson(anyString(), anyString());
+        // the persisted retry event must survive the end of the dispatch cycle
+        verify(editor, after(500).never()).remove(FAILED_SET_USER_EVENT_KEY);
+    }
+
+    @Test
+    public void httpFailureOnOneGroupStillPersistsSetUserOfLaterGroup() {
+        applyHttpErrorInvocation(new Exception("network down"));
+
+        OptistreamEvent visitorEvent = OptistreamEvent.builder()
+                .withTenantId(33333).withCategory("c").withName("some_name").withOrigin("o")
+                .withUserId(null)
+                .withVisitorId("v1").withTimestamp("t")
+                .withContext(mock(Map.class)).withMetadata(mock(OptistreamEvent.Metadata.class))
+                .build();
+        OptistreamEvent setUserEvent = OptistreamEvent.builder()
+                .withTenantId(33333).withCategory("c").withName(SetUserIdEvent.EVENT_NAME).withOrigin("o")
+                .withUserId("c1")
+                .withVisitorId("v1").withTimestamp("t")
+                .withContext(mock(Map.class)).withMetadata(mock(OptistreamEvent.Metadata.class))
+                .build();
+
+        realtimeManager.reportEvents(Arrays.asList(visitorEvent, setUserEvent));
+
+        // both groups must be attempted, and the failed set_user must be persisted
+        verify(httpClient, timeout(1000).times(2)).postJson(anyString(), anyString());
+        verify(editor, timeout(1000)).putString(FAILED_SET_USER_EVENT_KEY, new Gson().toJson(setUserEvent));
     }
 
     @Test

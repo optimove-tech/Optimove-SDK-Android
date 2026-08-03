@@ -113,7 +113,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
             try {
                 dispatchRequestWaitsForResponse = true;
                 List<List<OptistreamPersistanceAdapter.QueuedEvent>> groups = groupByCustomer(queue);
-                sendCustomerGroups(groups, 0);
+                sendCustomerGroups(groups, 0, false);
             } catch (Throwable e) {
                 dispatchRequestWaitsForResponse = false;
                 OptiLoggerStreamsContainer.error("Events dispatching failed - %s",
@@ -154,17 +154,25 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
         return new ArrayList<>(map.values());
     }
 
-    private void sendCustomerGroups(List<List<OptistreamPersistanceAdapter.QueuedEvent>> groups, int index) {
+    private void sendCustomerGroups(List<List<OptistreamPersistanceAdapter.QueuedEvent>> groups, int index,
+                                    boolean tokenFetchFailed) {
         if (index >= groups.size()) {
             dispatchRequestWaitsForResponse = false;
-            dispatchBulkIfExists();
+            if (tokenFetchFailed) {
+                // At least one group was skipped because its JWT could not be fetched.
+                // Re-dispatching immediately would retry the same group in a tight loop
+                // with no delay — back off to the regular dispatch interval instead.
+                scheduleTheNextDispatch();
+            } else {
+                dispatchBulkIfExists();
+            }
             return;
         }
         List<OptistreamPersistanceAdapter.QueuedEvent> group = groups.get(index);
         String customerKey = group.isEmpty() ? "" : customerKeyFromJson(group.get(0).getEventJson());
 
         if (authManager == null || customerKey.isEmpty()) {
-            postGroupJson(group, groups, index, null);
+            postGroupJson(group, groups, index, null, tokenFetchFailed);
             return;
         }
 
@@ -173,17 +181,18 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                     if (error != null || token == null) {
                         OptiLoggerStreamsContainer.error("Optistream auth token failed - %s",
                                 error != null ? error.getMessage() : "null token");
-                        sendCustomerGroups(groups, index + 1);
+                        sendCustomerGroups(groups, index + 1, true);
                         return;
                     }
-                    postGroupJson(group, groups, index, token);
+                    postGroupJson(group, groups, index, token, tokenFetchFailed);
                 }));
     }
 
     private void postGroupJson(List<OptistreamPersistanceAdapter.QueuedEvent> group,
                                List<List<OptistreamPersistanceAdapter.QueuedEvent>> allGroups,
                                int index,
-                               @Nullable String jwt) {
+                               @Nullable String jwt,
+                               boolean tokenFetchFailed) {
         try {
             JSONArray jsonArrayToDispatch = new JSONArray();
             for (OptistreamPersistanceAdapter.QueuedEvent qe : group) {
@@ -206,7 +215,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                             try {
                                 singleThreadScheduledExecutor.submit(() -> {
                                     optistreamPersistanceAdapter.removeEventsByIds(ids);
-                                    sendCustomerGroups(allGroups, index + 1);
+                                    sendCustomerGroups(allGroups, index + 1, tokenFetchFailed);
                                 });
                             } catch (Throwable throwable) {
                                 OptiLoggerStreamsContainer.error("Error while submitting a command - %s",
@@ -223,7 +232,7 @@ public class OptistreamHandler implements LifecycleObserver.ActivityStopped {
                         try {
                             singleThreadScheduledExecutor.submit(() -> {
                                 optistreamPersistanceAdapter.removeEventsByIds(ids);
-                                sendCustomerGroups(allGroups, index + 1);
+                                sendCustomerGroups(allGroups, index + 1, tokenFetchFailed);
                             });
                         } catch (Throwable throwable) {
                             OptiLoggerStreamsContainer.error("Error while submitting a command - %s", throwable.getMessage());

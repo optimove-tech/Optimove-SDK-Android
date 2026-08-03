@@ -75,26 +75,6 @@ public class OptistreamDbHelper extends SQLiteOpenHelper implements OptistreamPe
     }
 
     @Override
-    public void removeEvents(String lastId) {
-        try {
-            final SQLiteDatabase db = this.getWritableDatabase();
-
-            String deleteQuery = OptistreamEntry._ID + " <= " + lastId;
-
-            db.delete(OptistreamEntry.TABLE_NAME, deleteQuery, null);
-        } catch (SQLiteException e) {
-            OptiLoggerStreamsContainer.error("An SQL error occurred while removing events - %s, deleting the whole DB",
-                    e.getMessage());
-            close();
-            dbFile.delete();
-        } catch (Throwable e) {
-            OptiLoggerStreamsContainer.error("An error occurred while removing events - %s, deleting the whole DB", e.getMessage());
-            close();
-            dbFile.delete();
-        }
-    }
-
-    @Override
     public void removeEventsByIds(@NonNull List<Long> rowIds) {
         if (rowIds.isEmpty()) {
             return;

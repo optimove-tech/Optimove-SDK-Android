@@ -109,15 +109,19 @@ public final class RealtimeManager {
 
     private void dispatchEventsGrouped(List<OptistreamEvent> allEvents) {
         List<List<OptistreamEvent>> groups = groupByUserId(allEvents);
-        dispatchGroupAtIndex(groups, 0);
+        dispatchGroupAtIndex(groups, 0, false);
     }
 
-    private void dispatchGroupAtIndex(List<List<OptistreamEvent>> groups, int index) {
+    private void dispatchGroupAtIndex(List<List<OptistreamEvent>> groups, int index, boolean anyFailed) {
         if (index >= groups.size()) {
-            realtimePreferences.edit()
-                    .remove(FAILED_SET_USER_EVENT_KEY)
-                    .remove(FAILED_SET_EMAIL_EVENT_KEY)
-                    .apply();
+            if (!anyFailed) {
+                // clear only when the whole cycle succeeded — a failed group has just
+                // re-persisted its set_user/set_email for retry and must not be wiped
+                realtimePreferences.edit()
+                        .remove(FAILED_SET_USER_EVENT_KEY)
+                        .remove(FAILED_SET_EMAIL_EVENT_KEY)
+                        .apply();
+            }
             return;
         }
         List<OptistreamEvent> group = groups.get(index);
@@ -127,13 +131,13 @@ public final class RealtimeManager {
             authManager.getToken(key, (token, error) -> {
                 if (error != null || token == null) {
                     dispatchingFailed(error != null ? error : new Exception("null token"), group);
-                    dispatchGroupAtIndex(groups, index + 1);
+                    dispatchGroupAtIndex(groups, index + 1, true);
                     return;
                 }
                 httpClient.postJson(realtimeConfigs.getRealtimeGateway(), realtimeGson.toJson(group))
                         .userJwt(token)
-                        .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1))
-                        .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group))
+                        .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1, anyFailed))
+                        .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group, anyFailed))
                         .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
                         .send();
             });
@@ -142,8 +146,8 @@ public final class RealtimeManager {
 
         httpClient.postJson(realtimeConfigs.getRealtimeGateway(), realtimeGson.toJson(group))
                 .userJwt(null)
-                .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1))
-                .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group))
+                .successListener(jsonResponse -> dispatchGroupAtIndex(groups, index + 1, anyFailed))
+                .errorListener(e -> onRealtimeRequestFailed(e, groups, index, group, anyFailed))
                 .destination("%s", RealtimeConstants.REPORT_EVENT_REQUEST_ROUTE)
                 .send();
     }
@@ -152,15 +156,18 @@ public final class RealtimeManager {
             @NonNull Exception e, 
             @NonNull List<List<OptistreamEvent>> groups,
             int index,
-            @NonNull List<OptistreamEvent> group) {
+            @NonNull List<OptistreamEvent> group,
+            boolean anyFailed) {
         if (authManager == null && e instanceof HttpStatusException && ((HttpStatusException) e).getCode() == 401) {
             OptiLoggerStreamsContainer.error(
                     "Realtime unauthorized (401) with auth not configured; discarding batch without retry");
             clearFailProtectedPrefsMatchingGroup(group);
-            dispatchGroupAtIndex(groups, index + 1);
+            // deliberate discard, not a pending retry — does not mark the cycle failed
+            dispatchGroupAtIndex(groups, index + 1, anyFailed);
             return;
         }
         dispatchingFailed(e, group);
+        dispatchGroupAtIndex(groups, index + 1, true);
     }
 
     private void clearFailProtectedPrefsMatchingGroup(@NonNull List<OptistreamEvent> group) {
