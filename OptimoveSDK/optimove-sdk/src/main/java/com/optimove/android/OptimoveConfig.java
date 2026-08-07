@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,7 +75,7 @@ public final class OptimoveConfig {
     private @Nullable EmbeddedMessagingConfig embeddedMessagingConfig;
 
     private boolean overlayMessagingEnabled;
-    private @Nullable Integer overlayMessagingSessionLengthHours;
+    private @Nullable Integer overlayMessagingSessionLengthMinutes;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -148,6 +149,25 @@ public final class OptimoveConfig {
 
         boolean isEmpty() {
             return features.isEmpty();
+        }
+    }
+
+    /**
+     * Settings for overlay messaging, currently just the session duration.
+     *
+     * @see Builder#enableOverlayMessaging(OverlaySettings)
+     */
+    public static final class OverlaySettings {
+        private final long sessionDuration;
+        private final TimeUnit sessionDurationUnit;
+
+        public OverlaySettings(long sessionDuration, @NonNull TimeUnit sessionDurationUnit) {
+            this.sessionDuration = sessionDuration;
+            this.sessionDurationUnit = sessionDurationUnit;
+        }
+
+        long sessionDurationInMinutes() {
+            return sessionDurationUnit.toMinutes(sessionDuration);
         }
     }
 
@@ -423,8 +443,8 @@ public final class OptimoveConfig {
         return this.overlayMessagingEnabled;
     }
 
-    public int getOverlayMessagingSessionLengthHours() {
-        return this.overlayMessagingSessionLengthHours;
+    public int getOverlayMessagingSessionLengthMinutes() {
+        return this.overlayMessagingSessionLengthMinutes;
     }
 
     private boolean hasFinishedInitialisation() {
@@ -486,7 +506,7 @@ public final class OptimoveConfig {
 
         private @Nullable LogLevel minLogLevel;
 
-        private @Nullable Integer overlayMessagingSessionLengthHours;
+        private @Nullable Integer overlayMessagingSessionLengthMinutes;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -589,6 +609,10 @@ public final class OptimoveConfig {
             return this;
         }
 
+        /**
+         * @param sessionLengthHours length of an overlay messaging session, in whole hours. Minimum 1.
+         * @see #enableOverlayMessaging(OverlaySettings) to set a session length below 1 hour.
+         */
         public Builder enableOverlayMessaging(int sessionLengthHours) {
             if (sessionLengthHours <= 0) {
                 throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must be greater than 0");
@@ -596,7 +620,22 @@ public final class OptimoveConfig {
             if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
                 throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");
             }
-            this.overlayMessagingSessionLengthHours = sessionLengthHours;
+            this.overlayMessagingSessionLengthMinutes = sessionLengthHours * 60;
+            return this;
+        }
+
+        /**
+         * @param overlaySettings overlay messaging settings. Session length must be at least 15 minutes.
+         */
+        public Builder enableOverlayMessaging(@NonNull OverlaySettings overlaySettings) {
+            long sessionLengthMinutes = overlaySettings.sessionDurationInMinutes();
+            if (sessionLengthMinutes < 15) {
+                throw new IllegalArgumentException("OverlayMessaging: session length must be at least 15 minutes");
+            }
+            if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+                throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");
+            }
+            this.overlayMessagingSessionLengthMinutes = (int) sessionLengthMinutes;
             return this;
         }
 
@@ -690,8 +729,8 @@ public final class OptimoveConfig {
 
             newConfig.setMinLogLevel(this.minLogLevel);
 
-            newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthHours != null;
-            newConfig.overlayMessagingSessionLengthHours = this.overlayMessagingSessionLengthHours;
+            newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthMinutes != null;
+            newConfig.overlayMessagingSessionLengthMinutes = this.overlayMessagingSessionLengthMinutes;
 
             return newConfig;
         }

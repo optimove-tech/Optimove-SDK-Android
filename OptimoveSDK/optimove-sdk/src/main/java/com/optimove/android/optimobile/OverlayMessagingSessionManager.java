@@ -34,9 +34,9 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
         }
     };
 
-    OverlayMessagingSessionManager(@NonNull Context context, long sessionLengthHours, @NonNull Listener listener) {
+    OverlayMessagingSessionManager(@NonNull Context context, long sessionLengthMinutes, @NonNull Listener listener) {
         this.handler = new Handler(Looper.getMainLooper());
-        this.sessionLengthMs = sessionLengthHours * 3_600_000L;
+        this.sessionLengthMs = sessionLengthMinutes * 60_000L;
         this.listener = listener;
         this.prefs = context.getApplicationContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
 
