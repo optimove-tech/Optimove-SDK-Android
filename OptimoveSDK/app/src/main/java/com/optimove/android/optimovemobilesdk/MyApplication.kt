@@ -15,15 +15,18 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        // Default true so first launch doesn't crash on placeholder credentials.
+        // Toggle "Delayed Initialization" in the demo UI, then restart to switch modes.
         val useDelayed = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_DELAYED_INIT, false)
+            .getBoolean(KEY_DELAYED_INIT, true)
 
         val config = if (useDelayed) {
+            // No placeholder embedded-messaging / Optimove creds — those must be real base64
+            // configs or the app crashes on startup. Gamify/Adact work without them.
             OptimoveConfig.Builder(
                 OptimoveConfig.FeatureSet().withOptimove().withOptimobile()
             )
                 .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-                .enableEmbeddedMessaging("embedded_config_string")
                 .setPushSmallIconId(R.drawable.small_icon)
                 .setPushAccentColor(Color.parseColor("#FF0000"))
                 .enableOverlayMessaging(1)

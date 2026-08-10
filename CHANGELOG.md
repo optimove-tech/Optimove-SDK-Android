@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 7.16.0
+
+- Added Adact campaign support to `GamifyWidgetSDK`: `initialize(widgetUrl, adactUrl)`, `openAdactCampaign(activity, OpenAdactParams)`, `closeAdactCampaign()`, and `buildAdactCampaignUrl`. Opens `{adactUrl}/embedded/{campaignId}` with optional `cid` and `customerIdToken` query params (same contract as the Web SDK). Adact does not use the loyalty READY→INIT handshake.
+
+
 ## 7.15.2
 
 - Fixed crash on MIUI/HyperOS devices running Android 16 when tapping push notifications (SecurityException in PushOpenInvisibleActivity caused by Android 16 Intent Redirect Hardening). The MIUI launch intent is now dispatched via PendingIntent.send() rather than startActivity() on an unparceled nested intent.
