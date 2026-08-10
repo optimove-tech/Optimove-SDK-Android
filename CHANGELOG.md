@@ -1,9 +1,16 @@
 # Changelog
 
 
-## 7.16.0
+## 7.17.0
 
 - Added Adact campaign support to `GamifyWidgetSDK`: `initialize(widgetUrl, adactUrl)`, `openAdactCampaign(activity, OpenAdactParams)`, `closeAdactCampaign()`, and `buildAdactCampaignUrl`. Opens `{adactUrl}/embedded/{campaignId}` with optional `cid` and `customerIdToken` query params (same contract as the Web SDK). Adact does not use the loyalty READY→INIT handshake.
+
+## 7.16.0
+
+- Overlay session changes:
+  -Decrease min session length 1h -> 15min
+  -Reset overlay session on user login
+
 
 
 ## 7.15.2
