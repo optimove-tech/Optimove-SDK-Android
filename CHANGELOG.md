@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 7.17.1
+
+- Fix: interceptor `suppress()` now fires `k.message.dismissed` to the server, matching iOS and `handleMessageClosed` behaviour. Previously, suppressed in-app messages were only marked dismissed in the local DB; the server was never notified, so after the 1-hour local row cleanup the message could be re-fetched and re-delivered to the interceptor on a subsequent sync.
+
 ## 7.17.0
 
 - Added Adact campaign support to `GamifyWidgetSDK`: `initialize(widgetUrl, adactUrl)`, `openAdactCampaign(activity, OpenAdactParams)`, `closeAdactCampaign()`, and `buildAdactCampaignUrl`. Opens `{adactUrl}/embedded/{campaignId}` with optional `cid` and `customerIdToken` query params (same contract as the Web SDK). Adact does not use the loyalty READY→INIT handshake.
