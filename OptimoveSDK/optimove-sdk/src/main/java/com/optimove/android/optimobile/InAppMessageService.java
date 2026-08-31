@@ -159,6 +159,7 @@ class InAppMessageService {
 
     static void handleMessageSuppressed(@NonNull Context context, @NonNull InAppMessage message) {
         updateDismissedAt(context, message);
+        trackDismissedEvent(context, message.getInAppId());
         clearNotification(context, message.getInAppId());
     }
 
