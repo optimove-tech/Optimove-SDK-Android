@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 7.17.1
+
+- Fix: deferred deep link handler firing on every app cold start for apps using the Install Referrer dependency. The Install Referrer path (added in 7.10.0) did not persist the deferred-link-checked flag, causing the same deep link to be re-resolved on every launch. The clipboard path was unaffected.
+
 ## 7.17.0
 
 - Added Adact campaign support to `GamifyWidgetSDK`: `initialize(widgetUrl, adactUrl)`, `openAdactCampaign(activity, OpenAdactParams)`, `closeAdactCampaign()`, and `buildAdactCampaignUrl`. Opens `{adactUrl}/embedded/{campaignId}` with optional `cid` and `customerIdToken` query params (same contract as the Web SDK). Adact does not use the loyalty READY→INIT handshake.
