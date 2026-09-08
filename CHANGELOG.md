@@ -3,7 +3,7 @@
 
 ## 7.17.1
 
-- Fix: interceptor `suppress()` now fires `k.message.dismissed` to the server, matching iOS and `handleMessageClosed` behaviour. Previously, suppressed in-app messages were only marked dismissed in the local DB; the server was never notified, so after the 1-hour local row cleanup the message could be re-fetched and re-delivered to the interceptor on a subsequent sync.
+- Fix: deferred deep link handler firing on every app cold start for apps using the Install Referrer dependency. The Install Referrer path (added in 7.10.0) did not persist the deferred-link-checked flag, causing the same deep link to be re-resolved on every launch. The clipboard path was unaffected.
 
 ## 7.17.0
 
