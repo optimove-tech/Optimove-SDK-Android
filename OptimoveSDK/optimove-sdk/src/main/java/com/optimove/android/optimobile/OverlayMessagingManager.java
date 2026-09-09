@@ -59,6 +59,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
     private int sessionSlotCount = 0;
     private int immediateSlotCount = 0;
+    private boolean hidden = false;
     // Prevents re-processing the same message when triggers arrive before backend events propagate
     private final Set<Long> seenMessageIds = new HashSet<>();
 
@@ -76,6 +77,29 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @UiThread
     void setActionHandler(@Nullable OverlayMessagingActionHandler handler) {
         actionDispatcher.setHandler(handler);
+    }
+
+    //==============================================================================================
+    //-- Visibility
+
+    @UiThread
+    void setHidden(boolean hidden) {
+        if (this.hidden == hidden) {
+            return;
+        }
+        this.hidden = hidden;
+
+        if (hidden) {
+            if (currentView != null) {
+                currentView.setHidden(true);
+            }
+            return;
+        }
+
+        maybeShowNext();
+        if (currentView != null) {
+            currentView.setHidden(false);
+        }
     }
 
     @UiThread
@@ -189,6 +213,10 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
     @UiThread
     private void maybeShowNext() {
+        if (hidden) {
+            return;
+        }
+
         OverlayMessagingMessage next = displayQueue.peek();
 
         if (next == null) {
