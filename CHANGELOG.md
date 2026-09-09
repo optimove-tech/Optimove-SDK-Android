@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 7.18.0
+
+- Add `OptimoveOverlayMessaging.getInstance().hide()` / `show()` — temporarily take a displayed overlay off screen and restore it in place, for hosts that need the screen for a higher-priority popup of their own. The message resumes where it was, with no re-trigger and no second interceptor call. Messages arriving while hidden are held until `show()`.
+
 ## 7.17.1
 
 - Fix: deferred deep link handler firing on every app cold start for apps using the Install Referrer dependency. The Install Referrer path (added in 7.10.0) did not persist the deferred-link-checked flag, causing the same deep link to be re-resolved on every launch. The clipboard path was unaffected.
