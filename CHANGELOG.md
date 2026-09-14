@@ -1,5 +1,8 @@
 # Changelog
 
+## 7.17.2
+
+- Interceptor `suppress()` now fires `k.message.dismissed` to the server, matching iOS and `handleMessageClosed` behaviour.
 
 ## 7.17.1
 
