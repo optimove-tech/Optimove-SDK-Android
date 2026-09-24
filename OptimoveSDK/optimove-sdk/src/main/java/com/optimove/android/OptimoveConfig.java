@@ -656,6 +656,8 @@ public final class OptimoveConfig {
          * <p>
          * <b>Threading:</b> the provider may be invoked from a background thread; the {@link AuthTokenProvider.Callback}
          * may complete on any thread.
+         * <p>
+         * The callback must be invoked exactly once and the provider must not throw; see {@link AuthTokenProvider}.
          *
          * @param provider non-null implementation that fetches JWTs for a given user id
          * @return this builder

@@ -6,6 +6,7 @@ public final class AuthTokenException extends Exception {
 
     public enum Kind {
         TOKEN_FETCH_FAILED("Failed to fetch auth token from provider."),
+        TOKEN_FETCH_TIMED_OUT("Timed out fetching auth token from provider."),
         NO_USER_ID("No userId available for auth token request.");
 
         private final String message;

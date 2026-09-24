@@ -87,6 +87,10 @@ final public class Optimove {
         this.context = context;
         this.userInfo = UserInfo.newInstance(context);
 
+        AuthTokenProvider authTokenProvider = config.getAuthTokenProvider();
+        AuthManager localAuthManager = authTokenProvider != null ? new AuthManager(authTokenProvider) : null;
+        Optimove.authManager = localAuthManager;
+
         if (!config.isOptimoveConfigured()) {
             coreSharedPreferences = null;
             localConfigKeysPreferences = null;
@@ -106,9 +110,6 @@ final public class Optimove {
         this.localConfigKeysPreferences =
                 context.getSharedPreferences(TenantConfigsKeys.LOCAL_INIT_SP_FILE, Context.MODE_PRIVATE);
         this.lifecycleObserver = new LifecycleObserver();
-        AuthTokenProvider authTokenProvider = config.getAuthTokenProvider();
-        AuthManager localAuthManager = authTokenProvider != null ? new AuthManager(authTokenProvider) : null;
-        Optimove.authManager = localAuthManager;
         this.eventHandlerProvider = new EventHandlerProvider(EventHandlerFactory.builder()
                 .userInfo(userInfo)
                 .httpClient(HttpClient.getInstance())
