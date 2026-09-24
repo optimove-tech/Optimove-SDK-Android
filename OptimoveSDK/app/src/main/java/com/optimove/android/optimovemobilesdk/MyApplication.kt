@@ -15,6 +15,9 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        val qaPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val useAuth = qaPrefs.getBoolean(KEY_AUTH_ENABLED, false)
+
         // Default true so first launch doesn't crash on placeholder credentials.
         // Toggle "Delayed Initialization" in the demo UI, then restart to switch modes.
         val useDelayed = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -26,32 +29,35 @@ class MyApplication : Application() {
             OptimoveConfig.Builder(
                 OptimoveConfig.FeatureSet().withOptimove().withOptimobile()
             )
-                .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-                .setPushSmallIconId(R.drawable.small_icon)
-                .setPushAccentColor(Color.parseColor("#FF0000"))
-                .enableOverlayMessaging(1)
-                .build()
         } else {
             OptimoveConfig.Builder(
                 DEFAULT_OPTIMOVE_CRED,
                 DEFAULT_OPTIMOBILE_CRED
             )
-                .enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-                .setPushSmallIconId(R.drawable.small_icon)
-                .setPushAccentColor(Color.parseColor("#FF0000"))
-                .enableOverlayMessaging(1)
-                .build()
         }
 
-        Optimove.initialize(this, config)
+        config.enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
+            .setPushSmallIconId(R.drawable.small_icon)
+            .setPushAccentColor(Color.parseColor("#FF0000"))
+            .enableOverlayMessaging(1)
+
+        if (useAuth) {
+            QAJWTSigner.initialize(this)
+            config.enableAuth(AuthDebugState)
+        }
+
+        Optimove.initialize(this, config.build())
         Optimove.enableStagingRemoteLogs()
     }
 
     companion object {
         const val PREFS_NAME = "optimove_qa_settings"
         const val KEY_DELAYED_INIT = "delayed_init"
+        const val KEY_AUTH_ENABLED = "auth_enabled"
+
         const val DEFAULT_OPTIMOVE_CRED = "optimove_creds"
         const val DEFAULT_OPTIMOBILE_CRED = "optimobile_creds"
+        const val DEFAULT_PREFERENCE_CENTER_CRED = "pref_center_creds"
 
         fun askForOverlayPermissions() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return

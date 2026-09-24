@@ -26,6 +26,11 @@ public class EmbeddedMessageEventRequest {
         this.customerId = customerId;
         this.visitorId = visitorId;
     }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
     public JSONObject toJSONObject() throws JSONException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         JSONObject metricsObj = new JSONObject();

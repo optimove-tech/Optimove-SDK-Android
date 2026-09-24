@@ -1,1 +1,5 @@
 /build
+
+# QA-only JWT signing key used by AuthDebugState/QAJWTSigner to simulate a tenant
+# backend minting JWTs for the SDK's auth provider hook. Never commit this file.
+/src/main/assets/qa_jwt_private_key.pem

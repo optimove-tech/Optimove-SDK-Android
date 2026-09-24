@@ -11,6 +11,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.AuthManager;
+import com.optimove.android.AuthTokenProvider;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
 import com.optimove.android.main.common.EventHandlerFactory;
 import com.optimove.android.main.common.EventHandlerProvider;
@@ -72,6 +74,7 @@ final public class Optimove {
     private final LifecycleObserver lifecycleObserver;
 
     private static OptimoveConfig currentConfig;
+    private static @Nullable AuthManager authManager;
 
     public enum IBeaconProximity {
         UNKNOWN,
@@ -83,6 +86,10 @@ final public class Optimove {
     private Optimove(@NonNull Context context, OptimoveConfig config) {
         this.context = context;
         this.userInfo = UserInfo.newInstance(context);
+
+        AuthTokenProvider authTokenProvider = config.getAuthTokenProvider();
+        AuthManager localAuthManager = authTokenProvider != null ? new AuthManager(authTokenProvider) : null;
+        Optimove.authManager = localAuthManager;
 
         if (!config.isOptimoveConfigured()) {
             coreSharedPreferences = null;
@@ -110,6 +117,7 @@ final public class Optimove {
                 .optistreamDbHelper(new OptistreamDbHelper(context))
                 .lifecycleObserver(lifecycleObserver)
                 .context(context)
+                .authManager(localAuthManager)
                 .build());
 
         this.optimoveLifecycleEventGenerator = new OptimoveLifecycleEventGenerator(eventHandlerProvider, userInfo,
@@ -283,6 +291,11 @@ final public class Optimove {
      */
     public static OptimoveConfig getConfig() {
         return currentConfig;
+    }
+
+    @Nullable
+    public static AuthManager getAuthManager() {
+        return authManager;
     }
 
     /**

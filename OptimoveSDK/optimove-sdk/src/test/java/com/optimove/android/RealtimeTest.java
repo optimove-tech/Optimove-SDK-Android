@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 import com.optimove.android.main.common.UserInfo;
+import com.optimove.android.main.tools.networking.HttpClient.HttpStatusException;
 import com.optimove.android.main.events.core_events.SetEmailEvent;
 import com.optimove.android.main.events.core_events.SetUserIdEvent;
 import com.optimove.android.main.sdk_configs.configs.RealtimeConfigs;
@@ -22,6 +23,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -31,9 +33,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,10 +82,11 @@ public class RealtimeTest {
         when(builder.errorListener(any())).thenReturn(builder);
         when(builder.destination(any(), any())).thenReturn(builder);
         when(builder.successListener(any())).thenReturn(builder);
+        when(builder.userJwt(any())).thenReturn(builder);
 
         when(userInfo.getUserId()).thenReturn(userId);
         when(userInfo.getEmail()).thenReturn(userEmail);
-        realtimeManager = new RealtimeManager(httpClient, realtimeConfigs, context);
+        realtimeManager = new RealtimeManager(httpClient, realtimeConfigs, context, null);
     }
 
 
@@ -261,6 +266,85 @@ public class RealtimeTest {
                 .withMetadata(mock(OptistreamEvent.Metadata.class))
                 .build();
     }
+    // --- Auth tests ---
+
+    @Test
+    public void jwtIsAttachedForUserIdentifiedEventWhenAuthConfigured() {
+        AuthManager authManager = new AuthManager((uid, cb) -> cb.onComplete("the-jwt", null));
+        RealtimeManager authRealtimeManager = new RealtimeManager(httpClient, realtimeConfigs, context, authManager);
+
+        authRealtimeManager.reportEvents(Collections.singletonList(getRegularEvent()));
+
+        verify(builder, timeout(1000)).userJwt("the-jwt");
+    }
+
+    @Test
+    public void dispatchFailsWhenTokenProviderReturnsError() {
+        AuthManager failingAuth = new AuthManager((uid, cb) ->
+                cb.onComplete(null, new RuntimeException("provider error")));
+        RealtimeManager authRealtimeManager = new RealtimeManager(httpClient, realtimeConfigs, context, failingAuth);
+        OptistreamEvent event = getSetUserIdEvent();
+
+        authRealtimeManager.reportEvents(Collections.singletonList(event));
+
+        String expectedJson = new Gson().toJson(event);
+        InOrder inOrder = inOrder(editor);
+        inOrder.verify(editor, timeout(500)).putString(FAILED_SET_USER_EVENT_KEY, expectedJson);
+        inOrder.verify(editor, timeout(500)).apply();
+        verify(httpClient, never()).postJson(anyString(), anyString());
+        // the persisted retry event must survive the end of the dispatch cycle
+        verify(editor, after(500).never()).remove(FAILED_SET_USER_EVENT_KEY);
+    }
+
+    @Test
+    public void httpFailureOnOneGroupStillPersistsSetUserOfLaterGroup() {
+        applyHttpErrorInvocation(new Exception("network down"));
+
+        OptistreamEvent visitorEvent = OptistreamEvent.builder()
+                .withTenantId(33333).withCategory("c").withName("some_name").withOrigin("o")
+                .withUserId(null)
+                .withVisitorId("v1").withTimestamp("t")
+                .withContext(mock(Map.class)).withMetadata(mock(OptistreamEvent.Metadata.class))
+                .build();
+        OptistreamEvent setUserEvent = OptistreamEvent.builder()
+                .withTenantId(33333).withCategory("c").withName(SetUserIdEvent.EVENT_NAME).withOrigin("o")
+                .withUserId("c1")
+                .withVisitorId("v1").withTimestamp("t")
+                .withContext(mock(Map.class)).withMetadata(mock(OptistreamEvent.Metadata.class))
+                .build();
+
+        realtimeManager.reportEvents(Arrays.asList(visitorEvent, setUserEvent));
+
+        // both groups must be attempted, and the failed set_user must be persisted
+        verify(httpClient, timeout(1000).times(2)).postJson(anyString(), anyString());
+        verify(editor, timeout(1000)).putString(FAILED_SET_USER_EVENT_KEY, new Gson().toJson(setUserEvent));
+    }
+
+    @Test
+    public void unauthorizedWithoutAuthDiscardsBatchWithoutStoringEvent() {
+        applyHttpErrorInvocation(new HttpStatusException(401, "Unauthorized"));
+        OptistreamEvent event = getSetUserIdEvent();
+
+        realtimeManager.reportEvents(Collections.singletonList(event));
+
+        verify(editor, after(500).never()).putString(anyString(), anyString());
+    }
+
+    @Test
+    public void unauthorizedWithAuthConfiguredStoresEventInPrefs() {
+        applyHttpErrorInvocation(new HttpStatusException(401, "Unauthorized"));
+        AuthManager authManager = new AuthManager((uid, cb) -> cb.onComplete("the-jwt", null));
+        RealtimeManager authRealtimeManager = new RealtimeManager(httpClient, realtimeConfigs, context, authManager);
+        OptistreamEvent event = getSetUserIdEvent();
+
+        authRealtimeManager.reportEvents(Collections.singletonList(event));
+
+        String expectedJson = new Gson().toJson(event);
+        InOrder inOrder = inOrder(editor);
+        inOrder.verify(editor, timeout(500)).putString(FAILED_SET_USER_EVENT_KEY, expectedJson);
+        inOrder.verify(editor, timeout(500)).apply();
+    }
+
     private void applyHttpSuccessInvocation() {
         doAnswer(invocation -> {
             new Thread(() -> {
@@ -272,5 +356,15 @@ public class RealtimeTest {
             return builder;
         }).when(builder)
                 .successListener(any());
+    }
+
+    private void applyHttpErrorInvocation(Exception e) {
+        doAnswer(invocation -> {
+            HttpClient.ErrorListener errorListener =
+                    (HttpClient.ErrorListener) invocation.getArguments()[0];
+            errorListener.sendError(e);
+            return builder;
+        }).when(builder)
+                .errorListener(any());
     }
 }
