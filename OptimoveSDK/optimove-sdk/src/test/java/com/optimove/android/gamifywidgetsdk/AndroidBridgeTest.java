@@ -31,4 +31,20 @@ public class AndroidBridgeTest {
         bridge.receiveMessage("{\"type\":\"TEST\"}");
         verify(onReady, never()).run();
     }
+
+    @Test
+    public void receiveMessage_invokesOnCloseForCloseType() {
+        Runnable onClose = mock(Runnable.class);
+        AndroidBridge bridge = new AndroidBridge(onClose, mock(Runnable.class));
+        bridge.receiveMessage("{\"type\":\"CLOSE\"}");
+        verify(onClose).run();
+    }
+
+    @Test
+    public void receiveMessage_readyIsNoOpWhenOnReadyNull() {
+        Runnable onClose = mock(Runnable.class);
+        AndroidBridge bridge = new AndroidBridge(onClose, null);
+        bridge.receiveMessage("{\"type\":\"READY\"}");
+        verify(onClose, never()).run();
+    }
 }

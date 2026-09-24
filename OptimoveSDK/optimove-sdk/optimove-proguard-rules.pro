@@ -1,6 +1,7 @@
 -keep class com.optimove.android.main.sdk_configs.** { <fields>; }
 -keep class com.optimove.android.optistream.OptistreamEvent { <fields>; }
 -keep class com.optimove.android.gamifywidgetsdk.GamifyWidgetSDK { public *; }
+-keep class com.optimove.android.gamifywidgetsdk.OpenAdactParams { public *; }
 -keepclassmembers class com.optimove.android.gamifywidgetsdk.AndroidBridge {
     @android.webkit.JavascriptInterface <methods>;
 }

@@ -3,23 +3,27 @@ package com.optimove.android.gamifywidgetsdk;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Native bridge exposed to the widget's JavaScript as `window.AndroidBridge`.
+ * Native bridge exposed to the widget's JavaScript as {@code window.AndroidBridge}.
  *
- * The widget calls:
- *   window.AndroidBridge.closeWidget()        — to dismiss the dialog
- *   window.AndroidBridge.receiveMessage(json) — generic widget → SDK messages,
- *       including the READY handshake (type = "READY")
+ * <p>The widget calls:
+ * <ul>
+ *   <li>{@code window.AndroidBridge.closeWidget()} — dismiss the dialog</li>
+ *   <li>{@code window.AndroidBridge.receiveMessage(json)} — widget → SDK messages,
+ *       including READY (loyalty handshake) and CLOSE</li>
+ * </ul>
  */
 class AndroidBridge {
 
     private final Runnable onClose;
-    private final Runnable onReady;
+    @Nullable private final Runnable onReady;
 
-    AndroidBridge(Runnable onClose, Runnable onReady) {
+    AndroidBridge(Runnable onClose, @Nullable Runnable onReady) {
         this.onClose = onClose;
         this.onReady = onReady;
     }
@@ -32,8 +36,13 @@ class AndroidBridge {
     @JavascriptInterface
     public void receiveMessage(String json) {
         try {
-            if ("READY".equals(new JSONObject(json).getString("type"))) {
-                onReady.run();
+            String type = new JSONObject(json).getString("type");
+            if ("READY".equals(type)) {
+                if (onReady != null) {
+                    onReady.run();
+                }
+            } else if ("CLOSE".equals(type)) {
+                onClose.run();
             }
         } catch (JSONException e) {
             Log.d(GamifyWidgetSDK.TAG, "Incorrect message format: " + json);

@@ -96,6 +96,12 @@ public class DeferredDeepLinkHelper {
             return;
         }
 
+        SharedPreferences preferences = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
+        boolean checked = preferences.getBoolean(SharedPrefs.DEFERRED_LINK_CHECKED_KEY, false);
+        if (checked) {
+            return;
+        }
+
         if (InstallReferrerHelper.isInstallReferrerAvailable() && !installReferrerChecked.getAndSet(true)) {
             this.checkInstallReferrer(context);
         } else {
@@ -134,6 +140,9 @@ public class DeferredDeepLinkHelper {
             public void onInstallReferrerReceived(@Nullable String referrerUrl) {
                 String deepLink = InstallReferrerHelper.extractDeepLinkFromReferrer(referrerUrl);
                 if (deepLink != null) {
+                    SharedPreferences preferences = context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE);
+                    preferences.edit().putBoolean(SharedPrefs.DEFERRED_LINK_CHECKED_KEY, true).apply();
+
                     DeferredDeepLinkHelper.this.maybeProcessUrl(context, deepLink, true);
                 } else {
                     DeferredDeepLinkHelper.this.checkForDeferredLinkOnClipboard(context);

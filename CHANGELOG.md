@@ -1,8 +1,26 @@
 # Changelog
 
-## 7.16.0
+## 7.18.0
 
 - Adds federated JWT authentication to the Android SDK. When enableAuth() is used, the SDK fetches JWTs from a client-provided closure and attaches them via X-User-JWT on all user-identified requests.
+
+## 7.17.2
+
+- Interceptor `suppress()` now fires `k.message.dismissed` to the server, matching iOS and `handleMessageClosed` behaviour.
+
+## 7.17.1
+
+- Fix: deferred deep link handler firing on every app cold start for apps using the Install Referrer dependency. The Install Referrer path (added in 7.10.0) did not persist the deferred-link-checked flag, causing the same deep link to be re-resolved on every launch. The clipboard path was unaffected.
+
+## 7.17.0
+
+- Added Adact campaign support to `GamifyWidgetSDK`: `initialize(widgetUrl, adactUrl)`, `openAdactCampaign(activity, OpenAdactParams)`, `closeAdactCampaign()`, and `buildAdactCampaignUrl`. Opens `{adactUrl}/embedded/{campaignId}` with optional `cid` and `customerIdToken` query params (same contract as the Web SDK). Adact does not use the loyalty READY→INIT handshake.
+
+## 7.16.0
+
+- Overlay session changes:
+  -Decrease min session length 1h -> 15min
+  -Reset overlay session on user login
 
 ## 7.15.2
 

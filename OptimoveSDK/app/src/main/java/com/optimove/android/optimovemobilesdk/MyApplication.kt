@@ -16,10 +16,16 @@ class MyApplication : Application() {
         super.onCreate()
 
         val qaPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val useDelayed = qaPrefs.getBoolean(KEY_DELAYED_INIT, false)
         val useAuth = qaPrefs.getBoolean(KEY_AUTH_ENABLED, false)
 
-        val builder = if (useDelayed) {
+        // Default true so first launch doesn't crash on placeholder credentials.
+        // Toggle "Delayed Initialization" in the demo UI, then restart to switch modes.
+        val useDelayed = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DELAYED_INIT, true)
+
+        val config = if (useDelayed) {
+            // No placeholder embedded-messaging / Optimove creds — those must be real base64
+            // configs or the app crashes on startup. Gamify/Adact work without them.
             OptimoveConfig.Builder(
                 OptimoveConfig.FeatureSet().withOptimove().withOptimobile()
             )
@@ -30,19 +36,17 @@ class MyApplication : Application() {
             )
         }
 
-        builder.enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
-//            .enableEmbeddedMessaging("embedded_config_string")
-            .enablePreferenceCenter(DEFAULT_PREFERENCE_CENTER_CRED)
+        config.enableInAppMessaging(OptimoveConfig.InAppConsentStrategy.AUTO_ENROLL)
             .setPushSmallIconId(R.drawable.small_icon)
             .setPushAccentColor(Color.parseColor("#FF0000"))
             .enableOverlayMessaging(1)
 
         if (useAuth) {
             QAJWTSigner.initialize(this)
-            builder.enableAuth(AuthDebugState)
+            config.enableAuth(AuthDebugState)
         }
 
-        Optimove.initialize(this, builder.build())
+        Optimove.initialize(this, config.build())
         Optimove.enableStagingRemoteLogs()
     }
 
