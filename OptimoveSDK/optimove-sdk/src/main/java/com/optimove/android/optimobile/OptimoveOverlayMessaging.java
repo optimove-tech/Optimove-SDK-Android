@@ -78,6 +78,16 @@ public class OptimoveOverlayMessaging {
         Optimobile.handler.post(() -> manager.setActionHandler(handler));
     }
 
+    @AnyThread
+    public void hide() {
+        Optimobile.handler.post(() -> manager.setHidden(true));
+    }
+
+    @AnyThread
+    public void show() {
+        Optimobile.handler.post(() -> manager.setHidden(false));
+    }
+
     //==============================================================================================
     //-- Internal
 

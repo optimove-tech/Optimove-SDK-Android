@@ -83,6 +83,8 @@ abstract class BaseMessageView extends WebViewClient {
     @Nullable
     private ProgressBar spinner;
 
+    private boolean hidden = false;
+
     private int prevStatusBarColor;
     private boolean prevFlagTranslucentStatus;
     private boolean prevFlagDrawsSystemBarBackgrounds;
@@ -103,6 +105,36 @@ abstract class BaseMessageView extends WebViewClient {
         if (state == State.DISPOSED) return;
         closeDialog(currentActivity);
         state = State.DISPOSED;
+    }
+
+    @UiThread
+    void setHidden(boolean hidden) {
+        if (this.hidden == hidden) return;
+        this.hidden = hidden;
+        applyVisibility();
+    }
+
+    @UiThread
+    private void applyVisibility() {
+        if (dialog == null) {
+            return;
+        }
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            int inputFlags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+            if (hidden) {
+                window.addFlags(inputFlags);
+            } else {
+                window.clearFlags(inputFlags);
+            }
+        }
+
+        if (hidden) {
+            dialog.hide();
+        } else {
+            dialog.show();
+        }
     }
 
     @UiThread
@@ -271,6 +303,7 @@ abstract class BaseMessageView extends WebViewClient {
             wv.setWebViewClient(this);
 
             dialog.show();
+            applyVisibility();
             setSpinnerVisibility(View.VISIBLE);
             wv.loadUrl(iarUrl);
             state = State.LOADING;
