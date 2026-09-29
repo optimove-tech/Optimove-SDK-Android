@@ -47,6 +47,10 @@ public class FirebaseMessageHandler {
             return false;
         }
 
+        if (OptimoveLiveUpdates.handlePushPayload(customStr)) {
+            return true;
+        }
+
         // Extract bundle
         int id;
         JSONObject data;

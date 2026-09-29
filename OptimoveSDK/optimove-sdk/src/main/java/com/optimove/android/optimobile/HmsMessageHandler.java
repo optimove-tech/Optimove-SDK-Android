@@ -49,6 +49,10 @@ public class HmsMessageHandler {
             return false;
         }
 
+        if (OptimoveLiveUpdates.handlePushPayload(bundle.optString("custom"))) {
+            return true;
+        }
+
         int id;
         JSONObject data;
         JSONObject custom;

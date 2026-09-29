@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.19.0
+
+- Add Live Updates. FCM / HMS data messages carrying `k.liveUpdate` in `custom.a` are routed to `OptimoveLiveUpdates` and never shown as a normal push. Register a handler per type after `Optimove.initialize`: `registerNotificationHandler(type, handler)` to have the SDK post, update and dismiss an ongoing notification built by the host (e.g. with RemoteViews), or `registerCustomHandler(type, handler)` to render it yourself. Updates with a sequence less than or equal to the last applied one are ignored, and state is persisted across process death. `start` / `update` / `end` / `clearAll` are also available from the app. This is not the Android 16 promoted Live Updates API.
+
 ## 7.18.0
 
 - Adds federated JWT authentication to the Android SDK. When enableAuth() is used, the SDK fetches JWTs from a client-provided closure and attaches them via X-User-JWT on all user-identified requests.
