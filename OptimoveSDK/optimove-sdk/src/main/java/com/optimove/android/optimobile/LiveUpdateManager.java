@@ -25,7 +25,7 @@ final class LiveUpdateManager {
     private static final String TAG = LiveUpdateManager.class.getName();
 
     static final String NOTIFICATION_TAG_PREFIX = "optimobile_live_update:";
-    private static final int NOTIFICATION_ID = 1;
+    static final int NOTIFICATION_ID = 1;
 
     private final Context context;
     private final LiveUpdateStore store;

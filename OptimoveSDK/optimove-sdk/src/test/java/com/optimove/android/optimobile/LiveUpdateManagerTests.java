@@ -8,8 +8,6 @@ import static org.junit.Assert.assertTrue;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.service.notification.StatusBarNotification;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -95,12 +93,8 @@ public class LiveUpdateManagerTests {
     }
 
     private @Nullable Notification postedNotification() {
-        for (StatusBarNotification sbn : notifications.getActiveNotifications()) {
-            if (LiveUpdateManager.notificationTag(ACTIVITY_ID).equals(sbn.getTag())) {
-                return sbn.getNotification();
-            }
-        }
-        return null;
+        return notifications.getNotification(
+                LiveUpdateManager.notificationTag(ACTIVITY_ID), LiveUpdateManager.NOTIFICATION_ID);
     }
 
     // ========================= notification handler =========================
@@ -117,7 +111,9 @@ public class LiveUpdateManagerTests {
         assertTrue((notification.flags & Notification.FLAG_ONGOING_EVENT) != 0);
         assertTrue((notification.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0);
         assertEquals("Kick-off", notification.extras.getString(Notification.EXTRA_TITLE));
-        assertNotNull(notifications.getNotificationChannel(OptimoveLiveUpdates.NOTIFICATION_CHANNEL_ID));
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        assertNotNull(notificationManager.getNotificationChannel(OptimoveLiveUpdates.NOTIFICATION_CHANNEL_ID));
     }
 
     @Test
@@ -241,7 +237,7 @@ public class LiveUpdateManagerTests {
         assertEquals(LiveUpdateEvent.END, customHandler.calls.get(2).event);
         assertEquals("Full time", customHandler.calls.get(2).liveUpdate.getContent().getString("status"));
         assertTrue(notificationHandler.calls.isEmpty());
-        assertTrue(notifications.getActiveNotifications().length == 0);
+        assertTrue(notifications.getAllNotifications().isEmpty());
     }
 
     @Test
