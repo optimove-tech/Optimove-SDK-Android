@@ -50,8 +50,10 @@ class MyApplication : Application() {
         Optimove.initialize(this, config.build())
         Optimove.enableStagingRemoteLogs()
 
-        OptimoveLiveUpdates.getInstance()
-            .registerNotificationHandler(LiveScoreNotificationHandler.TYPE, LiveScoreNotificationHandler())
+        OptimoveLiveUpdates.getInstance().apply {
+            registerNotificationHandler(LiveScoreNotificationHandler.TYPE, LiveScoreNotificationHandler())
+            registerCustomHandler(LoggingLiveUpdateCustomHandler.TYPE, LoggingLiveUpdateCustomHandler())
+        }
     }
 
     companion object {

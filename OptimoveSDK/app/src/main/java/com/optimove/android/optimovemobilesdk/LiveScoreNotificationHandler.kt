@@ -19,6 +19,8 @@ class LiveScoreNotificationHandler : LiveUpdateNotificationHandler {
         event: LiveUpdateEvent,
         liveUpdate: LiveUpdate
     ): NotificationCompat.Builder {
+        LiveUpdateDebugLog.add("notification handler: ${LiveUpdateDebugLog.describe(event, liveUpdate)}")
+
         val content = liveUpdate.content
         val homeTeam = content.optString("home_team")
         val awayTeam = content.optString("away_team")
