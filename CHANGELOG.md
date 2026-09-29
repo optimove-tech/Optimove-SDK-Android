@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.19.0
+
+- Add `OptimoveOverlayMessaging.getInstance().hide()` / `show()` — temporarily take a displayed overlay off screen and restore it in place, for hosts that need the screen for a higher-priority popup of their own. The message resumes where it was, with no re-trigger and no second interceptor call. Messages arriving while hidden are held until `show()`.
+
 ## 7.18.0
 
 - Adds federated JWT authentication to the Android SDK. When enableAuth() is used, the SDK fetches JWTs from a client-provided closure and attaches them via X-User-JWT on all user-identified requests.
@@ -7,10 +11,6 @@
 ## 7.17.2
 
 - Interceptor `suppress()` now fires `k.message.dismissed` to the server, matching iOS and `handleMessageClosed` behaviour.
-
-## 7.18.0
-
-- Add `OptimoveOverlayMessaging.getInstance().hide()` / `show()` — temporarily take a displayed overlay off screen and restore it in place, for hosts that need the screen for a higher-priority popup of their own. The message resumes where it was, with no re-trigger and no second interceptor call. Messages arriving while hidden are held until `show()`.
 
 ## 7.17.1
 
@@ -55,7 +55,6 @@
 - Register with `OptimoveInApp.setDeepLinkHandler(...)` from `Application`, not from a single `Activity`
 - Do **not** capture `Activity` in the handler; use the `context` passed to `InAppDeepLinkHandlerInterface.handle()`.
 - Call `setDeepLinkHandler(null)` only to explicitly unregister (e.g. logout).
-
 
 ## 7.13.0
 
