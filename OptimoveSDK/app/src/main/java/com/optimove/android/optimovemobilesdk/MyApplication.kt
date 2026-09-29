@@ -9,6 +9,7 @@ import android.os.Build
 import android.provider.Settings
 import com.optimove.android.Optimove
 import com.optimove.android.OptimoveConfig
+import com.optimove.android.optimobile.OptimoveLiveUpdates
 
 class MyApplication : Application() {
 
@@ -48,6 +49,9 @@ class MyApplication : Application() {
 
         Optimove.initialize(this, config.build())
         Optimove.enableStagingRemoteLogs()
+
+        OptimoveLiveUpdates.getInstance()
+            .registerNotificationHandler(LiveScoreNotificationHandler.TYPE, LiveScoreNotificationHandler())
     }
 
     companion object {

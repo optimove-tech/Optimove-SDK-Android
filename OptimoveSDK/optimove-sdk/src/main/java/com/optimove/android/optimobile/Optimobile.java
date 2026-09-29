@@ -117,6 +117,8 @@ public final class Optimobile {
 
         OptimoveInApp.initialize(application, config);
 
+        OptimoveLiveUpdates.initialize(application);
+
         if (config.isOverlayMessagingEnabled()) {
             OptimoveOverlayMessaging.initialize(application, config);
         }
