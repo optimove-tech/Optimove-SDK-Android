@@ -14,6 +14,7 @@ import com.optimove.android.Optimove;
 import com.optimove.android.OptimoveConfig;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -162,6 +163,15 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
     @UiThread
     private void presentMessageToClient() {
+        // Skipped while an interceptor decision is pending: its callbacks remove the message by reference.
+        if (!interceptionInProgress) {
+            InAppMessage previousHead = getCurrentMessage();
+            removeExpiredMessages();
+            if (previousHead != null && previousHead != getCurrentMessage()) {
+                disposeView();
+            }
+        }
+
         InAppMessage currentMessage = getCurrentMessage();
 
         if (null == currentMessage || getDisplayMode() == OptimoveConfig.InAppDisplayMode.PAUSED) {
@@ -240,6 +250,8 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             boolean exists = false;
             for (InAppMessage messageFromQueue : messageQueue) {
                 if (messageToAppend.getInAppId() == messageFromQueue.getInAppId()) {
+                    // Inbox-opened messages carry no expiry and must not be dropped by an earlier queued copy.
+                    messageFromQueue.setExpiresAt(messageToAppend.getExpiresAt());
                     exists = true;
                     break;
                 }
@@ -247,6 +259,16 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
 
             if (!exists) {
                 messageQueue.add(messageToAppend);
+            }
+        }
+    }
+
+    @UiThread
+    private void removeExpiredMessages() {
+        Iterator<InAppMessage> iterator = messageQueue.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().isExpired()) {
+                iterator.remove();
             }
         }
     }
