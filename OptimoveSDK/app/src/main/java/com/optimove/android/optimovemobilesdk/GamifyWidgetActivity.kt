@@ -8,25 +8,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.optimove.android.Optimove
 import com.optimove.android.gamifywidgetsdk.GamifyWidgetSDK
 import com.optimove.android.gamifywidgetsdk.OpenAdactParams
+import com.optimove.android.gamifywidgetsdk.OpenLoyaltyWidgetParams
 import com.optimove.android.optimovemobilesdk.ui.GamifyWidgetScreen
 import com.optimove.android.optimovemobilesdk.ui.theme.AppTheme
 
-enum class GamifyEnv(val label: String, val baseUrl: String) {
-    DEV("Dev", "https://opti-ls-widget-dev.optimove.net"),
-    PROD_US("Prod US", "https://opti-ls-widget-us.optimove.net"),
-    PROD_EU("Prod EU", "https://opti-ls-widget-eu.optimove.net")
-}
-
+/**
+ * Both gamify URLs come from the `gamify` block of the tenant config, so this screen only shows them — set Optimove
+ * credentials on the main screen for them to load.
+ */
 class GamifyWidgetActivity : AppCompatActivity() {
 
     private lateinit var prefs: SharedPreferences
 
-    private var tenant by mutableStateOf("")
     private var userId by mutableStateOf("")
-    private var env by mutableStateOf(GamifyEnv.DEV)
-    private var adactUrl by mutableStateOf(DEFAULT_ADACT_URL)
+    private var brand by mutableStateOf("")
     private var campaignId by mutableStateOf("")
     private var cid by mutableStateOf("")
     private var adactToken by mutableStateOf("")
@@ -35,10 +33,8 @@ class GamifyWidgetActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        tenant = prefs.getString(KEY_TENANT, "") ?: ""
         userId = prefs.getString(KEY_USER_ID, "") ?: ""
-        env = enumValues<GamifyEnv>().find { it.name == prefs.getString(KEY_ENV, null) } ?: GamifyEnv.DEV
-        adactUrl = prefs.getString(KEY_ADACT_URL, DEFAULT_ADACT_URL) ?: DEFAULT_ADACT_URL
+        brand = prefs.getString(KEY_BRAND, "") ?: ""
         campaignId = prefs.getString(KEY_CAMPAIGN_ID, "") ?: ""
         cid = prefs.getString(KEY_CID, "") ?: ""
         adactToken = prefs.getString(KEY_ADACT_TOKEN, "") ?: ""
@@ -46,17 +42,15 @@ class GamifyWidgetActivity : AppCompatActivity() {
         setContent {
             AppTheme {
                 GamifyWidgetScreen(
-                    tenant = tenant,
                     userId = userId,
-                    env = env,
-                    adactUrl = adactUrl,
+                    brand = brand,
+                    loyaltyWidgetSrc = loyaltyWidgetSrc(),
+                    adactUrl = GamifyWidgetSDK.getInstance().adactUrl,
                     campaignId = campaignId,
                     cid = cid,
                     adactToken = adactToken,
-                    onTenantChange = { tenant = it; save() },
-                    onWidgetIdChange = { userId = it; save() },
-                    onEnvChange = { env = it; save() },
-                    onAdactUrlChange = { adactUrl = it; save() },
+                    onUserIdChange = { userId = it; save() },
+                    onBrandChange = { brand = it; save() },
                     onCampaignIdChange = { campaignId = it; save() },
                     onCidChange = { cid = it; save() },
                     onAdactTokenChange = { adactToken = it; save() },
@@ -70,32 +64,30 @@ class GamifyWidgetActivity : AppCompatActivity() {
 
     private fun save() {
         prefs.edit()
-            .putString(KEY_TENANT, tenant)
             .putString(KEY_USER_ID, userId)
-            .putString(KEY_ENV, env.name)
-            .putString(KEY_ADACT_URL, adactUrl)
+            .putString(KEY_BRAND, brand)
             .putString(KEY_CAMPAIGN_ID, campaignId)
             .putString(KEY_CID, cid)
             .putString(KEY_ADACT_TOKEN, adactToken)
             .apply()
     }
 
-    private fun ensureInitialized() {
-        val widgetUrl = if (tenant.isNotBlank() && userId.isNotBlank()) {
-            "${env.baseUrl}/$tenant/$userId"
-        } else {
-            null
-        }
-        GamifyWidgetSDK.initialize(widgetUrl, adactUrl.ifBlank { null })
+    private fun widgetParams() = OpenLoyaltyWidgetParams(userId.ifBlank { null }, brand.ifBlank { null })
+
+    /** What openWidget will load; the SDK user stands in when User ID is blank. */
+    private fun loyaltyWidgetSrc(): String {
+        val params = widgetParams()
+        val resolvedUserId = params.userId
+            ?: runCatching { Optimove.getInstance().userInfo.userId }.getOrNull()
+        return GamifyWidgetSDK.getInstance().buildLoyaltyWidgetUrl(resolvedUserId, params.brand)
     }
 
+    /** When auth is enabled the SDK mints the JWT for the user itself. */
     private fun openWidget() {
-        ensureInitialized()
-        GamifyWidgetSDK.getInstance().open(this, userId, null)
+        GamifyWidgetSDK.getInstance().openWidget(this, widgetParams())
     }
 
     private fun openAdactCampaign() {
-        ensureInitialized()
         val id = campaignId.trim().toIntOrNull() ?: return
         GamifyWidgetSDK.getInstance().openAdactCampaign(
             this,
@@ -108,22 +100,15 @@ class GamifyWidgetActivity : AppCompatActivity() {
     }
 
     private fun closeAdactCampaign() {
-        try {
-            GamifyWidgetSDK.getInstance().closeAdactCampaign()
-        } catch (_: IllegalStateException) {
-            // SDK not initialized yet
-        }
+        GamifyWidgetSDK.getInstance().closeAdactCampaign()
     }
 
     companion object {
         private const val PREFS_NAME = "gamify_widget_config"
-        private const val KEY_TENANT = "tenant"
         private const val KEY_USER_ID = "user_id"
-        private const val KEY_ENV = "env"
-        private const val KEY_ADACT_URL = "adact_url"
+        private const val KEY_BRAND = "brand"
         private const val KEY_CAMPAIGN_ID = "campaign_id"
         private const val KEY_CID = "cid"
         private const val KEY_ADACT_TOKEN = "adact_token"
-        private const val DEFAULT_ADACT_URL = "https://adact-campaign-dev.optimove.net/"
     }
 }
