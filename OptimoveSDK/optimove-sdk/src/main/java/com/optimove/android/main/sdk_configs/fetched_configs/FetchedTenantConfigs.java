@@ -20,6 +20,8 @@ public class FetchedTenantConfigs {
     public OptitrackMetaData optitrackMetaData;
     @SerializedName("events")
     public Map<String , EventConfigs> eventsConfigs;
+    @SerializedName("gamify")
+    public GamifyOptions gamify;
 
     public class OptitrackMetaData {
 
@@ -43,6 +45,17 @@ public class FetchedTenantConfigs {
         @SerializedName("realtimeGateway")
         @Expose
         public String realtimeGateway;
+
+    }
+
+    public class GamifyOptions {
+
+        @SerializedName("adactUrl")
+        @Expose
+        public String adactUrl;
+        @SerializedName("loyaltyWidgetUrl")
+        @Expose
+        public String loyaltyWidgetUrl;
 
     }
 }

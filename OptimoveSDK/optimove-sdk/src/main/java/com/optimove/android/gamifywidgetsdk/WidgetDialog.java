@@ -19,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.optimove.android.AuthTokenProvider;
 import com.optimove.android.R;
 
 import org.json.JSONException;
@@ -26,46 +27,70 @@ import org.json.JSONObject;
 
 class WidgetDialog {
 
+    /** Supplies the token for the loyalty INIT and REFRESH_TOKEN; the callback may be invoked on any thread. */
+    interface TokenSource {
+        void fetch(@NonNull AuthTokenProvider.Callback callback);
+    }
+
     private final Activity activity;
     private final String widgetUrl;
     @Nullable private final String userId;
-    @Nullable private final String token;
-    private final boolean enableInitHandshake;
+    @Nullable private final TokenSource tokenSource;
+    @Nullable private final LoyaltyInitHandshake handshake;
     private final Runnable onDismissed;
     private final Dialog dialog;
 
     private WebView webView;
     private ProgressBar progressBar;
     private TextView errorView;
+    private boolean dismissed;
 
     /**
-     * Loyalty widget dialog — READY → INIT handshake with optional userId/token.
+     * Loyalty widget dialog — READY → INIT handshake with optional userId and the token from {@code tokenSource}.
      */
-    @SuppressLint("InflateParams")
     WidgetDialog(@NonNull Activity activity,
                  @NonNull String widgetUrl,
                  @Nullable String userId,
-                 @Nullable String token,
+                 @NonNull TokenSource tokenSource,
                  @NonNull Runnable onDismissed) {
-        this(activity, widgetUrl, userId, token, true, onDismissed);
+        this(activity, widgetUrl, userId, tokenSource, true, onDismissed);
     }
 
     /**
-     * Generic WebView dialog. Adact campaigns use {@code enableInitHandshake = false}
-     * (identity is passed via URL query params, not INIT).
+     * Adact campaign dialog — no INIT handshake; identity is passed via URL query params.
      */
-    @SuppressLint("InflateParams")
     WidgetDialog(@NonNull Activity activity,
                  @NonNull String widgetUrl,
-                 @Nullable String userId,
-                 @Nullable String token,
-                 boolean enableInitHandshake,
                  @NonNull Runnable onDismissed) {
+        this(activity, widgetUrl, null, null, false, onDismissed);
+    }
+
+    @SuppressLint("InflateParams")
+    private WidgetDialog(@NonNull Activity activity,
+                         @NonNull String widgetUrl,
+                         @Nullable String userId,
+                         @Nullable TokenSource tokenSource,
+                         boolean enableInitHandshake,
+                         @NonNull Runnable onDismissed) {
         this.activity = activity;
         this.widgetUrl = widgetUrl;
         this.userId = userId;
-        this.token = token;
-        this.enableInitHandshake = enableInitHandshake;
+        this.tokenSource = tokenSource;
+        this.handshake = enableInitHandshake
+                ? new LoyaltyInitHandshake(new LoyaltyInitHandshake.Listener() {
+                    @Override
+                    public void sendInit(@Nullable String token) {
+                        WidgetDialog.this.sendInit(token);
+                    }
+
+                    @Override
+                    public void onTokenFailed(@NonNull Exception error) {
+                        Log.e(GamifyWidgetSDK.TAG, "Auth token unavailable for loyalty widget, closing: "
+                                + error.getMessage());
+                        dismiss();
+                    }
+                })
+                : null;
         this.onDismissed = onDismissed;
         this.dialog = new Dialog(activity, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
 
@@ -90,14 +115,18 @@ class WidgetDialog {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
 
-        Runnable onReady = enableInitHandshake
-                ? () -> activity.runOnUiThread(this::sendInit)
+        Runnable onReady = handshake != null
+                ? () -> activity.runOnUiThread(handshake::onReady)
+                : null;
+        Runnable onRefreshToken = handshake != null
+                ? () -> activity.runOnUiThread(this::refreshToken)
                 : null;
 
         webView.addJavascriptInterface(
                 new AndroidBridge(
                         () -> activity.runOnUiThread(this::dismiss),
-                        onReady),
+                        onReady,
+                        onRefreshToken),
                 "AndroidBridge");
 
         webView.setWebViewClient(new WebViewClient() {
@@ -119,14 +148,28 @@ class WidgetDialog {
 
     void show() {
         dialog.setOnDismissListener(d -> {
+            if (handshake != null) {
+                handshake.cancel();
+            }
             destroyWebView();
             onDismissed.run();
         });
         webView.loadUrl(widgetUrl);
         dialog.show();
+
+        // Started after show() so a synchronous failure can dismiss a dialog that is actually showing.
+        if (handshake != null && tokenSource != null) {
+            tokenSource.fetch((token, error) ->
+                    activity.runOnUiThread(() -> handshake.onTokenResult(token, error)));
+        }
     }
 
     void dismiss() {
+        // The dismiss listener runs asynchronously, so stop INIT here: a token landing in between must not be sent.
+        dismissed = true;
+        if (handshake != null) {
+            handshake.cancel();
+        }
         if (dialog.isShowing()) {
             dialog.dismiss();
         }
@@ -140,16 +183,59 @@ class WidgetDialog {
     }
 
     /**
-     * Called when the loyalty widget fires its READY signal. Posts INIT back via
+     * Called once the loyalty widget has fired READY and the token has resolved. Posts INIT back via
      * window.postMessage so the widget bridge picks up the userId/token.
      */
-    private void sendInit() {
-        String initJson = buildInitJson();
+    private void sendInit(@Nullable String token) {
+        if (webView == null) {
+            return; // dismissed while the token was in flight
+        }
+        String initJson = buildInitJson(token);
         Log.d(GamifyWidgetSDK.TAG, "sending INIT: " + redactedLog(initJson));
         webView.evaluateJavascript("window.postMessage(" + initJson + ", '*');", null);
     }
 
-    private String buildInitJson() {
+    /**
+     * Fetches a fresh token when the loyalty widget asks for one and posts it back as REFRESH_TOKEN. A failed fetch
+     * is reported as a {@code null} token rather than closing the widget, leaving the widget to decide what to do.
+     */
+    private void refreshToken() {
+        if (tokenSource == null || isClosed()) {
+            return;
+        }
+        tokenSource.fetch((token, error) -> activity.runOnUiThread(() -> {
+            if (error != null) {
+                Log.e(GamifyWidgetSDK.TAG, "Auth token refresh failed for loyalty widget: " + error.getMessage());
+            }
+            sendRefreshedToken(error == null ? token : null);
+        }));
+    }
+
+    private void sendRefreshedToken(@Nullable String token) {
+        if (isClosed()) {
+            return; // dismissed while the token was in flight
+        }
+        String json = buildRefreshTokenJson(token);
+        Log.d(GamifyWidgetSDK.TAG, "sending REFRESH_TOKEN: " + redactedLog(json));
+        webView.evaluateJavascript("window.postMessage(" + json + ", '*');", null);
+    }
+
+    private boolean isClosed() {
+        return dismissed || webView == null;
+    }
+
+    private String buildRefreshTokenJson(@Nullable String token) {
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("type", "REFRESH_TOKEN");
+            obj.put("token", token != null ? token : JSONObject.NULL);
+            return obj.toString();
+        } catch (JSONException e) {
+            return "{\"type\":\"REFRESH_TOKEN\",\"token\":null}";
+        }
+    }
+
+    private String buildInitJson(@Nullable String token) {
         try {
             JSONObject obj = new JSONObject();
             obj.put("type", "INIT");
@@ -168,7 +254,7 @@ class WidgetDialog {
     private String redactedLog(String json) {
         try {
             JSONObject obj = new JSONObject(json);
-            if (obj.has("token")) {
+            if (obj.has("token") && !obj.isNull("token")) {
                 obj.put("token", "[REDACTED]");
             }
             return obj.toString();
