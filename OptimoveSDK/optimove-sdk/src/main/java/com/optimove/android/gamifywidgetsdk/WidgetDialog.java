@@ -27,7 +27,7 @@ import org.json.JSONObject;
 
 class WidgetDialog {
 
-    /** Supplies the token for the loyalty INIT; the callback may be invoked on any thread. */
+    /** Supplies the token for the loyalty INIT and REFRESH_TOKEN; the callback may be invoked on any thread. */
     interface TokenSource {
         void fetch(@NonNull AuthTokenProvider.Callback callback);
     }
@@ -43,6 +43,7 @@ class WidgetDialog {
     private WebView webView;
     private ProgressBar progressBar;
     private TextView errorView;
+    private boolean dismissed;
 
     /**
      * Loyalty widget dialog — READY → INIT handshake with optional userId and the token from {@code tokenSource}.
@@ -117,11 +118,15 @@ class WidgetDialog {
         Runnable onReady = handshake != null
                 ? () -> activity.runOnUiThread(handshake::onReady)
                 : null;
+        Runnable onRefreshToken = handshake != null
+                ? () -> activity.runOnUiThread(this::refreshToken)
+                : null;
 
         webView.addJavascriptInterface(
                 new AndroidBridge(
                         () -> activity.runOnUiThread(this::dismiss),
-                        onReady),
+                        onReady,
+                        onRefreshToken),
                 "AndroidBridge");
 
         webView.setWebViewClient(new WebViewClient() {
@@ -161,6 +166,7 @@ class WidgetDialog {
 
     void dismiss() {
         // The dismiss listener runs asynchronously, so stop INIT here: a token landing in between must not be sent.
+        dismissed = true;
         if (handshake != null) {
             handshake.cancel();
         }
@@ -189,6 +195,46 @@ class WidgetDialog {
         webView.evaluateJavascript("window.postMessage(" + initJson + ", '*');", null);
     }
 
+    /**
+     * Fetches a fresh token when the loyalty widget asks for one and posts it back as REFRESH_TOKEN. A failed fetch
+     * is reported as a {@code null} token rather than closing the widget, leaving the widget to decide what to do.
+     */
+    private void refreshToken() {
+        if (tokenSource == null || isClosed()) {
+            return;
+        }
+        tokenSource.fetch((token, error) -> activity.runOnUiThread(() -> {
+            if (error != null) {
+                Log.e(GamifyWidgetSDK.TAG, "Auth token refresh failed for loyalty widget: " + error.getMessage());
+            }
+            sendRefreshedToken(error == null ? token : null);
+        }));
+    }
+
+    private void sendRefreshedToken(@Nullable String token) {
+        if (isClosed()) {
+            return; // dismissed while the token was in flight
+        }
+        String json = buildRefreshTokenJson(token);
+        Log.d(GamifyWidgetSDK.TAG, "sending REFRESH_TOKEN: " + redactedLog(json));
+        webView.evaluateJavascript("window.postMessage(" + json + ", '*');", null);
+    }
+
+    private boolean isClosed() {
+        return dismissed || webView == null;
+    }
+
+    private String buildRefreshTokenJson(@Nullable String token) {
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("type", "REFRESH_TOKEN");
+            obj.put("token", token != null ? token : JSONObject.NULL);
+            return obj.toString();
+        } catch (JSONException e) {
+            return "{\"type\":\"REFRESH_TOKEN\",\"token\":null}";
+        }
+    }
+
     private String buildInitJson(@Nullable String token) {
         try {
             JSONObject obj = new JSONObject();
@@ -208,7 +254,7 @@ class WidgetDialog {
     private String redactedLog(String json) {
         try {
             JSONObject obj = new JSONObject(json);
-            if (obj.has("token")) {
+            if (obj.has("token") && !obj.isNull("token")) {
                 obj.put("token", "[REDACTED]");
             }
             return obj.toString();
