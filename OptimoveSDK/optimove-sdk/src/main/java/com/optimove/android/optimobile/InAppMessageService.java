@@ -416,16 +416,12 @@ class InAppMessageService {
                         InAppContract.InAppMessageTable.COL_CONTENT_JSON,
                         InAppContract.InAppMessageTable.COL_DATA_JSON,
                         InAppContract.InAppMessageTable.COL_READ_AT,
-                        InAppContract.InAppMessageTable.COL_INBOX_CONFIG_JSON
+                        InAppContract.InAppMessageTable.COL_INBOX_CONFIG_JSON,
+                        InAppContract.InAppMessageTable.COL_EXPIRES_AT
                 };
-                String selection = String.format("%s IS NULL AND (%s IS NULL OR (DATETIME(%s) > DATETIME('now')))",
-                        InAppContract.InAppMessageTable.COL_DISMISSED_AT,
-                        InAppContract.InAppMessageTable.COL_EXPIRES_AT,
-                        InAppContract.InAppMessageTable.COL_EXPIRES_AT);
-
                 String sortOrder = InAppContract.InAppMessageTable.COL_UPDATED_AT + " ASC";
 
-                Cursor cursor = db.query(InAppContract.InAppMessageTable.TABLE_NAME, projection, selection, null, null, null, sortOrder);
+                Cursor cursor = db.query(InAppContract.InAppMessageTable.TABLE_NAME, projection, InAppContract.PRESENTABLE_SELECTION, null, null, null, sortOrder);
 
                 while (cursor.moveToNext()) {
                     int inAppId = cursor.getInt(cursor.getColumnIndexOrThrow(InAppContract.InAppMessageTable.COL_ID));
@@ -434,8 +430,9 @@ class InAppMessageService {
                     String presentedWhen = cursor.getString(cursor.getColumnIndexOrThrow(InAppContract.InAppMessageTable.COL_PRESENTED_WHEN));
                     Date readAt = InAppContract.getNullableDate(cursor, InAppContract.InAppMessageTable.COL_READ_AT);
                     JSONObject inbox = InAppContract.getNullableJsonObject(cursor, InAppContract.InAppMessageTable.COL_INBOX_CONFIG_JSON);
+                    Date expiresAt = InAppContract.getNullableDate(cursor, InAppContract.InAppMessageTable.COL_EXPIRES_AT);
 
-                    InAppMessage m = new InAppMessage(inAppId, presentedWhen, new JSONObject(content), data, inbox, readAt);
+                    InAppMessage m = new InAppMessage(inAppId, presentedWhen, new JSONObject(content), data, inbox, readAt, expiresAt);
                     itemsToPresent.add(m);
                 }
                 cursor.close();
