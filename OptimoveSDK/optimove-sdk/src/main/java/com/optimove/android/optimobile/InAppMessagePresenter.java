@@ -55,6 +55,13 @@ class InAppMessagePresenter implements AppStateWatcher.AppStateChangedListener {
             return;
         }
 
+        // Resuming the same activity doesn't trigger activityAvailable, and the DB read below
+        // excludes expired messages, so an expired message on screen would otherwise stay there.
+        InAppMessage currentMessage = getCurrentMessage();
+        if (currentMessage != null && currentMessage.isExpired()) {
+            presentMessageToClient();
+        }
+
         InAppMessageService.readAndPresentMessages(context, true, null);
     }
 
