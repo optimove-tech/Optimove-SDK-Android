@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.19.1
+
+- Fix: expired in-app messages could still be shown if they were queued for presentation before they expired (e.g. several "show immediately" messages arrive while the app is open, then the app is backgrounded past their expiry). Queued messages are now re-checked for expiry before each presentation, and an expired message still on screen is removed when the app resumes. Messages opened from the inbox are unaffected.
+
 ## 7.19.0
 
 - Add `OptimoveOverlayMessaging.getInstance().hide()` / `show()` — temporarily take a displayed overlay off screen and restore it in place, for hosts that need the screen for a higher-priority popup of their own. The message resumes where it was, with no re-trigger and no second interceptor call. Messages arriving while hidden are held until `show()`.
