@@ -50,6 +50,8 @@ final class AnalyticsContract {
     static final String EVENT_TYPE_DEEP_LINK_MATCHED = "k.deepLink.matched";
     static final String EVENT_TYPE_LOCATION_UPDATED = "k.engage.locationUpdated";
     static final String EVENT_TYPE_ENTERED_BEACON_PROXIMITY = "k.engage.beaconEnteredProximity";
+    static final String EVENT_TYPE_LIVE_ACTIVITY_STARTED = "k.liveActivity.started";
+    static final String EVENT_TYPE_LIVE_ACTIVITY_ENDED = "k.liveActivity.ended";
     static final int MESSAGE_TYPE_PUSH = 1;
     static final int MESSAGE_TYPE_IN_APP = 2;
 
