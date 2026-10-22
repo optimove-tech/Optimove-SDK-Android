@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.DeferredDeepLinkHelper;
+import com.optimove.android.optimobile.LiveUpdateHandler;
 import com.optimove.android.optimobile.UrlBuilder;
 
 import java.util.Map;
@@ -432,6 +433,30 @@ public class OptimoveConfigTests {
         for (UrlBuilder.Service service : UrlBuilder.Service.values()) {
             Assert.assertNotNull("Missing mapping for " + service, map.get(service));
         }
+    }
+
+    // ============================================= LIVE UPDATES =============================================
+
+    @Test
+    public void enableLiveUpdatesExposesTheHandler() {
+        LiveUpdateHandler handler = (context, event, liveUpdate) -> {
+        };
+        OptimoveConfig config = new OptimoveConfig.Builder(new OptimoveConfig.FeatureSet().withOptimove().withOptimobile())
+                .enableLiveUpdates(handler)
+                .build();
+
+        Assert.assertTrue(config.isLiveUpdatesEnabled());
+        Assert.assertSame(handler, config.getLiveUpdateHandler());
+        Assert.assertFalse(new OptimoveConfig.Builder(new OptimoveConfig.FeatureSet().withOptimobile()).build().isLiveUpdatesEnabled());
+    }
+
+    @Test
+    public void enableLiveUpdatesRequiresOptimobile() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new OptimoveConfig.Builder(new OptimoveConfig.FeatureSet().withOptimove())
+                        .enableLiveUpdates((context, event, liveUpdate) -> { })
+        );
     }
 
 }

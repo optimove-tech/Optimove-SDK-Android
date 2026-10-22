@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.20.0
+
+- Add Live Updates. FCM data messages carrying `k.liveUpdate` in `custom.a` are routed to the handler registered with `OptimoveConfig.Builder.enableLiveUpdates(handler)` and are never shown as a normal push. The SDK parses the envelope (`name`, `type`, `timestamp`, `content_state`, `topic`, `alert`, `dismissal_date`), drops messages older than the last applied one, subscribes to the activity's FCM topic on start and unsubscribes on end, persists state across process death, ends activities with no message for 12 hours, and reports `k.liveActivity.started` / `k.liveActivity.ended`. The host owns rendering; `LiveUpdateNotifications.post` is an optional helper that posts, updates, times out and dismisses an ongoing notification by name, and ends the Live Update when the user swipes it away. `OptimoveLiveUpdates.getInstance()` exposes `end(name)`, `getActiveLiveUpdates()` and `clearAll()`. This is not the Android 16 promoted Live Updates API.
+
 ## 7.19.1
 
 - Fix: expired in-app messages could still be shown if they were queued for presentation before they expired (e.g. several "show immediately" messages arrive while the app is open, then the app is backgrounded past their expiry). Queued messages are now re-checked for expiry before each presentation, and an expired message still on screen is removed when the app resumes. Messages opened from the inbox are unaffected.
