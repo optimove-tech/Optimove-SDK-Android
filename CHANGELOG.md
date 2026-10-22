@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.20.0
+
+- Add Live Updates. FCM data messages carrying `k.liveUpdate` in `custom.a` are routed to the handler registered with `OptimoveConfig.Builder.enableLiveUpdates(handler)` and are never shown as a normal push. The SDK parses the envelope (`name`, `type`, `timestamp`, `content_state`, `topic`, `alert`, `dismissal_date`), drops messages older than the last applied one, subscribes to the activity's FCM topic on start and unsubscribes on end, persists state across process death, ends activities with no message for 12 hours, and reports `k.liveActivity.started` / `k.liveActivity.ended`. The host owns rendering; `LiveUpdateNotifications.post` is an optional helper that posts, updates, times out and dismisses an ongoing notification by name, and ends the Live Update when the user swipes it away. `OptimoveLiveUpdates.getInstance()` exposes `end(name)`, `getActiveLiveUpdates()` and `clearAll()`. This is not the Android 16 promoted Live Updates API.
+
 ## 7.19.0
 
 - Add `OptimoveOverlayMessaging.getInstance().hide()` / `show()` — temporarily take a displayed overlay off screen and restore it in place, for hosts that need the screen for a higher-priority popup of their own. The message resumes where it was, with no re-trigger and no second interceptor call. Messages arriving while hidden are held until `show()`.
