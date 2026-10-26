@@ -51,6 +51,10 @@ class InAppContract {
     private static final String DESC_SORT_ORDER = InAppMessageTable.COL_SENT_AT + " DESC, " + InAppMessageTable.COL_UPDATED_AT + " DESC, " + InAppMessageTable.COL_ID + " DESC";
     private static final String ASC_SORT_ORDER = InAppMessageTable.COL_SENT_AT + " ASC, " + InAppMessageTable.COL_UPDATED_AT + " ASC, " + InAppMessageTable.COL_ID + " ASC";
     private static final Integer STORED_IN_APP_LIMIT = 50;
+    static final String PRESENTABLE_SELECTION = String.format("%s IS NULL AND (%s IS NULL OR (DATETIME(%s) > DATETIME('now')))",
+            InAppMessageTable.COL_DISMISSED_AT,
+            InAppMessageTable.COL_EXPIRES_AT,
+            InAppMessageTable.COL_EXPIRES_AT);
 
     static {
         dbDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -254,15 +258,15 @@ class InAppContract {
                     InAppMessageTable.COL_CONTENT_JSON,
                     InAppMessageTable.COL_DATA_JSON,
                     InAppMessageTable.COL_READ_AT,
-                    InAppMessageTable.COL_INBOX_CONFIG_JSON
+                    InAppMessageTable.COL_INBOX_CONFIG_JSON,
+                    InAppMessageTable.COL_EXPIRES_AT
             };
-            String selection = InAppMessageTable.COL_DISMISSED_AT + " IS NULL";
-
-            Cursor cursor = db.query(InAppMessageTable.TABLE_NAME, projection, selection, null, null, null, ASC_SORT_ORDER);
+            Cursor cursor = db.query(InAppMessageTable.TABLE_NAME, projection, PRESENTABLE_SELECTION, null, null, null, ASC_SORT_ORDER);
             while (cursor.moveToNext()) {
                 int inAppId = cursor.getInt(cursor.getColumnIndexOrThrow(InAppMessageTable.COL_ID));
                 String presentedWhen = cursor.getString(cursor.getColumnIndexOrThrow(InAppMessageTable.COL_PRESENTED_WHEN));
                 Date readAt = getNullableDate(cursor, InAppMessageTable.COL_READ_AT);
+                Date expiresAt = getNullableDate(cursor, InAppMessageTable.COL_EXPIRES_AT);
                 JSONObject content = null;
                 JSONObject inbox = null;
                 JSONObject data = null;
@@ -276,7 +280,7 @@ class InAppContract {
                     continue;
                 }
 
-                InAppMessage m = new InAppMessage(inAppId, presentedWhen, content, data, inbox, readAt);
+                InAppMessage m = new InAppMessage(inAppId, presentedWhen, content, data, inbox, readAt, expiresAt);
                 itemsToPresent.add(m);
             }
 

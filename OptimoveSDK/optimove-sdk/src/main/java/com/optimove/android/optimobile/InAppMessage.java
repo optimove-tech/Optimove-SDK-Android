@@ -68,13 +68,14 @@ class InAppMessage {
         }
     }
 
-    InAppMessage(int inAppId, String presentedWhen, JSONObject content, @Nullable JSONObject data, @Nullable JSONObject inbox, @Nullable Date readAt) {
+    InAppMessage(int inAppId, String presentedWhen, JSONObject content, @Nullable JSONObject data, @Nullable JSONObject inbox, @Nullable Date readAt, @Nullable Date expiresAt) {
         this.inAppId = inAppId;
         this.presentedWhen = presentedWhen;
         this.content = content;
         this.data = data;
         this.inbox = inbox;
         this.readAt = readAt;
+        this.expiresAt = expiresAt;
     }
 
     InAppMessage(int inAppId, JSONObject content, @Nullable JSONObject data, @Nullable JSONObject inbox, @Nullable Date readAt) {
@@ -122,6 +123,10 @@ class InAppMessage {
         return expiresAt;
     }
 
+    boolean isExpired() {
+        return expiresAt != null && !expiresAt.after(new Date());
+    }
+
     @Nullable
     JSONObject getInbox() {
         return inbox;
@@ -144,5 +149,9 @@ class InAppMessage {
 
     void setDismissedAt(@Nullable Date dismissedAt) {
         this.dismissedAt = dismissedAt;
+    }
+
+    void setExpiresAt(@Nullable Date expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }
