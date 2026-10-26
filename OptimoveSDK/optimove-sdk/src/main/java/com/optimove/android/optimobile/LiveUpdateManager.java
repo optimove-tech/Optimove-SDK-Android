@@ -20,7 +20,6 @@ final class LiveUpdateManager {
     static final String PROP_ACTIVITY_ID = "optimoveActivityId";
     static final String PROP_TYPE = "attributesType";
     static final String PROP_REASON = "reason";
-    static final String REASON_CLEARED = "cleared";
 
     private static final class Outcome {
         final LiveUpdateEvent event;
@@ -110,7 +109,7 @@ final class LiveUpdateManager {
                 Optimobile.log(TAG, "Live Updates: end for inactive " + name + ", ignoring");
                 return;
             }
-            endLocked(active, null, LiveUpdateEndReason.LOCAL, null, clock.nowMillis(), outcomes);
+            endLocked(active, null, LiveUpdateEndReason.LOCAL, clock.nowMillis(), outcomes);
         }
 
         dispatch(outcomes);
@@ -128,7 +127,7 @@ final class LiveUpdateManager {
             LiveUpdateEndReason reason = now - active.lastUpdatedAtMillis > INACTIVITY_MS
                     ? LiveUpdateEndReason.EXPIRED
                     : LiveUpdateEndReason.LOCAL;
-            endLocked(active, null, reason, null, now, outcomes);
+            endLocked(active, null, reason, now, outcomes);
         }
 
         dispatch(outcomes);
@@ -164,7 +163,7 @@ final class LiveUpdateManager {
             long now = clock.nowMillis();
             for (LiveUpdateStore.ActiveRecord active : store.getAllActive()) {
                 names.add(active.name);
-                endLocked(active, null, LiveUpdateEndReason.LOCAL, REASON_CLEARED, now, outcomes);
+                endLocked(active, null, LiveUpdateEndReason.CLEARED, now, outcomes);
             }
             store.clear();
         }
@@ -213,14 +212,11 @@ final class LiveUpdateManager {
                     Optimobile.log(TAG, "Live Updates: type changed for " + envelope.name + " from " + active.type
                             + " to " + envelope.type + ", keeping " + active.type);
                 }
-                LiveUpdateStore.ActiveRecord updated = new LiveUpdateStore.ActiveRecord(
-                        active.name,
-                        active.type,
-                        active.topic != null ? active.topic : envelope.topic,
+                LiveUpdateStore.ActiveRecord updated = active.applying(
                         envelope.timestamp,
                         envelope.contentState,
-                        envelope.dismissalDateSeconds != null ? envelope.dismissalDateSeconds : active.dismissalDateSeconds,
-                        active.startedAtMillis,
+                        envelope.topic,
+                        envelope.dismissalDateSeconds,
                         now);
                 store.putActive(updated);
                 outcomes.add(new Outcome(
@@ -230,26 +226,23 @@ final class LiveUpdateManager {
                         null));
                 return;
             case END:
-                endLocked(active, envelope, LiveUpdateEndReason.SERVER, null, now, outcomes);
+                endLocked(active, envelope, LiveUpdateEndReason.SERVER, now, outcomes);
         }
     }
 
     private void endLocked(@NonNull LiveUpdateStore.ActiveRecord active,
                            @Nullable LiveUpdateEnvelope envelope,
                            @NonNull LiveUpdateEndReason reason,
-                           @Nullable String reasonOverride,
                            long now,
                            @NonNull List<Outcome> outcomes) {
-        boolean fromServer = envelope != null;
-        LiveUpdateStore.ActiveRecord last = new LiveUpdateStore.ActiveRecord(
-                active.name,
-                active.type,
-                active.topic != null ? active.topic : (fromServer ? envelope.topic : null),
-                fromServer ? envelope.timestamp : active.timestamp,
-                fromServer && envelope.hasContentState ? envelope.contentState : active.contentState,
-                fromServer && envelope.dismissalDateSeconds != null ? envelope.dismissalDateSeconds : active.dismissalDateSeconds,
-                active.startedAtMillis,
-                now);
+        LiveUpdateStore.ActiveRecord last = envelope == null
+                ? active.touched(now)
+                : active.applying(
+                        envelope.timestamp,
+                        envelope.hasContentState ? envelope.contentState : active.contentState,
+                        envelope.topic,
+                        envelope.dismissalDateSeconds,
+                        now);
 
         store.markEnded(last.name, last.timestamp, now);
         if (last.topic != null) {
@@ -258,16 +251,16 @@ final class LiveUpdateManager {
 
         outcomes.add(new Outcome(
                 LiveUpdateEvent.END,
-                toLiveUpdate(last, fromServer ? envelope.alertTitle : null, fromServer ? envelope.alertBody : null, reason),
+                toLiveUpdate(last, envelope != null ? envelope.alertTitle : null, envelope != null ? envelope.alertBody : null, reason),
                 AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_ENDED,
-                reasonOverride != null ? reasonOverride : reason.wireValue()));
+                reason.wireValue()));
     }
 
     private void expireInactiveLocked(long now, @NonNull List<Outcome> outcomes) {
         for (LiveUpdateStore.ActiveRecord active : store.getAllActive()) {
             if (now - active.lastUpdatedAtMillis > INACTIVITY_MS) {
                 Optimobile.log(TAG, "Live Updates: " + active.name + " inactive for over 12h, ending");
-                endLocked(active, null, LiveUpdateEndReason.EXPIRED, null, now, outcomes);
+                endLocked(active, null, LiveUpdateEndReason.EXPIRED, now, outcomes);
             }
         }
     }

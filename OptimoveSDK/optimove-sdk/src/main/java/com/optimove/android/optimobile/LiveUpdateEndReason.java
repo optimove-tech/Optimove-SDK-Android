@@ -5,7 +5,8 @@ import java.util.Locale;
 public enum LiveUpdateEndReason {
     SERVER,
     LOCAL,
-    EXPIRED;
+    EXPIRED,
+    CLEARED;
 
     String wireValue() {
         return name().toLowerCase(Locale.ROOT);

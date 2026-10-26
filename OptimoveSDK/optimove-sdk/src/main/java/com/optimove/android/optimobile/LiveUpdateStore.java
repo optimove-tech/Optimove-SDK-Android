@@ -53,6 +53,26 @@ final class LiveUpdateStore {
             this.lastUpdatedAtMillis = lastUpdatedAtMillis;
         }
 
+        @NonNull ActiveRecord applying(long timestamp,
+                                       @NonNull JSONObject contentState,
+                                       @Nullable String topic,
+                                       @Nullable Long dismissalDateSeconds,
+                                       long nowMillis) {
+            return new ActiveRecord(
+                    name,
+                    type,
+                    this.topic != null ? this.topic : topic,
+                    timestamp,
+                    contentState,
+                    dismissalDateSeconds != null ? dismissalDateSeconds : this.dismissalDateSeconds,
+                    startedAtMillis,
+                    nowMillis);
+        }
+
+        @NonNull ActiveRecord touched(long nowMillis) {
+            return applying(timestamp, contentState, null, null, nowMillis);
+        }
+
         @NonNull JSONObject toJson() throws JSONException {
             return new JSONObject()
                     .put("name", name)
@@ -89,37 +109,33 @@ final class LiveUpdateStore {
     }
 
     private final SharedPreferences prefs;
-    private @Nullable Map<String, ActiveRecord> active;
-    private @Nullable Map<String, EndedRecord> ended;
+    private final Map<String, ActiveRecord> active = new LinkedHashMap<>();
+    private final Map<String, EndedRecord> ended = new LinkedHashMap<>();
 
     LiveUpdateStore(@NonNull SharedPreferences prefs) {
         this.prefs = prefs;
+        load();
     }
 
     @Nullable ActiveRecord getActive(@NonNull String name) {
-        load();
         return active.get(name);
     }
 
     @NonNull List<ActiveRecord> getAllActive() {
-        load();
         return new ArrayList<>(active.values());
     }
 
     @Nullable EndedRecord getEnded(@NonNull String name) {
-        load();
         return ended.get(name);
     }
 
     void putActive(@NonNull ActiveRecord record) {
-        load();
         ended.remove(record.name);
         active.put(record.name, record);
         save();
     }
 
     void markEnded(@NonNull String name, long timestamp, long nowMillis) {
-        load();
         active.remove(name);
         ended.put(name, new EndedRecord(timestamp, nowMillis));
         pruneEnded(nowMillis);
@@ -127,7 +143,6 @@ final class LiveUpdateStore {
     }
 
     void pruneEnded(long nowMillis) {
-        load();
         boolean changed = false;
         Iterator<EndedRecord> it = ended.values().iterator();
         while (it.hasNext()) {
@@ -142,19 +157,12 @@ final class LiveUpdateStore {
     }
 
     void clear() {
-        active = new LinkedHashMap<>();
-        ended = new LinkedHashMap<>();
+        active.clear();
+        ended.clear();
         prefs.edit().remove(SharedPrefs.KEY_LIVE_UPDATES).commit();
     }
 
     private void load() {
-        if (active != null && ended != null) {
-            return;
-        }
-
-        active = new LinkedHashMap<>();
-        ended = new LinkedHashMap<>();
-
         String stored = prefs.getString(SharedPrefs.KEY_LIVE_UPDATES, null);
         if (stored == null) {
             return;

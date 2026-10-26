@@ -270,7 +270,7 @@ public class LiveUpdateManagerTests {
 
         assertEquals(Arrays.asList(NAME, "other"), manager.clearAll());
 
-        assertEquals(LiveUpdateEndReason.LOCAL, handler.last().getEndReason());
+        assertEquals(LiveUpdateEndReason.CLEARED, handler.last().getEndReason());
         assertEquals("cleared", events.lastReason());
         assertEquals(Arrays.asList(TOPIC, "lu_other"), topics.unsubscribed);
         assertFalse(prefs.contains(SharedPrefs.KEY_LIVE_UPDATES));

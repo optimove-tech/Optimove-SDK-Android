@@ -124,7 +124,7 @@ public final class OptimoveLiveUpdates {
                 Optimobile.log(TAG, "Live Updates: Optimobile not initialized, dropping " + eventType);
                 return;
             }
-            Optimobile.trackEvent(context, eventType, properties);
+            Optimobile.trackEventImmediately(context, eventType, properties);
         };
     }
 }
