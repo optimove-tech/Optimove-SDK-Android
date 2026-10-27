@@ -115,6 +115,7 @@ class MainActivity : AppCompatActivity() {
                     onViewPreferenceCenter = ::viewPreferenceCenter,
                     onViewEmbeddedMessaging = ::viewEmbeddedMessaging,
                     onViewOverlayMessaging = ::viewOverlayMessaging,
+                    onViewLiveUpdates = ::viewLiveUpdates,
                     onSetCredentials = ::setCredentials,
                     onInAppInterceptionClicked = ::onInAppInterceptionClicked,
                     onSendLocation = { lat, lng ->
@@ -312,6 +313,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun viewOverlayMessaging() {
         startActivity(Intent(this, OverlayMessagingActivity::class.java))
+    }
+
+    private fun viewLiveUpdates() {
+        startActivity(Intent(this, LiveUpdatesActivity::class.java))
     }
 
     private fun openGamifyWidget() {

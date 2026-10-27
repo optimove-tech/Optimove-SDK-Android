@@ -62,6 +62,7 @@ fun MainScreen(
     onViewPreferenceCenter: () -> Unit,
     onViewEmbeddedMessaging: () -> Unit,
     onViewOverlayMessaging: () -> Unit,
+    onViewLiveUpdates: () -> Unit,
     onSetCredentials: (optimove: String?, optimobile: String?, prefCenter: String?) -> Unit,
     onInAppInterceptionClicked: () -> Unit,
     onResetToken: () -> Unit,
@@ -277,6 +278,15 @@ fun MainScreen(
             ) {
                 Text("Overlay Messaging")
             }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Button(
+            onClick = onViewLiveUpdates,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("Live Updates")
         }
 
         if (showDelayedConfig) {
