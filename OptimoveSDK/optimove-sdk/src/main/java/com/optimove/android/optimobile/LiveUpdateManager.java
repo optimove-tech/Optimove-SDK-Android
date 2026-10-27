@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -274,10 +275,14 @@ final class LiveUpdateManager {
                         + outcome.liveUpdate.getName() + ": " + e);
             }
 
-            if (outcome.trackEventType != null) {
+            if (outcome.trackEventType != null && notificationsEnabled()) {
                 events.track(outcome.trackEventType, eventProps(outcome.liveUpdate, outcome.trackReason));
             }
         }
+    }
+
+    private boolean notificationsEnabled() {
+        return NotificationManagerCompat.from(context).areNotificationsEnabled();
     }
 
     private static @NonNull LiveUpdate toLiveUpdate(@NonNull LiveUpdateStore.ActiveRecord record,

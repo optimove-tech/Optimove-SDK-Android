@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -18,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
@@ -277,6 +279,18 @@ public class LiveUpdateManagerTests {
 
         manager.handlePush(start(T0));
         assertEquals(LiveUpdateEvent.START, handler.events.get(handler.events.size() - 1));
+    }
+
+    @Test
+    public void eventsAreNotReportedWhenNotificationsAreDisabled() throws JSONException {
+        Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
+                .setNotificationsEnabled(false);
+
+        manager.handlePush(start(T0));
+        manager.handlePush(end(T0 + 1));
+
+        assertEquals(Arrays.asList(LiveUpdateEvent.START, LiveUpdateEvent.END), handler.events);
+        assertTrue(events.types.isEmpty());
     }
 
     @Test
