@@ -3,7 +3,6 @@ package com.optimove.android.optimovemobilesdk.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -23,24 +21,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.optimove.android.optimovemobilesdk.GamifyEnv
 
 private val CardShape = RoundedCornerShape(12.dp)
 private val SectionPadding = 16.dp
 
 @Composable
 fun GamifyWidgetScreen(
-    tenant: String,
     userId: String,
-    env: GamifyEnv,
+    brand: String,
+    loyaltyWidgetSrc: String,
     adactUrl: String,
     campaignId: String,
     cid: String,
     adactToken: String,
-    onTenantChange: (String) -> Unit,
-    onWidgetIdChange: (String) -> Unit,
-    onEnvChange: (GamifyEnv) -> Unit,
-    onAdactUrlChange: (String) -> Unit,
+    onUserIdChange: (String) -> Unit,
+    onBrandChange: (String) -> Unit,
     onCampaignIdChange: (String) -> Unit,
     onCidChange: (String) -> Unit,
     onAdactTokenChange: (String) -> Unit,
@@ -73,54 +68,30 @@ fun GamifyWidgetScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(
-                    value = tenant,
-                    onValueChange = onTenantChange,
-                    label = { Text("Tenant") },
+                    value = userId,
+                    onValueChange = onUserIdChange,
+                    label = { Text("User ID (optional — defaults to SDK user)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = fieldColors()
                 )
                 OutlinedTextField(
-                    value = userId,
-                    onValueChange = onWidgetIdChange,
-                    label = { Text("User ID") },
+                    value = brand,
+                    onValueChange = onBrandChange,
+                    label = { Text("Brand (optional)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = fieldColors()
                 )
-                Text(
-                    "Environment",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ConfigValue(
+                    "Widget URL to open",
+                    loyaltyWidgetSrc.ifBlank { "(not available — needs loyaltyWidgetUrl, tenant id and a user)" }
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    enumValues<GamifyEnv>().forEach { option ->
-                        if (env == option) {
-                            Button(
-                                onClick = { onEnvChange(option) },
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Text(option.label)
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = { onEnvChange(option) },
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            ) {
-                                Text(option.label)
-                            }
-                        }
-                    }
-                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = onOpenWidget,
-            enabled = tenant.isNotBlank() && userId.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp)
         ) {
@@ -145,14 +116,7 @@ fun GamifyWidgetScreen(
                 modifier = Modifier.padding(SectionPadding),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
-                    value = adactUrl,
-                    onValueChange = onAdactUrlChange,
-                    label = { Text("Adact URL") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = fieldColors()
-                )
+                ConfigValue("Adact URL (from tenant config)", adactUrl.ifBlank { "(not configured)" })
                 OutlinedTextField(
                     value = campaignId,
                     onValueChange = onCampaignIdChange,
@@ -197,6 +161,12 @@ fun GamifyWidgetScreen(
             Text("Close Adact Campaign")
         }
     }
+}
+
+@Composable
+private fun ConfigValue(label: String, value: String) {
+    Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(value, style = MaterialTheme.typography.bodySmall)
 }
 
 @Composable

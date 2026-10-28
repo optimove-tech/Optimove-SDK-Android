@@ -1,6 +1,7 @@
 package com.optimove.android.main.sdk_configs.configs;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.optimove.android.main.sdk_configs.reused_configs.EventConfigs;
 
@@ -15,13 +16,16 @@ public class Configs {
     private RealtimeConfigs realtimeConfigs;
     private OptitrackConfigs optitrackConfigs;
     private Map<String, EventConfigs> eventsConfigs;
+    @Nullable
+    private GamifyConfigs gamifyConfigs;
 
     public Configs(int tenantId, boolean enableRealtime,
                    boolean enableRealtimeThroughOptistream,
                    @NonNull LogsConfigs logsConfigs,
                    @NonNull RealtimeConfigs realtimeConfigs,
                    @NonNull OptitrackConfigs optitrackConfigs,
-                   @NonNull Map<String, EventConfigs> eventsConfigs) {
+                   @NonNull Map<String, EventConfigs> eventsConfigs,
+                   @Nullable GamifyConfigs gamifyConfigs) {
         this.tenantId = tenantId;
         this.enableRealtime = enableRealtime;
         this.enableRealtimeThroughOptistream = enableRealtimeThroughOptistream;
@@ -29,6 +33,7 @@ public class Configs {
         this.realtimeConfigs = realtimeConfigs;
         this.optitrackConfigs = optitrackConfigs;
         this.eventsConfigs = eventsConfigs;
+        this.gamifyConfigs = gamifyConfigs;
     }
 
     public LogsConfigs getLogsConfigs() {
@@ -86,5 +91,14 @@ public class Configs {
 
     public void setEnableRealtimeThroughOptistream(boolean enableRealtimeThroughOptistream) {
         this.enableRealtimeThroughOptistream = enableRealtimeThroughOptistream;
+    }
+
+    @Nullable
+    public GamifyConfigs getGamifyConfigs() {
+        return gamifyConfigs;
+    }
+
+    public void setGamifyConfigs(@Nullable GamifyConfigs gamifyConfigs) {
+        this.gamifyConfigs = gamifyConfigs;
     }
 }

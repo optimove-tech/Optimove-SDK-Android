@@ -2,22 +2,34 @@ package com.optimove.android.gamifywidgetsdk;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
+import com.optimove.android.AuthManager;
+import com.optimove.android.Optimove;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entry point for the Gamify Widget SDK (loyalty + Adact).
  *
- * <p>Usage (loyalty):
+ * <p>Both {@code loyaltyWidgetUrl} and {@code adactUrl} come from the tenant configuration; there is nothing to
+ * initialize.
+ *
+ * <p>Usage (loyalty — opens {@code {loyaltyWidgetUrl}/{tenantId}/{userId}} for the identified SDK user; when auth
+ * is enabled via {@code OptimoveConfig.Builder#enableAuth}, a JWT is minted for that user and passed in INIT):
  * <pre>
- *   GamifyWidgetSDK.initialize("https://your-widget.example.com");
- *   GamifyWidgetSDK.getInstance().open(activity, "u123", "auth-token");
+ *   GamifyWidgetSDK.getInstance().openWidget(activity);
+ *   GamifyWidgetSDK.getInstance().openWidget(activity, new OpenLoyaltyWidgetParams("u123", "brand"));
  * </pre>
  *
- * <p>Usage (Adact — {@code adactUrl} from onboarding / retrieval service):
+ * <p>Usage (Adact):
  * <pre>
- *   GamifyWidgetSDK.initialize(widgetUrl, "https://adact-campaign.example.com/");
  *   GamifyWidgetSDK.getInstance().openAdactCampaign(activity,
  *       new OpenAdactParams(179, "cid", "token"));
  * </pre>
@@ -26,55 +38,128 @@ public class GamifyWidgetSDK {
 
     static final String TAG = "Optimove Gamify";
 
+    interface Environment {
+        @Nullable
+        String currentUserId();
+
+        @Nullable
+        AuthManager authManager();
+    }
+
+    private static final Environment DEFAULT_ENVIRONMENT = new Environment() {
+        @Nullable
+        @Override
+        public String currentUserId() {
+            try {
+                return Optimove.getInstance().getUserInfo().getUserId();
+            } catch (IllegalStateException e) {
+                return null; // Optimove not initialized
+            }
+        }
+
+        @Nullable
+        @Override
+        public AuthManager authManager() {
+            return Optimove.getAuthManager();
+        }
+    };
+
     private static GamifyWidgetSDK shared;
 
-    @Nullable private String widgetUrl;
-    @Nullable private String adactUrl;
+    @NonNull private static volatile TenantOptions tenantOptions = TenantOptions.EMPTY;
+
+    @NonNull private static Environment environment = DEFAULT_ENVIRONMENT;
+
     @Nullable private WidgetDialog loyaltyDialog;
     @Nullable private WidgetDialog adactDialog;
 
-    public static GamifyWidgetSDK getInstance() {
+    @NonNull
+    public static synchronized GamifyWidgetSDK getInstance() {
         if (shared == null) {
-            throw new IllegalStateException("GamifyWidgetSDK is not initialized");
+            shared = new GamifyWidgetSDK();
         }
         return shared;
     }
 
-    public static void initialize(@NonNull String widgetUrl) {
-        initialize(widgetUrl, null);
-    }
-
     /**
-     * @param widgetUrl loyalty widget base URL (may be null/blank if only Adact is used)
-     * @param adactUrl  Adact campaign host from config (trailing slash optional);
-     *                  region-correct URL is supplied by onboarding / retrieval service
+     * Applies the {@code gamify} block of the tenant configuration. Called by the SDK when the configuration is
+     * fetched; not intended for host apps.
      */
-    public static void initialize(@Nullable String widgetUrl, @Nullable String adactUrl) {
-        shared = new GamifyWidgetSDK();
-        shared.widgetUrl = widgetUrl;
-        shared.adactUrl = normalizeBaseUrl(adactUrl);
+    public static void applyTenantConfiguration(@Nullable String adactUrl,
+                                                @Nullable String loyaltyWidgetUrl,
+                                                int tenantId) {
+        tenantOptions = new TenantOptions(normalizeBaseUrl(adactUrl), normalizeBaseUrl(loyaltyWidgetUrl), tenantId);
+        Log.d(TAG, "Applied tenant configuration: adactUrl=" + adactUrl + ", loyaltyWidgetUrl=" + loyaltyWidgetUrl
+                + ", tenantId=" + tenantId);
     }
 
     @NonNull
     public String getAdactUrl() {
+        String adactUrl = tenantOptions.adactUrl;
         return adactUrl != null ? adactUrl + "/" : "";
     }
 
-    public void open(@NonNull Activity activity) {
-        open(activity, null, null);
+    public void openWidget(@NonNull Activity activity) {
+        openWidget(activity, new OpenLoyaltyWidgetParams());
     }
 
-    public void open(@NonNull Activity activity, @Nullable String userId, @Nullable String token) {
-        if (widgetUrl == null || widgetUrl.isEmpty()) {
+    public void openWidget(@NonNull Activity activity, @NonNull OpenLoyaltyWidgetParams params) {
+        String userId = params.userId != null ? params.userId : environment.currentUserId();
+        userId = userId != null ? userId.trim() : null;
+        String widgetSrc = buildLoyaltyWidgetUrl(userId, params.brand);
+        if (widgetSrc.isEmpty()) {
+            Log.e(TAG, "Cannot open the loyalty widget: " + describeMissingLoyaltyInputs(userId));
             return;
         }
+
         if (loyaltyDialog != null) {
             return;
         }
         // Both surfaces are fullscreen overlays on Android — only one at a time.
         closeAdactCampaign();
-        loyaltyDialog = new WidgetDialog(activity, widgetUrl, userId, token, () -> loyaltyDialog = null);
+        loyaltyDialog = new WidgetDialog(activity, widgetSrc, userId,
+                tokenSourceFor(userId), () -> loyaltyDialog = null);
         loyaltyDialog.show();
+    }
+
+    @NonNull
+    private WidgetDialog.TokenSource tokenSourceFor(@Nullable String userId) {
+        AuthManager authManager = environment.authManager();
+        if (authManager == null || userId == null || userId.isEmpty()) {
+            return callback -> callback.onComplete(null, null);
+        }
+        return callback -> authManager.getToken(userId, callback);
+    }
+
+    @NonNull
+    public String buildLoyaltyWidgetUrl(@Nullable String userId, @Nullable String brand) {
+        TenantOptions options = tenantOptions;
+        if (options.loyaltyWidgetUrl == null || options.tenantId <= 0 || userId == null || userId.isEmpty()) {
+            return "";
+        }
+
+        String brandSegment = brand != null && !brand.isEmpty() ? "/brand/" + Uri.encode(brand) : "";
+        String url = options.loyaltyWidgetUrl + "/" + options.tenantId + brandSegment + "/" + Uri.encode(userId);
+        return "https".equalsIgnoreCase(Uri.parse(url).getScheme()) ? url : "";
+    }
+
+    @NonNull
+    private static String describeMissingLoyaltyInputs(@Nullable String userId) {
+        TenantOptions options = tenantOptions;
+        List<String> missing = new ArrayList<>();
+        if (options.loyaltyWidgetUrl == null) {
+            missing.add("loyaltyWidgetUrl (gamify.loyaltyWidgetUrl in the tenant configuration)");
+        }
+        if (options.tenantId <= 0) {
+            missing.add("tenantId (tenant configuration not loaded yet?)");
+        }
+        if (userId == null || userId.isEmpty()) {
+            missing.add("userId (pass one in OpenLoyaltyWidgetParams or call Optimove.setUserId)");
+        }
+        if (missing.isEmpty()) {
+            return "loyaltyWidgetUrl is not HTTPS: " + options.loyaltyWidgetUrl;
+        }
+        return "missing " + TextUtils.join(", ", missing);
     }
 
     /**
@@ -90,13 +175,7 @@ public class GamifyWidgetSDK {
             return;
         }
         closeWidget();
-        adactDialog = new WidgetDialog(
-                activity,
-                campaignUrl,
-                null,
-                null,
-                false,
-                () -> adactDialog = null);
+        adactDialog = new WidgetDialog(activity, campaignUrl, () -> adactDialog = null);
         adactDialog.show();
     }
 
@@ -106,7 +185,8 @@ public class GamifyWidgetSDK {
      */
     @NonNull
     public String buildAdactCampaignUrl(@NonNull OpenAdactParams params) {
-        if (adactUrl == null || adactUrl.isEmpty() || params.campaignId == null) {
+        String adactUrl = tenantOptions.adactUrl;
+        if (adactUrl == null || params.campaignId == null) {
             return "";
         }
 
@@ -141,11 +221,33 @@ public class GamifyWidgetSDK {
         }
     }
 
+    @VisibleForTesting
+    static synchronized void resetForTesting(@Nullable Environment testEnvironment) {
+        shared = null;
+        tenantOptions = TenantOptions.EMPTY;
+        environment = testEnvironment != null ? testEnvironment : DEFAULT_ENVIRONMENT;
+    }
+
     @Nullable
     static String normalizeBaseUrl(@Nullable String url) {
         if (url == null || url.isEmpty()) {
             return null;
         }
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
+    private static final class TenantOptions {
+
+        static final TenantOptions EMPTY = new TenantOptions(null, null, -1);
+
+        @Nullable final String adactUrl;
+        @Nullable final String loyaltyWidgetUrl;
+        final int tenantId;
+
+        TenantOptions(@Nullable String adactUrl, @Nullable String loyaltyWidgetUrl, int tenantId) {
+            this.adactUrl = adactUrl;
+            this.loyaltyWidgetUrl = loyaltyWidgetUrl;
+            this.tenantId = tenantId;
+        }
     }
 }
