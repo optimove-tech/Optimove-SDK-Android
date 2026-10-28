@@ -105,6 +105,7 @@ public class GamifyWidgetSDK {
 
     public void openWidget(@NonNull Activity activity, @NonNull OpenLoyaltyWidgetParams params) {
         String userId = params.userId != null ? params.userId : environment.currentUserId();
+        userId = userId != null ? userId.trim() : null;
         String widgetSrc = buildLoyaltyWidgetUrl(userId, params.brand);
         if (widgetSrc.isEmpty()) {
             Log.e(TAG, "Cannot open the loyalty widget: " + describeMissingLoyaltyInputs(userId));

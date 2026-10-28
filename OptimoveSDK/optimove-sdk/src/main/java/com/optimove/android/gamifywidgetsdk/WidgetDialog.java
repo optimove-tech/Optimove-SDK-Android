@@ -3,7 +3,10 @@ package com.optimove.android.gamifywidgetsdk;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,15 +28,18 @@ import com.optimove.android.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+
 class WidgetDialog {
 
-    /** Supplies the token for the loyalty INIT and REFRESH_TOKEN; the callback may be invoked on any thread. */
+    /** Supplies the token for the loyalty INIT and TOKEN_REFRESHED; the callback may be invoked on any thread. */
     interface TokenSource {
         void fetch(@NonNull AuthTokenProvider.Callback callback);
     }
 
     private final Activity activity;
     private final String widgetUrl;
+    @Nullable private final String widgetOrigin;
     @Nullable private final String userId;
     @Nullable private final TokenSource tokenSource;
     @Nullable private final LoyaltyInitHandshake handshake;
@@ -44,6 +50,7 @@ class WidgetDialog {
     private ProgressBar progressBar;
     private TextView errorView;
     private boolean dismissed;
+    private boolean refreshInFlight;
 
     /**
      * Loyalty widget dialog — READY → INIT handshake with optional userId and the token from {@code tokenSource}.
@@ -74,6 +81,7 @@ class WidgetDialog {
                          @NonNull Runnable onDismissed) {
         this.activity = activity;
         this.widgetUrl = widgetUrl;
+        this.widgetOrigin = originOf(Uri.parse(widgetUrl));
         this.userId = userId;
         this.tokenSource = tokenSource;
         this.handshake = enableInitHandshake
@@ -131,6 +139,17 @@ class WidgetDialog {
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return request.isForMainFrame() && leavesWidgetOrigin(request.getUrl());
+            }
+
+            @Override
+            @SuppressWarnings("deprecation") // the only overload called below API 24
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return leavesWidgetOrigin(Uri.parse(url));
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 activity.runOnUiThread(() -> progressBar.setVisibility(View.GONE));
             }
@@ -144,6 +163,41 @@ class WidgetDialog {
                 }
             }
         });
+    }
+
+    /**
+     * Keeps the loyalty WebView on the widget origin: AndroidBridge is exposed to every document the WebView
+     * loads, so an off-origin page could otherwise request a token. Such navigations go to the system browser.
+     * Adact campaigns have no token bridge and navigate freely.
+     */
+    private boolean leavesWidgetOrigin(@NonNull Uri target) {
+        if (handshake == null || (widgetOrigin != null && widgetOrigin.equals(originOf(target)))) {
+            return false;
+        }
+        Log.d(GamifyWidgetSDK.TAG, "Opening off-origin navigation externally: " + target);
+        try {
+            activity.startActivity(new Intent(Intent.ACTION_VIEW, target));
+        } catch (ActivityNotFoundException e) {
+            Log.w(GamifyWidgetSDK.TAG, "No app to open " + target);
+        }
+        return true;
+    }
+
+    /** {@code scheme://host[:port]} as a browser serializes an origin, or {@code null} for opaque URLs. */
+    @Nullable
+    static String originOf(@NonNull Uri uri) {
+        String scheme = uri.getScheme();
+        String host = uri.getHost();
+        if (scheme == null || host == null) {
+            return null;
+        }
+        scheme = scheme.toLowerCase(Locale.ROOT);
+        String origin = scheme + "://" + host.toLowerCase(Locale.ROOT);
+        int port = uri.getPort();
+        boolean defaultPort = port == -1
+                || ("https".equals(scheme) && port == 443)
+                || ("http".equals(scheme) && port == 80);
+        return defaultPort ? origin : origin + ":" + port;
     }
 
     void show() {
@@ -192,18 +246,21 @@ class WidgetDialog {
         }
         String initJson = buildInitJson(token);
         Log.d(GamifyWidgetSDK.TAG, "sending INIT: " + redactedLog(initJson));
-        webView.evaluateJavascript("window.postMessage(" + initJson + ", '*');", null);
+        postToWidget(initJson);
     }
 
     /**
-     * Fetches a fresh token when the loyalty widget asks for one and posts it back as REFRESH_TOKEN. A failed fetch
+     * Fetches a fresh token when the loyalty widget asks for one and posts it back as TOKEN_REFRESHED. A failed fetch
      * is reported as a {@code null} token rather than closing the widget, leaving the widget to decide what to do.
+     * Requests arriving while a fetch is in flight are dropped; the pending reply answers them.
      */
     private void refreshToken() {
-        if (tokenSource == null || isClosed()) {
+        if (tokenSource == null || isClosed() || refreshInFlight) {
             return;
         }
+        refreshInFlight = true;
         tokenSource.fetch((token, error) -> activity.runOnUiThread(() -> {
+            refreshInFlight = false;
             if (error != null) {
                 Log.e(GamifyWidgetSDK.TAG, "Auth token refresh failed for loyalty widget: " + error.getMessage());
             }
@@ -216,8 +273,18 @@ class WidgetDialog {
             return; // dismissed while the token was in flight
         }
         String json = buildRefreshTokenJson(token);
-        Log.d(GamifyWidgetSDK.TAG, "sending REFRESH_TOKEN: " + redactedLog(json));
-        webView.evaluateJavascript("window.postMessage(" + json + ", '*');", null);
+        Log.d(GamifyWidgetSDK.TAG, "sending TOKEN_REFRESHED: " + redactedLog(json));
+        postToWidget(json);
+    }
+
+    /** Posts with the widget origin as targetOrigin, so the browser drops the message if the page has left it. */
+    private void postToWidget(@NonNull String json) {
+        if (widgetOrigin == null) {
+            Log.e(GamifyWidgetSDK.TAG, "Widget URL has no origin, not posting: " + widgetUrl);
+            return;
+        }
+        webView.evaluateJavascript(
+                "window.postMessage(" + json + ", " + JSONObject.quote(widgetOrigin) + ");", null);
     }
 
     private boolean isClosed() {
@@ -227,11 +294,11 @@ class WidgetDialog {
     private String buildRefreshTokenJson(@Nullable String token) {
         try {
             JSONObject obj = new JSONObject();
-            obj.put("type", "REFRESH_TOKEN");
+            obj.put("type", "TOKEN_REFRESHED");
             obj.put("token", token != null ? token : JSONObject.NULL);
             return obj.toString();
         } catch (JSONException e) {
-            return "{\"type\":\"REFRESH_TOKEN\",\"token\":null}";
+            return "{\"type\":\"TOKEN_REFRESHED\",\"token\":null}";
         }
     }
 
