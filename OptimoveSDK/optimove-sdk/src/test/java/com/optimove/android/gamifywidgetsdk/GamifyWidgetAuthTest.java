@@ -240,6 +240,50 @@ public class GamifyWidgetAuthTest {
         assertNull(WidgetDialog.originOf(Uri.parse("about:blank")));
     }
 
+    @Test
+    @SuppressWarnings("deprecation")
+    public void deprecatedOpen_loadsInitializedUrlAsGivenAndSendsPassedToken() throws Exception {
+        List<String> requestedFor = new ArrayList<>();
+        configure("sdk-user", authManager((userId, callback) -> {
+            requestedFor.add(userId);
+            callback.onComplete("jwt-token", null);
+        }));
+        GamifyWidgetSDK.initialize(WIDGET_URL + "/593/customer-1");
+
+        GamifyWidgetSDK.getInstance().open(activity, "customer-1", "host-token");
+        WebView webView = webView();
+        fireReady(webView);
+
+        assertEquals(WIDGET_URL + "/593/customer-1", shadowOf(webView).getLastLoadedUrl());
+        assertTrue(requestedFor.isEmpty());
+        JSONObject init = lastInit(webView);
+        assertEquals("customer-1", init.getString("userId"));
+        assertEquals("host-token", init.getString("token"));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void deprecatedOpen_getsTokenFromProviderWhenNoneIsPassed() throws Exception {
+        configure("sdk-user", authManager((userId, callback) -> callback.onComplete("jwt-for-" + userId, null)));
+        GamifyWidgetSDK.initialize(WIDGET_URL + "/593/customer-1");
+
+        GamifyWidgetSDK.getInstance().open(activity, "customer-1", null);
+        WebView webView = webView();
+        fireReady(webView);
+
+        assertEquals("jwt-for-customer-1", lastInit(webView).getString("token"));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void deprecatedOpen_doesNothingWithoutInitialize() {
+        configure("sdk-user", null);
+
+        GamifyWidgetSDK.getInstance().open(activity);
+
+        assertNull(ShadowDialog.getLatestDialog());
+    }
+
     private void configure(@Nullable String sdkUserId, @Nullable AuthManager authManager) {
         GamifyWidgetSDK.resetForTesting(new GamifyWidgetSDK.Environment() {
             @Nullable

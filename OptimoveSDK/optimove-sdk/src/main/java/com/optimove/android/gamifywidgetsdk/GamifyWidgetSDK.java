@@ -70,6 +70,10 @@ public class GamifyWidgetSDK {
 
     @NonNull private static Environment environment = DEFAULT_ENVIRONMENT;
 
+    // Set only through the deprecated initialize(...) overloads.
+    @Nullable private static volatile String legacyWidgetUrl;
+    @Nullable private static volatile String legacyAdactUrl;
+
     @Nullable private WidgetDialog loyaltyDialog;
     @Nullable private WidgetDialog adactDialog;
 
@@ -93,10 +97,75 @@ public class GamifyWidgetSDK {
                 + ", tenantId=" + tenantId);
     }
 
+    /**
+     * @deprecated Both URLs now come from the tenant configuration, so there is nothing to initialize. Use
+     * {@link #openWidget(Activity, OpenLoyaltyWidgetParams)} for the loyalty widget; {@link #openAdactCampaign}
+     * needs no setup.
+     */
+    @Deprecated
+    public static void initialize(@NonNull String widgetUrl) {
+        initialize(widgetUrl, null);
+    }
+
+    /**
+     * @deprecated Both URLs now come from the tenant configuration, so there is nothing to initialize. Use
+     * {@link #openWidget(Activity, OpenLoyaltyWidgetParams)} for the loyalty widget; {@link #openAdactCampaign}
+     * needs no setup. Until removed, an {@code adactUrl} passed here takes precedence over the tenant
+     * configuration's.
+     */
+    @Deprecated
+    public static void initialize(@Nullable String widgetUrl, @Nullable String adactUrl) {
+        Log.e(TAG, "GamifyWidgetSDK.initialize(...) is deprecated and will be removed in a future version: the "
+                + "widget URLs now come from the tenant configuration.");
+        legacyWidgetUrl = widgetUrl;
+        legacyAdactUrl = normalizeBaseUrl(adactUrl);
+    }
+
     @NonNull
     public String getAdactUrl() {
-        String adactUrl = tenantOptions.adactUrl;
+        String adactUrl = adactBaseUrl();
         return adactUrl != null ? adactUrl + "/" : "";
+    }
+
+    @Nullable
+    private static String adactBaseUrl() {
+        String legacy = legacyAdactUrl;
+        return legacy != null ? legacy : tenantOptions.adactUrl;
+    }
+
+    /**
+     * @deprecated Use {@link #openWidget(Activity)}.
+     */
+    @Deprecated
+    public void open(@NonNull Activity activity) {
+        open(activity, null, null);
+    }
+
+    /**
+     * Opens the URL passed to {@link #initialize(String, String)} as given. A {@code token} is sent in INIT and
+     * on every refresh; without one, a token comes from the {@code AuthTokenProvider} when auth is enabled.
+     *
+     * @deprecated Use {@link #openWidget(Activity, OpenLoyaltyWidgetParams)}, which builds the URL from the tenant
+     * configuration and gets the token from the {@code AuthTokenProvider}.
+     */
+    @Deprecated
+    public void open(@NonNull Activity activity, @Nullable String userId, @Nullable String token) {
+        Log.e(TAG, "GamifyWidgetSDK.open(...) is deprecated and will be removed in a future version: use "
+                + "openWidget(activity, params) instead.");
+        String widgetUrl = legacyWidgetUrl;
+        if (widgetUrl == null || widgetUrl.isEmpty()) {
+            Log.e(TAG, "Cannot open the loyalty widget: open(...) needs a widget URL from initialize(...)");
+            return;
+        }
+        if (loyaltyDialog != null) {
+            return;
+        }
+        closeAdactCampaign();
+        WidgetDialog.TokenSource tokenSource = token != null
+                ? callback -> callback.onComplete(token, null)
+                : tokenSourceFor(userId);
+        loyaltyDialog = new WidgetDialog(activity, widgetUrl, userId, tokenSource, () -> loyaltyDialog = null);
+        loyaltyDialog.show();
     }
 
     public void openWidget(@NonNull Activity activity) {
@@ -185,7 +254,7 @@ public class GamifyWidgetSDK {
      */
     @NonNull
     public String buildAdactCampaignUrl(@NonNull OpenAdactParams params) {
-        String adactUrl = tenantOptions.adactUrl;
+        String adactUrl = adactBaseUrl();
         if (adactUrl == null || params.campaignId == null) {
             return "";
         }
@@ -225,6 +294,8 @@ public class GamifyWidgetSDK {
     static synchronized void resetForTesting(@Nullable Environment testEnvironment) {
         shared = null;
         tenantOptions = TenantOptions.EMPTY;
+        legacyWidgetUrl = null;
+        legacyAdactUrl = null;
         environment = testEnvironment != null ? testEnvironment : DEFAULT_ENVIRONMENT;
     }
 

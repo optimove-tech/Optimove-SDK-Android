@@ -40,6 +40,23 @@ public class GamifyWidgetSDKTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    public void deprecatedInitialize_adactUrlIsUsedWithoutTenantConfig() {
+        GamifyWidgetSDK.initialize(null, "https://legacy.adact.me/");
+        assertEquals("https://legacy.adact.me/", GamifyWidgetSDK.getInstance().getAdactUrl());
+        assertEquals("https://legacy.adact.me/embedded/179",
+                GamifyWidgetSDK.getInstance().buildAdactCampaignUrl(new OpenAdactParams(179, null, null)));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void deprecatedInitialize_adactUrlTakesPrecedenceOverTenantConfig() {
+        GamifyWidgetSDK.applyTenantConfiguration("https://campaign.adact.me/", null, TENANT_ID);
+        GamifyWidgetSDK.initialize(null, "https://legacy.adact.me");
+        assertEquals("https://legacy.adact.me/", GamifyWidgetSDK.getInstance().getAdactUrl());
+    }
+
+    @Test
     public void buildAdactCampaignUrl_buildsEmbeddedPath() {
         GamifyWidgetSDK.applyTenantConfiguration("https://campaign.adact.me/", null, TENANT_ID);
         assertEquals(
