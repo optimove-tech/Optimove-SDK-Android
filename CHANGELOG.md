@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.20.0
+
+- Gamify: the optional `gamify` block of the tenant configuration (`adactUrl`, `loyaltyWidgetUrl`) is now parsed and applied, so neither URL is hardcoded by the host app.
+- Gamify: federated auth for the loyalty widget. New `GamifyWidgetSDK.getInstance().openWidget(activity)` / `openWidget(activity, OpenLoyaltyWidgetParams)` opens `{loyaltyWidgetUrl}/{tenantId}[/brand/{brand}]/{userId}`, defaulting to the identified SDK user. When `enableAuth()` is used, a JWT for that user is fetched from the `AuthTokenProvider` and passed in the widget's INIT message; if the token can't be fetched the widget closes instead of opening unauthenticated.
+- Deprecated `GamifyWidgetSDK.initialize(widgetUrl)`, `initialize(widgetUrl, adactUrl)`, `open(activity)` and `open(activity, userId, token)`. They keep working as before and log an error on each call; they will be removed in a future version. Both URLs come from the tenant configuration and the token from the `AuthTokenProvider`: use `openWidget` for the loyalty widget, and `openAdactCampaign` needs no setup. An `adactUrl` passed to `initialize` takes precedence over the tenant configuration's. `getInstance()` no longer throws before `initialize`.
+
 ## 7.19.1
 
 - Fix: expired in-app messages could still be shown if they were queued for presentation before they expired (e.g. several "show immediately" messages arrive while the app is open, then the app is backgrounded past their expiry). Queued messages are now re-checked for expiry before each presentation, and an expired message still on screen is removed when the app resumes. Messages opened from the inbox are unaffected.

@@ -1,8 +1,10 @@
 package com.optimove.android.main.sdk_configs;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.optimove.android.main.sdk_configs.configs.Configs;
+import com.optimove.android.main.sdk_configs.configs.GamifyConfigs;
 import com.optimove.android.main.sdk_configs.configs.LogsConfigs;
 import com.optimove.android.main.sdk_configs.configs.OptitrackConfigs;
 import com.optimove.android.main.sdk_configs.configs.RealtimeConfigs;
@@ -31,7 +33,8 @@ public class FetchedLocalConfigsMapper {
                 logsConfigs,
                 realtimeConfigs,
                 optitrackConfigs,
-                eventConfigsMap);
+                eventConfigsMap,
+                getGamifyConfigs(fetchedTenantConfigs));
     }
 
     private static LogsConfigs getLogsConfigs(@NonNull FetchedGlobalConfig fetchedGlobalConfig,
@@ -60,4 +63,16 @@ public class FetchedLocalConfigsMapper {
         return optitrackConfigs;
     }
 
+    @Nullable
+    private static GamifyConfigs getGamifyConfigs(@NonNull FetchedTenantConfigs fetchedTenantConfigs) {
+        FetchedTenantConfigs.GamifyOptions gamify = fetchedTenantConfigs.gamify;
+        if (gamify == null) {
+            return null;
+        }
+
+        GamifyConfigs gamifyConfigs = new GamifyConfigs();
+        gamifyConfigs.setAdactUrl(gamify.adactUrl);
+        gamifyConfigs.setLoyaltyWidgetUrl(gamify.loyaltyWidgetUrl);
+        return gamifyConfigs;
+    }
 }

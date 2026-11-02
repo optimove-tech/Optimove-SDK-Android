@@ -15,17 +15,19 @@ import org.json.JSONObject;
  * <ul>
  *   <li>{@code window.AndroidBridge.closeWidget()} — dismiss the dialog</li>
  *   <li>{@code window.AndroidBridge.receiveMessage(json)} — widget → SDK messages,
- *       including READY (loyalty handshake) and CLOSE</li>
+ *       including READY (loyalty handshake), REFRESH_TOKEN (loyalty token refresh) and CLOSE</li>
  * </ul>
  */
 class AndroidBridge {
 
     private final Runnable onClose;
     @Nullable private final Runnable onReady;
+    @Nullable private final Runnable onRefreshToken;
 
-    AndroidBridge(Runnable onClose, @Nullable Runnable onReady) {
+    AndroidBridge(Runnable onClose, @Nullable Runnable onReady, @Nullable Runnable onRefreshToken) {
         this.onClose = onClose;
         this.onReady = onReady;
+        this.onRefreshToken = onRefreshToken;
     }
 
     @JavascriptInterface
@@ -40,6 +42,10 @@ class AndroidBridge {
             if ("READY".equals(type)) {
                 if (onReady != null) {
                     onReady.run();
+                }
+            } else if ("REFRESH_TOKEN".equals(type)) {
+                if (onRefreshToken != null) {
+                    onRefreshToken.run();
                 }
             } else if ("CLOSE".equals(type)) {
                 onClose.run();

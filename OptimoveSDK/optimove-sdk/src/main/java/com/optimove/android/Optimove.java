@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import com.optimove.android.AuthManager;
 import com.optimove.android.AuthTokenProvider;
 import com.optimove.android.embeddedmessaging.OptimoveEmbeddedMessaging;
+import com.optimove.android.gamifywidgetsdk.GamifyWidgetSDK;
 import com.optimove.android.main.common.EventHandlerFactory;
 import com.optimove.android.main.common.EventHandlerProvider;
 import com.optimove.android.main.common.LifecycleObserver;
@@ -29,6 +30,7 @@ import com.optimove.android.main.events.core_events.SetPageVisitEvent;
 import com.optimove.android.main.events.core_events.SetUserIdEvent;
 import com.optimove.android.main.sdk_configs.ConfigsFetcher;
 import com.optimove.android.main.sdk_configs.configs.Configs;
+import com.optimove.android.main.sdk_configs.configs.GamifyConfigs;
 import com.optimove.android.main.tools.DeviceInfoProvider;
 import com.optimove.android.main.tools.FileUtils;
 import com.optimove.android.main.tools.OptiUtils;
@@ -336,7 +338,16 @@ final public class Optimove {
         OptiLoggerStreamsContainer.debug("Updating the configurations for tenant ID %d", tenantInfo.getTenantId());
 
         eventHandlerProvider.processConfigs(configs);
+        applyGamifyConfigs(configs);
         sendInitialEvents();
+    }
+
+    private void applyGamifyConfigs(Configs configs) {
+        GamifyConfigs gamifyConfigs = configs.getGamifyConfigs();
+        GamifyWidgetSDK.applyTenantConfiguration(
+                gamifyConfigs != null ? gamifyConfigs.getAdactUrl() : null,
+                gamifyConfigs != null ? gamifyConfigs.getLoyaltyWidgetUrl() : null,
+                configs.getTenantId());
     }
 
     private void sendInitialEvents() {
