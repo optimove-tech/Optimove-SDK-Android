@@ -255,7 +255,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
         currentView = new OverlayMessagingView(next, currentActivity, iarUrl, new OverlayMessagingView.Listener() {
             @Override
-            public void onMessageClosed(OverlayMessagingMessage closedMessage, String reason) {
+            public void onMessageClosed(OverlayMessagingMessage closedMessage, OverlayMessagingCloseReason reason) {
                 displayQueue.poll();
                 onSlotCleared(closedMessage.getType());
                 notifyClosed(closedMessage, reason);
@@ -291,7 +291,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
         });
     }
 
-    private void notifyClosed(@NonNull OverlayMessagingMessage message, @NonNull String reason) {
+    private void notifyClosed(@NonNull OverlayMessagingMessage message, @NonNull OverlayMessagingCloseReason reason) {
         if (closedListener == null) return;
         try {
             closedListener.onClosed(message, new OverlayMessagingClosedInfo(reason));

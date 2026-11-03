@@ -40,7 +40,7 @@ class OverlayMessagingView extends BaseMessageView {
     interface Listener {
         /** {@code reason} is {@link OverlayMessagingCloseReason#ACTIONED} or {@link OverlayMessagingCloseReason#DISMISSED}. */
         @UiThread
-        void onMessageClosed(OverlayMessagingMessage message, String reason);
+        void onMessageClosed(OverlayMessagingMessage message, OverlayMessagingCloseReason reason);
 
         @UiThread
         void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events);
