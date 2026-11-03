@@ -2,7 +2,7 @@
 
 ## 7.21.0
 
-- Add `OptimoveOverlayMessaging.getInstance().setClosedListener(listener)`: an observer for overlay messages leaving the screen, for hosts that run their own popup queue alongside overlays. `OverlayMessagingClosedListener.onClosed(message, info)` fires once for every presented message, including when presentation fails. `info.getReason()` is an `OverlayMessagingCloseReason`: `ACTIONED` (the user took a link), `DISMISSED` (close button, backdrop tap, back) or `ERROR`. `hide()` is not a close, and messages the interceptor defers or discards never fire. The listener runs on the main thread; exceptions it throws are caught and logged.
+- Add `OptimoveOverlayMessaging.getInstance().setClosedListener(listener)`: an observer called when an overlay message leaves the screen. `OverlayMessagingClosedListener.onClosed(message, info)` fires once for every presented message, including when presentation fails. `info.getReason()` is an `OverlayMessagingCloseReason`: `ACTIONED` (the user took a link), `DISMISSED` (close button, backdrop tap, back) or `ERROR`. `hide()` is not a close, and messages the interceptor defers or discards never fire. The listener runs on the main thread; exceptions it throws are caught and logged.
 
 ## 7.20.0
 

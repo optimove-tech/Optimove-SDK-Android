@@ -4,9 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 
 /**
- * Observes overlay messages leaving the screen — e.g. to keep the host app's own popup queue in
- * step with overlays. Purely an observer: unlike {@link OverlayMessagingActionHandler}, it cannot
- * alter or block what the SDK does.
+ * Called when an overlay message leaves the screen. Purely an observer: unlike
+ * {@link OverlayMessagingActionHandler}, it cannot alter or block what the SDK does.
  * <p>
  * {@link #onClosed} fires once for every presented message, including when presentation fails
  * ({@link OverlayMessagingCloseReason#ERROR}). It does not fire on {@code hide()}, for messages
