@@ -52,6 +52,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @Nullable
     private OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor;
     private final OverlayActionDispatcher actionDispatcher = new OverlayActionDispatcher();
+    private final OverlayLifecycleTracker lifecycle = new OverlayLifecycleTracker();
     @Nullable
     private OverlayMessagingView currentView;
     @Nullable
@@ -77,6 +78,11 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @UiThread
     void setActionHandler(@Nullable OverlayMessagingActionHandler handler) {
         actionDispatcher.setHandler(handler);
+    }
+
+    @UiThread
+    void setLifecycleListener(@Nullable OverlayMessagingLifecycleListener listener) {
+        lifecycle.setListener(listener);
     }
 
     //==============================================================================================
@@ -229,6 +235,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
         if (currentView != null) {
             currentView.showMessage(next);
+            lifecycle.onPresented(next);
             return;
         }
 
@@ -248,6 +255,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             public void onMessageClosed(OverlayMessagingMessage closedMessage) {
                 displayQueue.poll();
                 onSlotCleared(closedMessage.getType());
+                lifecycle.onClosed(closedMessage, OverlayMessagingCloseReason.DISMISSED);
                 maybeShowNext();
             }
 
@@ -268,15 +276,18 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 // Immediate messages are short-lived. In case of an error we dont want them to stay on queue and surface later
                 displayQueue.poll();
                 onSlotCleared(failedMessage.getType());
+                lifecycle.onClosed(failedMessage, OverlayMessagingCloseReason.ERROR);
                 maybeShowNext();
             }
 
             @Override
             public void onLinkAction(OverlayMessagingMessage message, JSONObject data) {
                 if (currentActivity == null) return;
+                lifecycle.onLinkActionDispatched(message);
                 actionDispatcher.dispatch(OverlayActionDispatcher.ActionType.LINK_ACTION, currentActivity, message, data);
             }
         });
+        lifecycle.onPresented(next);
     }
 
     private void trackOverlayMessagingRendererEvents(long messageId, List<OverlayMessagingRendererEvent> events) {

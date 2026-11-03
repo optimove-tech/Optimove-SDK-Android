@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.21.0
+
+- Add `OptimoveOverlayMessaging.getInstance().setLifecycleListener(listener)`: an observer for overlay messages entering and leaving the screen, for hosts that run their own popup queue alongside overlays. `OverlayMessagingLifecycleListener` has optional `onShown(message)` and `onClosed(message, info)` methods. `onClosed` fires exactly once for every `onShown`, including when presentation fails, and always before the next message's `onShown`. `info.getReason()` is one of the `OverlayMessagingCloseReason` constants: `actioned` (a link CTA was tapped), `dismissed` or `error`; treat any other value as "closed". `hide()` is not a close. Messages the interceptor defers or discards never fire. Both callbacks run on the main thread, and exceptions they throw are caught and logged.
+
 ## 7.20.0
 
 - Gamify: the optional `gamify` block of the tenant configuration (`adactUrl`, `loyaltyWidgetUrl`) is now parsed and applied, so neither URL is hardcoded by the host app.

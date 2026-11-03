@@ -78,6 +78,15 @@ public class OptimoveOverlayMessaging {
         Optimobile.handler.post(() -> manager.setActionHandler(handler));
     }
 
+    /**
+     * Registers an observer for overlay messages being shown and closed. Pass {@code null} to
+     * remove it. See {@link OverlayMessagingLifecycleListener} for the delivery guarantees.
+     */
+    @AnyThread
+    public void setLifecycleListener(@Nullable OverlayMessagingLifecycleListener listener) {
+        Optimobile.handler.post(() -> manager.setLifecycleListener(listener));
+    }
+
     @AnyThread
     public void hide() {
         Optimobile.handler.post(() -> manager.setHidden(true));
