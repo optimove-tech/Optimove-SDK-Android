@@ -2,6 +2,7 @@ package com.optimove.android.optimobile;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener {
+
+    private static final String TAG = "OverlayMessagingManager";
 
     private static final int SESSION_SLOT_CAPACITY = 1;
     private static final int IMMEDIATE_SLOT_CAPACITY = 1;
@@ -52,7 +55,8 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @Nullable
     private OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor;
     private final OverlayActionDispatcher actionDispatcher = new OverlayActionDispatcher();
-    private final OverlayLifecycleTracker lifecycle = new OverlayLifecycleTracker();
+    @Nullable
+    private OverlayMessagingClosedListener closedListener;
     @Nullable
     private OverlayMessagingView currentView;
     @Nullable
@@ -81,8 +85,8 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     }
 
     @UiThread
-    void setLifecycleListener(@Nullable OverlayMessagingLifecycleListener listener) {
-        lifecycle.setListener(listener);
+    void setClosedListener(@Nullable OverlayMessagingClosedListener listener) {
+        closedListener = listener;
     }
 
     //==============================================================================================
@@ -235,7 +239,6 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
         if (currentView != null) {
             currentView.showMessage(next);
-            lifecycle.onPresented(next);
             return;
         }
 
@@ -252,10 +255,10 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
         currentView = new OverlayMessagingView(next, currentActivity, iarUrl, new OverlayMessagingView.Listener() {
             @Override
-            public void onMessageClosed(OverlayMessagingMessage closedMessage) {
+            public void onMessageClosed(OverlayMessagingMessage closedMessage, String reason) {
                 displayQueue.poll();
                 onSlotCleared(closedMessage.getType());
-                lifecycle.onClosed(closedMessage, OverlayMessagingCloseReason.DISMISSED);
+                notifyClosed(closedMessage, reason);
                 maybeShowNext();
             }
 
@@ -276,18 +279,25 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 // Immediate messages are short-lived. In case of an error we dont want them to stay on queue and surface later
                 displayQueue.poll();
                 onSlotCleared(failedMessage.getType());
-                lifecycle.onClosed(failedMessage, OverlayMessagingCloseReason.ERROR);
+                notifyClosed(failedMessage, OverlayMessagingCloseReason.ERROR);
                 maybeShowNext();
             }
 
             @Override
             public void onLinkAction(OverlayMessagingMessage message, JSONObject data) {
                 if (currentActivity == null) return;
-                lifecycle.onLinkActionDispatched(message);
                 actionDispatcher.dispatch(OverlayActionDispatcher.ActionType.LINK_ACTION, currentActivity, message, data);
             }
         });
-        lifecycle.onPresented(next);
+    }
+
+    private void notifyClosed(@NonNull OverlayMessagingMessage message, @NonNull String reason) {
+        if (closedListener == null) return;
+        try {
+            closedListener.onClosed(message, new OverlayMessagingClosedInfo(reason));
+        } catch (Exception e) {
+            Log.e(TAG, "Overlay closed listener threw", e);
+        }
     }
 
     private void trackOverlayMessagingRendererEvents(long messageId, List<OverlayMessagingRendererEvent> events) {

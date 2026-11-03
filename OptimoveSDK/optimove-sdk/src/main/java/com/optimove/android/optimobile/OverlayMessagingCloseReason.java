@@ -7,13 +7,10 @@ package com.optimove.android.optimobile;
  */
 public final class OverlayMessagingCloseReason {
 
-    /**
-     * A link action was dispatched while the message was on screen. Best effort: the renderer
-     * does not distinguish the close button from a close-only CTA.
-     */
+    /** The user took a link (the client's link action handler, or the SDK default, ran). */
     public static final String ACTIONED = "actioned";
 
-    /** The user closed the message without a link action (close button, close-only CTA, back). */
+    /** The user closed the message without taking a link (close button, backdrop tap, back). */
     public static final String DISMISSED = "dismissed";
 
     /** The message failed to present or the renderer errored while it was on screen. */

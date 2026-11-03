@@ -79,12 +79,12 @@ public class OptimoveOverlayMessaging {
     }
 
     /**
-     * Registers an observer for overlay messages being shown and closed. Pass {@code null} to
-     * remove it. See {@link OverlayMessagingLifecycleListener} for the delivery guarantees.
+     * Registers an observer for overlay messages leaving the screen. Pass {@code null} to remove
+     * it. See {@link OverlayMessagingClosedListener} for the delivery guarantees.
      */
     @AnyThread
-    public void setLifecycleListener(@Nullable OverlayMessagingLifecycleListener listener) {
-        Optimobile.handler.post(() -> manager.setLifecycleListener(listener));
+    public void setClosedListener(@Nullable OverlayMessagingClosedListener listener) {
+        Optimobile.handler.post(() -> manager.setClosedListener(listener));
     }
 
     @AnyThread

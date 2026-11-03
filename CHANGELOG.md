@@ -2,7 +2,7 @@
 
 ## 7.21.0
 
-- Add `OptimoveOverlayMessaging.getInstance().setLifecycleListener(listener)`: an observer for overlay messages entering and leaving the screen, for hosts that run their own popup queue alongside overlays. `OverlayMessagingLifecycleListener` has optional `onShown(message)` and `onClosed(message, info)` methods. `onClosed` fires exactly once for every `onShown`, including when presentation fails, and always before the next message's `onShown`. `info.getReason()` is one of the `OverlayMessagingCloseReason` constants: `actioned` (a link CTA was tapped), `dismissed` or `error`; treat any other value as "closed". `hide()` is not a close. Messages the interceptor defers or discards never fire. Both callbacks run on the main thread, and exceptions they throw are caught and logged.
+- Add `OptimoveOverlayMessaging.getInstance().setClosedListener(listener)`: an observer for overlay messages leaving the screen, for hosts that run their own popup queue alongside overlays. `OverlayMessagingClosedListener.onClosed(message, info)` fires once for every presented message, including when presentation fails. `info.getReason()` is one of the `OverlayMessagingCloseReason` constants: `actioned` (the user took a link), `dismissed` (close button, backdrop tap, back) or `error`; treat any other value as "closed". `hide()` is not a close, and messages the interceptor defers or discards never fire. The listener runs on the main thread; exceptions it throws are caught and logged.
 
 ## 7.20.0
 
