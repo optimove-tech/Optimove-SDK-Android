@@ -11,7 +11,7 @@ public class AndroidBridgeTest {
     @Test
     public void closeWidget_invokesOnCloseCallback() {
         Runnable onClose = mock(Runnable.class);
-        AndroidBridge bridge = new AndroidBridge(onClose, mock(Runnable.class));
+        AndroidBridge bridge = new AndroidBridge(onClose, mock(Runnable.class), mock(Runnable.class));
         bridge.closeWidget();
         verify(onClose).run();
     }
@@ -19,7 +19,7 @@ public class AndroidBridgeTest {
     @Test
     public void receiveMessage_invokesOnReadyForReadyType() {
         Runnable onReady = mock(Runnable.class);
-        AndroidBridge bridge = new AndroidBridge(mock(Runnable.class), onReady);
+        AndroidBridge bridge = new AndroidBridge(mock(Runnable.class), onReady, mock(Runnable.class));
         bridge.receiveMessage("{\"type\":\"READY\"}");
         verify(onReady).run();
     }
@@ -27,7 +27,7 @@ public class AndroidBridgeTest {
     @Test
     public void receiveMessage_doesNotInvokeOnReadyForOtherTypes() {
         Runnable onReady = mock(Runnable.class);
-        AndroidBridge bridge = new AndroidBridge(mock(Runnable.class), onReady);
+        AndroidBridge bridge = new AndroidBridge(mock(Runnable.class), onReady, mock(Runnable.class));
         bridge.receiveMessage("{\"type\":\"TEST\"}");
         verify(onReady, never()).run();
     }
@@ -35,7 +35,7 @@ public class AndroidBridgeTest {
     @Test
     public void receiveMessage_invokesOnCloseForCloseType() {
         Runnable onClose = mock(Runnable.class);
-        AndroidBridge bridge = new AndroidBridge(onClose, mock(Runnable.class));
+        AndroidBridge bridge = new AndroidBridge(onClose, mock(Runnable.class), mock(Runnable.class));
         bridge.receiveMessage("{\"type\":\"CLOSE\"}");
         verify(onClose).run();
     }
@@ -43,8 +43,26 @@ public class AndroidBridgeTest {
     @Test
     public void receiveMessage_readyIsNoOpWhenOnReadyNull() {
         Runnable onClose = mock(Runnable.class);
-        AndroidBridge bridge = new AndroidBridge(onClose, null);
+        AndroidBridge bridge = new AndroidBridge(onClose, null, null);
         bridge.receiveMessage("{\"type\":\"READY\"}");
+        verify(onClose, never()).run();
+    }
+
+    @Test
+    public void receiveMessage_invokesOnRefreshTokenForRefreshTokenType() {
+        Runnable onReady = mock(Runnable.class);
+        Runnable onRefreshToken = mock(Runnable.class);
+        AndroidBridge bridge = new AndroidBridge(mock(Runnable.class), onReady, onRefreshToken);
+        bridge.receiveMessage("{\"type\":\"REFRESH_TOKEN\"}");
+        verify(onRefreshToken).run();
+        verify(onReady, never()).run();
+    }
+
+    @Test
+    public void receiveMessage_refreshTokenIsNoOpWhenOnRefreshTokenNull() {
+        Runnable onClose = mock(Runnable.class);
+        AndroidBridge bridge = new AndroidBridge(onClose, null, null);
+        bridge.receiveMessage("{\"type\":\"REFRESH_TOKEN\"}");
         verify(onClose, never()).run();
     }
 }

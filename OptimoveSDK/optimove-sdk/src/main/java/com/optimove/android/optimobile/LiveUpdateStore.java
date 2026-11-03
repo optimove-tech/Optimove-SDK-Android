@@ -34,6 +34,7 @@ final class LiveUpdateStore {
         final @Nullable Long dismissalDateSeconds;
         final long startedAtMillis;
         final long lastUpdatedAtMillis;
+        final boolean shownReported;
 
         ActiveRecord(@NonNull String name,
                      @NonNull String type,
@@ -43,6 +44,18 @@ final class LiveUpdateStore {
                      @Nullable Long dismissalDateSeconds,
                      long startedAtMillis,
                      long lastUpdatedAtMillis) {
+            this(name, type, topic, timestamp, contentState, dismissalDateSeconds, startedAtMillis, lastUpdatedAtMillis, false);
+        }
+
+        private ActiveRecord(@NonNull String name,
+                             @NonNull String type,
+                             @Nullable String topic,
+                             long timestamp,
+                             @NonNull JSONObject contentState,
+                             @Nullable Long dismissalDateSeconds,
+                             long startedAtMillis,
+                             long lastUpdatedAtMillis,
+                             boolean shownReported) {
             this.name = name;
             this.type = type;
             this.topic = topic;
@@ -51,6 +64,7 @@ final class LiveUpdateStore {
             this.dismissalDateSeconds = dismissalDateSeconds;
             this.startedAtMillis = startedAtMillis;
             this.lastUpdatedAtMillis = lastUpdatedAtMillis;
+            this.shownReported = shownReported;
         }
 
         @NonNull ActiveRecord applying(long timestamp,
@@ -66,11 +80,17 @@ final class LiveUpdateStore {
                     contentState,
                     dismissalDateSeconds != null ? dismissalDateSeconds : this.dismissalDateSeconds,
                     startedAtMillis,
-                    nowMillis);
+                    nowMillis,
+                    shownReported);
         }
 
         @NonNull ActiveRecord touched(long nowMillis) {
             return applying(timestamp, contentState, null, null, nowMillis);
+        }
+
+        @NonNull ActiveRecord shown() {
+            return new ActiveRecord(name, type, topic, timestamp, contentState, dismissalDateSeconds,
+                    startedAtMillis, lastUpdatedAtMillis, true);
         }
 
         @NonNull JSONObject toJson() throws JSONException {
@@ -82,7 +102,8 @@ final class LiveUpdateStore {
                     .put("content_state", contentState)
                     .put("dismissal_date", dismissalDateSeconds)
                     .put("started_at", startedAtMillis)
-                    .put("last_updated_at", lastUpdatedAtMillis);
+                    .put("last_updated_at", lastUpdatedAtMillis)
+                    .put("shown_reported", shownReported);
         }
 
         static @NonNull ActiveRecord fromJson(@NonNull JSONObject json) throws JSONException {
@@ -94,7 +115,8 @@ final class LiveUpdateStore {
                     json.getJSONObject("content_state"),
                     json.has("dismissal_date") && !json.isNull("dismissal_date") ? json.getLong("dismissal_date") : null,
                     json.getLong("started_at"),
-                    json.getLong("last_updated_at"));
+                    json.getLong("last_updated_at"),
+                    json.optBoolean("shown_reported", false));
         }
     }
 

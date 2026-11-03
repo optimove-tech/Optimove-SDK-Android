@@ -17,13 +17,20 @@ import android.content.Intent;
 import androidx.core.app.NotificationCompat;
 import androidx.test.core.app.ApplicationProvider;
 
+import androidx.annotation.NonNull;
+
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotificationManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -38,13 +45,51 @@ public class LiveUpdateNotificationsTests {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
+        context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE).edit().clear().commit();
         notifications = shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        OptimoveLiveUpdates.reset();
+    }
+
+    @After
+    public void tearDown() {
+        OptimoveLiveUpdates.reset();
     }
 
     private static LiveUpdate liveUpdate(boolean alert, Long dismissalDateMillis, LiveUpdateEndReason endReason) {
+        return liveUpdate(NAME, alert, dismissalDateMillis, endReason);
+    }
+
+    private static LiveUpdate liveUpdate(String name, boolean alert, Long dismissalDateMillis, LiveUpdateEndReason endReason) {
         long now = System.currentTimeMillis();
-        return new LiveUpdate(NAME, "T", 1, new JSONObject(), alert ? "Goal!" : null, null,
+        return new LiveUpdate(name, "T", 1, new JSONObject(), alert ? "Goal!" : null, null,
                 dismissalDateMillis, now, now, endReason);
+    }
+
+    private LiveUpdateManager managerTracking(List<String> tracked) {
+        LiveUpdateStore store = new LiveUpdateStore(context.getSharedPreferences(SharedPrefs.PREFS_FILE, Context.MODE_PRIVATE));
+        TopicSubscriber topics = new TopicSubscriber() {
+            @Override
+            public void subscribe(@NonNull String topic) {
+            }
+
+            @Override
+            public void unsubscribe(@NonNull String topic) {
+            }
+        };
+        LiveUpdateManager manager = new LiveUpdateManager(context, (c, event, liveUpdate) -> { }, store, topics,
+                (type, props) -> tracked.add(type), System::currentTimeMillis);
+        OptimoveLiveUpdates.initialize(context, manager);
+        return manager;
+    }
+
+    private static JSONObject startEnvelope(String name) throws JSONException {
+        return new JSONObject()
+                .put("event", "start")
+                .put("name", name)
+                .put("type", "T")
+                .put("timestamp", 1)
+                .put("topic", "lu_1")
+                .put("content_state", new JSONObject());
     }
 
     private NotificationCompat.Builder builder() {
@@ -76,7 +121,7 @@ public class LiveUpdateNotificationsTests {
     public void endIsNotOngoingAndHonoursTheDismissalDate() {
         LiveUpdateNotifications.post(context, LiveUpdateEvent.END, liveUpdate(false, null, LiveUpdateEndReason.SERVER), builder());
         assertFalse(hasFlag(posted(), Notification.FLAG_ONGOING_EVENT));
-        assertEquals(0, posted().getTimeoutAfter());
+        assertEquals(LiveUpdateNotifications.END_TIMEOUT_MS, posted().getTimeoutAfter());
 
         long dismissal = System.currentTimeMillis() + FOUR_HOURS;
         LiveUpdateNotifications.post(context, LiveUpdateEvent.END, liveUpdate(false, dismissal, LiveUpdateEndReason.SERVER), builder());
@@ -105,6 +150,22 @@ public class LiveUpdateNotificationsTests {
         PendingIntent forwarded = saved.getParcelableExtra(LiveUpdateDismissReceiver.EXTRA_ORIGINAL_DELETE_INTENT);
         assertNotNull(forwarded);
         assertEquals("host.DELETE", shadowOf(forwarded).getSavedIntent().getAction());
+    }
+
+    @Test
+    public void postingReportsStartedOncePerNameAndOnlyWhenSomethingWasShown() throws JSONException {
+        List<String> tracked = new ArrayList<>();
+        LiveUpdateManager manager = managerTracking(tracked);
+        manager.handlePush(startEnvelope(NAME));
+        manager.handlePush(startEnvelope("other"));
+
+        LiveUpdateNotifications.post(context, LiveUpdateEvent.START, liveUpdate(false, null, null), builder());
+        LiveUpdateNotifications.post(context, LiveUpdateEvent.UPDATE, liveUpdate(true, null, null), builder());
+        notifications.setNotificationsEnabled(false);
+        LiveUpdateNotifications.post(context, LiveUpdateEvent.START, liveUpdate("other", false, null, null), builder());
+
+        assertEquals(1, tracked.size());
+        assertEquals(AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_STARTED, tracked.get(0));
     }
 
     @Test

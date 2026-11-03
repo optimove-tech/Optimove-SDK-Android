@@ -1,6 +1,8 @@
 package com.optimove.android.optimobile;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +26,7 @@ public final class LiveUpdateNotifications {
     static final String TAG_PREFIX = "optimove_live_update:";
     static final String DISMISS_URI_SCHEME = "optimove-live-update";
     static final long DEFAULT_TIMEOUT_MS = LiveUpdateManager.INACTIVITY_MS;
+    static final long END_TIMEOUT_MS = 4 * 60 * 60 * 1000L;
 
     private LiveUpdateNotifications() {
     }
@@ -54,7 +57,9 @@ public final class LiveUpdateNotifications {
                 return;
             }
             Long dismissalDateMillis = liveUpdate.getDismissalDateMillis();
-            if (dismissalDateMillis != null) {
+            if (dismissalDateMillis == null) {
+                builder.setTimeoutAfter(END_TIMEOUT_MS);
+            } else {
                 long remaining = dismissalDateMillis - System.currentTimeMillis();
                 if (remaining <= 0) {
                     cancel(context, name);
@@ -70,6 +75,27 @@ public final class LiveUpdateNotifications {
         notification.deleteIntent = dismissIntent(context, name, notification.deleteIntent);
 
         notificationManager.notify(tagFor(name), NOTIFICATION_ID, notification);
+
+        if (!isChannelBlocked(context, notification)) {
+            reportShown(name);
+        }
+    }
+
+    private static void reportShown(@NonNull String name) {
+        try {
+            OptimoveLiveUpdates.getInstance().reportShown(name);
+        } catch (IllegalStateException e) {
+            Optimobile.log(TAG, "Live Updates: posted " + name + " before Optimove was initialized, not reporting it");
+        }
+    }
+
+    private static boolean isChannelBlocked(@NonNull Context context, @NonNull Notification notification) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || notification.getChannelId() == null) {
+            return false;
+        }
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel channel = manager.getNotificationChannel(notification.getChannelId());
+        return channel != null && channel.getImportance() == NotificationManager.IMPORTANCE_NONE;
     }
 
     public static void cancel(@NonNull Context context, @NonNull String name) {

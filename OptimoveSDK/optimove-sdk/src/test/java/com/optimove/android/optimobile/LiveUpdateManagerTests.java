@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -19,7 +18,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
@@ -78,10 +76,6 @@ public class LiveUpdateManagerTests {
         public void track(@NonNull String eventType, @Nullable JSONObject properties) {
             types.add(eventType);
             props.add(properties);
-        }
-
-        String lastReason() {
-            return props.get(props.size() - 1).optString(LiveUpdateManager.PROP_REASON);
         }
     }
 
@@ -144,19 +138,36 @@ public class LiveUpdateManagerTests {
     }
 
     @Test
-    public void startPersistsSubscribesDispatchesAndTracks() throws JSONException {
+    public void startPersistsSubscribesAndDispatches() throws JSONException {
         manager.handlePush(start(T0));
 
         assertEquals(Arrays.asList(LiveUpdateEvent.START), handler.events);
         assertEquals("Kick-off", status(handler.last()));
         assertEquals(Arrays.asList(TOPIC), topics.subscribed);
         assertEquals(1, manager.getActive().size());
+        assertTrue(events.types.isEmpty());
+
+        manager.handlePush(start(T0 + 5));
+        assertEquals(1, handler.events.size());
+    }
+
+    @Test
+    public void reportShownTracksStartedOncePerActiveName() throws JSONException {
+        manager.reportShown(NAME);
+        assertTrue(events.types.isEmpty());
+
+        manager.handlePush(start(T0));
+        manager.reportShown(NAME);
+        manager.reportShown(NAME);
+        newManager(handler).reportShown(NAME);
+
         assertEquals(Arrays.asList(AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_STARTED), events.types);
         assertEquals(NAME, events.props.get(0).getString(LiveUpdateManager.PROP_ACTIVITY_ID));
         assertEquals(TYPE, events.props.get(0).getString(LiveUpdateManager.PROP_TYPE));
 
-        manager.handlePush(start(T0 + 5));
-        assertEquals(1, handler.events.size());
+        manager.handlePush(end(T0 + 1));
+        manager.reportShown(NAME);
+        assertEquals(1, events.types.size());
     }
 
     @Test
@@ -169,7 +180,6 @@ public class LiveUpdateManagerTests {
 
         assertEquals(Arrays.asList(LiveUpdateEvent.START, LiveUpdateEvent.UPDATE, LiveUpdateEvent.UPDATE), handler.events);
         assertEquals("1-0 again", status(manager.getActive().get(0)));
-        assertEquals(1, events.types.size());
     }
 
     @Test
@@ -192,8 +202,6 @@ public class LiveUpdateManagerTests {
         assertEquals("Full time", status(handler.last()));
         assertEquals(Long.valueOf((T0 + 200) * 1000L), handler.last().getDismissalDateMillis());
         assertEquals(Arrays.asList(TOPIC), topics.unsubscribed);
-        assertEquals(AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_ENDED, events.types.get(1));
-        assertEquals("server", events.lastReason());
         assertTrue(manager.getActive().isEmpty());
 
         manager.handlePush(update(T0 + 200, "ghost"));
@@ -210,7 +218,6 @@ public class LiveUpdateManagerTests {
         manager.handlePush(start(T0));
         manager.end(NAME);
         assertEquals(LiveUpdateEndReason.LOCAL, handler.last().getEndReason());
-        assertEquals("local", events.lastReason());
         manager.handlePush(update(T0 + 10, "ghost"));
         assertEquals(2, handler.events.size());
 
@@ -218,7 +225,6 @@ public class LiveUpdateManagerTests {
         clock.now += LiveUpdateManager.INACTIVITY_MS + 1;
         manager.endFromNotificationDismissal(NAME);
         assertEquals(LiveUpdateEndReason.EXPIRED, handler.last().getEndReason());
-        assertEquals("expired", events.lastReason());
 
         manager.endFromNotificationDismissal(NAME);
         manager.end(NAME);
@@ -241,6 +247,16 @@ public class LiveUpdateManagerTests {
     }
 
     @Test
+    public void sweepResubscribesActiveTopics() throws JSONException {
+        manager.handlePush(start(T0));
+
+        manager.sweep();
+
+        assertEquals(Arrays.asList(TOPIC, TOPIC), topics.subscribed);
+        assertEquals(1, handler.events.size());
+    }
+
+    @Test
     public void stateSurvivesANewManagerOnTheSamePrefs() throws JSONException {
         manager.handlePush(start(T0));
         manager.handlePush(start(T0).put("name", "finished").put("topic", "lu_finished"));
@@ -256,13 +272,13 @@ public class LiveUpdateManagerTests {
     }
 
     @Test
-    public void handlerThrowingDoesNotLoseStateOrTheEvent() throws JSONException {
+    public void handlerThrowingDoesNotLoseState() throws JSONException {
         handler.throwOnCall = true;
 
         manager.handlePush(start(T0));
+        manager.handlePush(update(T0 + 1, "1-0"));
 
-        assertEquals(1, manager.getActive().size());
-        assertEquals(1, events.types.size());
+        assertEquals("1-0", status(manager.getActive().get(0)));
     }
 
     @Test
@@ -273,24 +289,11 @@ public class LiveUpdateManagerTests {
         assertEquals(Arrays.asList(NAME, "other"), manager.clearAll());
 
         assertEquals(LiveUpdateEndReason.CLEARED, handler.last().getEndReason());
-        assertEquals("cleared", events.lastReason());
         assertEquals(Arrays.asList(TOPIC, "lu_other"), topics.unsubscribed);
         assertFalse(prefs.contains(SharedPrefs.KEY_LIVE_UPDATES));
 
         manager.handlePush(start(T0));
         assertEquals(LiveUpdateEvent.START, handler.events.get(handler.events.size() - 1));
-    }
-
-    @Test
-    public void eventsAreNotReportedWhenNotificationsAreDisabled() throws JSONException {
-        Shadows.shadowOf((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
-                .setNotificationsEnabled(false);
-
-        manager.handlePush(start(T0));
-        manager.handlePush(end(T0 + 1));
-
-        assertEquals(Arrays.asList(LiveUpdateEvent.START, LiveUpdateEvent.END), handler.events);
-        assertTrue(events.types.isEmpty());
     }
 
     @Test

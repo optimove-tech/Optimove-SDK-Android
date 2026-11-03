@@ -95,7 +95,17 @@ public final class OptimoveLiveUpdates {
 
     public void end(@NonNull String name) {
         if (manager != null) {
-            manager.end(name);
+            runInBackground(() -> manager.end(name));
+        }
+    }
+
+    /**
+     * Reports that the Live Update is visible to the user, which sends the started event once per name.
+     * {@link LiveUpdateNotifications#post} calls this after posting; hosts that render their own UI call it themselves.
+     */
+    public void reportShown(@NonNull String name) {
+        if (manager != null) {
+            runInBackground(() -> manager.reportShown(name));
         }
     }
 
@@ -107,15 +117,25 @@ public final class OptimoveLiveUpdates {
         if (manager == null) {
             return;
         }
-        for (String name : manager.clearAll()) {
-            LiveUpdateNotifications.cancel(context, name);
-        }
+        runInBackground(() -> {
+            for (String name : manager.clearAll()) {
+                LiveUpdateNotifications.cancel(context, name);
+            }
+        });
     }
 
     void endFromNotificationDismissal(@NonNull String name) {
         if (manager != null) {
             manager.endFromNotificationDismissal(name);
         }
+    }
+
+    private static void runInBackground(@NonNull Runnable task) {
+        if (Optimobile.executorService == null) {
+            task.run();
+            return;
+        }
+        Optimobile.executorService.submit(task);
     }
 
     private static @NonNull EventTracker optimobileEvents(@NonNull Context context) {

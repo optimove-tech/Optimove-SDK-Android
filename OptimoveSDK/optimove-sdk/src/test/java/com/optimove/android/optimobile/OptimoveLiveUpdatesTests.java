@@ -2,6 +2,7 @@ package com.optimove.android.optimobile;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Application;
@@ -23,6 +24,9 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -30,10 +34,12 @@ public class OptimoveLiveUpdatesTests {
 
     private static final class RecordingHandler implements LiveUpdateHandler {
         final List<LiveUpdateEvent> events = new ArrayList<>();
+        final List<Thread> threads = new ArrayList<>();
 
         @Override
         public void onUpdate(@NonNull Context context, @NonNull LiveUpdateEvent event, @NonNull LiveUpdate liveUpdate) {
             events.add(event);
+            threads.add(Thread.currentThread());
         }
     }
 
@@ -50,6 +56,7 @@ public class OptimoveLiveUpdatesTests {
 
     @After
     public void tearDown() {
+        Optimobile.executorService = null;
         OptimoveLiveUpdates.reset();
     }
 
@@ -107,5 +114,22 @@ public class OptimoveLiveUpdatesTests {
         assertTrue(instance.getActiveLiveUpdates().isEmpty());
         instance.end("match");
         instance.clearAll();
+    }
+
+    @Test
+    public void endAndClearAllRunOnTheBackgroundExecutor() throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Optimobile.executorService = executor;
+        initializeWith(application, handler);
+        OptimoveLiveUpdates.handlePushPayload(startPayload());
+
+        OptimoveLiveUpdates.getInstance().end("match");
+        OptimoveLiveUpdates.getInstance().clearAll();
+        executor.submit(() -> { }).get(5, TimeUnit.SECONDS);
+        executor.shutdownNow();
+
+        assertEquals(LiveUpdateEvent.END, handler.events.get(1));
+        assertNotSame(Thread.currentThread(), handler.threads.get(1));
+        assertTrue(OptimoveLiveUpdates.getInstance().getActiveLiveUpdates().isEmpty());
     }
 }

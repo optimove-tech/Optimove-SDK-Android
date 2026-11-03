@@ -4,7 +4,6 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationManagerCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,19 +19,14 @@ final class LiveUpdateManager {
 
     static final String PROP_ACTIVITY_ID = "optimoveActivityId";
     static final String PROP_TYPE = "attributesType";
-    static final String PROP_REASON = "reason";
 
     private static final class Outcome {
         final LiveUpdateEvent event;
         final LiveUpdate liveUpdate;
-        final @Nullable String trackEventType;
-        final @Nullable String trackReason;
 
-        Outcome(LiveUpdateEvent event, LiveUpdate liveUpdate, @Nullable String trackEventType, @Nullable String trackReason) {
+        Outcome(LiveUpdateEvent event, LiveUpdate liveUpdate) {
             this.event = event;
             this.liveUpdate = liveUpdate;
-            this.trackEventType = trackEventType;
-            this.trackReason = trackReason;
         }
     }
 
@@ -141,9 +135,29 @@ final class LiveUpdateManager {
             long now = clock.nowMillis();
             store.pruneEnded(now);
             expireInactiveLocked(now, outcomes);
+            for (LiveUpdateStore.ActiveRecord active : store.getAllActive()) {
+                if (active.topic != null) {
+                    topics.subscribe(active.topic);
+                }
+            }
         }
 
         dispatch(outcomes);
+    }
+
+    void reportShown(@NonNull String name) {
+        LiveUpdateStore.ActiveRecord shown;
+
+        synchronized (lock) {
+            LiveUpdateStore.ActiveRecord active = store.getActive(name);
+            if (active == null || active.shownReported) {
+                return;
+            }
+            shown = active.shown();
+            store.putActive(shown);
+        }
+
+        events.track(AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_STARTED, eventProps(shown));
     }
 
     @NonNull List<LiveUpdate> getActive() {
@@ -187,11 +201,7 @@ final class LiveUpdateManager {
         if (envelope.topic != null) {
             topics.subscribe(envelope.topic);
         }
-        outcomes.add(new Outcome(
-                LiveUpdateEvent.START,
-                toLiveUpdate(record, envelope.alertTitle, envelope.alertBody, null),
-                AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_STARTED,
-                null));
+        outcomes.add(new Outcome(LiveUpdateEvent.START, toLiveUpdate(record, envelope.alertTitle, envelope.alertBody, null)));
     }
 
     private void applyToActiveLocked(@NonNull LiveUpdateStore.ActiveRecord active,
@@ -220,11 +230,7 @@ final class LiveUpdateManager {
                         envelope.dismissalDateSeconds,
                         now);
                 store.putActive(updated);
-                outcomes.add(new Outcome(
-                        LiveUpdateEvent.UPDATE,
-                        toLiveUpdate(updated, envelope.alertTitle, envelope.alertBody, null),
-                        null,
-                        null));
+                outcomes.add(new Outcome(LiveUpdateEvent.UPDATE, toLiveUpdate(updated, envelope.alertTitle, envelope.alertBody, null)));
                 return;
             case END:
                 endLocked(active, envelope, LiveUpdateEndReason.SERVER, now, outcomes);
@@ -252,9 +258,7 @@ final class LiveUpdateManager {
 
         outcomes.add(new Outcome(
                 LiveUpdateEvent.END,
-                toLiveUpdate(last, envelope != null ? envelope.alertTitle : null, envelope != null ? envelope.alertBody : null, reason),
-                AnalyticsContract.EVENT_TYPE_LIVE_ACTIVITY_ENDED,
-                reason.wireValue()));
+                toLiveUpdate(last, envelope != null ? envelope.alertTitle : null, envelope != null ? envelope.alertBody : null, reason)));
     }
 
     private void expireInactiveLocked(long now, @NonNull List<Outcome> outcomes) {
@@ -274,15 +278,7 @@ final class LiveUpdateManager {
                 Optimobile.log(TAG, "Live Updates: handler threw on " + outcome.event + " for "
                         + outcome.liveUpdate.getName() + ": " + e);
             }
-
-            if (outcome.trackEventType != null && notificationsEnabled()) {
-                events.track(outcome.trackEventType, eventProps(outcome.liveUpdate, outcome.trackReason));
-            }
         }
-    }
-
-    private boolean notificationsEnabled() {
-        return NotificationManagerCompat.from(context).areNotificationsEnabled();
     }
 
     private static @NonNull LiveUpdate toLiveUpdate(@NonNull LiveUpdateStore.ActiveRecord record,
@@ -302,14 +298,11 @@ final class LiveUpdateManager {
                 endReason);
     }
 
-    private static @NonNull JSONObject eventProps(@NonNull LiveUpdate liveUpdate, @Nullable String reason) {
+    private static @NonNull JSONObject eventProps(@NonNull LiveUpdateStore.ActiveRecord record) {
         JSONObject props = new JSONObject();
         try {
-            props.put(PROP_ACTIVITY_ID, liveUpdate.getName());
-            props.put(PROP_TYPE, liveUpdate.getType());
-            if (reason != null) {
-                props.put(PROP_REASON, reason);
-            }
+            props.put(PROP_ACTIVITY_ID, record.name);
+            props.put(PROP_TYPE, record.type);
         } catch (JSONException ignored) {
         }
         return props;
