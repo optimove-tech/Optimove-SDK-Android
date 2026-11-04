@@ -139,6 +139,7 @@ abstract class BaseMessageView extends WebViewClient {
 
     @UiThread
     void handleViewError(){
+        if (state == State.DISPOSED) return;
         dispose();
 
         onViewError();
@@ -434,7 +435,13 @@ abstract class BaseMessageView extends WebViewClient {
                 });
                 return;
             case "MESSAGE_CLOSED":
-                currentActivity.runOnUiThread(() -> onMessageClosedByClient());
+                currentActivity.runOnUiThread(() -> {
+                    if (state == State.DISPOSED) {
+                        return;
+                    }
+
+                    onMessageClosedByClient();
+                });
                 return;
             case "EXECUTE_ACTIONS":
                 onExecuteActions(data);

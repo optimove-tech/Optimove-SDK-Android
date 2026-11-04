@@ -2,6 +2,7 @@ package com.optimove.android.optimobile;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener {
 
-    private static final String TAG = OverlayMessagingManager.class.getName();
+    private static final String TAG = "OverlayMessagingManager";
     private static final int IMMEDIATE_SLOT_CAPACITY = 1;
 
     enum InterceptorOutcome {
@@ -59,6 +60,8 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     private OptimoveOverlayMessaging.OverlayMessagingInterceptor interceptor;
     private final OverlayActionDispatcher actionDispatcher = new OverlayActionDispatcher();
     @Nullable
+    private OverlayMessagingClosedListener closedListener;
+    @Nullable
     private OverlayMessagingView currentView;
     @Nullable
     private Activity currentActivity;
@@ -83,6 +86,11 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @UiThread
     void setActionHandler(@Nullable OverlayMessagingActionHandler handler) {
         actionDispatcher.setHandler(handler);
+    }
+
+    @UiThread
+    void setClosedListener(@Nullable OverlayMessagingClosedListener listener) {
+        closedListener = listener;
     }
 
     //==============================================================================================
@@ -267,9 +275,10 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
 
         currentView = new OverlayMessagingView(next, currentActivity, iarUrl, new OverlayMessagingView.Listener() {
             @Override
-            public void onMessageClosed(OverlayMessagingMessage closedMessage) {
+            public void onMessageClosed(OverlayMessagingMessage closedMessage, OverlayMessagingCloseReason reason) {
                 displayQueue.poll();
                 release(closedMessage.getType(), OverlayMessagingSessionManager.Outcome.DONE);
+                notifyClosed(closedMessage, reason);
                 maybeShowNext();
             }
 
@@ -298,6 +307,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 displayQueue.poll();
                 // Still on the server: fetching again at once would return it again
                 release(failedMessage.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED);
+                notifyClosed(failedMessage, OverlayMessagingCloseReason.ERROR);
                 maybeShowNext();
             }
 
@@ -307,6 +317,15 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 actionDispatcher.dispatch(OverlayActionDispatcher.ActionType.LINK_ACTION, currentActivity, message, data);
             }
         });
+    }
+
+    private void notifyClosed(@NonNull OverlayMessagingMessage message, @NonNull OverlayMessagingCloseReason reason) {
+        if (closedListener == null) return;
+        try {
+            closedListener.onClosed(message, new OverlayMessagingClosedInfo(reason));
+        } catch (Exception e) {
+            Log.e(TAG, "Overlay closed listener threw", e);
+        }
     }
 
     private void trackOverlayMessagingRendererEvents(long messageId, List<OverlayMessagingRendererEvent> events) {
