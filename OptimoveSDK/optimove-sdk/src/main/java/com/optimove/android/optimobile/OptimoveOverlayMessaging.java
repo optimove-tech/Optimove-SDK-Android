@@ -13,11 +13,8 @@ public class OptimoveOverlayMessaging {
 
     private static OptimoveOverlayMessaging shared;
 
-    @Nullable
-    private OverlayMessagingSessionManager sessionManager;
+    private final OverlayMessagingSessionManager sessionManager;
     private final OverlayMessagingManager manager;
-    private final Application application;
-    private final long sessionLengthMinutes;
 
     public interface OverlayMessagingInterceptorCallback {
         @UiThread
@@ -39,16 +36,20 @@ public class OptimoveOverlayMessaging {
         }
     }
 
-    private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthMinutes) {
-        this.application = application;
-        this.sessionLengthMinutes = sessionLengthMinutes;
-        this.manager = new OverlayMessagingManager(application);
+    private OptimoveOverlayMessaging(@NonNull Application application, long sessionLengthMinutes, long deferDelayMinutes) {
+        this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthMinutes,
+                deferDelayMinutes, this::onScheduledFetchDue);
+        this.manager = new OverlayMessagingManager(application, sessionManager);
     }
 
+    @UiThread
+    private void onScheduledFetchDue() {
+        manager.onTriggerReceived(OverlayMessagingMessage.MessageType.SESSION);
+    }
+
+    /** Scheduled fetching starts here, once credentials are available: the watcher reports the foreground straight away. */
     private void startSessionManager() {
-        OverlayMessagingSessionManager.Listener sessionListener = () ->
-                manager.onTriggerReceived(OverlayMessagingMessage.MessageType.SESSION);
-        this.sessionManager = new OverlayMessagingSessionManager(application, sessionLengthMinutes, sessionListener);
+        OptimobileInitProvider.getAppStateWatcher().registerListener(sessionManager);
     }
 
     //==============================================================================================
@@ -68,9 +69,7 @@ public class OptimoveOverlayMessaging {
 
     @UiThread
     public void resetSession() {
-        if (sessionManager != null) {
-            sessionManager.resetSession();
-        }
+        sessionManager.reset();
     }
 
     @AnyThread
@@ -91,13 +90,26 @@ public class OptimoveOverlayMessaging {
     //==============================================================================================
     //-- Internal
 
+    /** A different user is associated, or none any more: ends the session and fetches for them. */
+    @AnyThread
+    void onUserChanged() {
+        Optimobile.handler.post(sessionManager::reset);
+    }
+
     @UiThread
-    void onPushTriggerReceived() {
+    void onTriggeredSignalReceived() {
         manager.onTriggerReceived(OverlayMessagingMessage.MessageType.IMMEDIATE);
     }
 
+    /** A scheduled Signal: moves the next scheduled fetch earlier. */
+    @UiThread
+    void onScheduledSignalReceived(long nextFetchInSeconds) {
+        sessionManager.onSignal(nextFetchInSeconds);
+    }
+
     static void initialize(@NonNull Application application, @NonNull OptimoveConfig config) {
-        shared = new OptimoveOverlayMessaging(application, config.getOverlayMessagingSessionLengthMinutes());
+        shared = new OptimoveOverlayMessaging(application, config.getOverlayMessagingSessionLengthMinutes(),
+                config.getOverlayMessagingDeferDelayMinutes());
         if (!config.usesDelayedOptimobileConfiguration()) {
             shared.startSessionManager();
         }

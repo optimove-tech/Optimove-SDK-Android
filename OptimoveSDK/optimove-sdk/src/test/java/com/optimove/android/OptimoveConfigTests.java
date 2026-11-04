@@ -15,6 +15,7 @@ import com.optimove.android.optimobile.DeferredDeepLinkHelper;
 import com.optimove.android.optimobile.UrlBuilder;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class OptimoveConfigTests {
     private final String VALID_OPTIMOVE_CREDS = "WyIxIiwgIjgwYTRhMjI0ZWVlMTRhNDQ4MTNlYzIwZmNkMjAzMjE2IiwgIm1vYmlsZS1jb25maWd1cmF0aW9uLjEuMC4wIl0=";
@@ -434,4 +435,66 @@ public class OptimoveConfigTests {
         }
     }
 
+    // ============================================= OVERLAY MESSAGING =============================================
+
+    private OptimoveConfig.Builder overlayBuilder() {
+        return new OptimoveConfig.Builder(VALID_OPTIMOVE_CREDS, VALID_OPTIMOBILE_CREDS);
+    }
+
+    @Test
+    public void overlaySessionLengthInHoursAccepts0() {
+        OptimoveConfig config = overlayBuilder().enableOverlayMessaging(0).build();
+
+        Assert.assertTrue(config.isOverlayMessagingEnabled());
+        Assert.assertEquals(0, config.getOverlayMessagingSessionLengthMinutes());
+        Assert.assertEquals(60, config.getOverlayMessagingDeferDelayMinutes());
+    }
+
+    @Test
+    public void overlaySessionLengthInHoursRejectsANegative() {
+        assertThrows(IllegalArgumentException.class, () -> overlayBuilder().enableOverlayMessaging(-1));
+    }
+
+    @Test
+    public void overlaySettingsAcceptAnyLengthFrom0() {
+        OptimoveConfig config = overlayBuilder()
+                .enableOverlayMessaging(new OptimoveConfig.OverlaySettings(1, TimeUnit.MINUTES))
+                .build();
+        Assert.assertEquals(1, config.getOverlayMessagingSessionLengthMinutes());
+
+        config = overlayBuilder()
+                .enableOverlayMessaging(new OptimoveConfig.OverlaySettings(0, TimeUnit.MINUTES))
+                .build();
+        Assert.assertEquals(0, config.getOverlayMessagingSessionLengthMinutes());
+    }
+
+    @Test
+    public void overlaySettingsRejectANegativeLength() {
+        assertThrows(IllegalArgumentException.class, () -> overlayBuilder()
+                .enableOverlayMessaging(new OptimoveConfig.OverlaySettings(-1, TimeUnit.MINUTES)));
+    }
+
+    @Test
+    public void overlayDeferDelayDefaultsTo60Minutes() {
+        OptimoveConfig config = overlayBuilder()
+                .enableOverlayMessaging(new OptimoveConfig.OverlaySettings(30, TimeUnit.MINUTES))
+                .build();
+        Assert.assertEquals(60, config.getOverlayMessagingDeferDelayMinutes());
+    }
+
+    @Test
+    public void overlayDeferDelayIsSet() {
+        OptimoveConfig config = overlayBuilder()
+                .enableOverlayMessaging(new OptimoveConfig.OverlaySettings(30, TimeUnit.MINUTES)
+                        .withDeferDelay(2, TimeUnit.HOURS))
+                .build();
+        Assert.assertEquals(120, config.getOverlayMessagingDeferDelayMinutes());
+    }
+
+    @Test
+    public void overlayDeferDelayRejectsLessThanAMinute() {
+        assertThrows(IllegalArgumentException.class, () -> overlayBuilder()
+                .enableOverlayMessaging(new OptimoveConfig.OverlaySettings(30, TimeUnit.MINUTES)
+                        .withDeferDelay(30, TimeUnit.SECONDS)));
+    }
 }

@@ -112,11 +112,17 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (!pushMessage.isOverlayMessagingTrigger()) {
+        if (pushMessage.isOverlayTriggeredSignal()) {
+            Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onTriggeredSignalReceived());
             return;
         }
 
-        Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onPushTriggerReceived());
+        if (pushMessage.isOverlayScheduledSignal()) {
+            Long nextFetchInSeconds = pushMessage.getOverlayScheduledNextFetchInSeconds();
+            if (nextFetchInSeconds != null) {
+                Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onScheduledSignalReceived(nextFetchInSeconds));
+            }
+        }
     }
 
 

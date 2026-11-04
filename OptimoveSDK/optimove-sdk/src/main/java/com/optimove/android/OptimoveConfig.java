@@ -77,6 +77,7 @@ public final class OptimoveConfig {
     private @Nullable AuthTokenProvider authTokenProvider;
     private boolean overlayMessagingEnabled;
     private @Nullable Integer overlayMessagingSessionLengthMinutes;
+    private int overlayMessagingDeferDelayMinutes;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -154,21 +155,51 @@ public final class OptimoveConfig {
     }
 
     /**
-     * Settings for overlay messaging, currently just the session duration.
+     * Settings for overlay messaging. They apply to scheduled messages only.
      *
      * @see Builder#enableOverlayMessaging(OverlaySettings)
      */
     public static final class OverlaySettings {
+        static final long DEFAULT_DEFER_DELAY_MINUTES = 60;
+
         private final long sessionDuration;
         private final TimeUnit sessionDurationUnit;
+        private final long deferDelay;
+        private final TimeUnit deferDelayUnit;
 
+        /**
+         * @param sessionDuration     how long after a scheduled message is shown no other one is shown, in whole
+         *                            minutes (shorter units are rounded down). 0 turns this off.
+         * @param sessionDurationUnit the unit of {@code sessionDuration}
+         */
         public OverlaySettings(long sessionDuration, @NonNull TimeUnit sessionDurationUnit) {
+            this(sessionDuration, sessionDurationUnit, DEFAULT_DEFER_DELAY_MINUTES, TimeUnit.MINUTES);
+        }
+
+        private OverlaySettings(long sessionDuration, @NonNull TimeUnit sessionDurationUnit, long deferDelay,
+                                @NonNull TimeUnit deferDelayUnit) {
             this.sessionDuration = sessionDuration;
             this.sessionDurationUnit = sessionDurationUnit;
+            this.deferDelay = deferDelay;
+            this.deferDelayUnit = deferDelayUnit;
+        }
+
+        /**
+         * How long scheduled messages are held back after one isn't shown (the interceptor deferred it or timed out,
+         * or it failed to render), so the same message doesn't come straight back. A message due sooner ends the
+         * wait early. 60 minutes by default, at least 1 minute, in whole minutes.
+         */
+        @NonNull
+        public OverlaySettings withDeferDelay(long deferDelay, @NonNull TimeUnit deferDelayUnit) {
+            return new OverlaySettings(sessionDuration, sessionDurationUnit, deferDelay, deferDelayUnit);
         }
 
         long sessionDurationInMinutes() {
             return sessionDurationUnit.toMinutes(sessionDuration);
+        }
+
+        long deferDelayInMinutes() {
+            return deferDelayUnit.toMinutes(deferDelay);
         }
     }
 
@@ -456,6 +487,10 @@ public final class OptimoveConfig {
         return this.overlayMessagingSessionLengthMinutes;
     }
 
+    public int getOverlayMessagingDeferDelayMinutes() {
+        return this.overlayMessagingDeferDelayMinutes;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
@@ -516,6 +551,7 @@ public final class OptimoveConfig {
         private @Nullable LogLevel minLogLevel;
         private @Nullable AuthTokenProvider authTokenProvider;
         private @Nullable Integer overlayMessagingSessionLengthMinutes;
+        private int overlayMessagingDeferDelayMinutes = (int) OverlaySettings.DEFAULT_DEFER_DELAY_MINUTES;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -619,12 +655,13 @@ public final class OptimoveConfig {
         }
 
         /**
-         * @param sessionLengthHours length of an overlay messaging session, in whole hours. Minimum 1.
-         * @see #enableOverlayMessaging(OverlaySettings) to set a session length below 1 hour.
+         * @param sessionLengthHours how long after a scheduled message is shown no other one is shown, in whole hours.
+         *                           0 turns this off.
+         * @see #enableOverlayMessaging(OverlaySettings) to set a session length in minutes, or the defer delay.
          */
         public Builder enableOverlayMessaging(int sessionLengthHours) {
-            if (sessionLengthHours <= 0) {
-                throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must be greater than 0");
+            if (sessionLengthHours < 0) {
+                throw new IllegalArgumentException("OverlayMessaging: sessionLengthHours must not be negative");
             }
             if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
                 throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");
@@ -634,17 +671,23 @@ public final class OptimoveConfig {
         }
 
         /**
-         * @param overlaySettings overlay messaging settings. Session length must be at least 15 minutes.
+         * @param overlaySettings overlay messaging settings: the session length (0 or more) and the defer delay (at
+         *                        least 1 minute).
          */
         public Builder enableOverlayMessaging(@NonNull OverlaySettings overlaySettings) {
             long sessionLengthMinutes = overlaySettings.sessionDurationInMinutes();
-            if (sessionLengthMinutes < 15) {
-                throw new IllegalArgumentException("OverlayMessaging: session length must be at least 15 minutes");
+            if (sessionLengthMinutes < 0) {
+                throw new IllegalArgumentException("OverlayMessaging: session length must not be negative");
+            }
+            long deferDelayMinutes = overlaySettings.deferDelayInMinutes();
+            if (deferDelayMinutes < 1) {
+                throw new IllegalArgumentException("OverlayMessaging: defer delay must be at least 1 minute");
             }
             if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
                 throw new IllegalArgumentException("OverlayMessaging: optimobile feature required");
             }
             this.overlayMessagingSessionLengthMinutes = (int) sessionLengthMinutes;
+            this.overlayMessagingDeferDelayMinutes = (int) deferDelayMinutes;
             return this;
         }
 
@@ -761,6 +804,7 @@ public final class OptimoveConfig {
             newConfig.setAuthTokenProvider(this.authTokenProvider);
             newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthMinutes != null;
             newConfig.overlayMessagingSessionLengthMinutes = this.overlayMessagingSessionLengthMinutes;
+            newConfig.overlayMessagingDeferDelayMinutes = this.overlayMessagingDeferDelayMinutes;
 
             return newConfig;
         }
