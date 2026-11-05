@@ -94,7 +94,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         this.pushTrackDelivered(context, pushMessage);
 
-        this.maybeTriggerOverlayMessagingSync(context, pushMessage);
+        this.maybeHandleOverlaySignal(context, pushMessage);
 
         this.maybeTriggerInAppSync(context, pushMessage);
 
@@ -107,7 +107,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    protected void maybeTriggerOverlayMessagingSync(Context context, PushMessage pushMessage) {
+    protected void maybeHandleOverlaySignal(Context context, PushMessage pushMessage) {
         if (!Optimove.getConfig().isOverlayMessagingEnabled()) {
             return;
         }
