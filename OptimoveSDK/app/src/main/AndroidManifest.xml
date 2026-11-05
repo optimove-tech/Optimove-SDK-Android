@@ -39,6 +39,9 @@
             android:name="com.optimove.android.optimovemobilesdk.OverlayMessagingActivity"
             android:parentActivityName=".MainActivity"/>
         <activity
+            android:name="com.optimove.android.optimovemobilesdk.LiveUpdatesActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity
             android:name="com.optimove.android.optimovemobilesdk.DeeplinkTargetActivity"
             android:parentActivityName=".MainActivity"
             android:exported="true">

@@ -11,6 +11,7 @@ import com.optimove.android.embeddedmessaging.EmbeddedMessagingConfig;
 import com.optimove.android.main.tools.opti_logger.LogLevel;
 import com.optimove.android.optimobile.DeferredDeepLinkHandlerInterface;
 import com.optimove.android.optimobile.InternalSdkEmbeddingApi;
+import com.optimove.android.optimobile.LiveUpdateHandler;
 import com.optimove.android.optimobile.UrlBuilder;
 import com.optimove.android.preferencecenter.Config;
 
@@ -77,6 +78,7 @@ public final class OptimoveConfig {
     private @Nullable AuthTokenProvider authTokenProvider;
     private boolean overlayMessagingEnabled;
     private @Nullable Integer overlayMessagingSessionLengthMinutes;
+    private @Nullable LiveUpdateHandler liveUpdateHandler;
 
     public enum InAppConsentStrategy {
         AUTO_ENROLL,
@@ -227,6 +229,10 @@ public final class OptimoveConfig {
 
     private void setAuthTokenProvider(@Nullable AuthTokenProvider authTokenProvider) {
         this.authTokenProvider = authTokenProvider;
+    }
+
+    private void setLiveUpdateHandler(@Nullable LiveUpdateHandler liveUpdateHandler) {
+        this.liveUpdateHandler = liveUpdateHandler;
     }
 
     void setCredentials(@Nullable String optimoveCredentials, @Nullable String optimobileCredentials) {
@@ -456,6 +462,14 @@ public final class OptimoveConfig {
         return this.overlayMessagingSessionLengthMinutes;
     }
 
+    public boolean isLiveUpdatesEnabled() {
+        return this.liveUpdateHandler != null;
+    }
+
+    public @Nullable LiveUpdateHandler getLiveUpdateHandler() {
+        return this.liveUpdateHandler;
+    }
+
     private boolean hasFinishedInitialisation() {
         boolean hasOptimoveCreds = optimoveToken != null && configFileName != null;
         boolean hasOptimobileCreds = apiKey != null && secretKey != null;
@@ -516,6 +530,7 @@ public final class OptimoveConfig {
         private @Nullable LogLevel minLogLevel;
         private @Nullable AuthTokenProvider authTokenProvider;
         private @Nullable Integer overlayMessagingSessionLengthMinutes;
+        private @Nullable LiveUpdateHandler liveUpdateHandler;
 
         /**
          * @deprecated Use {@link Builder#Builder(FeatureSet)} instead
@@ -669,6 +684,26 @@ public final class OptimoveConfig {
         }
 
         /**
+         * Enables Live Updates. Live Update pushes are routed to {@code handler} instead of the normal push path.
+         * <p>
+         * <b>Threading:</b> the handler is invoked on a background thread.
+         *
+         * @param handler receives start, update and end events for every Live Update type
+         * @return this builder
+         */
+        @NonNull
+        public Builder enableLiveUpdates(@NonNull LiveUpdateHandler handler) {
+            if (handler == null) {
+                throw new IllegalArgumentException("LiveUpdates: handler must not be null");
+            }
+            if (!this.featureSet.has(FeatureSet.Feature.OPTIMOBILE)) {
+                throw new IllegalArgumentException("LiveUpdates: optimobile feature required");
+            }
+            this.liveUpdateHandler = handler;
+            return this;
+        }
+
+        /**
          * The minimum amount of time the user has to have left the app for a session end event to be
          * recorded.
          * <p>
@@ -761,6 +796,7 @@ public final class OptimoveConfig {
             newConfig.setAuthTokenProvider(this.authTokenProvider);
             newConfig.overlayMessagingEnabled = this.overlayMessagingSessionLengthMinutes != null;
             newConfig.overlayMessagingSessionLengthMinutes = this.overlayMessagingSessionLengthMinutes;
+            newConfig.setLiveUpdateHandler(this.liveUpdateHandler);
 
             return newConfig;
         }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.21.0
+
+- Add Live Updates: continuously updating notifications over FCM, enabled with OptimoveConfig.Builder.enableLiveUpdates(handler). The SDK routes, orders and persists updates and manages the FCM topic; the host renders, with LiveUpdateNotifications.post as an optional helper. Not the Android 16 promoted Live Updates API.
+
 ## 7.20.0
 
 - Gamify: the optional `gamify` block of the tenant configuration (`adactUrl`, `loyaltyWidgetUrl`) is now parsed and applied, so neither URL is hardcoded by the host app.

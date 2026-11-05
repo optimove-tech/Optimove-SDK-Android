@@ -121,6 +121,8 @@ public final class Optimobile {
             OptimoveOverlayMessaging.initialize(application, config);
         }
 
+        OptimoveLiveUpdates.initialize(application, config);
+
         if (config.getDeferredDeepLinkHandler() != null) {
             deepLinkHelper = new DeferredDeepLinkHelper();
         }

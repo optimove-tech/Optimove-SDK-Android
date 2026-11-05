@@ -27,6 +27,9 @@
             android:excludeFromRecents="true"
             android:theme="@style/Optimove.Optipush.Transparent"
             android:exported="false" />
+        <receiver
+            android:name="com.optimove.android.optimobile.LiveUpdateDismissReceiver"
+            android:exported="false" />
     </application>
 
     <!-- https://developer.android.com/training/package-visibility/use-cases#check-browser-available -->
