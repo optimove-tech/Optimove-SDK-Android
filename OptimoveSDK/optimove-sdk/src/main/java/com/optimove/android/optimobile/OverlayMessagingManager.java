@@ -145,12 +145,16 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
         }
     }
 
-    /** Frees the slot of a message's type: for a scheduled one, the session manager's, saying how it ended. */
+    /**
+     * Frees the slot of a message's type: for a scheduled one, the session manager's, saying how it ended and, if it
+     * was displayed, which message, so a later display of it counts again.
+     */
     @UiThread
-    private void release(OverlayMessagingMessage.MessageType type, OverlayMessagingSessionManager.Outcome outcome) {
+    private void release(OverlayMessagingMessage.MessageType type, OverlayMessagingSessionManager.Outcome outcome,
+                         @Nullable Long displayedMessageId) {
         switch (type) {
             case SESSION:
-                sessionManager.release(outcome);
+                sessionManager.release(outcome, displayedMessageId);
                 break;
             case IMMEDIATE:
                 immediateSlotCount = Math.max(0, immediateSlotCount - 1);
@@ -161,11 +165,11 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
     @UiThread
     private void onMessageLoaded(OverlayMessagingMessage.MessageType type, @Nullable OverlayMessagingMessage message) {
         if (message == null) {
-            release(type, OverlayMessagingSessionManager.Outcome.DONE);
+            release(type, OverlayMessagingSessionManager.Outcome.DONE, null);
             return;
         }
         if (seenMessageIds.contains(message.getId())) {
-            release(type, OverlayMessagingSessionManager.Outcome.DEFERRED);
+            release(type, OverlayMessagingSessionManager.Outcome.DEFERRED, null);
             return;
         }
 
@@ -215,7 +219,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             // Failing to answer, like a timeout, but not reported: the Intercepted outcomes don't include it
             Optimobile.log(TAG, "Interceptor threw, treating it as a timeout: " + e);
             seenMessageIds.remove(message.getId());
-            release(message.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED);
+            release(message.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED, null);
         }
     }
 
@@ -231,12 +235,12 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             case TIMEOUT:
                 seenMessageIds.remove(message.getId());
                 trackInterceptedEvent(message.getId(), outcome);
-                release(message.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED);
+                release(message.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED, null);
                 break;
             case DISCARD:
                 // The server deletes the message when it gets this event; the session manager's settle delay gives it time
                 trackInterceptedEvent(message.getId(), outcome);
-                release(message.getType(), OverlayMessagingSessionManager.Outcome.DONE);
+                release(message.getType(), OverlayMessagingSessionManager.Outcome.DONE, null);
                 break;
         }
     }
@@ -277,7 +281,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             @Override
             public void onMessageClosed(OverlayMessagingMessage closedMessage, OverlayMessagingCloseReason reason) {
                 displayQueue.poll();
-                release(closedMessage.getType(), OverlayMessagingSessionManager.Outcome.DONE);
+                release(closedMessage.getType(), OverlayMessagingSessionManager.Outcome.DONE, closedMessage.getId());
                 notifyClosed(closedMessage, reason);
                 maybeShowNext();
             }
@@ -285,7 +289,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
             @Override
             public void onMessageOpened(OverlayMessagingMessage openedMessage) {
                 if (openedMessage.getType() == OverlayMessagingMessage.MessageType.SESSION) {
-                    sessionManager.onDisplayed();
+                    sessionManager.onDisplayed(openedMessage.getId());
                 }
             }
 
@@ -306,7 +310,7 @@ class OverlayMessagingManager implements AppStateWatcher.AppStateChangedListener
                 // Immediate messages are short-lived. In case of an error we dont want them to stay on queue and surface later
                 displayQueue.poll();
                 // Still on the server: fetching again at once would return it again
-                release(failedMessage.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED);
+                release(failedMessage.getType(), OverlayMessagingSessionManager.Outcome.DEFERRED, failedMessage.getId());
                 notifyClosed(failedMessage, OverlayMessagingCloseReason.ERROR);
                 maybeShowNext();
             }

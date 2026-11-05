@@ -70,7 +70,7 @@ public class OverlayMessagingSessionManagerTests {
     /** As {@code fetching}, with nothing to show: the slot is free again. */
     private OverlayMessagingSessionManager fetched(long nextFetchInSeconds) {
         OverlayMessagingSessionManager manager = fetching(nextFetchInSeconds);
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         return manager;
     }
 
@@ -81,14 +81,14 @@ public class OverlayMessagingSessionManagerTests {
 
     private OverlayMessagingSessionManager displayed(long nextFetchInSeconds, long sessionLengthMinutes) {
         OverlayMessagingSessionManager manager = fetching(nextFetchInSeconds, sessionLengthMinutes);
-        manager.onDisplayed();
+        manager.onDisplayed(1);
         return manager;
     }
 
     /** As {@code fetching}, with the message not shown. */
     private OverlayMessagingSessionManager deferred(long nextFetchInSeconds) {
         OverlayMessagingSessionManager manager = fetching(nextFetchInSeconds);
-        manager.release(OverlayMessagingSessionManager.Outcome.DEFERRED);
+        manager.release(OverlayMessagingSessionManager.Outcome.DEFERRED, null);
         return manager;
     }
 
@@ -97,7 +97,7 @@ public class OverlayMessagingSessionManagerTests {
     @Test
     public void aDisplayStartsTheSessionAndHoldsTheNextFetchUntilItEnds() {
         OverlayMessagingSessionManager manager = displayed(0);
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
 
         advance(HOUR_MS - 1);
         Assert.assertEquals(0, fetches);
@@ -109,7 +109,7 @@ public class OverlayMessagingSessionManagerTests {
 
     @Test
     public void noSessionStartsWhenNothingIsDisplayed() {
-        fetching(0).release(OverlayMessagingSessionManager.Outcome.DONE);
+        fetching(0).release(OverlayMessagingSessionManager.Outcome.DONE, null);
         advance(SETTLE_MS);
 
         Assert.assertEquals(1, fetches);
@@ -137,6 +137,36 @@ public class OverlayMessagingSessionManagerTests {
         Assert.assertEquals(1, fetches);
     }
 
+    @Test
+    public void theSameMessageDisplayedAgainIsCountedOnce() {
+        // The activity is recreated while the message is on screen, and the rebuilt view reports it again
+        OverlayMessagingSessionManager manager = displayed(0);
+
+        manager.onDisplayed(1);
+
+        Assert.assertEquals(1, prefs.getInt("session_count", 0));
+    }
+
+    @Test
+    public void aMessageDisplayedAgainAfterItsReleaseCountsAgain() {
+        // e.g. it failed to render after opening, was deferred, and came back
+        OverlayMessagingSessionManager manager = displayed(0);
+        manager.release(OverlayMessagingSessionManager.Outcome.DEFERRED, 1L);
+
+        manager.onDisplayed(1);
+
+        Assert.assertEquals(2, prefs.getInt("session_count", 0));
+    }
+
+    @Test
+    public void differentMessagesEachCount() {
+        OverlayMessagingSessionManager manager = displayed(0);
+
+        manager.onDisplayed(2);
+
+        Assert.assertEquals(2, prefs.getInt("session_count", 0));
+    }
+
     // ========================= slot =========================
 
     @Test
@@ -148,7 +178,7 @@ public class OverlayMessagingSessionManagerTests {
         advance(DAY_MS);
         Assert.assertEquals(0, fetches);
 
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         advance(SETTLE_MS);
         Assert.assertEquals(1, fetches);
     }
@@ -203,7 +233,7 @@ public class OverlayMessagingSessionManagerTests {
     @Test
     public void resetEndsTheSessionAndFetches() {
         OverlayMessagingSessionManager manager = displayed(3600);
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
 
         manager.reset();
 
@@ -218,7 +248,7 @@ public class OverlayMessagingSessionManagerTests {
         manager.reset();
         Assert.assertEquals(0, fetches);
 
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         advance(SETTLE_MS);
         Assert.assertEquals(1, fetches);
     }
@@ -231,7 +261,7 @@ public class OverlayMessagingSessionManagerTests {
 
         manager.reset();
         manager.onFetchResult(3600);
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         advance(SETTLE_MS);
         Assert.assertEquals(1, fetches);
     }
@@ -250,7 +280,7 @@ public class OverlayMessagingSessionManagerTests {
 
     @Test
     public void afterDoneWaitsTheSettleDelayEvenFor0() {
-        fetching(0).release(OverlayMessagingSessionManager.Outcome.DONE);
+        fetching(0).release(OverlayMessagingSessionManager.Outcome.DONE, null);
 
         advance(SETTLE_MS - 1);
         Assert.assertEquals(0, fetches);
@@ -260,7 +290,7 @@ public class OverlayMessagingSessionManagerTests {
 
     @Test
     public void waitsForTheSessionEndWhenFullEvenIfTheNextMessageIsDueSooner() {
-        displayed(600).release(OverlayMessagingSessionManager.Outcome.DONE);
+        displayed(600).release(OverlayMessagingSessionManager.Outcome.DONE, null);
 
         advance(HOUR_MS - 1);
         Assert.assertEquals(0, fetches);
@@ -270,7 +300,7 @@ public class OverlayMessagingSessionManagerTests {
 
     @Test
     public void waitsForNextFetchInSecondsWhenLaterThanTheSessionEnd() {
-        displayed(3 * 3600).release(OverlayMessagingSessionManager.Outcome.DONE);
+        displayed(3 * 3600).release(OverlayMessagingSessionManager.Outcome.DONE, null);
 
         advance(3 * HOUR_MS - 1);
         Assert.assertEquals(0, fetches);
@@ -284,7 +314,7 @@ public class OverlayMessagingSessionManagerTests {
         advance(90 * MINUTE_MS);
         Assert.assertEquals(0, fetches);
 
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         advance(SETTLE_MS);
         Assert.assertEquals(1, fetches);
     }
@@ -293,7 +323,7 @@ public class OverlayMessagingSessionManagerTests {
     public void withSessionLength0ADueFetchRunsAtTheClose() {
         OverlayMessagingSessionManager manager = displayed(0, 0);
 
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         advance(SETTLE_MS);
         Assert.assertEquals(1, fetches);
     }
@@ -341,7 +371,7 @@ public class OverlayMessagingSessionManagerTests {
 
         manager.onSignal(600);
         manager.onFetchResult(20 * 3600);
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
         Assert.assertEquals(0, fetches);
 
         advance(600 * SECOND_MS);
@@ -351,7 +381,7 @@ public class OverlayMessagingSessionManagerTests {
     @Test
     public void aSignalDuringAFullSessionBringsTheFetchToTheSessionEnd() {
         OverlayMessagingSessionManager manager = displayed(20 * 3600);
-        manager.release(OverlayMessagingSessionManager.Outcome.DONE);
+        manager.release(OverlayMessagingSessionManager.Outcome.DONE, null);
 
         manager.onSignal(0);
         Assert.assertEquals(0, fetches);

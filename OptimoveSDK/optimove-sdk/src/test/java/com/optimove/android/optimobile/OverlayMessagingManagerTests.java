@@ -158,7 +158,7 @@ public class OverlayMessagingManagerTests {
 
         InOrder order = inOrder(session);
         order.verify(session).onFetchResult(2040);
-        order.verify(session).release(DONE);
+        order.verify(session).release(DONE, null);
         requestService.verify(() -> OverlayMessagingRequestService.readOverlayMessage(any(), any()), never());
     }
 
@@ -169,8 +169,8 @@ public class OverlayMessagingManagerTests {
 
         triggerScheduled();
 
-        verify(session).release(DONE);
-        verify(session, never()).release(DEFERRED);
+        verify(session).release(DONE, null);
+        verify(session, never()).release(DEFERRED, null);
         Assert.assertEquals(intercepted("discard"), events);
     }
 
@@ -181,8 +181,8 @@ public class OverlayMessagingManagerTests {
         scheduledReturns(message(OverlayMessagingMessage.MessageType.SESSION), 0);
 
         triggerScheduled();
-        verify(session).release(DEFERRED);
-        verify(session, never()).release(DONE);
+        verify(session).release(DEFERRED, null);
+        verify(session, never()).release(DONE, null);
 
         triggerScheduled();
         Assert.assertEquals(2, interceptor.calls);
@@ -196,7 +196,7 @@ public class OverlayMessagingManagerTests {
 
         triggerScheduled();
         awaitRelease();
-        verify(session).release(DEFERRED);
+        verify(session).release(DEFERRED, null);
         Assert.assertEquals(intercepted("timeout"), events);
 
         triggerScheduled();
@@ -212,7 +212,7 @@ public class OverlayMessagingManagerTests {
         scheduledReturns(message(OverlayMessagingMessage.MessageType.SESSION), 0);
 
         triggerScheduled();
-        verify(session).release(DEFERRED);
+        verify(session).release(DEFERRED, null);
         Assert.assertTrue(events.isEmpty());
 
         triggerScheduled();
@@ -232,7 +232,7 @@ public class OverlayMessagingManagerTests {
         saved[0].show();
         idleMain();
 
-        verify(session).release(DEFERRED);
+        verify(session).release(DEFERRED, null);
         Assert.assertTrue(events.isEmpty());
     }
 
@@ -243,8 +243,8 @@ public class OverlayMessagingManagerTests {
 
         triggerScheduled();
 
-        verify(session, never()).release(DONE);
-        verify(session, never()).release(DEFERRED);
+        verify(session, never()).release(DONE, null);
+        verify(session, never()).release(DEFERRED, null);
         Assert.assertEquals(intercepted("show"), events);
     }
 
@@ -257,8 +257,8 @@ public class OverlayMessagingManagerTests {
 
         triggerScheduled();
 
-        verify(session).release(DEFERRED);
-        verify(session, never()).release(DONE);
+        verify(session).release(DEFERRED, null);
+        verify(session, never()).release(DONE, null);
         Assert.assertEquals(1, interceptor.calls);
     }
 

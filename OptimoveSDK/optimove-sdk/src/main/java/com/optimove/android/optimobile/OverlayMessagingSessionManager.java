@@ -11,6 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Owns scheduled fetching: decides when the next one is due, and runs at most one at a time. Inputs:
  * - the session: started by a displayed message when none is active, lasting the session length, holding at most
@@ -70,6 +73,9 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
     private long nextFetchAt = 0;
     // The display slot: scheduled fetches, or the messages they returned, in progress
     private int slotCount = 0;
+    // Displayed messages counted toward the session and still on screen. When the activity is recreated, the view is
+    // rebuilt and reports the same message as displayed again; this keeps it from counting twice toward the session limit
+    private final Set<Long> countedMessageIds = new HashSet<>();
     private boolean appInForeground = false;
 
     private final Runnable planRunnable = this::plan;
@@ -99,9 +105,15 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
         plan();
     }
 
-    /** A scheduled message was displayed: starts a session if none is active, and counts toward it. */
+    /**
+     * A scheduled message was displayed: starts a session if none is active, and counts toward it, once while it stays
+     * on screen.
+     */
     @UiThread
-    void onDisplayed() {
+    void onDisplayed(long messageId) {
+        if (!countedMessageIds.add(messageId)) {
+            return;
+        }
         Session session = activeSession();
         writeSession(session == null ? new Session(clock.now(), 1) : new Session(session.start, session.count + 1));
         plan();
@@ -112,10 +124,13 @@ class OverlayMessagingSessionManager implements AppStateWatcher.AppStateChangedL
      * the planned time has passed. On DEFERRED it first holds back for the defer delay, unless the server's next time
      * is still ahead and sooner (a different message is due then). The server's 0 ("more due") has passed by then and
      * is ignored: fetching at once would return the same message again. On DONE it holds back for the settle delay at
-     * least.
+     * least. {@code displayedMessageId} is the message, if it was displayed: a later display of it counts again.
      */
     @UiThread
-    void release(@NonNull Outcome outcome) {
+    void release(@NonNull Outcome outcome, @Nullable Long displayedMessageId) {
+        if (displayedMessageId != null) {
+            countedMessageIds.remove(displayedMessageId);
+        }
         slotCount = Math.max(0, slotCount - 1);
         long now = clock.now();
         switch (outcome) {
