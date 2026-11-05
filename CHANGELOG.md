@@ -2,7 +2,7 @@
 
 ## 7.22.0
 
-- Overlay messaging: scheduled messages show at their scheduled time. The SDK fetches when the server says the next scheduled message is due, and a silent push from Optimove can bring that fetch forward, instead of fetching once per session. Without the push, the next fetch is at most an hour away while the app is in the foreground.
+- Overlay messaging: scheduled messages show at their scheduled time. The SDK fetches when the server says the next scheduled message is due, and a silent push from Optimove can bring that fetch forward, instead of fetching once per session.
 - Overlay messaging: a session now starts when a scheduled message is shown, and allows one scheduled message per session length. Before, a session started on every return to the foreground once the previous one had ended, whether or not anything was shown.
 - Overlay messaging: the session length can be any length from 0, in `enableOverlayMessaging(int)` and `OverlaySettings`; 0 turns the limit off. The 1-hour and 15-minute minimums are gone.
 - Overlay messaging: new `OverlaySettings.withDeferDelay(deferDelay, unit)`. When a scheduled message isn't shown (the interceptor defers it or times out, or it fails to render), scheduled messages are held back for this delay, 60 minutes by default and at least 1 minute. A message due sooner ends the wait early.
