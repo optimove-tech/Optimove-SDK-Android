@@ -18,7 +18,8 @@ public final class PushMessage implements Parcelable {
 
     public static final String EXTRAS_KEY = "com.optimove.push.message";
     private static final int DEEP_LINK_TYPE_IN_APP = 1;
-    private static final int DEEP_LINK_TYPE_OVERLAY_MESSAGE = 2;
+    private static final int DEEP_LINK_TYPE_OVERLAY_TRIGGERED = 2;
+    private static final int DEEP_LINK_TYPE_OVERLAY_SCHEDULED_SIGNAL = 3;
     public static final String TAG = PushMessage.class.getName();
 
     private final int id;
@@ -32,7 +33,7 @@ public final class PushMessage implements Parcelable {
     Uri url;
     private final boolean runBackgroundHandler;
     private final int tickleId;
-    private final boolean isOverlayMessagingTrigger;
+    private final boolean isOverlayTriggeredSignal;
     private final @Nullable
     String pictureUrl;
     private @Nullable
@@ -61,7 +62,7 @@ public final class PushMessage implements Parcelable {
         this.message = message;
         this.data = data;
         this.tickleId = this.getTickleId(data);
-        this.isOverlayMessagingTrigger = this.isOverlayMessagingTrigger(data);
+        this.isOverlayTriggeredSignal = this.isOverlayTriggeredSignal(data);
         this.timeSent = timeSent;
         this.url = url;
         this.runBackgroundHandler = runBackgroundHandler;
@@ -93,7 +94,7 @@ public final class PushMessage implements Parcelable {
             url = Uri.parse(urlString);
         }
         tickleId = in.readInt();
-        isOverlayMessagingTrigger = (in.readInt() == 1);
+        isOverlayTriggeredSignal = (in.readInt() == 1);
         pictureUrl = in.readString();
 
         String buttonsString = in.readString();
@@ -146,7 +147,7 @@ public final class PushMessage implements Parcelable {
         }
     }
 
-    boolean isOverlayMessagingTrigger(JSONObject data) {
+    boolean isOverlayTriggeredSignal(JSONObject data) {
         JSONObject deepLink = data.optJSONObject("k.deepLink");
 
         if (deepLink == null) {
@@ -155,7 +156,7 @@ public final class PushMessage implements Parcelable {
 
         int linkType = deepLink.optInt("type", -1);
 
-        if (linkType != DEEP_LINK_TYPE_OVERLAY_MESSAGE) {
+        if (linkType != DEEP_LINK_TYPE_OVERLAY_TRIGGERED) {
             return false;
         }
 
@@ -193,7 +194,7 @@ public final class PushMessage implements Parcelable {
         dest.writeString(dataString);
         dest.writeString(urlString);
         dest.writeInt(tickleId);
-        dest.writeInt(isOverlayMessagingTrigger ? 1 : 0);
+        dest.writeInt(isOverlayTriggeredSignal ? 1 : 0);
         dest.writeString(pictureUrl);
         dest.writeString(buttonsString);
         dest.writeString(sound);
@@ -236,8 +237,39 @@ public final class PushMessage implements Parcelable {
         return tickleId;
     }
 
-    boolean isOverlayMessagingTrigger() {
-        return isOverlayMessagingTrigger;
+    boolean isOverlayTriggeredSignal() {
+        return isOverlayTriggeredSignal;
+    }
+
+    /**
+     * Read from the data each time rather than kept in a field: a new field would change the Parcel layout, which
+     * notifications shown before an app update are read back with.
+     */
+    boolean isOverlayScheduledSignal() {
+        // Data is null when it couldn't be read back from a Parcel
+        if (data == null) {
+            return false;
+        }
+
+        JSONObject deepLink = data.optJSONObject("k.deepLink");
+        return deepLink != null && deepLink.optInt("type", -1) == DEEP_LINK_TYPE_OVERLAY_SCHEDULED_SIGNAL;
+    }
+
+    /**
+     * For a scheduled overlay Signal, when a scheduled message becomes due, in seconds from now; null for any other
+     * push, or a Signal without the value.
+     */
+    @Nullable
+    Long getOverlayScheduledNextFetchInSeconds() {
+        if (!isOverlayScheduledSignal()) {
+            return null;
+        }
+
+        JSONObject linkData = data.optJSONObject("k.deepLink").optJSONObject("data");
+        if (linkData == null || !linkData.has("nextFetchInSeconds")) {
+            return null;
+        }
+        return linkData.optLong("nextFetchInSeconds");
     }
 
     public boolean runBackgroundHandler() {

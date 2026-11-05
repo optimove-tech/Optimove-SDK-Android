@@ -43,6 +43,9 @@ class OverlayMessagingView extends BaseMessageView {
         void onMessageClosed(OverlayMessagingMessage message, OverlayMessagingCloseReason reason);
 
         @UiThread
+        void onMessageOpened(OverlayMessagingMessage message);
+
+        @UiThread
         void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events);
 
         @UiThread
@@ -112,7 +115,7 @@ class OverlayMessagingView extends BaseMessageView {
 
     @Override
     protected void onMessageOpened() {
-        // noop: no event needed yet
+        listener.onMessageOpened(currentMessage);
     }
 
     @Override

@@ -202,6 +202,10 @@ public final class Optimobile {
         }
 
         OptimoveInApp.getInstance().handleInAppUserChange(context, Optimove.getConfig());
+
+        if (currentUserId != null && Optimove.getConfig().isOverlayMessagingEnabled()) {
+            OptimoveOverlayMessaging.getInstance().onUserChanged();
+        }
     }
 
     /**
@@ -260,7 +264,7 @@ public final class Optimobile {
             OptimoveInApp.getInstance().handleInAppUserChange(context, Optimove.getConfig());
 
             if (Optimove.getConfig().isOverlayMessagingEnabled()) {
-                OptimoveOverlayMessaging.getInstance().resetSession();
+                OptimoveOverlayMessaging.getInstance().onUserChanged();
             }
         }
     }

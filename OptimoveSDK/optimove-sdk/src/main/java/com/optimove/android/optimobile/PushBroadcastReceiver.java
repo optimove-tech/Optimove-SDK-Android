@@ -94,7 +94,7 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
 
         this.pushTrackDelivered(context, pushMessage);
 
-        this.maybeTriggerOverlayMessagingSync(context, pushMessage);
+        this.maybeHandleOverlaySignal(context, pushMessage);
 
         this.maybeTriggerInAppSync(context, pushMessage);
 
@@ -107,16 +107,22 @@ public class PushBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    protected void maybeTriggerOverlayMessagingSync(Context context, PushMessage pushMessage) {
+    protected void maybeHandleOverlaySignal(Context context, PushMessage pushMessage) {
         if (!Optimove.getConfig().isOverlayMessagingEnabled()) {
             return;
         }
 
-        if (!pushMessage.isOverlayMessagingTrigger()) {
+        if (pushMessage.isOverlayTriggeredSignal()) {
+            Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onTriggeredSignalReceived());
             return;
         }
 
-        Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onPushTriggerReceived());
+        if (pushMessage.isOverlayScheduledSignal()) {
+            Long nextFetchInSeconds = pushMessage.getOverlayScheduledNextFetchInSeconds();
+            if (nextFetchInSeconds != null) {
+                Optimobile.handler.post(() -> OptimoveOverlayMessaging.getInstance().onScheduledSignalReceived(nextFetchInSeconds));
+            }
+        }
     }
 
 
