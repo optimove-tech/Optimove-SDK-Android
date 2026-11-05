@@ -2,7 +2,7 @@
 
 ## 7.21.0
 
-- Add Live Updates. FCM data messages carrying `k.liveUpdate` in `custom.a` are routed to the handler registered with `OptimoveConfig.Builder.enableLiveUpdates(handler)` and are never shown as a normal push. The SDK parses the envelope (`name`, `type`, `timestamp`, `content_state`, `topic`, `alert`, `dismissal_date`), drops messages older than the last applied one, subscribes to the activity's FCM topic on start and unsubscribes on end, persists state across process death, ends activities with no message for 12 hours, and reports `k.liveActivity.started` once per activity when it is shown. The host owns rendering; `LiveUpdateNotifications.post` is an optional helper that posts, updates, times out and dismisses an ongoing notification by name, reports it as shown, ends the Live Update when the user swipes it away, and lets a server end without a dismissal date time out after 4 hours. Hosts that render their own UI call `OptimoveLiveUpdates.getInstance().reportShown(name)`. `OptimoveLiveUpdates.getInstance()` also exposes `end(name)`, `getActiveLiveUpdates()` and `clearAll()`, which run on the SDK's background executor. This is not the Android 16 promoted Live Updates API.
+- Add Live Updates: continuously updating notifications over FCM, enabled with OptimoveConfig.Builder.enableLiveUpdates(handler). The SDK routes, orders and persists updates and manages the FCM topic; the host renders, with LiveUpdateNotifications.post as an optional helper. Not the Android 16 promoted Live Updates API.
 
 ## 7.20.0
 
