@@ -40,6 +40,7 @@ class MyApplication : Application() {
             .setPushSmallIconId(R.drawable.small_icon)
             .setPushAccentColor(Color.parseColor("#FF0000"))
             .enableOverlayMessaging(1)
+            .enableLiveUpdates(LiveScoreHandler())
 
         if (useAuth) {
             QAJWTSigner.initialize(this)
