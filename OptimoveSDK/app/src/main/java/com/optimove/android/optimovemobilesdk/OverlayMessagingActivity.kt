@@ -78,80 +78,6 @@ class OverlayMessagingActivity : AppCompatActivity() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { setActionHandler() },
-                            enabled = !isActionHandlerSet,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Set Action Handler")
-                        }
-                        Button(
-                            onClick = { unsetActionHandler() },
-                            enabled = isActionHandlerSet,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Text("Unset Action Handler")
-                        }
-                    }
-
-                    if (lastActionUrl != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Last link action: $lastActionUrl",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
-                            onClick = { setClosedListener() },
-                            enabled = !isClosedListenerSet,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Set Closed Listener")
-                        }
-                        Button(
-                            onClick = { unsetClosedListener() },
-                            enabled = isClosedListenerSet,
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Text("Unset Closed Listener")
-                        }
-                    }
-
-                    if (lastClosed != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Last closed: $lastClosed",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
                             onClick = { setInterceptor() },
                             enabled = !isInterceptorSet,
                             modifier = Modifier.weight(1f),
@@ -252,6 +178,80 @@ class OverlayMessagingActivity : AppCompatActivity() {
                         Text(
                             text = "Outcome: ${lastOutcome ?: "—"}",
                             style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { setActionHandler() },
+                            enabled = !isActionHandlerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Set Action Handler")
+                        }
+                        Button(
+                            onClick = { unsetActionHandler() },
+                            enabled = isActionHandlerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("Unset Action Handler")
+                        }
+                    }
+
+                    if (lastActionUrl != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Last link action: $lastActionUrl",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { setClosedListener() },
+                            enabled = !isClosedListenerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Set Closed Listener")
+                        }
+                        Button(
+                            onClick = { unsetClosedListener() },
+                            enabled = isClosedListenerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("Unset Closed Listener")
+                        }
+                    }
+
+                    if (lastClosed != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Last closed: $lastClosed",
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
