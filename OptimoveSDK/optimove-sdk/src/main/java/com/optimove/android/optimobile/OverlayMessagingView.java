@@ -38,8 +38,9 @@ class OverlayMessagingView extends BaseMessageView {
     }
 
     interface Listener {
+        /** {@code reason} is {@link OverlayMessagingCloseReason#ACTIONED} or {@link OverlayMessagingCloseReason#DISMISSED}. */
         @UiThread
-        void onMessageClosed(OverlayMessagingMessage message);
+        void onMessageClosed(OverlayMessagingMessage message, OverlayMessagingCloseReason reason);
 
         @UiThread
         void onEvents(OverlayMessagingMessage message, List<OverlayMessagingRendererEvent> events);
@@ -58,6 +59,7 @@ class OverlayMessagingView extends BaseMessageView {
     private OverlayMessagingMessage currentMessage;
     @NonNull
     private final Listener listener;
+    private boolean currentActioned = false;
 
     @UiThread
     OverlayMessagingView(@NonNull OverlayMessagingMessage message, @NonNull Activity currentActivity, @NonNull String iarUrl, @NonNull Listener listener) {
@@ -75,6 +77,7 @@ class OverlayMessagingView extends BaseMessageView {
             return;
         }
         currentMessage = message;
+        currentActioned = false;
         sendCurrentMessageToClient();
     }
 
@@ -92,7 +95,7 @@ class OverlayMessagingView extends BaseMessageView {
 
     @Override
     protected void onMessageClosedByClient() {
-        listener.onMessageClosed(currentMessage);
+        listener.onMessageClosed(currentMessage, currentActioned ? OverlayMessagingCloseReason.ACTIONED : OverlayMessagingCloseReason.DISMISSED);
     }
 
     @Override
@@ -144,6 +147,7 @@ class OverlayMessagingView extends BaseMessageView {
                 switch (type) {
                     case SDK_ACTION_OPEN_DEEP_LINK:
                         if (actionData == null) break;
+                        currentActioned = true;
                         listener.onLinkAction(currentMessage, actionData);
                         break;
                 }
