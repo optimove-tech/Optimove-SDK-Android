@@ -18,10 +18,11 @@ class MyApplication : Application() {
         val qaPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val useAuth = qaPrefs.getBoolean(KEY_AUTH_ENABLED, false)
 
-        // Default true so first launch doesn't crash on placeholder credentials.
-        // Toggle "Delayed Initialization" in the demo UI, then restart to switch modes.
+        // Default false: initialises with DEFAULT_OPTIMOVE_CRED / DEFAULT_OPTIMOBILE_CRED, which must be
+        // real credentials (set them locally). Toggle "Delayed Initialization" in the demo UI, then
+        // restart to switch modes.
         val useDelayed = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_DELAYED_INIT, true)
+            .getBoolean(KEY_DELAYED_INIT, false)
 
         val config = if (useDelayed) {
             // No placeholder embedded-messaging / Optimove creds — those must be real base64

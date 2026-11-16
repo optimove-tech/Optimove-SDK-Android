@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +42,8 @@ class OverlayMessagingActivity : AppCompatActivity() {
 
     private var isActionHandlerSet by mutableStateOf(false)
     private var lastActionUrl by mutableStateOf<String?>(null)
+    private var isClosedListenerSet by mutableStateOf(false)
+    private var lastClosed by mutableStateOf<String?>(null)
     private var isInterceptorSet by mutableStateOf(false)
     private var pendingCallback by mutableStateOf<OptimoveOverlayMessaging.OverlayMessagingInterceptorCallback?>(
         null
@@ -99,6 +102,43 @@ class OverlayMessagingActivity : AppCompatActivity() {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Last link action: $lastActionUrl",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { setClosedListener() },
+                            enabled = !isClosedListenerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Set Closed Listener")
+                        }
+                        Button(
+                            onClick = { unsetClosedListener() },
+                            enabled = isClosedListenerSet,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("Unset Closed Listener")
+                        }
+                    }
+
+                    if (lastClosed != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Last closed: $lastClosed",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -261,10 +301,30 @@ class OverlayMessagingActivity : AppCompatActivity() {
         lastActionUrl = null
     }
 
+    private fun setClosedListener() {
+        OptimoveOverlayMessaging.getInstance().setClosedListener { message, info ->
+            val text = "#${message.id} ${info.reason}"
+            Log.d(TAG, "Overlay message closed: $text")
+            lastClosed = text
+        }
+        isClosedListenerSet = true
+    }
+
+    private fun unsetClosedListener() {
+        OptimoveOverlayMessaging.getInstance().setClosedListener(null)
+        isClosedListenerSet = false
+        lastClosed = null
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unsetInterceptor()
         if (isActionHandlerSet) unsetActionHandler()
+        if (isClosedListenerSet) unsetClosedListener()
+    }
+
+    companion object {
+        private const val TAG = "OverlayMessagingActivity"
     }
 
     private fun unsetInterceptor() {
